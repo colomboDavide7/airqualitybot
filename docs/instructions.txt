@@ -1,0 +1,41 @@
+-- IN QUESTO FILE TROVERAI LE ISTRUZIONI PER ESEGUIRE CORRETTAMENTE IL CODICE --
+
+
+############################# PROPERTIES #############################
+
+
+1 - creare la directory 'properties'
+
+	-- questa directory conterra' tutti i file di configurazione
+	-- necessari al funzionamento del programma.
+
+2 - creare il file 'apiAtmoTube.properties' sulla falsariga 
+  - del file 'sample_apiAtmoTube.properties'. Inserire il file
+  - 'apiAtmoTube.properties' nella directory /properties
+
+3 - creare il file 'logger.properties' sulla falsariga
+  - del file 'sample_logger.properties'. Inserire il file
+  - 'logger.properties' nella directory /properties
+
+
+############################# LOG #############################
+
+
+1 - creare la directory 'log'
+	
+	-- questa directory conterra' tutti i file di log
+	-- utilizzati nel programma.
+
+2 - creare il file 'errors.log'
+
+	-- questo file contiene tutti i messaggi di log
+	-- inerenti agli errori durante il funzionamento
+	-- del programma.
+
+
+
+
+
+
+
+
