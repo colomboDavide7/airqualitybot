@@ -8,6 +8,8 @@
 #################################################
 import sys
 from typing import List, Dict, Any
+from airquality.app.session import Session
+
 
 USAGE = "python -m airquality [--help or -h | --debug  or -d | --log or -l]"
 
@@ -29,7 +31,10 @@ def main() -> None:
         session_kwargs = parse_sys_argv(args)
 
     # TODO: create session object
+    session = Session(session_kwargs)
 
+    if session.is_debug_active():
+        print("[DEBUG]: SESSION CREATED SUCCESSFULLY")
 
     # TODO: pass option-arguments to Session object
 

@@ -9,34 +9,49 @@
 import unittest
 from airquality.app.session import Session
 
+
 class TestSession(unittest.TestCase):
 
 
     def test_new_session(self):
         """Test method for testing the creation of a new Session object"""
 
-        # TEST 1 - test with full dictionary
+        # TEST 1 - test with all possible arguments
         test_args = {"debug": True, "logging": True}
-        session = Session(**test_args)
+        session = Session(test_args)
         self.assertTrue(session.is_debug_active())
         self.assertTrue(session.is_logging_active())
 
-        # TEST 2 - test with empty args dictionary
+        # TEST 2 - test with no arguments
         test_args = {}
-        session = Session(**test_args)
+        session = Session(test_args)
         self.assertFalse(session.is_debug_active())
         self.assertFalse(session.is_logging_active())
 
-        # TEST 3 - test with mixed dictionary
+        # TEST 3 - test with single argument
         test_args = {"debug": True}
-        session = Session(**test_args)
+        session = Session(test_args)
         self.assertTrue(session.is_debug_active())
         self.assertFalse(session.is_logging_active())
 
         test_args = {"logging": True}
-        session = Session(**test_args)
+        session = Session(test_args)
         self.assertFalse(session.is_debug_active())
         self.assertTrue(session.is_logging_active())
+
+
+    def test_debug_message(self):
+        """Test debug message method."""
+        test_args = {"debug": True}
+        session = Session(test_args)
+        response = session.debug_msg("TEST DEBUG MESSAGE")
+        self.assertTrue(response)
+
+        test_args = {}
+        session = Session(test_args)
+        response = session.debug_msg("TEST DEBUG MESSAGE")
+        self.assertFalse(response)
+
 
 
 ################################ EXECUTABLE ################################
