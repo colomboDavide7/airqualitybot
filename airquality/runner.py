@@ -6,10 +6,13 @@
 #               i.e., the entry point for the application
 #
 #################################################
-import sys
+import sys, os
 from typing import List, Dict, Any
 from airquality.app.session import Session
 
+# Imported for input() function in 'tests.runner.test_runner.py'
+# DO NOT DELETE
+import builtins
 
 USAGE = "python -m airquality [--help or -h | --debug  or -d | --log or -l]"
 
@@ -30,13 +33,44 @@ def main() -> None:
     if args:
         session_kwargs = parse_sys_argv(args)
 
-    # TODO: create session object
+    # STEP 1 - create Session object
     session = Session(session_kwargs)
-
     if session.is_debug_active():
-        print("[DEBUG]: SESSION CREATED SUCCESSFULLY")
+        session.debug_msg("Session created successfully")
 
-    # TODO: pass option-arguments to Session object
+    # STEP 2 - get resource file path from the command line
+    resource_path = None
+    try:
+        resource_path = get_resource_file_path()
+        if session.is_debug_active():
+            session.debug_msg("valid resource path")
+    except FileNotFoundError as ex:
+        if session.is_debug_active():
+            session.debug_msg(str(ex))
+            session.debug_msg("Quitting the application.")
+        sys.exit(1)
+
+    # TODO: create resource loader with singleton
+
+
+    # TODO: read resource file
+
+
+    # TODO: Create the Parse
+
+
+    # TODO: parse the first file
+
+
+    # TODO: ...
+
+
+
+def get_resource_file_path() -> str:
+    path_to_file = input("Enter resource file path: ")
+    if not os.path.isfile(path_to_file):
+        raise FileNotFoundError(f"path to file '{path_to_file}' is not a valid.")
+    return path_to_file
 
 
 

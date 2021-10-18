@@ -21,29 +21,30 @@ class Session(builtins.object):
 
     DEBUG_HEADER = "[DEBUG]: "
 
-    def __init__(self, kwargs: Dict[str, Any]):
+    def __init__(self, settings: Dict[str, Any]):
         """
         __init__ method unpack the command line option-arguments
         passed in the form of a dictionary and sets the proper values.
         """
-        self.debug = False
-        self.logging = False
-        self.log_path = None
-        self.username = None
-        self.password = None
-        if kwargs:
-            for key, val in kwargs.items():
+        self.__debug = False
+        self.__logging = False
+        self.__log_path = None
+        self.__username = None
+        self.__password = None
+
+        if settings:
+            for key, val in settings.items():
                 if key == 'debug':
-                    self.debug = True
+                    self.__debug = True
                 elif key == 'logging':
-                    self.logging = True
+                    self.__logging = True
 
     def debug_msg(self, msg: str) -> bool:
         """
         This method print to the console the debug header followed by
         the debug message passed as argument if debug mode is active.
         """
-        if self.debug:
+        if self.__debug:
             print(Session.DEBUG_HEADER + msg)
             return True
         return False
@@ -52,10 +53,10 @@ class Session(builtins.object):
         """
         return True if debug mode is active
         """
-        return self.debug
+        return self.__debug
 
     def is_logging_active(self) -> bool:
         """
         return True if logging on the local file system is active
         """
-        return self.logging
+        return self.__logging
