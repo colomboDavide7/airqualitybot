@@ -49,6 +49,11 @@ def main() -> None:
             session.debug_msg(str(ex))
             session.debug_msg("Quitting the application.")
         sys.exit(1)
+    except ValueError as ex:
+        if session.is_debug_active():
+            session.debug_msg(str(ex))
+            session.debug_msg("Quitting the application.")
+        sys.exit(1)
 
     # TODO: create resource loader with singleton
 
@@ -67,11 +72,22 @@ def main() -> None:
 
 
 def get_resource_file_path() -> str:
+    """Function that takes the path from the console user input,
+    checks whether the provided path is a valid file and if
+    the file is the correct one."""
+
     path_to_file = input("Enter resource file path: ")
-    if not os.path.isfile(path_to_file):
-        raise FileNotFoundError(f"path to file '{path_to_file}' is not a valid.")
+    check_is_valid_file(path_to_file)
+    check_resource_file_path(path_to_file)
     return path_to_file
 
+def check_is_valid_file(path: str):
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"path to file '{path}' is not a valid.")
+
+def check_resource_file_path(path: str):
+    if "properties/resources.json" not in path:
+        raise ValueError(f"Path to file {path} is wrong.")
 
 
 def parse_sys_argv(args: List[str]) -> Dict[str, Any]:

@@ -7,9 +7,7 @@
 #################################################
 import os.path
 import unittest
-from unittest.mock import patch
 
-import airquality.runner
 from airquality.runner import parse_sys_argv
 
 
@@ -44,21 +42,22 @@ class TestRunner(unittest.TestCase):
         with self.assertRaises(SystemExit):
             parse_sys_argv(test_args)
 
-        # with patch.object(airquality.runner.sys, "exit") as mocked_exit:
-        #     mocked_exit.call_count = 1
-        #     parse_sys_argv(test_args)
-        #     self.assertEqual(mocked_exit.call_count, 2)
-
 
     def test_get_resource_file_path(self):
         """Test insertion of the resource file path from the prompt."""
 
-        valid_path = "/Users/davidecolombo/Desktop/airquality/airquality/runner.py"
+        with self.assertRaises(FileNotFoundError):
+            TestRunner.__get_resource_path_mock("bad/path")
+
+        with self.assertRaises(ValueError):
+            TestRunner.__get_resource_path_mock(
+                    "/Users/davidecolombo/Desktop/"
+                    "airquality/airquality/runner.py")
+
+        valid_path = "/Users/davidecolombo/Desktop/airquality/" \
+                     "properties/resources.json"
         actual_output = TestRunner.__get_resource_path_mock(valid_path)
         self.assertEqual(actual_output, valid_path)
-
-        with self.assertRaises(FileNotFoundError):
-            TestRunner.__get_resource_path_mock("bad/path/bad_file.txt")
 
     @staticmethod
     def __get_resource_path_mock(path: str) -> str:
@@ -66,15 +65,10 @@ class TestRunner(unittest.TestCase):
 
         if not os.path.isfile(path):
             raise FileNotFoundError(f"path to file {path} is not valid.")
-        return path
 
-    # def test_get_username_from_prompt(self):
-    #     """Test insertion of the """
-    #     with patch.object(airquality.runner.builtins, "input") as mocked_input:
-    #         expected_output = "bot_mobile_user"
-    #         mocked_input.return_value = "bot_mobile_user"
-    #         actual_output = get_input("Enter bot username: ")
-    #         self.assertEqual(actual_output, expected_output)
+        if "properties/resources.json" not in path:
+            raise ValueError(f"Path to file {path} is wrong.")
+        return path
 
 
 ################################ EXECUTABLE ################################
