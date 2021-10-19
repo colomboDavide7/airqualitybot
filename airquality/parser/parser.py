@@ -8,6 +8,7 @@
 #################################################
 import builtins
 import json
+from typing import Dict, Any
 from json.decoder import JSONDecodeError
 from abc import ABC, abstractmethod
 
@@ -23,19 +24,26 @@ class Parser(ABC):
 
     @property
     def raw(self):
+        """
+        Need to be implemented as a @property, otherwise subclasses
+        cannot access 'raw' variable in superclass.
+        """
         return self.__raw
 
     @raw.setter
     def raw(self, value):
-        """This method was defined with the only purpose of raising
-            ValueError exception because 'raw' attribute cannot be set
-            from outside."""
+        """
+        This method was defined with the only purpose of raising
+        ValueError exception because 'raw' attribute cannot be set
+        from outside.
+        """
         raise ValueError("Cannot set the raw value.")
 
     @abstractmethod
-    def parse(self):
-        """Abstract method that a subclass must override for defining
-         how to parse a file.
+    def parse(self) -> Dict[str, Any]:
+        """
+        Abstract method that a subclass must override for defining
+        how to parse a file.
          """
         pass
 
@@ -47,7 +55,7 @@ class JSONParser(Parser):
         super().__init__(content)
         self.__parsed = None
 
-    def parse(self):
+    def parse(self) -> Dict[str, Any]:
         """
         Parse raw content if parsed is None and return the parsed content.
 
@@ -82,9 +90,8 @@ class ParserFactory(builtins.object):
     @staticmethod
     def make_parser_from_extension_file(file_extension: str,
                                         raw_content: str) -> Parser:
-
         if file_extension == 'json':
             return JSONParser(raw_content)
         else:
-            raise TypeError(f"{ParserFactory.__name__}: unsupported file extension '"
-                            f"{file_extension}'")
+            raise TypeError(f"{ParserFactory.__name__}: "
+                            f"unsupported file extension '{file_extension}'.")
