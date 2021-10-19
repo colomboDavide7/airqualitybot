@@ -12,10 +12,11 @@ import sys
 from typing import List, Dict, Any
 
 from airquality.app.session import Session
+from airquality.app.resource_loader import ResourceLoader
+
 
 USAGE = "USAGE: python -m airquality " \
         "[--help or -h | --debug  or -d | --log or -l]"
-
 
 
 def main() -> None:
@@ -54,11 +55,9 @@ def main() -> None:
     except ValueError as ex:
         guard.sys_exit(str(ex), error_code = 1)
 
-    # STEP 4 - set the Session resource file path
-    session.set_res_path(resource_path)
+    # STEP 4 - create Resource Loader
+    res_loader = ResourceLoader(resource_path)
 
-
-    # TODO: create resource loader with singleton
 
     # TODO: read resource file
 

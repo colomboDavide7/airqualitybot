@@ -27,5 +27,12 @@ class TestResourceLoader(unittest.TestCase):
         with self.assertRaises(ValueError):
             loader.path = "another/path/bad_file.txt"
 
+    def test_open_read_close_resource_file(self):
+        """Test loading the resource file locally."""
+
+        valid_path = "properties/resources.json"
+        loader = ResourceLoader(valid_path)
+        loader.open_read_close()
+
 if __name__ == '__main__':
     unittest.main()

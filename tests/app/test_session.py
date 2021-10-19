@@ -52,16 +52,6 @@ class TestSession(unittest.TestCase):
         response = session.debug_msg("TEST DEBUG MESSAGE")
         self.assertFalse(response)
 
-    # def test_set_resource_path(self):
-    #     test_args = {}
-    #     path = "valid/file/path/file.txt"
-    #     session = Session(test_args)
-    #     response = session.set_resource_path(path)
-    #     self.assertTrue(response)
-    #
-    #     response = session.set_resource_path(path)
-    #     self.assertFalse(response)
-
 
 
 ################################ EXECUTABLE ################################
