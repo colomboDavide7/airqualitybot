@@ -46,13 +46,13 @@ class TestRunner(unittest.TestCase):
     def test_get_resource_file_path(self):
         """Test insertion of the resource file path from the prompt."""
 
-        with self.assertRaises(FileNotFoundError):
-            TestRunner.__get_resource_path_mock("bad/path")
+        response = TestRunner.__get_resource_path_mock("bad/path")
+        self.assertEqual(response, "exit1")
 
-        with self.assertRaises(ValueError):
-            TestRunner.__get_resource_path_mock(
-                    "/Users/davidecolombo/Desktop/"
-                    "airquality/airquality/runner.py")
+        response = TestRunner.__get_resource_path_mock(
+                            "/Users/davidecolombo/Desktop/"
+                            "airquality/airquality/runner.py")
+        self.assertEqual(response, "exit2")
 
         valid_path = "/Users/davidecolombo/Desktop/airquality/" \
                      "properties/resources.json"
@@ -61,13 +61,13 @@ class TestRunner(unittest.TestCase):
 
     @staticmethod
     def __get_resource_path_mock(path: str) -> str:
-        """Mocking function for the 'runner.get_resource_file_path()'"""
-
+        """
+        Mocking function for the 'runner.AppGuard.get_resource_file_path()'
+        """
         if not os.path.isfile(path):
-            raise FileNotFoundError(f"path to file {path} is not valid.")
-
+            return "exit1"
         if "properties/resources.json" not in path:
-            raise ValueError(f"Path to file {path} is wrong.")
+            return "exit2"
         return path
 
 

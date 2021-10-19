@@ -60,3 +60,7 @@ class Session(builtins.object):
         return True if logging on the local file system is active
         """
         return self.__logging
+
+    def __str__(self):
+        return "debug={d}, logging={l}".format(d=self.__debug,
+                                               l=self.__logging)
