@@ -82,13 +82,19 @@ def main() -> None:
     # STEP 3 - open, read, close resource file
     try:
         res_loader.load_resources()
+        res_loader.parse_resources()
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)
 
-    # STEP 4 - parse resources
     try:
-        res_loader.parse_resources()
+        dbconn = res_loader.database_connection("atmotube")
+        dbconn.open_conn()
+        session.debug_msg(f"{main.__name__}: "
+                          f"connection opened successfully.")
+        dbconn.close_conn()
+        session.debug_msg(f"{main.__name__}: "
+                          f"connection closed successfully.")
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)

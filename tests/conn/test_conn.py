@@ -12,10 +12,11 @@ from airquality.conn.conn import DatabaseConnection, DatabaseConnectionFactory
 
 class TestConnection(unittest.TestCase):
 
+
     def setUp(self) -> None:
         self.settings = {"port": 5432,
                          "dbname": "airquality",
-                         "hostname": "localhost",
+                         "host": "localhost",
                          "username": "bot_mobile_user",
                          "password": None}
         self.dbfactory = DatabaseConnectionFactory()

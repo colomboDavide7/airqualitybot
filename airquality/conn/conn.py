@@ -46,7 +46,8 @@ class DatabaseConnection(Connection):
     -password: if any, the valid password for the username
     -set_ok: binary number with 5 digits that is used for checking settings
     """
-    def __init__(self, settings: Dict[str, Any]):
+    def __init__(self,
+                 settings: Dict[str, Any]):
         self.__port = None
         self.__dbname = None
         self.__hostname = None
@@ -60,7 +61,7 @@ class DatabaseConnection(Connection):
                 if key == 'port':
                     self.__port = val
                     self.__set_ok |= 0b00001
-                elif key == 'hostname':
+                elif key == 'host':
                     self.__hostname = val
                     self.__set_ok |= 0b00010
                 elif key == 'dbname':
@@ -73,7 +74,6 @@ class DatabaseConnection(Connection):
                     self.__password = val
                     self.__set_ok |= 0b10000
                 else:
-                    # TODO: use the Session object
                     print(f"{DatabaseConnection.__name__}: "
                           f"invalid key setting '{key}' is ignored.")
 
@@ -94,10 +94,9 @@ class DatabaseConnection(Connection):
         In this way, the 'is_open()' method continues to work properly.
         """
         if not self.is_open():
-            err_msg = f"{DatabaseConnection.__name__}: " \
-                      f"cannot close connection that is not opened."
-            print(err_msg)
-            raise SystemExit(err_msg)
+            raise SystemExit(
+                    f"{DatabaseConnection.__name__}: "
+                    f"cannot close connection that is not opened.")
         self.__psycopg2_conn.close()
         self.__psycopg2_conn = None
         return True
@@ -114,16 +113,18 @@ class DatabaseConnection(Connection):
         'psycopg2_conn' is None, otherwise a SystemExit exception is raised.
         """
         if self.is_open():
-            err_msg = f"{DatabaseConnection.__name__}: " \
-                      f"cannot open connection that is already opened."
-            print(err_msg)
-            raise SystemExit(err_msg)
-
-        self.__psycopg2_conn = psycopg2.connect(database = self.__dbname,
-                                                port = self.__port,
-                                                host = self.__hostname,
-                                                user = self.__username,
-                                                password = self.__password)
+            raise SystemExit(
+                    f"{DatabaseConnection.__name__}: "
+                    f"cannot open connection that is already opened.")
+        try:
+            self.__psycopg2_conn = psycopg2.connect(database = self.__dbname,
+                                                    port = self.__port,
+                                                    host = self.__hostname,
+                                                    user = self.__username,
+                                                    password = self.__password)
+        except Exception as err:
+            raise SystemExit(f"{DatabaseConnection.__name__}: "
+                             f"{str(err)}")
         return True
 
     def is_open(self) -> bool:

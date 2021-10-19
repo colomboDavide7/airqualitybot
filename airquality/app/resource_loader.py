@@ -9,6 +9,8 @@ import builtins
 
 from airquality.app.session import Session
 from airquality.parser.parser import ParserFactory
+from airquality.conn.conn import DatabaseConnectionFactory, DatabaseConnection
+
 
 class ResourceLoader(builtins.object):
     """
@@ -25,6 +27,7 @@ class ResourceLoader(builtins.object):
         self.__session = session
         self.__content = None
         self.__resources = None
+        self.__database_conn = None
 
     @property
     def path(self):
@@ -91,8 +94,21 @@ class ResourceLoader(builtins.object):
             raise SystemExit(str(terr))
         return True
 
-    def get_database_connection(self):
-        pass
+    def database_connection(self, username: str) -> DatabaseConnection:
+        """
+        This method return a new Database connection if 'database_conn'
+        is None, otherwise it return the existing instance.
+
+        Other than that, this method creates a new dictionary called 'settings'
+        in which it puts all the parameters needed to the connection factory.
+        """
+        if self.__database_conn is None:
+            dbfactory = DatabaseConnectionFactory()
+            settings = self.__resources['server'].copy()
+            settings.update(self.__resources['users'][f'{username}'])
+            self.__database_conn = \
+                dbfactory.create_connection(settings)
+        return self.__database_conn
 
     def get_logger_config(self):
         pass
