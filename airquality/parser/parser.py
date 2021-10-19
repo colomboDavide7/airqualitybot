@@ -10,6 +10,7 @@ import builtins
 import json
 from abc import ABC, abstractmethod
 
+
 class Parser(ABC):
     """Abstract Base Class for all the Parser object supported in this
     application.
@@ -38,7 +39,6 @@ class Parser(ABC):
         pass
 
 
-
 class JSONParser(Parser):
     """JSONParser class defines the business rules for parsing JSON file
     format."""
@@ -52,7 +52,7 @@ class JSONParser(Parser):
         """
         if self.__parsed is None:
             self.__parsed = json.loads(self.raw)
-            print(self.__parsed)
+            print(f"{JSONParser.__name__}: {self.__parsed}")
         return self.__parsed
 
     @property
@@ -64,10 +64,8 @@ class JSONParser(Parser):
         """This method was defined with the only purpose of raising
         ValueError exception because 'parsed' attribute cannot be set
         from outside."""
-        raise ValueError("Cannot set parse value.")
-
-
-
+        raise ValueError(f"{JSONParser.__name__} cannot set \'parsed\' "
+                         f"value manually")
 
 
 class ParserFactory(builtins.object):
@@ -79,4 +77,5 @@ class ParserFactory(builtins.object):
         if file_extension == 'json':
             return JSONParser(raw_content)
         else:
-            raise TypeError("Unsupported file extension")
+            raise TypeError(f"{ParserFactory.__name__}: unsupported file extension '"
+                            f"{file_extension}'")

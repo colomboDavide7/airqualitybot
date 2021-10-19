@@ -32,26 +32,31 @@ class ResourceLoader(builtins.object):
 
     @path.setter
     def path(self, value):
-        raise ValueError('Path object cannot be changed')
+        raise ValueError(f'{ResourceLoader.__name__}: path object cannot '
+                         f'be set manually')
 
     def load_resources(self) -> bool:
         """
         This function opens the file at 'path', reads its content and
         closes the stream.
-        :rtype: object
         """
         rf = None
         try:
-            self.__session.debug_msg("ResourceLoader is opening the file")
+            self.__session.debug_msg(f"{ResourceLoader.__name__}:"
+                                     f" is opening the file")
             rf = open(self.__path, "r")
-            self.__session.debug_msg("File open successfully")
+            self.__session.debug_msg(f"{ResourceLoader.__name__}: "
+                                     f"file open successfully")
             self.__content = rf.read()
             self.__session.debug_msg(self.__content)
         except FileNotFoundError as err:
-            raise SystemExit(str(err))
+            raise SystemExit(f"{ResourceLoader.__name__}: no such file or "
+                             f"directory '{self.__path}'")
         finally:
             if rf:
-                self.__session.debug_msg("ResourceLoader is closing the file")
+                self.__session.debug_msg(
+                        f"{ResourceLoader.__name__}: "
+                        f"is closing the file")
                 rf.close()
         return True
 
@@ -63,20 +68,25 @@ class ResourceLoader(builtins.object):
         If the file extension is not supported, then a TypeError is raised.
         """
         if self.__content is None:
-            self.__session.debug_msg("raw content is empty. You must call "
-                                     "method 'open_read_close()' before "
-                                     "loading the resources.")
-            raise SystemExit("empty raw content.")
+            err_msg = f"{ResourceLoader.__name__}: " \
+                      f"raw content is empty. You must call method " \
+                      f"'{ResourceLoader.load_resources.__name__}' " \
+                      f"before '{ResourceLoader.parse_resources.__name__}'."
+            self.__session.debug_msg(err_msg)
+            raise SystemExit(err_msg)
 
         try:
             parser = ParserFactory.make_parser_from_extension_file(
                     file_extension = self.__path.split('.')[-1],
                     raw_content = self.__content)
-            self.__session.debug_msg("Parser created successfully: type {}".
-                                     format(parser.__class__))
-            self.__session.debug_msg("Try to parse resources")
+            self.__session.debug_msg(f"{ResourceLoader.__name__}: "
+                                     f"parser created successfully: type "
+                                     f"{parser.__class__.__name__}")
+            self.__session.debug_msg(f"{ResourceLoader.__name__}:"
+                                     f" try to parse resources")
             self.__resources = parser.parse()
-            self.__session.debug_msg("resources parsed successfully")
+            self.__session.debug_msg(f"{ResourceLoader.__name__}:"
+                                     f" resources parsed successfully")
         except TypeError as terr:
             raise SystemExit(str(terr))
         return True
@@ -89,4 +99,5 @@ class ResourceLoader(builtins.object):
 
 
     def __str__(self):
-        return "resource path: {p}".format(p=self.__path)
+        return f"{ResourceLoader.__name__}: " \
+               f"\'path\'={self.__path}"

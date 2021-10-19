@@ -6,7 +6,6 @@
 #
 #################################################
 import unittest
-
 from airquality.runner import parse_sys_argv
 
 

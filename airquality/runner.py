@@ -43,11 +43,14 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
             elif arg in ("-l", "--log"):
                 kwargs["logging"] = True
             else:
-                print(f"ignore invalid argument \'{arg}\'")
+                print(f"{parse_sys_argv.__name__}(): "
+                      f"ignore invalid argument \'{arg}\'")
         else:
-            print(f"ignore invalid argument \'{arg}\'")
+            print(f"{parse_sys_argv.__name__}(): "
+                  f"ignore invalid argument \'{arg}\'")
 
     return kwargs
+
 
 ################################ MAIN FUNCTION ################################
 def main() -> None:
@@ -69,7 +72,7 @@ def main() -> None:
 
     # STEP 1 - create Session object
     session = Session(session_kwargs)
-    session.debug_msg("Session created successfully")
+    session.debug_msg(f"{main.__name__}(): session created successfully")
     session.debug_msg(str(session))
 
     # STEP 2 - create Resource Loader

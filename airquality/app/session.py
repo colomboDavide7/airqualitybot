@@ -56,5 +56,6 @@ class Session(builtins.object):
         return self.__logging
 
     def __str__(self):
-        return "debug={d}, logging={l}".format(d=self.__debug,
-                                               l=self.__logging)
+        return f"{Session.__name__}: " \
+               f"\'debug\'={self.__debug}, " \
+               f"\'logging\'={self.__logging}"

@@ -10,7 +10,9 @@ import unittest
 from airquality.app.resource_loader import ResourceLoader
 from airquality.app.session import Session
 
+
 class TestResourceLoader(unittest.TestCase):
+
 
     def setUp(self) -> None:
         self.path = "properties/resources.json"
