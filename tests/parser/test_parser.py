@@ -34,6 +34,15 @@ class TestParser(unittest.TestCase):
         actual_parsed = json_parser.parse()
         self.assertEqual(actual_parsed, expected_parsed)
 
+    def test_JSONDecodeError_parse(self):
+        """Test JSONDecodeError while parsing json file."""
+        parser = ParserFactory.make_parser_from_extension_file(
+                    file_extension = "json",
+                    raw_content = '{ "hello": "world" ')
+        with self.assertRaises(SystemExit):
+            parser.parse()
+
+
     def test_value_error_when_setting_raw(self):
         """
         Test ValueError when try to set 'raw' content from outside.

@@ -8,6 +8,7 @@
 #################################################
 import builtins
 import json
+from json.decoder import JSONDecodeError
 from abc import ABC, abstractmethod
 
 
@@ -49,11 +50,16 @@ class JSONParser(Parser):
     def parse(self):
         """
         Parse raw content if parsed is None and return the parsed content.
+
+        If the json file contains some error, a SystemExit exception is raised.
         """
         if self.__parsed is None:
-            self.__parsed = json.loads(self.raw)
-            # UNCOMMENT FOR WATCHING THE CONTENT (password are in clear text)
-            # print(f"{JSONParser.__name__}: {self.__parsed}")
+            try:
+                self.__parsed = json.loads(self.raw)
+            except JSONDecodeError as jerr:
+                raise SystemExit(f"{JSONParser.__name__}: "
+                                 f"error while parsing JSON. "
+                                 f"" + str(jerr))
         return self.__parsed
 
     @property
@@ -62,9 +68,11 @@ class JSONParser(Parser):
 
     @parsed.setter
     def parsed(self, value):
-        """This method was defined with the only purpose of raising
+        """
+        This method was defined with the only purpose of raising
         ValueError exception because 'parsed' attribute cannot be set
-        from outside."""
+        from outside.
+        """
         raise ValueError(f"{JSONParser.__name__} cannot set \'parsed\' "
                          f"value manually")
 

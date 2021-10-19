@@ -28,17 +28,17 @@ class TestResourceLoader(unittest.TestCase):
         self.assertIsNotNone(self.loader)
         self.assertIsInstance(self.loader, ResourceLoader)
 
-    def test_raise_ValueError_when_try_to_set_path(self):
-        """Test ValueError when setting the path using setter method"""
-
-        with self.assertRaises(ValueError):
-            self.loader.path = "another/path/bad_file.txt"
-
     def test_load_resources(self):
         """Test loading the resource file locally."""
 
         response = self.loader.load_resources()
         self.assertTrue(response)
+
+    def test_system_exit_load_resources(self):
+        """Test SystemExit when try to load more than once the resources."""
+        self.loader.load_resources()
+        with self.assertRaises(SystemExit):
+            self.loader.load_resources()
 
     def test_file_not_found(self):
         """Test FileNotFoundError when file does not exist."""
@@ -54,6 +54,15 @@ class TestResourceLoader(unittest.TestCase):
         self.assertTrue(response)
         response = self.loader.parse_resources()
         self.assertTrue(response)
+
+    def test_system_exit_parse_resources(self):
+        """
+        Test SystemExit when user attemp to parse resources more than once.
+        """
+        self.loader.load_resources()
+        self.loader.parse_resources()
+        with self.assertRaises(SystemExit):
+            self.loader.parse_resources()
 
     def test_system_exit_when_raw_content_is_empty(self):
         """

@@ -16,8 +16,11 @@ class ResourceLoader(builtins.object):
     """
     This class is used for loading the resources during application setup.
 
-    - path:     the path to the resource file
-    - session:  the Session object for local debugging
+    - path:         the path to the resource file
+    - session:      the Session object for local debugging
+    - content:      the raw content of the resource file
+    - resources:    the parsed content of the resource file
+    - database_conn: database connection instance
     """
 
     def __init__(self,
@@ -29,20 +32,20 @@ class ResourceLoader(builtins.object):
         self.__resources = None
         self.__database_conn = None
 
-    @property
-    def path(self):
-        return self.__path
-
-    @path.setter
-    def path(self, value):
-        raise ValueError(f'{ResourceLoader.__name__}: path object cannot '
-                         f'be set manually')
 
     def load_resources(self) -> bool:
         """
         This function opens the file at 'path', reads its content and
         closes the stream.
+
+        If 'content' is not None, SystemExit exception is raised.
+
+        If FileNotFoundError occurs, a SystemExit exception is raised.
         """
+        if self.__content is not None:
+            raise SystemExit(f"{ResourceLoader.__name__}: "
+                             f"resources are already loaded.")
+
         rf = None
         try:
             self.__session.debug_msg(f"{ResourceLoader.__name__}:"
@@ -51,8 +54,6 @@ class ResourceLoader(builtins.object):
             self.__session.debug_msg(f"{ResourceLoader.__name__}: "
                                      f"file open successfully")
             self.__content = rf.read()
-            # UNCOMMENT FOR DEBUG PURPOSES (passwords are in clear text)
-            # self.__session.debug_msg(self.__content)
         except FileNotFoundError:
             raise SystemExit(f"{ResourceLoader.__name__}: no such file or "
                              f"directory '{self.__path}'")
@@ -65,19 +66,27 @@ class ResourceLoader(builtins.object):
         return True
 
     def parse_resources(self) -> bool:
-        """This method parses the resources if content is not None,
+        """
+        This method parses the resources if content is not None,
         otherwise a SystemExit error is raised.
 
-        A Parser object is obtained from the ParserFactory.
-        If the file extension is not supported, then a TypeError is raised.
+        A Parser object is obtained from the ParserFactory depending on the
+        resource file extension.
+
+        If the file extension is not supported, TypeError exception is raised.
+
+        If 'resources' are already loaded, SystemExit exception is raised.
         """
         if self.__content is None:
-            err_msg = f"{ResourceLoader.__name__}: " \
-                      f"raw content is empty. You must call method " \
-                      f"'{ResourceLoader.load_resources.__name__}' " \
-                      f"before '{ResourceLoader.parse_resources.__name__}'."
-            self.__session.debug_msg(err_msg)
-            raise SystemExit(err_msg)
+            raise SystemExit(
+                    f"{ResourceLoader.__name__}: "
+                    f"raw content is empty. You must call method "
+                    f"'{ResourceLoader.load_resources.__name__}' "
+                    f"before '{ResourceLoader.parse_resources.__name__}'.")
+
+        if self.__resources is not None:
+            raise SystemExit(f"{ResourceLoader.__name__}: "
+                             f"resources are already parsed.")
 
         try:
             parser = ParserFactory.make_parser_from_extension_file(
@@ -92,7 +101,7 @@ class ResourceLoader(builtins.object):
             self.__session.debug_msg(f"{ResourceLoader.__name__}:"
                                      f" resources parsed successfully")
         except TypeError as terr:
-            raise SystemExit(str(terr))
+            raise SystemExit(f"{ResourceLoader.__name__}: " + str(terr))
         return True
 
     def database_connection(self, username: str) -> DatabaseConnection:
@@ -100,8 +109,13 @@ class ResourceLoader(builtins.object):
         This method return a new Database connection if 'database_conn'
         is None, otherwise it return the existing instance.
 
-        Other than that, this method creates a new dictionary called 'settings'
-        in which it puts all the parameters needed to the connection factory.
+        If resources are not parsed, a SystemExit exception is raised.
+
+        If the provided username is not recognized, a SystemExit exception
+        is raised.
+
+        A new 'settings: Dict[str, Any]' is created from the parsed resource
+        variable.
         """
         if self.__resources is None:
             raise SystemExit(f"{ResourceLoader.__name__}: 'resources' is empty. "
@@ -119,10 +133,6 @@ class ResourceLoader(builtins.object):
             self.__database_conn = \
                 dbfactory.create_connection(settings)
         return self.__database_conn
-
-    def get_logger_config(self):
-        pass
-
 
     def __str__(self):
         return f"{ResourceLoader.__name__}: " \
