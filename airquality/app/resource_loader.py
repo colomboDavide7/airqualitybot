@@ -51,7 +51,8 @@ class ResourceLoader(builtins.object):
             self.__session.debug_msg(f"{ResourceLoader.__name__}: "
                                      f"file open successfully")
             self.__content = rf.read()
-            self.__session.debug_msg(self.__content)
+            # UNCOMMENT FOR DEBUG PURPOSES (passwords are in clear text)
+            # self.__session.debug_msg(self.__content)
         except FileNotFoundError:
             raise SystemExit(f"{ResourceLoader.__name__}: no such file or "
                              f"directory '{self.__path}'")
@@ -102,6 +103,15 @@ class ResourceLoader(builtins.object):
         Other than that, this method creates a new dictionary called 'settings'
         in which it puts all the parameters needed to the connection factory.
         """
+        if self.__resources is None:
+            raise SystemExit(f"{ResourceLoader.__name__}: 'resources' is empty. "
+                             f"You must call '{self.parse_resources.__name__}()' "
+                             f"before '{self.database_connection.__name__}()'.")
+
+        if username not in self.__resources['users'].keys():
+            raise SystemExit(f"{ResourceLoader.__name__}: don't recognize "
+                             f"username '{username}'.")
+
         if self.__database_conn is None:
             dbfactory = DatabaseConnectionFactory()
             settings = self.__resources['server'].copy()

@@ -52,7 +52,8 @@ class JSONParser(Parser):
         """
         if self.__parsed is None:
             self.__parsed = json.loads(self.raw)
-            print(f"{JSONParser.__name__}: {self.__parsed}")
+            # UNCOMMENT FOR WATCHING THE CONTENT (password are in clear text)
+            # print(f"{JSONParser.__name__}: {self.__parsed}")
         return self.__parsed
 
     @property
