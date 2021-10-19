@@ -43,34 +43,6 @@ class TestRunner(unittest.TestCase):
             parse_sys_argv(test_args)
 
 
-    def test_get_resource_file_path(self):
-        """Test insertion of the resource file path from the prompt."""
-
-        response = TestRunner.__get_resource_path_mock("bad/path")
-        self.assertEqual(response, "exit1")
-
-        response = TestRunner.__get_resource_path_mock(
-                            "/Users/davidecolombo/Desktop/"
-                            "airquality/airquality/runner.py")
-        self.assertEqual(response, "exit2")
-
-        valid_path = "/Users/davidecolombo/Desktop/airquality/" \
-                     "properties/resources.json"
-        actual_output = TestRunner.__get_resource_path_mock(valid_path)
-        self.assertEqual(actual_output, valid_path)
-
-    @staticmethod
-    def __get_resource_path_mock(path: str) -> str:
-        """
-        Mocking function for the 'runner.AppGuard.get_resource_file_path()'
-        """
-        if not os.path.isfile(path):
-            return "exit1"
-        if "properties/resources.json" not in path:
-            return "exit2"
-        return path
-
-
 ################################ EXECUTABLE ################################
 if __name__ == '__main__':
     unittest.main()
