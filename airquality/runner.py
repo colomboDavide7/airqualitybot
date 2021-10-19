@@ -78,7 +78,14 @@ def main() -> None:
 
     # STEP 3 - open, read, close resource file
     try:
-        res_loader.open_read_close()
+        res_loader.load_resources()
+    except SystemExit as ex:
+        session.debug_msg(str(ex))
+        sys.exit(1)
+
+    # STEP 4 - parse resources
+    try:
+        res_loader.parse_resources()
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)

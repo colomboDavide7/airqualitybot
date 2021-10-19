@@ -32,19 +32,44 @@ class TestResourceLoader(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.loader.path = "another/path/bad_file.txt"
 
-    def test_open_read_close_resource_file(self):
+    def test_load_resources(self):
         """Test loading the resource file locally."""
 
-        response = self.loader.open_read_close()
+        response = self.loader.load_resources()
         self.assertTrue(response)
 
     def test_file_not_found(self):
-        """Test if the loader returns False when file does not exist."""
+        """Test FileNotFoundError when file does not exist."""
 
         path = "properties/bad_file.json"
         loader = ResourceLoader(path, session = self.session)
         with self.assertRaises(SystemExit):
-            loader.open_read_close()
+            loader.load_resources()
+
+    def test_parse_resources(self):
+        """Test parse resources correct behaviour."""
+        response = self.loader.load_resources()
+        self.assertTrue(response)
+        response = self.loader.parse_resources()
+        self.assertTrue(response)
+
+    def test_system_exit_when_raw_content_is_empty(self):
+        """
+        Test SystemExit when try to parse resources but raw content is empty.
+        """
+        with self.assertRaises(SystemExit):
+            self.loader.parse_resources()
+
+    def test_system_exit_while_parsing_resources(self):
+        """Test SystemExit when parsing unsupported file extension."""
+
+        path = "properties/test.txt"
+        loader = ResourceLoader(path = path, session = self.session)
+        response = loader.load_resources()
+        self.assertTrue(response)
+
+        with self.assertRaises(SystemExit):
+            loader.parse_resources()
 
 if __name__ == '__main__':
     unittest.main()

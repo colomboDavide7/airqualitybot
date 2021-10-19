@@ -5,7 +5,6 @@
 # @Description: The unit test file for the 'airquality/runner.py' script
 #
 #################################################
-import os.path
 import unittest
 
 from airquality.runner import parse_sys_argv
