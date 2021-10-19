@@ -76,7 +76,7 @@ class TestResourceLoader(unittest.TestCase):
             self.assertTrue(response)
             with self.assertRaises(SystemExit):
                 loader.parse_resources()
-        except SystemExit as sysex:
+        except SystemExit:
             print("YOU MUST CREATE 'test.txt' file in 'properties' directory.")
             self.assertTrue(False)
 

@@ -49,7 +49,7 @@ class ResourceLoader(builtins.object):
                                      f"file open successfully")
             self.__content = rf.read()
             self.__session.debug_msg(self.__content)
-        except FileNotFoundError as err:
+        except FileNotFoundError:
             raise SystemExit(f"{ResourceLoader.__name__}: no such file or "
                              f"directory '{self.__path}'")
         finally:
