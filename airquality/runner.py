@@ -17,7 +17,7 @@ USAGE = "USAGE: python -m airquality " \
         "[--help or -h | --debug  or -d | --log or -l]"
 
 RESOURCES  = "properties/resources.json"
-
+VALID_USERNAMES = ("atmotube", "purpleair")
 
 def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
     """Function that parses the command line arguments
@@ -46,10 +46,26 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
                 print(f"{parse_sys_argv.__name__}(): "
                       f"ignore invalid argument \'{arg}\'")
         else:
-            print(f"{parse_sys_argv.__name__}(): "
-                  f"ignore invalid argument \'{arg}\'")
+            if arg in VALID_USERNAMES:
+                if kwargs.get("username", None) is None:
+                    kwargs["username"] = arg
+            else:
+                print(f"{parse_sys_argv.__name__}(): "
+                      f"ignore invalid argument \'{arg}\'")
 
     return kwargs
+
+
+def check_username(session_kwargs: Dict[str, Any]) -> str:
+    """This function takes the session 'keyworded' arguments and
+    search the username.
+
+    If username does not exists, SystemExit exception is raised."""
+    usr = session_kwargs.get("username", None)
+    if usr is None:
+        raise SystemExit(f"{check_username.__name__}: invalid username '{usr}'. "
+                         f"You must choose one within {VALID_USERNAMES}.")
+    return usr
 
 
 ################################ MAIN FUNCTION ################################
@@ -70,6 +86,12 @@ def main() -> None:
     if args:
         session_kwargs = parse_sys_argv(args)
 
+    try:
+        current_user = check_username(session_kwargs)
+    except SystemExit as syserr:
+        print(str(syserr))
+        sys.exit(1)
+
     # STEP 1 - create Session object
     session = Session(session_kwargs)
     session.debug_msg(f"{main.__name__}(): session created successfully")
@@ -88,7 +110,7 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        dbconn = res_loader.database_connection("atmotube")
+        dbconn = res_loader.database_connection(current_user)
         dbconn.open_conn()
         session.debug_msg(f"{main.__name__}: "
                           f"connection opened successfully.")

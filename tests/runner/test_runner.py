@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-from airquality.runner import parse_sys_argv
+from airquality.runner import parse_sys_argv, check_username
 
 
 class TestRunner(unittest.TestCase):
@@ -27,6 +27,16 @@ class TestRunner(unittest.TestCase):
         actual_output = parse_sys_argv(test_args)
         self.assertEqual(actual_output, expected_output)
 
+        test_args = ['atmotube', 'purpleair']
+        expected_output = {"username": "atmotube"}
+        actual_output = parse_sys_argv(test_args)
+        self.assertEqual(actual_output, expected_output)
+
+    def test_SystemExit_check_username(self):
+        """Test system exit if username is not provided or is invalid."""
+        invalid_kwargs = {"debug": True, "logging": True}
+        with self.assertRaises(SystemExit):
+            check_username(invalid_kwargs)
 
     def test_exit_on_help(self):
         """Test whether the python interpreter exits when '-h' or
