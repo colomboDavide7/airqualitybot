@@ -61,15 +61,22 @@ class TestResourceLoader(unittest.TestCase):
             self.loader.parse_resources()
 
     def test_system_exit_while_parsing_resources(self):
-        """Test SystemExit when parsing unsupported file extension."""
+        """Test SystemExit when parsing unsupported file extension.
+
+        ATTENTION: THIS TEST WILL FAIL IF THE FILE
+        'properties/text.txt' DOES NOT EXIST
+        """
 
         path = "properties/test.txt"
         loader = ResourceLoader(path = path, session = self.session)
-        response = loader.load_resources()
-        self.assertTrue(response)
-
-        with self.assertRaises(SystemExit):
-            loader.parse_resources()
+        try:
+            response = loader.load_resources()
+            self.assertTrue(response)
+            with self.assertRaises(SystemExit):
+                loader.parse_resources()
+        except SystemExit as sysex:
+            print("YOU MUST CREATE 'test.txt' file in 'properties' directory.")
+            self.assertTrue(False)
 
 if __name__ == '__main__':
     unittest.main()
