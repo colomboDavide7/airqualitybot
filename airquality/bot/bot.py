@@ -5,22 +5,10 @@
 # @Description: This module contains the BaseBot class and its subclasses
 #
 #################################################
-
+import threading
 from abc import ABC, abstractmethod
 from airquality.conn.conn import DatabaseConnection
-import threading
-
-
-LEVEL0_STATION_SCHEMA = "level0_station_data"
-LEVEL0_MOBILE_SCHEMA = "level0_mobile_data"
-
-MANUFACTURER_INFO_TABLE = "manufacturer_info"
-MEASURE_PARAM_TABLE = "measure_param"
-MEASUREMENT_TABLE = "measurement"
-TRACE_POINT_TABLE = "trace_point"
-API_PARAM_TABLE = "api_param"
-GEO_AREA_TABLE = "geo_area"
-SENSOR_TABLE = "sensor"
+from airquality.conn.builder import SQLQueryBuilder
 
 
 class BaseBot(ABC):
@@ -76,11 +64,6 @@ class BaseBot(ABC):
         if self.__thread.isAlive():
             pass
 
-    @abstractmethod
-    def api_params(self, sensor_id: int):
-        """Abstract method that defines the behaviour for getting the
-        API parameters associated to the bot."""
-        pass
 
 
 class BotMobile(BaseBot):
@@ -92,22 +75,11 @@ class BotMobile(BaseBot):
     def __init__(self, dbconn: DatabaseConnection):
         super().__init__(dbconn)
 
-    def api_params(self, sensor_id: int):
-        """
-        This method returns the parameters for connecting to the API of
-        a given sensor.
-
-        """
-        api_query = f"""SELECT * 
-                    FROM {LEVEL0_MOBILE_SCHEMA}.{API_PARAM_TABLE}
-                    WHERE id = {sensor_id};"""
-
-        if self.dbconn.is_open():
-            list_of_tuples = self.dbconn.send(api_query)
-
-
-
-
+        self.dbconn.open_conn()
+        query = SQLQueryBuilder.select_all_sensor_ids_by_model("Atmotube Pro")
+        response = self.dbconn.send(query)
+        self.__atmotube_ids = [t[0] for t in response]
+        print(self.__atmotube_ids)
 
 
 

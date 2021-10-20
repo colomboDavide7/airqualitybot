@@ -5,7 +5,7 @@
 # @Description: This file defines the URL querystring builder class
 #
 #################################################
-
+import builtins
 from typing import Dict, Any
 
 
@@ -13,7 +13,10 @@ KEY_VAL_SEPARATOR = "="
 CONCAT_SEPARATOR = "&"
 
 
-class URLQuerystringBuilder:
+class URLQuerystringBuilder(builtins.object):
+    """
+    Class that defines @staticmethods for building the URL
+    querystring for fetching data from sensor's API."""
 
     @staticmethod
     def AT_querystring_from_date(api_param: Dict[str, Any]) -> str:
