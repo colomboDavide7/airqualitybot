@@ -24,7 +24,7 @@ class Connection(ABC):
         pass
 
     @abstractmethod
-    def send(self, msg_str: str) -> str:
+    def send(self, msg_str: str):
         """Abstract method for sending things through this connection."""
         pass
 
@@ -105,7 +105,7 @@ class DatabaseConnection(Connection):
         return True
 
 
-    def send(self, msg_str: str) -> str:
+    def send(self, msg_str: str):
         """
         This method assumes that the 'msg_str' is a SQL string
         and execute it on the database through the connection.

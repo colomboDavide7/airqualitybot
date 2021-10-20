@@ -6,9 +6,10 @@
 #
 #################################################
 import threading
-from abc import ABC, abstractmethod
+from abc import ABC
 from airquality.conn.conn import DatabaseConnection
 from airquality.conn.builder import SQLQueryBuilder
+from airquality.parser.db_resp_parser import DatabaseResponseParser
 
 
 class BaseBot(ABC):
@@ -78,13 +79,12 @@ class BotMobile(BaseBot):
         self.dbconn.open_conn()
         query = SQLQueryBuilder.select_all_sensor_ids_by_model("Atmotube Pro")
         response = self.dbconn.send(query)
-        self.__atmotube_ids = [t[0] for t in response]
-        print(self.__atmotube_ids)
+        self.__atmotube_ids = DatabaseResponseParser.parse_one_field_response(response)
 
 
 
 
-
+################################ FACTORY ################################
 class BotFactory:
     """
     Factory class that defines only one method for creating a BaseBot
