@@ -27,11 +27,13 @@ class TestDatabaseResponseParser(unittest.TestCase):
 
     def test_system_exit_key_val_response(self):
         """Test SystemExit when tuple has length not equal to 2."""
-        response = [('1'), ('2'), ('3')]
-
+        response = [1, 2, 3]
         with self.assertRaises(SystemExit):
             DatabaseResponseParser.parse_key_val_response(response)
 
+        response = [(1, 2, 3)]
+        with self.assertRaises(SystemExit):
+            DatabaseResponseParser.parse_key_val_response(response)
 
 
 if __name__ == '__main__':

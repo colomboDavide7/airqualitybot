@@ -23,7 +23,7 @@ class DatabaseResponseParser(builtins.object):
         if not response:
             return parsed
 
-        if len(response[0]) != 2:
+        if not isinstance(response[0], Tuple) or len(response[0]) != 2:
             raise SystemExit(f"{DatabaseResponseParser.__name__}: "
                              f"error while parsing response in "
                              f"'{DatabaseResponseParser.parse_key_val_response.__name__}()':"
