@@ -43,7 +43,7 @@ python -m tests.parser.test_db_resp_parser
 python -m tests.app.test_db_settings_builder
 
 
-
+###################### RUN ALL TESTS ######################
 
 
 
