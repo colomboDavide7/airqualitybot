@@ -1,12 +1,19 @@
-###################### RUN DEBUG MODE ######################
+###################### RUN PROGRAM FROM COMMAND LINE ######################
 
-python -m airquality --debug bot_mobile_user
-python -m airquality -d bot_mobile_user
+python -m airquality your_database_username
 
-python -m airquality --debug bot_station_user
-python -m airquality -d bot_station_user
+###################### RUN PROGRAM IN DEBUG MODE ######################
 
-###################### FOR HELP ######################
+python -m airquality --debug your_database_username
+python -m airquality -d your_database_username
+
+###################### GET USAGE HELP ######################
 
 python -m airquality -h
 python -m airquality --help
+
+
+###################### COMMENTS ON COMMANDS ######################
+
+In the commands above, replace 'your_database_username' 
+with the username of your database you want to connect with.

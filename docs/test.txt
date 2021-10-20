@@ -1,11 +1,52 @@
+###################### RUN TEST RESOURCE LOADER ######################
+
 python -m tests.app.test_resource_loader
+
+###################### RUN TEST SESSION ######################
+
 python -m tests.app.test_session
+
+###################### RUN TEST RUNNER ######################
+
 python -m tests.runner.test_runner
+
+###################### RUN TEST CONNECTION ######################
+
 python -m tests.conn.test_conn
+
+###################### RUN TEST SQL QUERY BUILDER ######################
+
 python -m tests.conn.test_builder
+
+###################### RUN TEST PARSER ######################
+
 python -m tests.parser.test_parser
+
+###################### RUN TEST BOT ######################
+
 python -m tests.bot.test_bot
+
+###################### RUN TEST API REQUEST ######################
+
 python -m tests.api.test_api
+
+###################### RUN URL QUERYSTRING BUILDER ######################
+
 python -m tests.api.test_builder
+
+###################### RUN TEST DATABASE RESPONSE PARSER ######################
+
 python -m tests.parser.test_db_resp_parser
+
+###################### RUN TEST DATABASE SETTINGS BUILDER ######################
+
 python -m tests.app.test_db_settings_builder
+
+
+
+
+
+
+
+
+
