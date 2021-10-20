@@ -7,9 +7,9 @@
 #
 #################################################
 
-from typing import Dict, Any
 from abc import ABC, abstractmethod
 import urllib.request as req
+
 
 class APIRequest(ABC):
     """Abstract Base Class for the APIRequest.
