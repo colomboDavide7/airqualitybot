@@ -11,16 +11,17 @@ from airquality.conn.builder import SQLQueryBuilder
 
 
 class TestSQLQueryBuilder(unittest.TestCase):
-
+    """Class for testing the sql query builder."""
 
     def setUp(self) -> None:
         self.model = "Atmotube Pro"
 
-    def test_system_exit_select_atmotube_ids(self):
-        """Test SystemExit exception when bad model name is passed."""
+    def test_system_exit_with_empty_models(self):
+        """Test SystemExit when mobile model list is passed."""
 
+        models = []
         with self.assertRaises(SystemExit):
-            SQLQueryBuilder.select_all_sensor_ids_by_model(["bad_model_name"])
+            SQLQueryBuilder.select_mobile_sensor_ids(models)
 
 
 

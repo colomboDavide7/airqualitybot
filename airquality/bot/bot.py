@@ -41,7 +41,7 @@ class BotMobile(BaseBot):
     def __init__(self, dbconn: DatabaseConnection, sensor_models: List[str]):
         super().__init__(dbconn)
         self.__models = sensor_models
-        query = SQLQueryBuilder.select_all_sensor_ids_by_model(self.__models)
+        query = SQLQueryBuilder.select_mobile_sensor_ids(self.__models)
         response = self.dbconn.send(query)
         sensor_ids = DatabaseResponseParser.parse_one_field_response(response)
 
