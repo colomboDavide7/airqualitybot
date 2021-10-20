@@ -15,7 +15,7 @@ class TestBot(unittest.TestCase):
 
     def setUp(self) -> None:
         """Set up method is used to create a DatabaseConnection instance
-        since the BaseBot constructo takes 'dbconn' argument."""
+        since the BaseBot constructor takes 'dbconn' argument."""
 
         self.mobile_settings = {"port": 5432,
                                 "dbname": "airquality",
