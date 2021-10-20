@@ -9,7 +9,7 @@ import builtins
 
 from airquality.app.session import Session
 from airquality.parser.parser import ParserFactory
-from airquality.conn.conn import DatabaseConnectionFactory, DatabaseConnection
+from airquality.conn.conn import DatabaseConnectionFactory
 from airquality.app.db_settings_builder import DatabaseSettingsBuilder
 
 
@@ -97,7 +97,7 @@ class ResourceLoader(builtins.object):
         return True
 
 
-    def database_connection(self, username: str) -> DatabaseConnection:
+    def database_connection(self, username: str):
         """
         This method return a new DatabaseConnection if 'conn_created'
         is False, otherwise SystemExit exception is raised.
@@ -116,6 +116,7 @@ class ResourceLoader(builtins.object):
         if self.__conn_created:
             raise SystemExit(f"{ResourceLoader.__name__}: connection already created.")
 
+        self.__conn_created = True
         dbfactory = DatabaseConnectionFactory()
         settings = DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user(self.__resources, username)
         return dbfactory.create_connection(settings)

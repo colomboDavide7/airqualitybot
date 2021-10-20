@@ -99,6 +99,16 @@ class TestResourceLoader(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.loader.database_connection("correct_username")
 
+    def test_system_exit_database_connection(self):
+        """Test SystemExit when try to open more than once connection to
+        the database."""
+
+        self.loader.load_resources()
+        self.loader.parse_resources()
+        self.loader.database_connection("bot_mobile_user")
+        with self.assertRaises(SystemExit):
+            self.loader.database_connection("bot_mobile_user")
+
 
 if __name__ == '__main__':
     unittest.main()
