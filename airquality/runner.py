@@ -114,9 +114,21 @@ def main() -> None:
         dbconn.open_conn()
         session.debug_msg(f"{main.__name__}: "
                           f"connection opened successfully.")
+    except SystemExit as ex:
+        session.debug_msg(str(ex))
+        sys.exit(1)
+
+    # CREATE BOT
+    
+
+
+
+
+    try:
         dbconn.close_conn()
         session.debug_msg(f"{main.__name__}: "
                           f"connection closed successfully.")
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)
+

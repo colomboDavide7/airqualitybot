@@ -69,6 +69,30 @@ class TestConnection(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.dbconn.close_conn()
 
+    def test_send(self):
+        """Test send method successful path"""
+        resp = self.dbconn.open_conn()
+        self.assertTrue(resp)
+        text = self.dbconn.send("SELECT * FROM pg_catalog.pg_tables LIMIT 1;")
+        self.assertIsNotNone(text)
+        resp = self.dbconn.close_conn()
+        self.assertTrue(resp)
+
+    def test_system_exit_send(self):
+        """Test SystemExit when try to send message through the connection but
+        it is closed."""
+        with self.assertRaises(SystemExit):
+            self.dbconn.send("SELECT * FROM pg_catalog.pg_tables LIMIT 1;")
+
+    def test_send_invalid_sql(self):
+        """
+        Test SystemExit when invalid SQL is sent through psycopg2 connection.
+        """
+        resp = self.dbconn.open_conn()
+        self.assertTrue(resp)
+        with self.assertRaises(SystemExit):
+            self.dbconn.send("SELECT * FROM bad_table;")
+
 
 if __name__ == '__main__':
     unittest.main()

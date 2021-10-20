@@ -24,27 +24,29 @@ class Connection(ABC):
         pass
 
     @abstractmethod
-    def send(self) -> bool:
+    def send(self, msg_str: str) -> str:
         """Abstract method for sending things through this connection."""
         pass
 
     @abstractmethod
     def is_open(self) -> bool:
-        """Abstract method that defines the condition for a connection to be
+        """
+        Abstract method that defines the condition for a connection to be
         closed or opened."""
         pass
 
 
 class DatabaseConnection(Connection):
-    """DatabaseConnection class is a wrapper class for psycopg2 connection
+    """
+    DatabaseConnection class is a wrapper class for psycopg2 connection
     object.
 
-    - port: port number
-    - dbname: database name
-    -hostname: host name
-    -username: a valid username for database connection
-    -password: if any, the valid password for the username
-    -set_ok: binary number with 5 digits that is used for checking settings
+    -port:      port number
+    -dbname:    database name
+    -hostname:  host name
+    -username:  a valid username for database connection
+    -password:  if any, the valid password for the username
+    -set_ok:    binary number with 5 digits that is used for checking settings
     """
     def __init__(self,
                  settings: Dict[str, Any]):
@@ -84,7 +86,8 @@ class DatabaseConnection(Connection):
 
 
     def close_conn(self) -> bool:
-        """This method closes the connection with the postgreSQL database
+        """
+        This method closes the connection with the postgreSQL database
         if the connection object is not None (open connection),
         otherwise a SystemExit exception is raised.
 
@@ -102,10 +105,28 @@ class DatabaseConnection(Connection):
         return True
 
 
-    def send(self) -> bool:
-        # TODO: think of creating a variable for letting the user set the
-        #  query string before calling this method
-        pass
+    def send(self, msg_str: str) -> str:
+        """
+        This method assumes that the 'msg_str' is a SQL string
+        and execute it on the database through the connection.
+
+        If connection is closed, SystemExit exception is raised.
+
+        If 'msg_str' is not a valid SQL, SystemExit exception is raised.
+        """
+        if not self.is_open():
+            raise SystemExit(f"{DatabaseConnection.__name__}: cannot send "
+                             f"message when connection is closed.")
+        try:
+            cursor = self.__psycopg2_conn.cursor()
+            cursor.execute(msg_str)
+            self.__psycopg2_conn.commit()
+            response = cursor.fetchall()
+        except Exception as err:
+            self.close_conn()
+            raise SystemExit(f"{DatabaseConnection.__name__}: {str(err)}")
+        return response
+
 
     def open_conn(self) -> bool:
         """
@@ -128,7 +149,8 @@ class DatabaseConnection(Connection):
         return True
 
     def is_open(self) -> bool:
-        """Method that returns True if the psycopg2 connection object is
+        """
+        Method that returns True if the psycopg2 connection object is
         not None, otherwise False."""
         return self.__psycopg2_conn is not None
 
