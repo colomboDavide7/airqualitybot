@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.bot.bot import BotFactory, BotMobile
+from airquality.bot.bot import BotMobile
 from airquality.conn.conn import DatabaseConnection
 
 
@@ -23,21 +23,13 @@ class TestBot(unittest.TestCase):
                                 "username": "bot_mobile_user",
                                 "password": None}
         self.mobile_dbconn = DatabaseConnection(self.mobile_settings)
+        self.models = ["Atmotube Pro"]
 
     def test_create_bot_mobile(self):
         """Test the correct creation of the BotMobile instance."""
-        user_type = "atmotube"
-        bot = BotFactory.create_bot_from_type(user_type = user_type,
-                                              dbconn = self.mobile_dbconn)
+        bot = BotMobile(self.mobile_dbconn, self.models)
         self.assertIsNotNone(bot)
         self.assertIsInstance(bot, BotMobile)
-
-    def test_type_error_bot_mobile(self):
-        """Test TypeError when bad type is passed as argument."""
-        user_type = "bad_user_type"
-        with self.assertRaises(TypeError):
-            BotFactory.create_bot_from_type(user_type = user_type,
-                                            dbconn = self.mobile_dbconn)
 
 
 

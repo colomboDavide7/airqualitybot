@@ -10,6 +10,7 @@ import sys
 from typing import List, Dict, Any
 from airquality.app.session import Session
 from airquality.app.resource_loader import ResourceLoader
+from airquality.bot.bot import BotMobile
 
 
 USAGE = "USAGE: python -m airquality " \
@@ -100,25 +101,24 @@ def main() -> None:
         session.debug_msg(str(ex))
         sys.exit(1)
 
-    # STEP 6 - get database connection for current user and open it
+    # STEP 6 - create database connection interface
     try:
-        dbconn = res_loader.database_connection(current_user)
-        dbconn.open_conn()
-        session.debug_msg(f"{main.__name__}: connection opened successfully.")
+        session.debug_msg(f"{main.__name__}: get database connection")
+        dbconn = res_loader.database_connection(username = current_user)
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)
 
-    # CREATE BOT
-    
-
-
-
-
+    # STEP 7 - create bot based on username
     try:
-        dbconn.close_conn()
-        session.debug_msg(f"{main.__name__}: connection closed successfully.")
+        if current_user == 'bot_mobile_user':
+            session.debug_msg(f"{main.__name__}: get sensor models for '{current_user}' user")
+            models = res_loader.sensor_models("mobile")
+            bot = BotMobile(dbconn, models)
+            session.debug_msg(f"{main.__name__}: BotMobile created successfully")
+        elif current_user == 'bot_station_user':
+            models = res_loader.sensor_models("station")
+            pass
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)
-

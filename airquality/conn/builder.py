@@ -7,7 +7,7 @@
 #
 #################################################
 import builtins
-
+from typing import List
 
 LEVEL0_STATION_SCHEMA = "level0_station_data"
 LEVEL0_MOBILE_SCHEMA = "level0_mobile_data"
@@ -27,24 +27,36 @@ class SQLQueryBuilder(builtins.object):
     """
 
     @staticmethod
-    def select_all_sensor_ids_by_model(model_name: str) -> str:
+    def select_all_sensor_ids_by_model(models: List[str]) -> str:
         """Static method that returns the query for getting the sensor ids
         based on model name.
 
         If model name is 'Atmotube Pro', then the ids are searched within the
         mobile data schema, otherwise within the station data schema."""
 
-        if model_name == 'Atmotube Pro':
-            schema = LEVEL0_MOBILE_SCHEMA
-        elif model_name == 'PurpleAir PA-II':
-            schema = LEVEL0_STATION_SCHEMA
-        else:
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: "
-                             f"invalid model name '{model_name}' in "
-                             f"'{SQLQueryBuilder.select_all_sensor_ids_by_model.__name__}()'")
+        base_query = """SELECT s.id 
+                        FROM {schema1}.{sens_t} AS s 
+                        INNER JOIN {schema2}.{man_info_t} AS m 
+                        ON s.manufacturer_id = m.id
+                        WHERE m.model_name = '{mod_name}';"""
 
-        return f"""SELECT s.id 
-                FROM {schema}.{SENSOR_TABLE} AS s 
-                INNER JOIN {schema}.{MANUFACTURER_INFO_TABLE} AS m 
-                ON s.manufacturer_id = m.id
-                WHERE m.model_name = '{model_name}';"""
+        to_execute = ""
+        for model_name in models:
+            if model_name == 'Atmotube Pro':
+                to_execute += base_query.format(schema1=LEVEL0_MOBILE_SCHEMA,
+                                                sens_t=SENSOR_TABLE,
+                                                schema2=LEVEL0_MOBILE_SCHEMA,
+                                                man_info_t=MANUFACTURER_INFO_TABLE,
+                                                mod_name=model_name)
+            elif model_name == 'PurpleAir PA-II':
+                to_execute += base_query.format(schema1 = LEVEL0_STATION_SCHEMA,
+                                                sens_t = SENSOR_TABLE,
+                                                schema2 = LEVEL0_STATION_SCHEMA,
+                                                man_info_t = MANUFACTURER_INFO_TABLE,
+                                                mod_name = model_name)
+            else:
+                raise SystemExit(f"{SQLQueryBuilder.__name__}: "
+                                 f"invalid model name '{model_name}' in "
+                                 f"'{SQLQueryBuilder.select_all_sensor_ids_by_model.__name__}()'")
+
+        return to_execute

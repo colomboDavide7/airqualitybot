@@ -6,11 +6,14 @@
 #
 #################################################
 import builtins
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 SERVER_SETTINGS = "server"
 USERS_SETTINGS  = "users"
 LOGGER_SETTINGS = "logger"
+MODELS_SETTINGS = "models"
+
+AVAILABLE_MODELS = ["mobile", "station"]
 
 
 class DatabaseSettingsBuilder(builtins.object):
@@ -51,3 +54,29 @@ class DatabaseSettingsBuilder(builtins.object):
         settings["username"] = username
         settings["password"] = parsed_resources[USERS_SETTINGS][f"{username}"]
         return settings
+
+
+    @staticmethod
+    def list_models_from_type(
+        parsed_resources: Dict[str, Any],
+        sensor_type: str
+    ) -> List[str]:
+        """This method returns the list of all sensor models from sensor type.
+
+        If 'models' section is missing in resources file, SystemExit exception is raised.
+
+        If sensor_type is invalid, SystemExit exception is raised.
+        """
+
+        if parsed_resources.get(MODELS_SETTINGS, None) is None:
+            raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "
+                             f"missing '{MODELS_SETTINGS}' section in resource file in method "
+                             f"'{DatabaseSettingsBuilder.list_models_from_type.__name__}()'.")
+
+        if sensor_type not in parsed_resources[MODELS_SETTINGS].keys():
+            raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "
+                             f"don't recognize sensor type '{sensor_type}' from resource file in method "
+                             f"'{DatabaseSettingsBuilder.list_models_from_type.__name__}()'.")
+
+        return parsed_resources[MODELS_SETTINGS][f"{sensor_type}"]
+

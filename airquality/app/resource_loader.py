@@ -122,6 +122,10 @@ class ResourceLoader(builtins.object):
         return dbfactory.create_connection(settings)
 
 
+    def sensor_models(self, sensor_type: str):
+        return DatabaseSettingsBuilder.list_models_from_type(self.__resources, sensor_type)
+
+
     def __str__(self):
         return f"{ResourceLoader.__name__}: " \
                f"\'path\'={self.__path}"

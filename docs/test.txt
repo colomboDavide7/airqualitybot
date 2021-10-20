@@ -2,6 +2,7 @@ python -m tests.app.test_resource_loader
 python -m tests.app.test_session
 python -m tests.runner.test_runner
 python -m tests.conn.test_conn
+python -m tests.conn.test_builder
 python -m tests.parser.test_parser
 python -m tests.bot.test_bot
 python -m tests.api.test_api

@@ -20,7 +20,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
         """Test SystemExit exception when bad model name is passed."""
 
         with self.assertRaises(SystemExit):
-            SQLQueryBuilder.select_all_sensor_ids_by_model("bad_model_name")
+            SQLQueryBuilder.select_all_sensor_ids_by_model(["bad_model_name"])
 
 
 
