@@ -8,33 +8,34 @@
 #################################################
 import sys
 from typing import List, Dict, Any
-
 from airquality.app.session import Session
 from airquality.app.resource_loader import ResourceLoader
 
 
 USAGE = "USAGE: python -m airquality " \
-        "[--help or -h | --debug  or -d | --log or -l]"
+        "[--help or -h | --debug  or -d | --log or -l] db_username"
 
 RESOURCES  = "properties/resources.json"
-VALID_USERNAMES = ("atmotube", "purpleair")
+
 
 def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
-    """Function that parses the command line arguments
+    """
+    Function that parses the command line arguments
 
-    If the first argument is '-h' or '--help', the function will display the
-    help for the application usage and then exit with status code 0.
+    If '-h' or '--help' is passed as first argument, the function will display
+    the usage string and then exits with status code 0.
 
-    Otherwise it cycles through the list of arguments, creates a dict
-    object that contains the only valid arguments and returns it.
+    If not username is provided, SystemExit exception is raised.
 
     Unknown or invalid arguments are ignored.
     """
+
     if args[0] in ("--help", "-h"):
         print(USAGE)
         sys.exit(0)
 
     kwargs = {}
+    is_username_set = False
 
     for arg in args:
         if arg.startswith('-'):
@@ -43,29 +44,20 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
             elif arg in ("-l", "--log"):
                 kwargs["logging"] = True
             else:
-                print(f"{parse_sys_argv.__name__}(): "
-                      f"ignore invalid argument \'{arg}\'")
+                print(f"{parse_sys_argv.__name__}: "
+                      f"ignore invalid option '{arg}'.")
         else:
-            if arg in VALID_USERNAMES:
-                if kwargs.get("username", None) is None:
-                    kwargs["username"] = arg
+            if not is_username_set:
+                kwargs["username"] = arg
+                is_username_set = True
             else:
-                print(f"{parse_sys_argv.__name__}(): "
-                      f"ignore invalid argument \'{arg}\'")
+                print(f"{parse_sys_argv.__name__}: "
+                      f"ignore invalid option '{arg}'.")
 
+    if not is_username_set:
+        raise SystemExit(f"{parse_sys_argv.__name__}: "
+                         f"missing required username for database connection.")
     return kwargs
-
-
-def check_username(session_kwargs: Dict[str, Any]) -> str:
-    """This function takes the session 'keyworded' arguments and
-    search the username.
-
-    If username does not exists, SystemExit exception is raised."""
-    usr = session_kwargs.get("username", None)
-    if usr is None:
-        raise SystemExit(f"{check_username.__name__}: invalid username '{usr}'. "
-                         f"You must choose one within {VALID_USERNAMES}.")
-    return usr
 
 
 ################################ MAIN FUNCTION ################################
@@ -78,30 +70,29 @@ def main() -> None:
     1) --help or -h:  display help on program usage (MUST BE THE FIRST)
     2) --log or -l:   turn on local logging
     3) --debug or -d: run the application in debug mode
+    4) db_username:   the username that you want to connect with to the database
     """.format(usage = USAGE)
 
     args = sys.argv[1:]
-
-    session_kwargs = {}
-    if args:
-        session_kwargs = parse_sys_argv(args)
-
-    try:
-        current_user = check_username(session_kwargs)
-    except SystemExit as syserr:
-        print(str(syserr))
+    # STEP 1 - check if args are empty and if it is, raise SystemExit
+    if not args:
+        print(USAGE)
         sys.exit(1)
 
-    # STEP 1 - create Session object
+    # STEP 2 - parse args and pop username
+    session_kwargs = parse_sys_argv(args)
+    current_user = session_kwargs.pop("username")
+
+    # STEP 3 - create Session object
     session = Session(session_kwargs)
     session.debug_msg(f"{main.__name__}(): session created successfully")
     session.debug_msg(str(session))
 
-    # STEP 2 - create Resource Loader
+    # STEP 4 - create Resource Loader
     res_loader = ResourceLoader(path = RESOURCES, session = session)
     session.debug_msg(str(res_loader))
 
-    # STEP 3 - open, read, close resource file
+    # STEP 5 - load and parse resources
     try:
         res_loader.load_resources()
         res_loader.parse_resources()
@@ -109,11 +100,11 @@ def main() -> None:
         session.debug_msg(str(ex))
         sys.exit(1)
 
+    # STEP 6 - get database connection for current user and open it
     try:
         dbconn = res_loader.database_connection(current_user)
         dbconn.open_conn()
-        session.debug_msg(f"{main.__name__}: "
-                          f"connection opened successfully.")
+        session.debug_msg(f"{main.__name__}: connection opened successfully.")
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)
@@ -126,8 +117,7 @@ def main() -> None:
 
     try:
         dbconn.close_conn()
-        session.debug_msg(f"{main.__name__}: "
-                          f"connection closed successfully.")
+        session.debug_msg(f"{main.__name__}: connection closed successfully.")
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)

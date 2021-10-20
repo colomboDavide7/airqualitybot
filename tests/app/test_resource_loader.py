@@ -74,6 +74,9 @@ class TestResourceLoader(unittest.TestCase):
     def test_system_exit_while_parsing_resources(self):
         """Test SystemExit when parsing unsupported file extension.
 
+        ParserFactory raises a TypeError that ResourceLoader catches and
+        so SystemExit is raised.
+
         ATTENTION: THIS TEST WILL FAIL IF THE FILE
         'properties/text.txt' DOES NOT EXIST
         """
@@ -89,20 +92,12 @@ class TestResourceLoader(unittest.TestCase):
             print("YOU MUST CREATE 'test.txt' file in 'properties' directory.")
             self.assertTrue(False)
 
-    def test_invalid_username_database_connection(self):
-        """Test SystemExit if username does not exist."""
-
-        self.loader.load_resources()
-        self.loader.parse_resources()
-        with self.assertRaises(SystemExit):
-            self.loader.database_connection("bad_username")
-
     def test_empty_resources_database_connection(self):
         """Test SystemExit if try to get database connection without having
         parsed the resources."""
 
         with self.assertRaises(SystemExit):
-            self.loader.database_connection("atmotube")
+            self.loader.database_connection("correct_username")
 
 
 if __name__ == '__main__':

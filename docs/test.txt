@@ -7,3 +7,4 @@ python -m tests.bot.test_bot
 python -m tests.api.test_api
 python -m tests.api.test_builder
 python -m tests.parser.test_db_resp_parser
+python -m tests.app.test_db_settings_builder

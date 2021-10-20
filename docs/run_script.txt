@@ -1,0 +1,12 @@
+###################### RUN DEBUG MODE ######################
+
+python -m airquality --debug bot_mobile_user
+python -m airquality -d bot_mobile_user
+
+python -m airquality --debug bot_station_user
+python -m airquality -d bot_station_user
+
+###################### FOR HELP ######################
+
+python -m airquality -h
+python -m airquality --help

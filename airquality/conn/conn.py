@@ -6,9 +6,9 @@
 #               and defines the ConnectionFactory and its subclasses
 #
 #################################################
+import psycopg2
 from typing import Dict, Any
 from abc import ABC, abstractmethod
-import psycopg2
 
 
 class Connection(ABC):
@@ -76,13 +76,11 @@ class DatabaseConnection(Connection):
                     self.__password = val
                     self.__set_ok |= 0b10000
                 else:
-                    print(f"{DatabaseConnection.__name__}: "
-                          f"invalid key setting '{key}' is ignored.")
+                    print(f"{DatabaseConnection.__name__}: invalid key setting '{key}' is ignored.")
 
         if self.__set_ok != 0b11111:
-            raise SystemExit(f"{DatabaseConnection.__name__}: "
-                             f"cannot instantiate a DatabaseConnection "
-                             f"object without all settings arguments.")
+            raise SystemExit(f"{DatabaseConnection.__name__}: cannot instantiate a DatabaseConnection object without "
+                             f"all settings arguments in method '{DatabaseConnection.__init__.__name__}()'.")
 
 
     def close_conn(self) -> bool:
@@ -97,9 +95,8 @@ class DatabaseConnection(Connection):
         In this way, the 'is_open()' method continues to work properly.
         """
         if not self.is_open():
-            raise SystemExit(
-                    f"{DatabaseConnection.__name__}: "
-                    f"cannot close connection that is not opened.")
+            raise SystemExit(f"{DatabaseConnection.__name__}: cannot close connection that is not opened.")
+
         self.__psycopg2_conn.close()
         self.__psycopg2_conn = None
         return True
@@ -115,8 +112,8 @@ class DatabaseConnection(Connection):
         If 'msg_str' is not a valid SQL, SystemExit exception is raised.
         """
         if not self.is_open():
-            raise SystemExit(f"{DatabaseConnection.__name__}: cannot send "
-                             f"message when connection is closed.")
+            raise SystemExit(f"{DatabaseConnection.__name__}: cannot send message when connection is closed.")
+
         try:
             cursor = self.__psycopg2_conn.cursor()
             cursor.execute(msg_str)
@@ -134,24 +131,21 @@ class DatabaseConnection(Connection):
         'psycopg2_conn' is None, otherwise a SystemExit exception is raised.
         """
         if self.is_open():
-            raise SystemExit(
-                    f"{DatabaseConnection.__name__}: "
-                    f"cannot open connection that is already opened.")
+            raise SystemExit(f"{DatabaseConnection.__name__}: cannot open connection that is already opened.")
+
         try:
-            self.__psycopg2_conn = psycopg2.connect(database = self.__dbname,
-                                                    port = self.__port,
-                                                    host = self.__hostname,
-                                                    user = self.__username,
-                                                    password = self.__password)
+            self.__psycopg2_conn = psycopg2.connect(database = self.__dbname, port = self.__port, host = self.__hostname,
+                                                    user = self.__username, password = self.__password)
         except Exception as err:
-            raise SystemExit(f"{DatabaseConnection.__name__}: "
-                             f"{str(err)}")
+            raise SystemExit(f"{DatabaseConnection.__name__}: {str(err)}")
         return True
+
 
     def is_open(self) -> bool:
         """
         Method that returns True if the psycopg2 connection object is
-        not None, otherwise False."""
+        not None, otherwise False.
+        """
         return self.__psycopg2_conn is not None
 
 
@@ -168,5 +162,5 @@ class ConnectionFactory(ABC):
 
 class DatabaseConnectionFactory(ConnectionFactory):
 
-    def create_connection(self, settings: Dict[str, Any]) -> Connection:
+    def create_connection(self, settings: Dict[str, Any]) -> DatabaseConnection:
         return DatabaseConnection(settings)

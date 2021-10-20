@@ -69,8 +69,8 @@ class BaseBot(ABC):
 
 class BotMobile(BaseBot):
     """
-    BotMobile class is a concrete subclass of BaseBot and is specialised
-    in the behaviour of mobile bot sensor.
+    This class extends 'BaseBot' class to handle the mobile sensor data
+    fetching from the API and the loading into the database.
     """
 
     def __init__(self, dbconn: DatabaseConnection):
@@ -79,8 +79,10 @@ class BotMobile(BaseBot):
         self.dbconn.open_conn()
         query = SQLQueryBuilder.select_all_sensor_ids_by_model("Atmotube Pro")
         response = self.dbconn.send(query)
-        self.__atmotube_ids = DatabaseResponseParser.parse_one_field_response(response)
-
+        self.__sensor_ids = DatabaseResponseParser.parse_one_field_response(response)
+        if not self.__sensor_ids:
+            raise SystemExit(f"{BotMobile.__name__}: ")
+        print(self.__sensor_ids)
 
 
 

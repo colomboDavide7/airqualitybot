@@ -14,17 +14,15 @@ class TestConnection(unittest.TestCase):
 
 
     def setUp(self) -> None:
-        self.settings = {"port": 5432,
-                         "dbname": "airquality",
-                         "host": "localhost",
-                         "username": "bot_mobile_user",
-                         "password": None}
+        self.settings = {"port": 5432, "dbname": "airquality", "host": "localhost",
+                         "username": "bot_mobile_user", "password": None}
         self.dbfactory = DatabaseConnectionFactory()
         self.dbconn    = self.dbfactory.create_connection(self.settings)
 
     def tearDown(self) -> None:
         if self.dbconn.is_open():
             self.dbconn.close_conn()
+
 
     def test_create_database_connection(self):
         """This method tests the creation of a DatabaseConnection instance."""
