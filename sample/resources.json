@@ -1,0 +1,21 @@
+{
+  "logger": {
+    "path":   "your/log/folder/path/",
+    "level":  "your_logging_level",
+    "format": "your_format_string",
+    "mode":   "your_file_mode"
+  },
+  "server": {
+    "host":   "your_local_host",
+    "port":   123456,
+    "dbname": "your_database_name"
+  },
+  "users": {
+    "usr1": "pwd1",
+    "usr2": "pwd2"
+  },
+  "models": {
+    "mobile": ["model1", "model2", "model3"],
+    "station": ["model4", "model5"]
+  }
+}
