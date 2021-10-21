@@ -46,6 +46,9 @@ class AtmotubeAPIRequestAdapter(APIRequestAdapter):
 
         In case of request failure, SystemExit exception is raised."""
 
+        if not self.api_address:
+            raise SystemExit(f"{AtmotubeAPIRequestAdapter.__name__}: missing api address.")
+
         url = self.api_address + '?' + query_string
         try:
             response = req.urlopen(url)
