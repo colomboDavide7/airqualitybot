@@ -1,0 +1,5 @@
+
+
+THIS FILE IS USED ONLY FOR TESTING PURPOSES
+
+Please, drag and drop it or copy and paste it in the 'properties' folder

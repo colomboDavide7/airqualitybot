@@ -1,0 +1,65 @@
+############################# RESOURCE FILE SET UP #############################
+
+This file explains you, the user, how to set up the 'properties/resources.json' file
+
+If you haven't read yet the 'docs/instructions.txt', read it first
+
+The 'properties/resources.json' file purpose, is to contain all the resources
+needed to the program for connecting to the database and other machine/user
+dependent data used in the application, such as the logger set up.
+
+You can find a structure of the 'properties/resources.json' in the 'sample'
+directory that you can copy and paste into the 'properties' directory and fill in
+with your data.
+
+The 'properties/resources.json' has four JSON object:
+
+    - logger: contains logger settings
+    - server: contains server settings
+    - users:  contains database's users credential
+    - models: contains sensor models
+
+############################# LOGGER #############################
+
+The logger object is actually not used yet, but is still implemented for some
+future release.
+
+You have to put inside:
+
+    - path:     path to your log directory
+    - level:    default logging level ( see: https://docs.python.org/3/library/logging.html#logging-levels )
+    - format:   logger format string ( see: https://docs.python.org/3/library/logging.html#formatter-objects )
+    - mode:     the mode in which the file is opened ("a": append, "w": write)
+
+############################# SERVER #############################
+
+The server object defines the basic server information for connecting to the
+database. The application relies on 'psycopg2' module for connecting to the
+database (see: https://pypi.org/project/psycopg2/ )
+
+You have to put inside:
+
+    - host:     the server host name
+    - port:     the port number through which opening server connection
+    - dbname:   tha name of the database on the server you want to connect
+
+############################# USERS #############################
+
+The users object defines the 'username: password' attributes for all the users
+you want to connect. This is the list of all valid users. If you try to run the
+application with some username that is not in this list, the run will fail.
+
+See 'sample/resources.json' for example.
+
+############################# MODELS #############################
+
+The models object defines the sensor models that can be found in the database
+so that the application knows the valid models without hard coding in the code.
+
+Sensor models are divided into:
+
+    - mobile:   list of all the mobile (portable) sensor models
+    - station:  list of all the fixed (station) sensor models
+
+
+Please, look at the 'sample/resources.json' file for a practical example

@@ -45,8 +45,7 @@ python -m tests.app.test_db_settings_builder
 
 ###################### RUN ALL TESTS ######################
 
-
-
+python -m unittest discover -s test -p 'test_*.py'
 
 
 

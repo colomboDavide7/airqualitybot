@@ -1,41 +1,16 @@
--- IN QUESTO FILE TROVERAI LE ISTRUZIONI PER ESEGUIRE CORRETTAMENTE IL CODICE --
+############################# GENERAL INSTRUCTIONS #############################
 
+Follow the instructions in this file to set up properly the project.
 
-############################# PROPERTIES #############################
+1 - create a directory called 'properties' at project folder level
+    (at the same level of 'test', 'docs', 'sample' and 'airquality' directories)
 
+2 - create a resource file called 'resources.json' and put it into the 'properties' folder
+    (read 'resources_setup.txt' file for knowing how to structure this file)
 
-1 - creare la directory 'properties'
+3 - create a test file called 'test.txt' and put it into the 'properties' folder
+    (this is used only for test purposes, leave it empty)
 
-	-- questa directory conterra' tutti i file di configurazione
-	-- necessari al funzionamento del programma.
+4 - read 'docs/run.txt' for running the project
 
-2 - creare il file 'apiAtmoTube.properties' sulla falsariga 
-  - del file 'sample_apiAtmoTube.properties'. Inserire il file
-  - 'apiAtmoTube.properties' nella directory /properties
-
-3 - creare il file 'logger.properties' sulla falsariga
-  - del file 'sample_logger.properties'. Inserire il file
-  - 'logger.properties' nella directory /properties
-
-
-############################# LOG #############################
-
-
-1 - creare la directory 'log'
-	
-	-- questa directory conterra' tutti i file di log
-	-- utilizzati nel programma.
-
-2 - creare il file 'errors.log'
-
-	-- questo file contiene tutti i messaggi di log
-	-- inerenti agli errori durante il funzionamento
-	-- del programma.
-
-
-
-
-
-
-
-
+5 - read 'docs/test.txt' for running all the tests
