@@ -6,9 +6,10 @@
 #
 #################################################
 import builtins
-from abc import ABC
+from abc import ABC, abstractmethod
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import ConnectionAdapter
+from airquality.api.api_request_adapter import APIRequestAdapter
 
 
 class BaseBot(ABC):
@@ -17,6 +18,7 @@ class BaseBot(ABC):
     def __init__(self):
         self.__sql_builder = None
         self.__dbconn = None
+        self.__api_adapter = None
 
     @property
     def sqlbuilder(self):
@@ -34,11 +36,26 @@ class BaseBot(ABC):
     def dbconn(self, value: ConnectionAdapter):
         self.__dbconn = value
 
+    @property
+    def apiadapter(self):
+        return self.__api_adapter
+
+    @apiadapter.setter
+    def apiadapter(self, value: APIRequestAdapter):
+        self.__api_adapter = value
+
+    @abstractmethod
+    def run(self):
+        pass
+
 
 class BotAtmotube(BaseBot):
 
     def __init__(self):
         super().__init__()
+
+    def run(self):
+        pass
 
 
 

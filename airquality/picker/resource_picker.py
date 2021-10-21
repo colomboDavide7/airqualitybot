@@ -12,6 +12,7 @@ from typing import Dict, Any, List
 LOGGER_SECTION = "logger"
 SERVER_SECTION = "server"
 PERSONALITY_SECTION  = "personality"
+API_ADDRESS_SECTION = "api_address"
 
 
 class ResourcePicker(builtins.object):
@@ -48,3 +49,9 @@ class ResourcePicker(builtins.object):
         settings["username"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["username"]
         settings["password"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["password"]
         return settings
+
+    @staticmethod
+    def pick_api_address_from_number(parsed_resources: Dict[str, Any], bot_personality: str, api_address_number: str) -> str:
+
+        return parsed_resources[API_ADDRESS_SECTION][f"{bot_personality}"][f"{api_address_number}"]
+

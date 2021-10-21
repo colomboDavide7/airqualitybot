@@ -14,6 +14,7 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
+from airquality.api.api_request_adapter import APIRequestAdapterFactory
 
 
 USAGE = "USAGE: python -m airquality " \
@@ -42,6 +43,7 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
 
     kwargs = {}
     is_personality_set = False
+    is_api_address_number_set = False
 
     for arg in args:
         if arg.startswith('-'):
@@ -50,19 +52,23 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
             elif arg in ("-l", "--log"):
                 kwargs["logging"] = True
             else:
-                print(f"{parse_sys_argv.__name__}: "
-                      f"ignore invalid option '{arg}'.")
+                print(f"{parse_sys_argv.__name__}: ignore invalid option '{arg}'.")
         else:
-            if not is_personality_set:
+            if not is_personality_set and arg in VALID_PERSONALITY:
                 kwargs["personality"] = arg
                 is_personality_set = True
+            elif not is_api_address_number_set and arg.isdigit():
+                kwargs["api_address_number"] = arg
+                is_api_address_number_set = True
             else:
-                print(f"{parse_sys_argv.__name__}: "
-                      f"ignore invalid option '{arg}'.")
+                print(f"{parse_sys_argv.__name__}: ignore invalid option '{arg}'.")
 
     if not is_personality_set:
-        raise SystemExit(f"{parse_sys_argv.__name__}: "
-                         f"missing required bot personality for database connection.")
+        raise SystemExit(f"{parse_sys_argv.__name__}(): missing required bot personality.")
+
+    if not is_api_address_number_set:
+        raise SystemExit(f"{parse_sys_argv.__name__}(): missing required api address number.")
+
     return kwargs
 
 
@@ -77,6 +83,7 @@ def main() -> None:
     2) --log or -l:   turn on local logging
     3) --debug or -d: run the application in debug mode
     4) personality:   the bot personality for connecting to APIs and database
+    5) api address number: the api address number from the 'api_address' section in the resource file
     """.format(usage = USAGE)
 
     args = sys.argv[1:]
@@ -86,10 +93,7 @@ def main() -> None:
 
     session_kwargs = parse_sys_argv(args)
     bot_personality = session_kwargs.pop("personality")
-
-    if bot_personality not in VALID_PERSONALITY:
-        print(f"{main.__name__}(): invalid personality. Choose one within {VALID_PERSONALITY}.")
-        sys.exit(1)
+    api_address_number = session_kwargs.pop("api_address_number")
 
     session = Session(session_kwargs)
     print(str(session))
@@ -98,30 +102,53 @@ def main() -> None:
     try:
         raw_resources = IOManager.open_read_close_file(path = RESOURCES)
         session.debug_msg(f"{main.__name__}(): try to read resource file at '{RESOURCES}': OK")
-
+        
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = RESOURCES.split('.')[-1])
         parsed_resources = parser.parse(raw_resources)
         session.debug_msg(f"{main.__name__}(): try to parse raw resources: OK")
 
+        # GET DATABASE CONNECTION PROPERTIES FROM BOT PERSONALITY
         properties = ResourcePicker.pick_db_conn_properties_from_personality(
                 parsed_resources = parsed_resources,
                 bot_personality = bot_personality
         )
         session.debug_msg(f"{main.__name__}(): try to pick database connection properties: OK")
 
+        # GET API ADDRESS FROM BOT PERSONALITY AND API ADDRESS NUMBER
+        api_address = ResourcePicker.pick_api_address_from_number(
+                parsed_resources = parsed_resources,
+                bot_personality = bot_personality,
+                api_address_number = api_address_number
+        )
+        session.debug_msg(f"{main.__name__}(): try to pick api address for personality '{bot_personality}' "
+                          f"with number '{api_address_number}': OK")
+
+        # CREATE DATABASE ADAPTER
         db_conn_factory = Psycopg2ConnectionAdapterFactory()
         dbconn = db_conn_factory.create_database_connection_adapter(properties)
         session.debug_msg(f"{main.__name__}(): try to instantiate psycopg2 connection adapter: OK")
 
+        # CREATE QUERY BUILDER
         query_builder = SQLQueryBuilder(query_file_path = QUERIES)
         session.debug_msg(f"{main.__name__}(): try to instantiate sql query builder: OK")
 
+        # GET API ADAPTER
+        api_adapter = APIRequestAdapterFactory.create_api_request_adapter(bot_personality = bot_personality)
+        session.debug_msg(f"{main.__name__}(): try to instantiate api adapter from personality '{bot_personality}': OK")
+
+        # SET API ADDRESS TO API ADAPTER
+        api_adapter.api_address = api_address
+        session.debug_msg(f"{main.__name__}(): set api address to api adapter: OK")
+
+        # CREATE BOT FROM BOT PERSONALITY
         bot = BotFactory.create_bot_from_personality(bot_personality = bot_personality)
         session.debug_msg(f"{main.__name__}(): try to instantiate bot from personality '{bot_personality}': OK")
 
+        # SET QUERY BUILDER TO BOT
         bot.sqlbuilder = query_builder
         session.debug_msg(f"{main.__name__}(): try to set query builder to bot: OK")
 
+        # SET DATABASE ADAPTER TO BOT
         bot.dbconn = dbconn
         session.debug_msg(f"{main.__name__}(): try to set database connection adapter to bot: OK")
 

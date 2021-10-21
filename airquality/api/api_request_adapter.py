@@ -5,7 +5,7 @@
 # @Description: this script defines the classes for connecting to the sensor's APIs and fetching the data.
 #
 #################################################
-
+import builtins
 from abc import ABC, abstractmethod
 import urllib.request as req
 
@@ -15,12 +15,16 @@ class APIRequestAdapter(ABC):
 
     The __init__() method takes only the API address as argument."""
 
-    def __init__(self, api_address: str):
-        self.__api_address = api_address
+    def __init__(self):
+        self.__api_address = None
 
     @property
     def api_address(self):
         return self.__api_address
+
+    @api_address.setter
+    def api_address(self, value: str):
+        self.__api_address = value
 
     @abstractmethod
     def fetch(self, query_string: str) -> str:
@@ -30,6 +34,10 @@ class APIRequestAdapter(ABC):
 
 class AtmotubeAPIRequestAdapter(APIRequestAdapter):
     """Class that wraps the Atmotube API request."""
+
+
+    def __init__(self):
+        super().__init__()
 
 
     def fetch(self, query_string: str) -> str:
@@ -49,17 +57,16 @@ class AtmotubeAPIRequestAdapter(APIRequestAdapter):
 
 
 ################################ FACTORY ################################
-class APIRequestAdapterFactory(ABC):
+class APIRequestAdapterFactory(builtins.object):
     """Factory abstract base class for API request adapter objects."""
 
-    @abstractmethod
-    def create_api_request_adapter(self, api_address: str) -> APIRequestAdapter:
-        """Abstract method for creating API request adapter objects."""
-        pass
+    @staticmethod
+    def create_api_request_adapter(bot_personality: str) -> APIRequestAdapter:
 
-class AtmotubeAPIRequestAdapterFactory(APIRequestAdapterFactory):
-    """Factory concrete class specific for creating atmotube API request adapters."""
+        if bot_personality == "atmotube":
+            return AtmotubeAPIRequestAdapter()
+        else:
+            raise SystemExit(f"{APIRequestAdapterFactory.__name__}: invalid bot personality {bot_personality}.")
 
-    def create_api_request_adapter(self, api_address: str) -> AtmotubeAPIRequestAdapter:
-        """Return AtmotubeAPIRequestAdapter instance."""
-        return AtmotubeAPIRequestAdapter(api_address)
+
+

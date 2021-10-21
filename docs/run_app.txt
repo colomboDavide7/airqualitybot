@@ -20,24 +20,25 @@ and stops because it assumes you don't know how to run the program.
 
 ###################### MANDATED ARGUMENTS ######################
 
-You must pass the program a valid 'personality' as argument, otherwise the
-program prompt an error.
+You must pass to the program:
 
-With 'valid' is intended one between the 'personality' section defined in
-the 'sample/resources.json'.
+    - personality:          used to identify which bot run
+    - api address number:   used to identify which API connects to
 
-Please, read the 'docs/resources_setup.txt' for more information about 'personality'
-section.
+A valid 'personality' is one within the 'personality' section defined in the 'sample/resources.json'.
+A valid 'api address number' is one within the 'api_address' section define in the 'sample/resources.json'.
+
+Please, read the 'docs/resources_setup.txt' for more information about 'personality' section.
 
 ###################### VALID COMMAND EXAMPLES ######################
 
-python -m airquality bot_personality
-python -m airquality --debug bot_personality
-python -m airquality --log -d bot_personality
+python -m airquality personality api_address_number
+python -m airquality --debug personality api_address_number
+python -m airquality --log -d personality api_address_number
 python -m airquality --help
 
 ###################### INVALID COMMAND EXAMPLES ######################
 
-python -m airquality --debug
-python -m airquality --log -d
-python -m airquality
+python -m airquality --debug personality
+python -m airquality --log -d api_address_number
+python -m airquality api_address_number

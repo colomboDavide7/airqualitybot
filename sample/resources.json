@@ -13,5 +13,9 @@
   "personality": {
     "atmotube":  { "username": "usr1", "password": "pwd1"},
     "purpleair": { "username": "usr2", "password": "pwd2"}
+  },
+  "api_address": {
+    "atmotube":  {"1": "api_address_1", "2": "api_address_2"},
+    "purpleair": {"1": "api_address_1", "2": "api_address_2"}
   }
 }
