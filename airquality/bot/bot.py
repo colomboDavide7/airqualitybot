@@ -52,8 +52,7 @@ class BotMobile(BaseBot):
         query = self.sqlbuilder.select_mobile_sensor_ids(self.__models)
         response = self.dbconn.send(query)
         sensor_ids = DatabaseResponseParser.parse_one_field_response(response)
-
         if not sensor_ids:
-            raise SystemExit(f"{BotMobile.__name__}: sensor id list is empty in '{BotMobile.__init__.__name__}()' method.")
-
+            raise SystemExit(f"{BotMobile.__name__}: sensor id list is empty in method '{BotMobile.__init__.__name__}()'. "
+                             f"Please, check models in your 'properties/resources.json' file.")
         self.__sensor_ids = sensor_ids

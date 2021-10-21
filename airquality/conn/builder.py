@@ -50,14 +50,14 @@ class SQLQueryBuilder(builtins.object):
         query_id = "mobile_sensor_ids"
 
         if not models:
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: empty 'mobile' model list in "
+            raise SystemExit(f"{SQLQueryBuilder.__name__}: empty 'mobile' model list in method "
                              f"'{SQLQueryBuilder.select_mobile_sensor_ids.__name__}()'. "
-                             f"Please check your resource file.")
+                             f"Please check your 'properties/resources.json' file.")
 
         if query_id not in self.__parsed.keys():
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in "
+            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
                              f"'{SQLQueryBuilder.select_mobile_sensor_ids.__name__}()'. "
-                             f"Please check your 'sql_query.json' file.")
+                             f"Please check your 'properties/sql_query.json' file.")
 
         query = ""
         for model in models:

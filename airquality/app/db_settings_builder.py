@@ -46,8 +46,9 @@ class DatabaseSettingsBuilder(builtins.object):
 
         if username not in parsed_resources[USERS_SETTINGS].keys():
             raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "
-                             f"don't recognize username '{username}' from resource file in method "
-                             f"'{DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user.__name__}()'.")
+                             f"don't recognize username '{username}' in method "
+                             f"'{DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user.__name__}()'."
+                             f"Check your 'properties/resources.json' file.")
 
 
         settings = parsed_resources[SERVER_SETTINGS].copy()
@@ -75,8 +76,9 @@ class DatabaseSettingsBuilder(builtins.object):
 
         if sensor_type not in parsed_resources[MODELS_SETTINGS].keys():
             raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "
-                             f"don't recognize sensor type '{sensor_type}' from resource file in method "
-                             f"'{DatabaseSettingsBuilder.list_models_from_type.__name__}()'.")
+                             f"don't recognize sensor type '{sensor_type}' in method "
+                             f"'{DatabaseSettingsBuilder.list_models_from_type.__name__}()'."
+                             f"Check your 'properties/resources.json' file.")
 
         return parsed_resources[MODELS_SETTINGS][f"{sensor_type}"]
 
