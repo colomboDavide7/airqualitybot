@@ -7,14 +7,23 @@
 #################################################
 
 import unittest
+import json
 from airquality.api.api import AtmotubeAPIRequest, AtmotubeAPIRequestFactory
 
 
 class TestAPI(unittest.TestCase):
 
+    parsed = None
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        with open("properties/api_param.json", "r") as api_file:
+            data = api_file.read()
+            cls.parsed = json.loads(data)
+
     def setUp(self) -> None:
         self.api_address = "https://api.atmotube.com/api/v1/data"
-        self.query_string = "api_key=8d2faf68-ed6a-4964-89bd-f0a94c047181&mac=ee:6e:82:c4:a0:58&offset=0&order=desc&date=2021-10-11"
+        self.query_string = f"api_key={TestAPI.parsed['api_key']}&mac={TestAPI.parsed['mac']}&offset=0&order=desc&date=2021-10-11"
         self.bad_api_address = "bad_address"
         self.atmo_api_factory = AtmotubeAPIRequestFactory()
 
