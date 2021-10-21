@@ -19,25 +19,25 @@ class TestSession(unittest.TestCase):
         # TEST 1 - test with all possible arguments
         test_args = {"debug": True, "logging": True}
         session = Session(test_args)
-        self.assertTrue(session.is_debug_active())
-        self.assertTrue(session.is_logging_active())
+        self.assertTrue(session.debug)
+        self.assertTrue(session.logging)
 
         # TEST 2 - test with no arguments
         test_args = {}
         session = Session(test_args)
-        self.assertFalse(session.is_debug_active())
-        self.assertFalse(session.is_logging_active())
+        self.assertFalse(session.debug)
+        self.assertFalse(session.logging)
 
         # TEST 3 - test with single argument
         test_args = {"debug": True}
         session = Session(test_args)
-        self.assertTrue(session.is_debug_active())
-        self.assertFalse(session.is_logging_active())
+        self.assertTrue(session.debug)
+        self.assertFalse(session.logging)
 
         test_args = {"logging": True}
         session = Session(test_args)
-        self.assertFalse(session.is_debug_active())
-        self.assertTrue(session.is_logging_active())
+        self.assertFalse(session.debug)
+        self.assertTrue(session.logging)
 
 
     def test_debug_message(self):

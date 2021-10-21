@@ -12,9 +12,9 @@ import urllib.request as req
 
 
 class APIRequestAdapter(ABC):
-    """Abstract Base Class for the APIRequest.
+    """Abstract Base Class for making API requests/fetching data from api.
 
-    The __init__() method takes only the api address as argument."""
+    The __init__() method takes only the API address as argument."""
 
     def __init__(self, api_address: str):
         self.__api_address = api_address
@@ -29,22 +29,20 @@ class APIRequestAdapter(ABC):
         Abstract method that defines the common interface through which
         a subclass can fetch data from API.
 
-        Returns the response string from the server."""
+        Return the response string from the API."""
         pass
 
 
 class AtmotubeAPIRequestAdapter(APIRequestAdapter):
-    """Class that wraps the Atmotube API requests behaviour."""
+    """Class that wraps the Atmotube API request."""
 
 
     def fetch(self, query_string: str) -> str:
         """
-        This method takes the URL query string as argument and concat it
-        with the 'api_address' instance variable for building a valid URL.
+        This method takes the URL query string as argument and concatenate it
+        with the 'api_address' instance variable: the result if a valid URL.
 
-        Then, it tries to open the URL.
-
-        If any Exception will occur, SystemExit exception is raised."""
+        In case of failure of the request, SystemExit exception is raised."""
 
         url = self.api_address + '?' + query_string
         try:
@@ -56,24 +54,18 @@ class AtmotubeAPIRequestAdapter(APIRequestAdapter):
         return response
 
 
-
-
 ################################ FACTORY ################################
 class APIRequestAdapterFactory(ABC):
-    """
-    Abstract Base Class that defines the interface for all the concrete
-    API Request Factory subclasses."""
+    """Factory abstract base class for API request adapter objects."""
 
     @abstractmethod
-    def create_request(self, api_address: str) -> APIRequestAdapter:
-        """Abstract method for creating the api request object."""
+    def create_api_request_adapter(self, api_address: str) -> APIRequestAdapter:
+        """Abstract method for creating API request adapter objects."""
         pass
 
 class AtmotubeAPIRequestAdapterFactory(APIRequestAdapterFactory):
-    """
-    Factory class specific for creating the Atmotube API Request instances.
-    """
+    """Factory concrete class specific for creating atmotube API request adapters."""
 
-    def create_request(self, api_address: str) -> AtmotubeAPIRequestAdapter:
-        """Create Atmotube API Request instance."""
+    def create_api_request_adapter(self, api_address: str) -> AtmotubeAPIRequestAdapter:
+        """Return AtmotubeAPIRequestAdapter instance."""
         return AtmotubeAPIRequestAdapter(api_address)

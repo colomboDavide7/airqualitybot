@@ -13,7 +13,7 @@ from airquality.bot.bot import BotMobile
 from airquality.app.session import Session
 from airquality.parser.file_parser import FileParserFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
-from airquality.database.db_settings_builder import DatabaseSettingsBuilder
+from airquality.picker.resource_picker import ResourcePicker
 from airquality.database.db_conn_adapter import DatabaseConnectionAdapterFactory
 
 
@@ -105,7 +105,7 @@ def main() -> None:
 
         # STEP 6 - create database connection interface
         dbconn_factory = DatabaseConnectionAdapterFactory()
-        settings = DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user(
+        settings = ResourcePicker.pick_db_conn_properties_from_user(
                 parsed_resources = parsed_resources,
                 username = current_user
         )
@@ -118,7 +118,7 @@ def main() -> None:
         session.debug_msg(f"{main.__name__}(): try to instantiate sql query builder: OK")
 
         if current_user == 'bot_mobile_user':
-            models = DatabaseSettingsBuilder.list_models_from_type(
+            models = ResourcePicker.pick_sensor_models_from_sensor_type(
                     parsed_resources = parsed_resources,
                     sensor_type = "mobile"
             )

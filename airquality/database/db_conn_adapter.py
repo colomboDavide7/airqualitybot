@@ -37,17 +37,15 @@ class ConnectionAdapter(ABC):
 
 
 class Psycopg2ConnectionAdapter(ConnectionAdapter):
-    """
-    DatabaseConnection class is a wrapper class for psycopg2 connection
-    object.
+    """This class is a wrapper for psycopg2 database connection object.
 
     -port:      port number
     -dbname:    database name
     -hostname:  host name
     -username:  a valid username for database connection
     -password:  if any, the valid password for the username
-    -set_ok:    binary number with 5 digits that is used for checking settings
-    """
+    -set_ok:    binary number with 5 digits that is used for checking settings"""
+
     def __init__(self,
                  settings: Dict[str, Any]):
         self.__port = None
@@ -83,40 +81,41 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
                              f"all settings arguments in method '{Psycopg2ConnectionAdapter.__init__.__name__}()'.")
 
 
-    def close_conn(self) -> bool:
-        """
-        This method closes the connection with the postgreSQL database
-        if the connection object is not None (open connection),
-        otherwise a SystemExit exception is raised.
+    def open_conn(self) -> bool:
+        """This method create a new psycopg2 connection object.
 
-        If the connection is successfully closed, the reference to the
-        'psycopg2_conn' instance variable is reset to None.
+        If connection is already opened, SystemExit exception is raised."""
 
-        In this way, the 'is_open()' method continues to work properly.
-        """
-        if not self.is_open():
-            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot close connection that is not opened.")
+        if self.is_open():
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot open connection that is already opened.")
 
-        self.__psycopg2_conn.close()
-        self.__psycopg2_conn = None
+        try:
+            self.__psycopg2_conn = psycopg2.connect(
+                    database = self.__dbname,
+                    port = self.__port,
+                    host = self.__hostname,
+                    user = self.__username,
+                    password = self.__password
+            )
+        except Exception as err:
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: {str(err)}")
         return True
 
 
-    def send(self, msg_str: str):
-        """
-        This method assumes that the 'msg_str' is a SQL string
-        and execute it on the database through the connection.
+    def send(self, executable_sql_query: str):
+        """This takes an executable SQL query string as argument and asks the
+        psycopg2 cursor to execute it.
 
         If connection is closed, SystemExit exception is raised.
 
-        If 'msg_str' is not a valid SQL, SystemExit exception is raised.
-        """
+        If the argument string is not a valid SQL query, SystemExit exception is raised."""
+
         if not self.is_open():
             raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot send message when connection is closed.")
 
         try:
             cursor = self.__psycopg2_conn.cursor()
-            cursor.execute(msg_str)
+            cursor.execute(executable_sql_query)
             self.__psycopg2_conn.commit()
             response = cursor.fetchall()
         except Exception as err:
@@ -124,20 +123,17 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
             raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: {str(err)}")
         return response
 
+    def close_conn(self) -> bool:
+        """This method closes the connection to the database.
 
-    def open_conn(self) -> bool:
-        """
-        This method create a new psycopg2 connection object if variable
-        'psycopg2_conn' is None, otherwise a SystemExit exception is raised.
-        """
-        if self.is_open():
-            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot open connection that is already opened.")
+        If connection is not open, SystemExit exception is raised."""
 
-        try:
-            self.__psycopg2_conn = psycopg2.connect(database = self.__dbname, port = self.__port, host = self.__hostname,
-                                                    user = self.__username, password = self.__password)
-        except Exception as err:
-            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: {str(err)}")
+        if not self.is_open():
+            raise SystemExit(
+                f"{Psycopg2ConnectionAdapter.__name__}: cannot close connection that is not opened.")
+
+        self.__psycopg2_conn.close()
+        self.__psycopg2_conn = None
         return True
 
 

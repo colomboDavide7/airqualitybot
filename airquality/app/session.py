@@ -12,17 +12,13 @@ from typing import Dict, Any
 class Session(builtins.object):
     """Session class represents the current session state of the application.
 
-    - debug:    if True, print debug message on the command line
+    - debug:    if True, print debug messages on the command line
     - logging:  if True, log event locally
     """
 
     DEBUG_HEADER = "[DEBUG]: "
 
     def __init__(self, settings: Dict[str, Any]):
-        """
-        __init__ method unpack the command line option-arguments
-        passed in the form of a dictionary and sets the proper values.
-        """
         self.__debug    = False
         self.__logging  = False
 
@@ -33,29 +29,21 @@ class Session(builtins.object):
                 elif key == 'logging':
                     self.__logging = True
 
+    @property
+    def debug(self):
+        return self.__debug
+
+    @property
+    def logging(self):
+        return self.__logging
+
     def debug_msg(self, msg: str) -> bool:
-        """
-        This method print to the console the debug header followed by
-        the debug message passed as argument if debug mode is active.
-        """
+        """This method print to the console the debug header followed by
+        the debug message passed as argument if debug mode is active."""
         if self.__debug:
             print(Session.DEBUG_HEADER + msg)
             return True
         return False
 
-    def is_debug_active(self) -> bool:
-        """
-        return True if debug mode is active
-        """
-        return self.__debug
-
-    def is_logging_active(self) -> bool:
-        """
-        return True if logging on the local file system is active
-        """
-        return self.__logging
-
     def __str__(self):
-        return f"{Session.__name__}: " \
-               f"\'debug\'={self.__debug}, " \
-               f"\'logging\'={self.__logging}"
+        return f"{Session.__name__}: 'debug'={self.__debug}, 'logging'={self.__logging}"
