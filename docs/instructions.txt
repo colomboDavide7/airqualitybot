@@ -8,9 +8,12 @@ Follow the instructions in this file to set up properly the project.
 2 - create a resource file called 'resources.json' and put it into the 'properties' folder
     (read 'resources_setup.txt' file for knowing how to structure this file)
 
-3 - create a test file called 'test.txt' and put it into the 'properties' folder
+3 - create query file called 'sql_query.json' and put it into the 'properties' folder
+    (read 'sql_query_setup.txt' file for knowing how to structure this file)
+
+4 - create a test file called 'test.txt' and put it into the 'properties' folder
     (this is used only for test purposes, leave it empty)
 
-4 - read 'docs/run_app.txt' for running the project
+5 - read 'docs/run_app.txt' for running the project
 
-5 - read 'docs/run_test.txt' for running all the tests
+6 - read 'docs/run_test.txt' for running all the tests

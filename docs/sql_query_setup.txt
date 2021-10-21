@@ -1,0 +1,19 @@
+############################# SQL QUERY FILE SET UP #############################
+
+This file defines the structure of the 'properties/sql_query.json' file.
+
+The 'properties/sql_query.json' file contains the queries to run on the
+database in the form of 'identifier': 'query'.
+
+The queries are built dynamically by a query builder based on
+a 'query_id' variable specific for every method.
+
+Be careful to use the same 'identifier' as those provided in the
+'sample/sql_query.json' file, otherwise the query builder cannot build queries.
+
+The 'properties/sql_query.json' file defines:
+
+    - mobile_sensor_ids: query for getting mobile sensor ids
+
+
+Please, see 'sample/sql_query.json' for practical examples.
