@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 16:40
-# @Description: This script contains the unit test for testing ResourcePicker.
+# @Description: unit test script
 #
 #################################################
 
@@ -22,14 +22,14 @@ class TestResourcePicker(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
     def test_system_exit_when_missing_server_section(self):
-        """Test SystemExit when 'server' section is not present in 'properties/resources.json'."""
+        """Test SystemExit when 'server' section is missing from 'properties/resources.json'."""
 
         parsed_res = {"users": {}}
         with self.assertRaises(SystemExit):
             ResourcePicker.pick_db_conn_properties_from_user(parsed_res, "usr1")
 
     def test_system_exit_when_missing_users_section(self):
-        """Test SystemExit when 'users' section is not present in 'properties/resources.json'"""
+        """Test SystemExit when 'users' section is missing from 'properties/resources.json'"""
 
         parsed_res = {"servers": {}}
         with self.assertRaises(SystemExit):
@@ -46,7 +46,7 @@ class TestResourcePicker(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
     def test_system_exit_when_missing_models_section(self):
-        """Test SystemExit when models section is missing in 'properties/resources.json'."""
+        """Test SystemExit when models section is missing from 'properties/resources.json'."""
 
         parsed_res = {"server": {"key1": "val1", "key2": "val2"},
                       "users": {"usr1": "pwd1", "usr2": "pwd2"}}

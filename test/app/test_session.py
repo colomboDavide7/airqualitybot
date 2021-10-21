@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: lun, 18-10-2021, 18:20
-# @Description: test file for the Session class behaviour
+# @Description: unit test script
 #
 #################################################
 

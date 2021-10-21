@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mar, 19-10-2021, 12:34
-# @Description: This script is used for testing database class behaviour
+# @Description: unit test script
 #
 #################################################
 

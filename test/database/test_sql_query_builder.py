@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 10:32
-# @Description: This script defines the test for the SQLQueryBuilder class
+# @Description: unit test script
 #
 #################################################
 

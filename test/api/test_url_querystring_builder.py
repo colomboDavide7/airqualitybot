@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 09:52
-# @Description: This script contains all the test of the 'api.builder' module
+# @Description: unit test script
 #
 #################################################
 

@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: lun, 18-10-2021, 12:49
-# @Description: The unit test file for the 'airquality/runner.py' script
+# @Description: unit test script
 #
 #################################################
 import unittest
@@ -10,10 +10,10 @@ from airquality.runner import parse_sys_argv
 
 
 class TestRunner(unittest.TestCase):
-    """Class for testing the behaviour of the airquality.runner.py module."""
+
 
     def test_parse_sys_argv(self):
-        """Check the correct parsing of sys argv parameters"""
+        """Test the correct parsing of sys argv parameters"""
 
         test_args = ['-d', '--ciao', 'usr', "ignored", "another_ignored"]
         expected_output = {"debug": True, "username": "usr"}
@@ -31,12 +31,7 @@ class TestRunner(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
     def test_exit_on_help(self):
-        """Test whether the python interpreter exits when '-h' or
-        '--help' is the first argument.
-
-        Even with missing 'username' argument but with help option
-        it executes correctly.
-        """
+        """Test whether the python interpreter exits when '-h' or '--help' is the first argument."""
 
         test_args = ["-h", "--debug", "--log"]
         with self.assertRaises(SystemExit):

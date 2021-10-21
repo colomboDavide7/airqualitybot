@@ -14,9 +14,7 @@ class IOManager(builtins.object):
 
     @staticmethod
     def open_read_close_file(path: str) -> str:
-        """
-        Static method that opens, read and closes the file found at 'path' string.
-        """
+        """Static method that opens, read and closes the file found at 'path' string."""
 
         f = None
         try:

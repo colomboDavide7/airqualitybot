@@ -2,8 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 10:29
-# @Description: This script contains a class that defines methods for getting
-#               queries
+# @Description: This script contains a class that defines methods for dynamically building valid sql queries
 #
 #################################################
 import builtins
@@ -13,19 +12,10 @@ from airquality.parser.file_parser import FileParserFactory
 
 
 class SQLQueryBuilder(builtins.object):
-    """
-    Class that builds dynamically the sql query to be sent through the database
-    connection adapter to the database.
+    """Class that builds dynamically the sql query to be sent to the database.
 
-    The __init__() method take the 'query_file_path' argument that defines where
-    it is located the query file.
+    The __init__() method takes the path to the query file."""
 
-    During initialization, it is asked the IOManager to read the content of the file.
-    Then the ParserFactory returns the proper Parser object.
-    The parser is used to parse the file.
-    Parsed content is stored in an instance variable, so is available at any time
-    to this instance.
-    """
 
     def __init__(self, query_file_path: str):
         self.__path = query_file_path
@@ -35,13 +25,12 @@ class SQLQueryBuilder(builtins.object):
 
 
     def select_mobile_sensor_ids(self, models: List[str]) -> str:
-        """
-        This method returns a string object that contains as many queries as the
-        models passed in the list. Each query can be executed for selecting the
-        sensor ids from the database.
+        """This method returns a string that contains as many queries as the models passed in the list.
 
-        The query_id is used to identify which field to use for retrieving the sql
-        query from the parsed data for building the query."""
+        If 'models' list is empty, SystemExit exception is raised.
+
+        If 'query_id' does not match one of the sql query identifier in 'properties/sql_query.json' file,
+        SystemExit exception is raised."""
 
         query_id = "mobile_sensor_ids"
 

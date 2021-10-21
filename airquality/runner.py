@@ -2,8 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: lun, 18-10-2021, 12:29
-# @Description: This script contains the 'main()' function,
-#               i.e., the entry point for the application
+# @Description: This script contains the 'main()' function, i.e., the entry point for the application
 #
 #################################################
 import sys

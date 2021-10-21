@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 08:10
-# @Description: This script contains the test for the api_request_adapter.py module
+# @Description: unit test script
 #
 #################################################
 
