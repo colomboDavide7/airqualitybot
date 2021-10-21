@@ -30,13 +30,8 @@ class SQLQueryBuilder(builtins.object):
     def __init__(self, query_file_path: str):
         self.__path = query_file_path
         self.__raw = IOManager.open_read_close_file(self.__path)
-
-        parser = ParserFactory.make_parser_from_extension_file(
-                file_extension = query_file_path.split('.')[-1],
-                raw_content = self.__raw
-        )
-
-        self.__parsed = parser.parse()
+        parser = ParserFactory.make_parser_from_extension_file(file_extension = query_file_path.split('.')[-1])
+        self.__parsed = parser.parse(self.__raw)
 
 
     def select_mobile_sensor_ids(self, models: List[str]) -> str:

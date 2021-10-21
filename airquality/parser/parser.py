@@ -6,92 +6,55 @@
 #               abstract class and its subclasses
 #
 #################################################
-import builtins
 import json
+import builtins
 from typing import Dict, Any
-from json.decoder import JSONDecodeError
 from abc import ABC, abstractmethod
+from json.decoder import JSONDecodeError
 
 
 class Parser(ABC):
-    """Abstract Base Class for all the Parser object supported in this
-    application.
-
-    - raw: (property) 'str' object that contains the raw content
-    """
-    def __init__(self, content: str):
-        self.__raw = content
-
-    @property
-    def raw(self):
-        """
-        Need to be implemented as a @property, otherwise subclasses
-        cannot access 'raw' variable in superclass.
-        """
-        return self.__raw
-
-    @raw.setter
-    def raw(self, value):
-        """
-        This method was defined with the only purpose of raising
-        ValueError exception because 'raw' attribute cannot be set
-        from outside.
-        """
-        raise ValueError("Cannot set the raw value.")
 
     @abstractmethod
-    def parse(self) -> Dict[str, Any]:
+    def parse(self, raw_string: str) -> Dict[str, Any]:
         """
-        Abstract method that a subclass must override for defining
-        how to parse a file.
-         """
+        Abstract method that defines the common interface for parsing
+        raw string into Dict[str, Any]."""
         pass
 
 
 class JSONParser(Parser):
-    """JSONParser class defines the business rules for parsing JSON file
+    """
+    JSONParser class defines the business rules for parsing JSON file
     format."""
-    def __init__(self, content):
-        super().__init__(content)
-        self.__parsed = None
 
-    def parse(self) -> Dict[str, Any]:
-        """
-        Parse raw content if parsed is None and return the parsed content.
+    def parse(self, raw_string: str) -> Dict[str, Any]:
 
-        If the json file contains some error, a SystemExit exception is raised.
-        """
-        if self.__parsed is None:
-            try:
-                self.__parsed = json.loads(self.raw)
-            except JSONDecodeError as jerr:
-                raise SystemExit(f"{JSONParser.__name__}: "
-                                 f"error while parsing JSON. "
-                                 f"" + str(jerr))
-        return self.__parsed
+        if not raw_string:
+            raise SystemExit(f"{JSONParser.__name__}: cannot parse empty raw string.")
 
-    @property
-    def parsed(self):
-        return self.__parsed
+        try:
+            parsed = json.loads(raw_string)
+        except JSONDecodeError as jerr:
+            raise SystemExit(f"{JSONParser.__name__}: {str(jerr)}")
 
-    @parsed.setter
-    def parsed(self, value):
-        """
-        This method was defined with the only purpose of raising
-        ValueError exception because 'parsed' attribute cannot be set
-        from outside.
-        """
-        raise ValueError(f"{JSONParser.__name__} cannot set \'parsed\' "
-                         f"value manually")
+        return parsed
 
 
 class ParserFactory(builtins.object):
+    """
+    This class defines a @staticmethod for creating a Parser object given
+    the file extension.
+
+    For now, JSON is the only supported file type."""
 
     @staticmethod
-    def make_parser_from_extension_file(file_extension: str,
-                                        raw_content: str) -> Parser:
+    def make_parser_from_extension_file(file_extension: str) -> Parser:
+        """Factory method for creating Parser instances from file extension.
+
+        If invalid file extension is passed, SystemExit is raised."""
+
         if file_extension == 'json':
-            return JSONParser(raw_content)
+            return JSONParser()
         else:
-            raise TypeError(f"{ParserFactory.__name__}: "
-                            f"unsupported file extension '{file_extension}'.")
+            raise SystemExit(f"{ParserFactory.__name__}: unknown parser for file extension '{file_extension}'.")

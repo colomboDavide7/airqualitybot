@@ -8,12 +8,13 @@
 #################################################
 import sys
 from typing import List, Dict, Any
+from airquality.io.io import IOManager
 from airquality.bot.bot import BotMobile
 from airquality.app.session import Session
 from airquality.conn.builder import SQLQueryBuilder
-from airquality.app.resource_loader import ResourceLoader
-
-
+from airquality.parser.parser import ParserFactory
+from airquality.conn.conn import DatabaseConnectionAdapterFactory
+from airquality.app.db_settings_builder import DatabaseSettingsBuilder
 
 USAGE = "USAGE: python -m airquality " \
         "[--help or -h | --debug  or -d | --log or -l] db_username"
@@ -89,44 +90,41 @@ def main() -> None:
 
     # STEP 3 - create Session object
     session = Session(session_kwargs)
-    session.debug_msg(f"{main.__name__}(): session created successfully")
-    session.debug_msg(str(session))
-
-    # STEP 4 - create Resource Loader
-    res_loader = ResourceLoader(path = RESOURCES, session = session)
-    session.debug_msg(str(res_loader))
-
-    # STEP 5 - load and parse resources
-    try:
-        res_loader.load_resources()
-        res_loader.parse_resources()
-    except SystemExit as ex:
-        session.debug_msg(str(ex))
-        sys.exit(1)
-
-    # STEP 6 - create database connection interface
-    try:
-        session.debug_msg(f"{main.__name__}: get database connection")
-        dbconn = res_loader.database_connection(username = current_user)
-    except SystemExit as ex:
-        session.debug_msg(str(ex))
-        sys.exit(1)
+    print(str(session))
 
     try:
+        # STEP 4 - read resource file
+        raw_resources = IOManager.open_read_close_file(path = RESOURCES)
+        session.debug_msg(f"{main.__name__}(): try to read resource file at '{RESOURCES}': OK")
+
+        # STEP 5 - parse raw resources
+        parser = ParserFactory.make_parser_from_extension_file(file_extension = RESOURCES.split('.')[-1])
+        parsed_resources = parser.parse(raw_resources)
+        session.debug_msg(f"{main.__name__}(): try to parse raw resources: OK")
+
+        # STEP 6 - create database connection interface
+        dbconn_factory = DatabaseConnectionAdapterFactory()
+        settings = DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user(
+                parsed_resources = parsed_resources,
+                username = current_user
+        )
+        session.debug_msg(f"{main.__name__}(): try to instantiate database settings: OK")
+        dbconn = dbconn_factory.create_connection(settings)
+        session.debug_msg(f"{main.__name__}(): try to instantiate database connection adapter: OK")
+
+        # STEP 7 - create sql query builder
         query_builder = SQLQueryBuilder(query_file_path = QUERIES)
-    except SystemExit as ex:
-        session.debug_msg(str(ex))
-        sys.exit(1)
+        session.debug_msg(f"{main.__name__}(): try to instantiate sql query builder: OK")
 
-    # STEP 7 - create bot based on username
-    try:
         if current_user == 'bot_mobile_user':
-            session.debug_msg(f"{main.__name__}: get sensor models for '{current_user}' user")
-            models = res_loader.sensor_models("mobile")
+            models = DatabaseSettingsBuilder.list_models_from_type(
+                    parsed_resources = parsed_resources,
+                    sensor_type = "mobile"
+            )
             bot = BotMobile(dbconn = dbconn, query_builder = query_builder, sensor_models = models)
-            session.debug_msg(f"{main.__name__}: BotMobile created successfully")
+            session.debug_msg(f"{main.__name__}(): try to instantiate mobile bot: OK")
+
         elif current_user == 'bot_station_user':
-            models = res_loader.sensor_models("station")
             pass
 
     except SystemExit as ex:
