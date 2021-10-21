@@ -9,7 +9,7 @@
 import builtins
 from typing import List
 from airquality.io.io import IOManager
-from airquality.parser.parser import ParserFactory
+from airquality.parser.file_parser import FileParserFactory
 
 
 class SQLQueryBuilder(builtins.object):
@@ -30,7 +30,7 @@ class SQLQueryBuilder(builtins.object):
     def __init__(self, query_file_path: str):
         self.__path = query_file_path
         self.__raw = IOManager.open_read_close_file(self.__path)
-        parser = ParserFactory.make_parser_from_extension_file(file_extension = query_file_path.split('.')[-1])
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension = query_file_path.split('.')[-1])
         self.__parsed = parser.parse(self.__raw)
 
 

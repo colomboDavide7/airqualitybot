@@ -6,13 +6,13 @@
 #
 #################################################
 import unittest
-from airquality.parser.db_resp_parser import DatabaseResponseParser
+from airquality.parser.db_answer_parser import DatabaseAnswerParser
 
 
-class TestDatabaseResponseParser(unittest.TestCase):
-    """Test class for DatabaseResponseParser."""
+class TestDatabaseAnswerParser(unittest.TestCase):
 
-    def test_parse_key_val_response(self):
+
+    def test_parse_key_val_answer(self):
         """
         Test the correct conversion from list of key-value tuples to dictionary.
 
@@ -21,7 +21,7 @@ class TestDatabaseResponseParser(unittest.TestCase):
 
         response = []
         expected_output = {}
-        actual_output = DatabaseResponseParser.parse_key_val_response(response)
+        actual_output = DatabaseAnswerParser.parse_key_val_answer(response)
         self.assertEqual(actual_output, expected_output)
 
         response = [("api_key", "value"),
@@ -30,38 +30,38 @@ class TestDatabaseResponseParser(unittest.TestCase):
 
         expected_output = {"api_key": "value", "mac": "value", "order": "desc"}
         actual_output = \
-            DatabaseResponseParser.parse_key_val_response(response)
+            DatabaseAnswerParser.parse_key_val_answer(response)
         self.assertEqual(actual_output, expected_output)
 
-    def test_system_exit_key_val_response(self):
+    def test_system_exit_key_val_answer(self):
         """Test SystemExit when tuple has length not equal to 2."""
-        response = [(1, ), (2, ), (3, )]
+        answer = [(1, ), (2, ), (3, )]
         with self.assertRaises(SystemExit):
-            DatabaseResponseParser.parse_key_val_response(response)
+            DatabaseAnswerParser.parse_key_val_answer(answer)
 
-        response = [(1, 2, 3)]
+        answer = [(1, 2, 3)]
         with self.assertRaises(SystemExit):
-            DatabaseResponseParser.parse_key_val_response(response)
+            DatabaseAnswerParser.parse_key_val_answer(answer)
 
-    def test_parse_one_field_response(self):
+    def test_parse_one_field_answer(self):
         """
         Test correct conversion from a list of one-element tuple into a list.
         """
-        response = [(1, ), (2, ), (3, )]
+        answer = [(1, ), (2, ), (3, )]
         expected_output = [1, 2, 3]
-        actual_output = DatabaseResponseParser.parse_one_field_response(response)
+        actual_output = DatabaseAnswerParser.parse_single_attribute_answer(answer)
         self.assertEqual(actual_output, expected_output)
 
-    def test_system_exit_parse_one_field(self):
+    def test_system_exit_parse_one_field_answer(self):
         """Test SystemExit when try to parse list of more-than-one-element
         tuples."""
 
-        response = [("api_key", "value"),
+        answer = [("api_key", "value"),
                     ("mac", "value"),
                     ("order", "desc")]
 
         with self.assertRaises(SystemExit):
-            DatabaseResponseParser.parse_one_field_response(response)
+            DatabaseAnswerParser.parse_single_attribute_answer(answer)
 
 
 

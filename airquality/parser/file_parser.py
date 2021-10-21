@@ -13,35 +13,35 @@ from abc import ABC, abstractmethod
 from json.decoder import JSONDecodeError
 
 
-class Parser(ABC):
+class FileParser(ABC):
 
     @abstractmethod
     def parse(self, raw_string: str) -> Dict[str, Any]:
         """
         Abstract method that defines the common interface for parsing
-        raw string into Dict[str, Any]."""
+        raw string from file into Dict[str, Any]."""
         pass
 
 
-class JSONParser(Parser):
+class JSONFileParser(FileParser):
     """
-    JSONParser class defines the business rules for parsing JSON file
+    JSONFileParser class defines the business rules for parsing JSON file
     format."""
 
     def parse(self, raw_string: str) -> Dict[str, Any]:
 
         if not raw_string:
-            raise SystemExit(f"{JSONParser.__name__}: cannot parse empty raw string.")
+            raise SystemExit(f"{JSONFileParser.__name__}: cannot parse empty raw string.")
 
         try:
             parsed = json.loads(raw_string)
         except JSONDecodeError as jerr:
-            raise SystemExit(f"{JSONParser.__name__}: {str(jerr)}")
+            raise SystemExit(f"{JSONFileParser.__name__}: {str(jerr)}")
 
         return parsed
 
 
-class ParserFactory(builtins.object):
+class FileParserFactory(builtins.object):
     """
     This class defines a @staticmethod for creating a Parser object given
     the file extension.
@@ -49,12 +49,12 @@ class ParserFactory(builtins.object):
     For now, JSON is the only supported file type."""
 
     @staticmethod
-    def make_parser_from_extension_file(file_extension: str) -> Parser:
+    def file_parser_from_file_extension(file_extension: str) -> FileParser:
         """Factory method for creating Parser instances from file extension.
 
         If invalid file extension is passed, SystemExit is raised."""
 
         if file_extension == 'json':
-            return JSONParser()
+            return JSONFileParser()
         else:
-            raise SystemExit(f"{ParserFactory.__name__}: unknown parser for file extension '{file_extension}'.")
+            raise SystemExit(f"{FileParserFactory.__name__}: unknown parser for file extension '{file_extension}'.")

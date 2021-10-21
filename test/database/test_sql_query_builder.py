@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.conn.builder import SQLQueryBuilder
+from airquality.database.sql_query_builder import SQLQueryBuilder
 
 
 class TestSQLQueryBuilder(unittest.TestCase):

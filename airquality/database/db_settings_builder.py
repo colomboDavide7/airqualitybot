@@ -86,4 +86,3 @@ class DatabaseSettingsBuilder(builtins.object):
                              f"Check your 'properties/resources.json' file.")
 
         return parsed_resources[MODELS_SETTINGS][f"{sensor_type}"]
-

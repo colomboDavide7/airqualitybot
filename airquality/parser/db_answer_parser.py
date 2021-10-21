@@ -10,14 +10,14 @@ import builtins
 from typing import Dict, Any, List, Tuple
 
 
-class DatabaseResponseParser(builtins.object):
+class DatabaseAnswerParser(builtins.object):
     """
     Class that defines @staticmethods for parsing different
     database responses from psycopg2 module.
     """
 
     @staticmethod
-    def parse_key_val_response(response: List[Tuple[str, Any]]) -> Dict[str, Any]:
+    def parse_key_val_answer(response: List[Tuple[str, Any]]) -> Dict[str, Any]:
         """
         Static method that parses list of key-value tuples into dictionary.
 
@@ -29,9 +29,8 @@ class DatabaseResponseParser(builtins.object):
             return {}
 
         if not isinstance(response[0], Tuple) or len(response[0]) != 2:
-            raise SystemExit(f"{DatabaseResponseParser.__name__}: "
-                             f"error while parsing response in "
-                             f"'{DatabaseResponseParser.parse_key_val_response.__name__}()':"
+            raise SystemExit(f"{DatabaseAnswerParser.__name__}: error while parsing answer in "
+                             f"'{DatabaseAnswerParser.parse_key_val_answer.__name__}()':"
                              f"tuple contains more than 2 elements.")
         parsed = {}
         for t in response:
@@ -40,7 +39,7 @@ class DatabaseResponseParser(builtins.object):
 
 
     @staticmethod
-    def parse_one_field_response(response: List[Tuple[Any]]) -> List[Any]:
+    def parse_single_attribute_answer(response: List[Tuple[Any]]) -> List[Any]:
         """
         Static method that parses a List of one-element tuple into a list.
 
@@ -52,9 +51,8 @@ class DatabaseResponseParser(builtins.object):
             return []
 
         if len(response[0]) > 1:
-            raise SystemExit(f"{DatabaseResponseParser.__name__}: "
-                             f"error while parsing response in "
-                             f"'{DatabaseResponseParser.parse_one_field_response.__name__}()':"
+            raise SystemExit(f"{DatabaseAnswerParser.__name__}: error while parsing answer in "
+                             f"'{DatabaseAnswerParser.parse_single_attribute_answer.__name__}()':"
                              f"tuple contains more than 1 element.")
 
         return [t[0] for t in response]

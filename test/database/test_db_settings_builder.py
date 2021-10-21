@@ -8,7 +8,7 @@
 #################################################
 
 import unittest
-from airquality.app.db_settings_builder import DatabaseSettingsBuilder
+from airquality.database.db_settings_builder import DatabaseSettingsBuilder
 
 
 class TestDatabaseSettingsBuilder(unittest.TestCase):

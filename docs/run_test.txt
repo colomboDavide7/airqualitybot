@@ -6,49 +6,35 @@ The sections below gives you the commands for running test on a single module
 or running all tests once.
 
 
-###################### RUN TEST RESOURCE LOADER ######################
+###################### RUN TEST API ######################
 
-python -m test.app.test_resource_loader
+python -m test.api.test_api_request_adapter
+python -m test.api.test_url_querystring_builder
 
-###################### RUN TEST SESSION ######################
+###################### RUN TEST APP ######################
 
 python -m test.app.test_session
-
-###################### RUN TEST RUNNER ######################
-
-python -m test.runner.test_runner
-
-###################### RUN TEST CONNECTION ######################
-
-python -m test.conn.test_conn
-
-###################### RUN TEST SQL QUERY BUILDER ######################
-
-python -m test.conn.test_builder
-
-###################### RUN TEST PARSER ######################
-
-python -m test.parser.test_parser
 
 ###################### RUN TEST BOT ######################
 
 python -m test.bot.test_bot
 
-###################### RUN TEST API REQUEST ######################
+###################### RUN TEST DATABASE ######################
 
-python -m test.api.test_api
+python -m test.database.test_db_conn_adapter
+python -m test.database.test_sql_query_builder
+python -m test.database.test_db_settings_builder
 
-###################### RUN URL QUERYSTRING BUILDER ######################
+###################### RUN TEST PARSER ######################
 
-python -m test.api.test_builder
+python -m test.parser.test_file_parser
+python -m test.parser.test_db_answer_parser
 
-###################### RUN TEST DATABASE RESPONSE PARSER ######################
+###################### RUN TEST RUNNER ######################
 
-python -m test.parser.test_db_resp_parser
+python -m test.runner.test_runner
 
-###################### RUN TEST DATABASE SETTINGS BUILDER ######################
 
-python -m test.app.test_db_settings_builder
 
 
 ###################### RUN ALL TESTS ######################

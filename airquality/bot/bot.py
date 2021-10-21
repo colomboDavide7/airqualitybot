@@ -7,9 +7,9 @@
 #################################################
 from abc import ABC
 from typing import List
-from airquality.conn.builder import SQLQueryBuilder
-from airquality.conn.conn import Psycopg2ConnectionAdapter
-from airquality.parser.db_resp_parser import DatabaseResponseParser
+from airquality.database.sql_query_builder import SQLQueryBuilder
+from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapter
+from airquality.parser.db_answer_parser import DatabaseAnswerParser
 
 
 class BaseBot(ABC):
@@ -52,7 +52,7 @@ class BotMobile(BaseBot):
         self.__models = sensor_models
         query = self.sqlbuilder.select_mobile_sensor_ids(self.__models)
         response = self.dbconn.send(query)
-        sensor_ids = DatabaseResponseParser.parse_one_field_response(response)
+        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response)
         if not sensor_ids:
             raise SystemExit(f"{BotMobile.__name__}: sensor id list is empty in method '{BotMobile.__init__.__name__}()'. "
                              f"Please, check your 'properties/resources.json' file.")

@@ -11,10 +11,11 @@ from typing import List, Dict, Any
 from airquality.io.io import IOManager
 from airquality.bot.bot import BotMobile
 from airquality.app.session import Session
-from airquality.conn.builder import SQLQueryBuilder
-from airquality.parser.parser import ParserFactory
-from airquality.conn.conn import DatabaseConnectionAdapterFactory
-from airquality.app.db_settings_builder import DatabaseSettingsBuilder
+from airquality.parser.file_parser import FileParserFactory
+from airquality.database.sql_query_builder import SQLQueryBuilder
+from airquality.database.db_settings_builder import DatabaseSettingsBuilder
+from airquality.database.db_conn_adapter import DatabaseConnectionAdapterFactory
+
 
 USAGE = "USAGE: python -m airquality " \
         "[--help or -h | --debug  or -d | --log or -l] db_username"
@@ -98,7 +99,7 @@ def main() -> None:
         session.debug_msg(f"{main.__name__}(): try to read resource file at '{RESOURCES}': OK")
 
         # STEP 5 - parse raw resources
-        parser = ParserFactory.make_parser_from_extension_file(file_extension = RESOURCES.split('.')[-1])
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension = RESOURCES.split('.')[-1])
         parsed_resources = parser.parse(raw_resources)
         session.debug_msg(f"{main.__name__}(): try to parse raw resources: OK")
 

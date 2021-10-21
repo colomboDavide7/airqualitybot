@@ -2,15 +2,15 @@
 #
 # @Author: davidecolombo
 # @Date: mar, 19-10-2021, 12:34
-# @Description: This script is used for testing conn class behaviour
+# @Description: This script is used for testing database class behaviour
 #
 #################################################
 
 import unittest
-from airquality.conn.conn import DatabaseConnectionAdapterFactory
+from airquality.database.db_conn_adapter import DatabaseConnectionAdapterFactory
 
 
-class TestConnectionAdapter(unittest.TestCase):
+class TestDatabaseConnectionAdapter(unittest.TestCase):
 
 
     def setUp(self) -> None:

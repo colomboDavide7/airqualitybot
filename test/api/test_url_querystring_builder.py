@@ -6,7 +6,7 @@
 #
 #################################################
 
-from airquality.api.builder import URLQuerystringBuilder
+from airquality.api.url_querystring_builder import URLQuerystringBuilder
 import unittest
 
 class TestBuilder(unittest.TestCase):
