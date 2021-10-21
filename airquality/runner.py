@@ -13,7 +13,7 @@ from airquality.app.session import Session
 from airquality.parser.file_parser import FileParserFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.picker.resource_picker import ResourcePicker
-from airquality.database.db_conn_adapter import DatabaseConnectionAdapterFactory
+from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 
 
 USAGE = "USAGE: python -m airquality " \
@@ -102,25 +102,35 @@ def main() -> None:
         parsed_resources = parser.parse(raw_resources)
         session.debug_msg(f"{main.__name__}(): try to parse raw resources: OK")
 
-        # STEP 6 - create database connection interface
-        dbconn_factory = DatabaseConnectionAdapterFactory()
-        settings = ResourcePicker.pick_db_conn_properties_from_user(
+        # STEP 6 - create psycopg2 connection adapter factory
+        db_conn_factory = Psycopg2ConnectionAdapterFactory()
+
+        # STEP 7 - pick database connection adapter properties from username
+        properties = ResourcePicker.pick_db_conn_properties_from_user(
                 parsed_resources = parsed_resources,
                 username = current_user
         )
-        session.debug_msg(f"{main.__name__}(): try to instantiate database settings: OK")
-        dbconn = dbconn_factory.create_connection(settings)
-        session.debug_msg(f"{main.__name__}(): try to instantiate database connection adapter: OK")
+        session.debug_msg(f"{main.__name__}(): try to pick database connection properties: OK")
 
-        # STEP 7 - create sql query builder
+        # STEP 8 - create psycopg2 connection adapter
+        dbconn = db_conn_factory.create_database_connection_adapter(properties)
+        session.debug_msg(f"{main.__name__}(): try to instantiate psycopg2 connection adapter: OK")
+
+        # STEP 9 - create sql query builder
         query_builder = SQLQueryBuilder(query_file_path = QUERIES)
         session.debug_msg(f"{main.__name__}(): try to instantiate sql query builder: OK")
 
+
         if current_user == 'bot_mobile_user':
+
+            # STEP 10 - pick sensor model list from sensor type
             models = ResourcePicker.pick_sensor_models_from_sensor_type(
                     parsed_resources = parsed_resources,
                     sensor_type = "mobile"
             )
+            session.debug_msg(f"{main.__name__}(): try to pick sensor models from sensor type: OK")
+
+            # STEP 11 - create bot from username
             bot = BotMobile(dbconn = dbconn, query_builder = query_builder, sensor_models = models)
             session.debug_msg(f"{main.__name__}(): try to instantiate mobile bot: OK")
 

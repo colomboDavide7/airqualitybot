@@ -148,14 +148,14 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
 class ConnectionAdapterFactory(ABC):
 
     @abstractmethod
-    def create_connection(self, settings: Dict[str, Any]) -> ConnectionAdapter:
+    def create_database_connection_adapter(self, settings: Dict[str, Any]) -> ConnectionAdapter:
         """
         Abstract method for creating the right Connection subclass instance.
         """
         pass
 
 
-class DatabaseConnectionAdapterFactory(ConnectionAdapterFactory):
+class Psycopg2ConnectionAdapterFactory(ConnectionAdapterFactory):
 
-    def create_connection(self, settings: Dict[str, Any]) -> Psycopg2ConnectionAdapter:
+    def create_database_connection_adapter(self, settings: Dict[str, Any]) -> Psycopg2ConnectionAdapter:
         return Psycopg2ConnectionAdapter(settings)
