@@ -53,5 +53,18 @@ class ResourcePicker(builtins.object):
     @staticmethod
     def pick_api_address_from_number(parsed_resources: Dict[str, Any], bot_personality: str, api_address_number: str) -> str:
 
+        if parsed_resources.get(API_ADDRESS_SECTION, None) is None:
+            raise SystemExit(f"{ResourcePicker.__name__}: "
+                             f"missing '{API_ADDRESS_SECTION}' section in resource file in method "
+                             f"'{ResourcePicker.pick_api_address_from_number.__name__}()'."
+                             f"Check your 'properties/resources.json' file.")
+
+        if bot_personality not in parsed_resources[API_ADDRESS_SECTION].keys():
+            raise SystemExit(f"{ResourcePicker.__name__}: "
+                             f"don't recognize personality '{bot_personality}' in method "
+                             f"'{ResourcePicker.pick_db_conn_properties_from_personality.__name__}()'."
+                             f"Check your 'properties/resources.json' file.")
+
+
         return parsed_resources[API_ADDRESS_SECTION][f"{bot_personality}"][f"{api_address_number}"]
 

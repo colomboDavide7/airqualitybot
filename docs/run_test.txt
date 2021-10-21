@@ -23,12 +23,15 @@ python -m test.bot.test_bot
 
 python -m test.database.test_db_conn_adapter
 python -m test.database.test_sql_query_builder
-python -m test.database.test_db_settings_builder
 
 ###################### RUN TEST PARSER ######################
 
 python -m test.parser.test_file_parser
 python -m test.parser.test_db_answer_parser
+
+###################### RUN TEST PICKER ######################
+
+python -m test.picker.test_resource_picker
 
 ###################### RUN TEST RUNNER ######################
 
