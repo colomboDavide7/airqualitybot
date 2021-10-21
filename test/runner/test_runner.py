@@ -15,18 +15,18 @@ class TestRunner(unittest.TestCase):
     def test_parse_sys_argv(self):
         """Test the correct parsing of sys argv parameters"""
 
-        test_args = ['-d', '--ciao', 'usr', "ignored", "another_ignored"]
-        expected_output = {"debug": True, "username": "usr"}
+        test_args = ['-d', '--ciao', 'pers', "ignored", "another_ignored"]
+        expected_output = {"debug": True, "personality": "pers"}
         actual_output = parse_sys_argv(test_args)
         self.assertEqual(actual_output, expected_output)
 
-        test_args = ['-d', '--log', 'usr']
-        expected_output = {"debug": True, "logging": True, "username": "usr"}
+        test_args = ['-d', '--log', 'pers']
+        expected_output = {"debug": True, "logging": True, "personality": "pers"}
         actual_output = parse_sys_argv(test_args)
         self.assertEqual(actual_output, expected_output)
 
-        test_args = ["usr"]
-        expected_output = {"username": "usr"}
+        test_args = ["pers"]
+        expected_output = {"personality": "pers"}
         actual_output = parse_sys_argv(test_args)
         self.assertEqual(actual_output, expected_output)
 

@@ -32,7 +32,7 @@ class SQLQueryBuilder(builtins.object):
         If 'query_id' does not match one of the sql query identifier in 'properties/sql_query.json' file,
         SystemExit exception is raised."""
 
-        query_id = "mobile_sensor_ids"
+        query_id = "sensor_ids_from_model"
 
         if not models:
             raise SystemExit(f"{SQLQueryBuilder.__name__}: empty 'mobile' model list in method "

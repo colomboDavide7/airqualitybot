@@ -13,7 +13,7 @@ Be careful to use the same 'identifier' as those provided in the
 
 The 'properties/sql_query.json' file defines:
 
-    - mobile_sensor_ids: query for getting mobile sensor ids
+    - sensor_ids_from_model: select sensor ids which model name contains 'model' field ignoring upper case or lower case.
 
 
 Please, see 'sample/sql_query.json' for practical examples.

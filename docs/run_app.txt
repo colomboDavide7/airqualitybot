@@ -20,20 +20,20 @@ and stops because it assumes you don't know how to run the program.
 
 ###################### MANDATED ARGUMENTS ######################
 
-You must pass the program a valid database username as argument, otherwise the
+You must pass the program a valid 'personality' as argument, otherwise the
 program prompt an error.
 
-With 'valid' is intended one between the 'users' section you have defined in
-the 'properties/resources.json'.
+With 'valid' is intended one between the 'personality' section defined in
+the 'sample/resources.json'.
 
-Please, read the 'docs/resources_setup.txt' for more information about 'users'
+Please, read the 'docs/resources_setup.txt' for more information about 'personality'
 section.
 
 ###################### VALID COMMAND EXAMPLES ######################
 
-python -m airquality your_database_username
-python -m airquality --debug your_database_username
-python -m airquality --log -d your_database_username
+python -m airquality bot_personality
+python -m airquality --debug bot_personality
+python -m airquality --log -d bot_personality
 python -m airquality --help
 
 ###################### INVALID COMMAND EXAMPLES ######################

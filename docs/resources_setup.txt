@@ -44,25 +44,11 @@ You have to put inside:
     - port:     the port number through which opening server connection
     - dbname:   tha name of the database on the server you want to connect
 
-############################# USERS #############################
+############################# PERSONALITY #############################
 
-The users object defines the 'username: password' attributes for all the users
-you want to connect with to the database.
-In this list you have to put only valid usernames defined in your postgreSQL DBMS.
-If you try to run the application with some username that is not in this list,
-the run will fail.
+The personality object defines the personalities available to the program.
+To each personality is associated a JSON object in the form of '{ "username": "usr1", "password": "pwd1"}'.
 
-Please, see 'sample/resources.json' for practical examples.
-
-############################# MODELS #############################
-
-The models object defines the sensor models that can be found in the database
-so that the application knows the valid models without hard coding it in the code.
-
-Sensor models are divided into:
-
-    - mobile:   list of all the mobile (portable) sensor models
-    - station:  list of all the fixed (station) sensor models
-
+Username and password are intended to be your DBMS valid credential for connecting to it.
 
 Please, see 'sample/resources.json' for practical examples.

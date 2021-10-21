@@ -10,12 +10,8 @@
     "port":   12345,
     "dbname": "your_database_name"
   },
-  "users": {
-    "usr1": "pwd1",
-    "usr2": "pwd2"
-  },
-  "models": {
-    "mobile": ["model1", "model2", "model3"],
-    "station": ["model4", "model5"]
+  "personality": {
+    "atmotube":  { "username": "usr1", "password": "pwd1"},
+    "purpleair": { "username": "usr2", "password": "pwd2"}
   }
 }

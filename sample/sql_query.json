@@ -1,3 +1,3 @@
 {
-  "mobile_sensor_ids": "SELECT s.your_id_field FROM your_schema.your_sensor_table AS s INNER JOIN your_schema.your_manufacturer_table AS m ON m.your_manufacturer_pk = s.your_manufacturer_fk WHERE m.your_sensor_model_field = '{model}';"
+  "sensor_ids_from_model": "SELECT s.your_id_field FROM your_schema.your_sensor_table AS s INNER JOIN your_schema.your_manufacturer_table AS m ON m.your_manufacturer_pk = s.your_manufacturer_fk WHERE model_name ILIKE '%{model}%';"
 }

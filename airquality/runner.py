@@ -8,7 +8,7 @@
 import sys
 from typing import List, Dict, Any
 from airquality.io.io import IOManager
-from airquality.bot.bot import BotMobile
+from airquality.bot.bot import BotFactory
 from airquality.app.session import Session
 from airquality.parser.file_parser import FileParserFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
@@ -17,10 +17,11 @@ from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 
 
 USAGE = "USAGE: python -m airquality " \
-        "[--help or -h | --debug  or -d | --log or -l] db_username"
+        "[--help or -h | --debug  or -d | --log or -l] personality"
 
 RESOURCES  = "properties/resources.json"
 QUERIES    = "properties/sql_query.json"
+VALID_PERSONALITY = ('atmotube', 'purpleair')
 
 
 def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
@@ -40,7 +41,7 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
         sys.exit(0)
 
     kwargs = {}
-    is_username_set = False
+    is_personality_set = False
 
     for arg in args:
         if arg.startswith('-'):
@@ -52,16 +53,16 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
                 print(f"{parse_sys_argv.__name__}: "
                       f"ignore invalid option '{arg}'.")
         else:
-            if not is_username_set:
-                kwargs["username"] = arg
-                is_username_set = True
+            if not is_personality_set:
+                kwargs["personality"] = arg
+                is_personality_set = True
             else:
                 print(f"{parse_sys_argv.__name__}: "
                       f"ignore invalid option '{arg}'.")
 
-    if not is_username_set:
+    if not is_personality_set:
         raise SystemExit(f"{parse_sys_argv.__name__}: "
-                         f"missing required username for database connection.")
+                         f"missing required bot personality for database connection.")
     return kwargs
 
 
@@ -75,7 +76,7 @@ def main() -> None:
     1) --help or -h:  display help on program usage (MUST BE THE FIRST)
     2) --log or -l:   turn on local logging
     3) --debug or -d: run the application in debug mode
-    4) db_username:   the username that you want to connect with to the database
+    4) personality:   the bot personality for connecting to APIs and database
     """.format(usage = USAGE)
 
     args = sys.argv[1:]
@@ -84,9 +85,13 @@ def main() -> None:
         print(USAGE)
         sys.exit(1)
 
-    # STEP 2 - parse args and pop username
+    # STEP 2 - parse args and pop personality
     session_kwargs = parse_sys_argv(args)
-    current_user = session_kwargs.pop("username")
+    bot_personality = session_kwargs.pop("personality")
+
+    if bot_personality not in VALID_PERSONALITY:
+        print(f"{main.__name__}(): invalid personality. Choose one within {VALID_PERSONALITY}.")
+        sys.exit(1)
 
     # STEP 3 - create Session object
     session = Session(session_kwargs)
@@ -106,9 +111,9 @@ def main() -> None:
         db_conn_factory = Psycopg2ConnectionAdapterFactory()
 
         # STEP 7 - pick database connection adapter properties from username
-        properties = ResourcePicker.pick_db_conn_properties_from_user(
+        properties = ResourcePicker.pick_db_conn_properties_from_personality(
                 parsed_resources = parsed_resources,
-                username = current_user
+                bot_personality = bot_personality
         )
         session.debug_msg(f"{main.__name__}(): try to pick database connection properties: OK")
 
@@ -120,22 +125,10 @@ def main() -> None:
         query_builder = SQLQueryBuilder(query_file_path = QUERIES)
         session.debug_msg(f"{main.__name__}(): try to instantiate sql query builder: OK")
 
+        # STEP 10 - create bot from personality
+        bot = BotFactory.create_bot_from_personality(bot_personality = bot_personality)
+        session.debug_msg(f"{main.__name__}(): try to instantiate bot from personality '{bot_personality}': OK")
 
-        if current_user == 'bot_mobile_user':
-
-            # STEP 10 - pick sensor model list from sensor type
-            models = ResourcePicker.pick_sensor_models_from_sensor_type(
-                    parsed_resources = parsed_resources,
-                    sensor_type = "mobile"
-            )
-            session.debug_msg(f"{main.__name__}(): try to pick sensor models from sensor type: OK")
-
-            # STEP 11 - create bot from username
-            bot = BotMobile(dbconn = dbconn, query_builder = query_builder, sensor_models = models)
-            session.debug_msg(f"{main.__name__}(): try to instantiate mobile bot: OK")
-
-        elif current_user == 'bot_station_user':
-            pass
 
     except SystemExit as ex:
         session.debug_msg(str(ex))

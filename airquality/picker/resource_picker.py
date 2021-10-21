@@ -8,68 +8,43 @@
 import builtins
 from typing import Dict, Any, List
 
-SERVER_SETTINGS = "server"
-USERS_SETTINGS  = "users"
-LOGGER_SETTINGS = "logger"
-MODELS_SETTINGS = "models"
 
-AVAILABLE_MODELS = ["mobile", "station"]
+LOGGER_SECTION = "logger"
+SERVER_SECTION = "server"
+PERSONALITY_SECTION  = "personality"
 
 
 class ResourcePicker(builtins.object):
 
 
     @staticmethod
-    def pick_db_conn_properties_from_user(parsed_resources: Dict[str, Any], username: str) -> Dict[str, Any]:
+    def pick_db_conn_properties_from_personality(parsed_resources: Dict[str, Any], bot_personality: str) -> Dict[str, Any]:
         """Static method that picks the database properties from the parsed resources.
 
         If 'server' section is missing in 'properties/resources.json' file, SystemExit exception is raised.
 
-        If 'username' is invalid, SystemExit exception is raised."""
+        If 'bot_personality' is invalid, SystemExit exception is raised."""
 
-        if parsed_resources.get(USERS_SETTINGS, None) is None:
+        if parsed_resources.get(PERSONALITY_SECTION, None) is None:
             raise SystemExit(f"{ResourcePicker.__name__}: "
-                             f"missing '{USERS_SETTINGS}' section in resource file in method "
-                             f"'{ResourcePicker.pick_db_conn_properties_from_user.__name__}()'."
+                             f"missing '{PERSONALITY_SECTION}' section in resource file in method "
+                             f"'{ResourcePicker.pick_db_conn_properties_from_personality.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
-        if parsed_resources.get(SERVER_SETTINGS, None) is None:
+        if parsed_resources.get(SERVER_SECTION, None) is None:
             raise SystemExit(f"{ResourcePicker.__name__}: "
-                             f"missing '{SERVER_SETTINGS}' section in resource file in method "
-                             f"'{ResourcePicker.pick_db_conn_properties_from_user.__name__}()'."
+                             f"missing '{SERVER_SECTION}' section in resource file in method "
+                             f"'{ResourcePicker.pick_db_conn_properties_from_personality.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
-        if username not in parsed_resources[USERS_SETTINGS].keys():
+        if bot_personality not in parsed_resources[PERSONALITY_SECTION].keys():
             raise SystemExit(f"{ResourcePicker.__name__}: "
-                             f"don't recognize username '{username}' in method "
-                             f"'{ResourcePicker.pick_db_conn_properties_from_user.__name__}()'."
+                             f"don't recognize personality '{bot_personality}' in method "
+                             f"'{ResourcePicker.pick_db_conn_properties_from_personality.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
 
-        settings = parsed_resources[SERVER_SETTINGS].copy()
-        settings["username"] = username
-        settings["password"] = parsed_resources[USERS_SETTINGS][f"{username}"]
+        settings = parsed_resources[SERVER_SECTION].copy()
+        settings["username"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["username"]
+        settings["password"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["password"]
         return settings
-
-
-    @staticmethod
-    def pick_sensor_models_from_sensor_type(parsed_resources: Dict[str, Any], sensor_type: str) -> List[str]:
-        """Static method that picks all sensor models within a sensor type from parsed resources.
-
-        If 'models' section is missing in 'properties/resources.json' file, SystemExit exception is raised.
-
-        If 'sensor_type' is invalid, SystemExit exception is raised."""
-
-        if parsed_resources.get(MODELS_SETTINGS, None) is None:
-            raise SystemExit(f"{ResourcePicker.__name__}: "
-                             f"missing '{MODELS_SETTINGS}' section in resource file in method "
-                             f"'{ResourcePicker.pick_sensor_models_from_sensor_type.__name__}()'."
-                             f"Check your 'properties/resources.json' file.")
-
-        if sensor_type not in parsed_resources[MODELS_SETTINGS].keys():
-            raise SystemExit(f"{ResourcePicker.__name__}: "
-                             f"don't recognize sensor type '{sensor_type}' in method "
-                             f"'{ResourcePicker.pick_sensor_models_from_sensor_type.__name__}()'."
-                             f"Check your 'properties/resources.json' file.")
-
-        return parsed_resources[MODELS_SETTINGS][f"{sensor_type}"]
