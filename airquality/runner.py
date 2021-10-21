@@ -80,12 +80,10 @@ def main() -> None:
     """.format(usage = USAGE)
 
     args = sys.argv[1:]
-    # STEP 1 - check if args are empty and if it is, raise SystemExit
     if not args:
         print(USAGE)
         sys.exit(1)
 
-    # STEP 2 - parse args and pop personality
     session_kwargs = parse_sys_argv(args)
     bot_personality = session_kwargs.pop("personality")
 
@@ -93,43 +91,42 @@ def main() -> None:
         print(f"{main.__name__}(): invalid personality. Choose one within {VALID_PERSONALITY}.")
         sys.exit(1)
 
-    # STEP 3 - create Session object
     session = Session(session_kwargs)
     print(str(session))
 
+    session.debug_msg(f"{main.__name__}(): -------- STARTING THE PROGRAM --------")
     try:
-        # STEP 4 - read resource file
         raw_resources = IOManager.open_read_close_file(path = RESOURCES)
         session.debug_msg(f"{main.__name__}(): try to read resource file at '{RESOURCES}': OK")
 
-        # STEP 5 - parse raw resources
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = RESOURCES.split('.')[-1])
         parsed_resources = parser.parse(raw_resources)
         session.debug_msg(f"{main.__name__}(): try to parse raw resources: OK")
 
-        # STEP 6 - create psycopg2 connection adapter factory
-        db_conn_factory = Psycopg2ConnectionAdapterFactory()
-
-        # STEP 7 - pick database connection adapter properties from username
         properties = ResourcePicker.pick_db_conn_properties_from_personality(
                 parsed_resources = parsed_resources,
                 bot_personality = bot_personality
         )
         session.debug_msg(f"{main.__name__}(): try to pick database connection properties: OK")
 
-        # STEP 8 - create psycopg2 connection adapter
+        db_conn_factory = Psycopg2ConnectionAdapterFactory()
         dbconn = db_conn_factory.create_database_connection_adapter(properties)
         session.debug_msg(f"{main.__name__}(): try to instantiate psycopg2 connection adapter: OK")
 
-        # STEP 9 - create sql query builder
         query_builder = SQLQueryBuilder(query_file_path = QUERIES)
         session.debug_msg(f"{main.__name__}(): try to instantiate sql query builder: OK")
 
-        # STEP 10 - create bot from personality
         bot = BotFactory.create_bot_from_personality(bot_personality = bot_personality)
         session.debug_msg(f"{main.__name__}(): try to instantiate bot from personality '{bot_personality}': OK")
 
+        bot.sqlbuilder = query_builder
+        session.debug_msg(f"{main.__name__}(): try to set query builder to bot: OK")
+
+        bot.dbconn = dbconn
+        session.debug_msg(f"{main.__name__}(): try to set database connection adapter to bot: OK")
 
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)
+
+    session.debug_msg(f"{main.__name__}(): -------- PROGRAM ENDS WITH SUCCESS --------")

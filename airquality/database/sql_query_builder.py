@@ -6,7 +6,6 @@
 #
 #################################################
 import builtins
-from typing import List
 from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
 
@@ -24,28 +23,24 @@ class SQLQueryBuilder(builtins.object):
         self.__parsed = parser.parse(self.__raw)
 
 
-    def select_mobile_sensor_ids(self, models: List[str]) -> str:
-        """This method returns a string that contains as many queries as the models passed in the list.
+    def select_sensor_ids_from_identifier(self, identifier: str) -> str:
+        """This method returns a string that contains sql query for selecting
 
-        If 'models' list is empty, SystemExit exception is raised.
+        If 'identifier' is empty, SystemExit exception is raised.
 
         If 'query_id' does not match one of the sql query identifier in 'properties/sql_query.json' file,
         SystemExit exception is raised."""
 
-        query_id = "sensor_ids_from_model"
+        query_id = "sensor_ids_from_identifier"
 
-        if not models:
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: empty 'mobile' model list in method "
-                             f"'{SQLQueryBuilder.select_mobile_sensor_ids.__name__}()'. "
-                             f"Please check your 'properties/resources.json' file.")
+        if not identifier:
+            raise SystemExit(f"{SQLQueryBuilder.__name__}: identifier '{identifier}' provided in method "
+                             f"'{SQLQueryBuilder.select_sensor_ids_from_identifier.__name__}()' is not valid. "
+                             f"Please use a string that identifier your sensor model name.")
 
         if query_id not in self.__parsed.keys():
             raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
-                             f"'{SQLQueryBuilder.select_mobile_sensor_ids.__name__}()'. "
+                             f"'{SQLQueryBuilder.select_sensor_ids_from_identifier.__name__}()'. "
                              f"Please check your 'properties/sql_query.json' file.")
 
-        query = ""
-        for model in models:
-            query += self.__parsed[query_id].format(model=model)
-
-        return query
+        return self.__parsed[query_id].format(identifier=identifier)

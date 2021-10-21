@@ -7,17 +7,38 @@
 #################################################
 import builtins
 from abc import ABC
+from airquality.database.sql_query_builder import SQLQueryBuilder
+from airquality.database.db_conn_adapter import ConnectionAdapter
 
 
 class BaseBot(ABC):
     """Abstract Base Class for bot objects."""
-    pass
+
+    def __init__(self):
+        self.__sql_builder = None
+        self.__dbconn = None
+
+    @property
+    def sqlbuilder(self):
+        return self.__sql_builder
+
+    @sqlbuilder.setter
+    def sqlbuilder(self, value: SQLQueryBuilder):
+        self.__sql_builder = value
+
+    @property
+    def dbconn(self):
+        return self.__dbconn
+
+    @dbconn.setter
+    def dbconn(self, value: ConnectionAdapter):
+        self.__dbconn = value
 
 
 class BotAtmotube(BaseBot):
 
     def __init__(self):
-        pass
+        super().__init__()
 
 
 

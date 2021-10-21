@@ -18,7 +18,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
 
     def test_select_mobile_sensor_ids(self):
 
-        query = self.sql_builder.select_mobile_sensor_ids(["model1", "model2"])
+        query = self.sql_builder.select_sensor_ids_from_identifier(["model1", "model2"])
         self.assertIsNotNone(query)
         self.assertIsInstance(query, str)
 
@@ -28,7 +28,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
 
         models = []
         with self.assertRaises(SystemExit):
-            self.sql_builder.select_mobile_sensor_ids(models)
+            self.sql_builder.select_sensor_ids_from_identifier(models)
 
 
 
