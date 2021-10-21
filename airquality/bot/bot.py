@@ -20,13 +20,18 @@ class BaseBot(ABC):
                         statements execution
     """
 
-    def __init__(self, dbconn: Psycopg2ConnectionAdapter):
+    def __init__(self, dbconn: Psycopg2ConnectionAdapter, query_builder: SQLQueryBuilder):
         self.__db_conn_interface = dbconn
         self.__db_conn_interface.open_conn()
+        self.__query_builder = query_builder
 
     @property
     def dbconn(self):
         return self.__db_conn_interface
+
+    @property
+    def sqlbuilder(self):
+        return self.__query_builder
 
 
 
@@ -38,10 +43,13 @@ class BotMobile(BaseBot):
     loading the data to the database.
     """
 
-    def __init__(self, dbconn: Psycopg2ConnectionAdapter, sensor_models: List[str]):
-        super().__init__(dbconn)
+    def __init__(self, dbconn: Psycopg2ConnectionAdapter,
+                 query_builder: SQLQueryBuilder,
+                 sensor_models: List[str]
+                 ):
+        super().__init__(dbconn, query_builder)
         self.__models = sensor_models
-        query = SQLQueryBuilder.select_mobile_sensor_ids(self.__models)
+        query = self.sqlbuilder.select_mobile_sensor_ids(self.__models)
         response = self.dbconn.send(query)
         sensor_ids = DatabaseResponseParser.parse_one_field_response(response)
 

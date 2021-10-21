@@ -8,15 +8,18 @@
 #################################################
 import sys
 from typing import List, Dict, Any
-from airquality.app.session import Session
-from airquality.app.resource_loader import ResourceLoader
 from airquality.bot.bot import BotMobile
+from airquality.app.session import Session
+from airquality.conn.builder import SQLQueryBuilder
+from airquality.app.resource_loader import ResourceLoader
+
 
 
 USAGE = "USAGE: python -m airquality " \
         "[--help or -h | --debug  or -d | --log or -l] db_username"
 
 RESOURCES  = "properties/resources.json"
+QUERIES    = "properties/sql_query.json"
 
 
 def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
@@ -109,16 +112,23 @@ def main() -> None:
         session.debug_msg(str(ex))
         sys.exit(1)
 
+    try:
+        query_builder = SQLQueryBuilder(query_file_path = QUERIES)
+    except SystemExit as ex:
+        session.debug_msg(str(ex))
+        sys.exit(1)
+
     # STEP 7 - create bot based on username
     try:
         if current_user == 'bot_mobile_user':
             session.debug_msg(f"{main.__name__}: get sensor models for '{current_user}' user")
             models = res_loader.sensor_models("mobile")
-            bot = BotMobile(dbconn, models)
+            bot = BotMobile(dbconn = dbconn, query_builder = query_builder, sensor_models = models)
             session.debug_msg(f"{main.__name__}: BotMobile created successfully")
         elif current_user == 'bot_station_user':
             models = res_loader.sensor_models("station")
             pass
+
     except SystemExit as ex:
         session.debug_msg(str(ex))
         sys.exit(1)
