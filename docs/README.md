@@ -1,10 +1,16 @@
-# airqualitybot
+# airQuality
 
-In questo repository verrà caricato il codice python in grado di interfacciarsi con i sensori di AtmoTube, PurpleAir e ARPA, prelevare i dati e caricarli sul database del progetto 'airquality'.
+Welcome to airQuality repository.
 
-!!! DISCLAIMER !!!
+This repository is owned by Davide Colombo.
 
-Prima di lanciare il codice leggi il file 'instructions.txt' nella directory ../sample/
+All the scripts provided in this repository are written by Davide Colombo.
 
+# Project purposes
 
+The purpose of this project is to define a program that automatically 
+fetches data from different pollution sensor's API and load it in the 
+database of the project.
 
+Read the 'docs/instructions.txt' file for more information about the program
+usage.
