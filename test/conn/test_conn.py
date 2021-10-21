@@ -7,56 +7,27 @@
 #################################################
 
 import unittest
-from airquality.conn.conn import DatabaseConnection, DatabaseConnectionFactory
+from airquality.conn.conn import DatabaseConnectionFactory
 
 
 class TestConnection(unittest.TestCase):
 
 
     def setUp(self) -> None:
-        self.settings = {"port": 5432, "dbname": "airquality", "host": "localhost",
-                         "username": "bot_mobile_user", "password": None}
+        self.settings = {"port": 12345, "dbname": "some_db_name", "host": "some_host_name",
+                         "username": "some_user_name", "password": "some_password"}
         self.dbfactory = DatabaseConnectionFactory()
         self.dbconn    = self.dbfactory.create_connection(self.settings)
 
-    def tearDown(self) -> None:
-        if self.dbconn.is_open():
-            self.dbconn.close_conn()
-
-
-    def test_create_database_connection(self):
-        """This method test the creation of a DatabaseConnection instance."""
-
-        self.assertIsInstance(self.dbfactory, DatabaseConnectionFactory)
-        self.assertIsNotNone(self.dbconn)
-        self.assertIsInstance(self.dbconn, DatabaseConnection)
-
     def test_missing_setting_argument(self):
         """Test SystemExit when some setting argument is missing."""
-        settings = {"port": 5432,
-                    "dbname": "airquality"}
+        settings = {"port": 12345,
+                    "dbname": "some_db_name"}
         with self.assertRaises(SystemExit):
             self.dbfactory.create_connection(settings)
 
-    def test_open_connection(self):
-        """Test that the connection opens successfully."""
-        response = self.dbconn.open_conn()
-        self.assertTrue(response)
-
-    def test_close_conn(self):
-        """Test close connection."""
-        response = self.dbconn.open_conn()
-        self.assertTrue(response)
-        response = self.dbconn.close_conn()
-        self.assertTrue(response)
-        self.assertFalse(self.dbconn.is_open())
-
-    def test_system_exit_open_conn(self):
-        """
-        Test SystemExit when try to open a connection that is already opened.
-        """
-        response = self.dbconn.open_conn()
-        self.assertTrue(response)
+    def test_system_exit_when_open_conn_with_invalid_arguments(self):
+        """Test SystemExit when open connection with invalid database arguments."""
         with self.assertRaises(SystemExit):
             self.dbconn.open_conn()
 
@@ -67,29 +38,11 @@ class TestConnection(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.dbconn.close_conn()
 
-    def test_send(self):
-        """Test send method successful path"""
-        resp = self.dbconn.open_conn()
-        self.assertTrue(resp)
-        text = self.dbconn.send("SELECT * FROM pg_catalog.pg_tables LIMIT 1;")
-        self.assertIsNotNone(text)
-        resp = self.dbconn.close_conn()
-        self.assertTrue(resp)
-
     def test_system_exit_send(self):
         """Test SystemExit when try to send message through the connection but
         it is closed."""
         with self.assertRaises(SystemExit):
-            self.dbconn.send("SELECT * FROM pg_catalog.pg_tables LIMIT 1;")
-
-    def test_send_invalid_sql(self):
-        """
-        Test SystemExit when invalid SQL is sent through psycopg2 connection.
-        """
-        resp = self.dbconn.open_conn()
-        self.assertTrue(resp)
-        with self.assertRaises(SystemExit):
-            self.dbconn.send("SELECT * FROM bad_table;")
+            self.dbconn.send("some_sql_statement;")
 
 
 if __name__ == '__main__':

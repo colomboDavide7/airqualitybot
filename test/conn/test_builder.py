@@ -13,9 +13,6 @@ from airquality.conn.builder import SQLQueryBuilder
 class TestSQLQueryBuilder(unittest.TestCase):
     """Class for testing the sql query builder."""
 
-    def setUp(self) -> None:
-        self.model = "Atmotube Pro"
-
     def test_system_exit_with_empty_models(self):
         """Test SystemExit when mobile model list is passed."""
 
