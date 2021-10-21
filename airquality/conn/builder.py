@@ -8,40 +8,55 @@
 #################################################
 import builtins
 from typing import List
-
-LEVEL0_STATION_SCHEMA = "level0_station_data"
-LEVEL0_MOBILE_SCHEMA = "level0_mobile_data"
-
-MANUFACTURER_INFO_TABLE = "manufacturer_info"
-MEASURE_PARAM_TABLE = "measure_param"
-MEASUREMENT_TABLE = "measurement"
-TRACE_POINT_TABLE = "trace_point"
-API_PARAM_TABLE = "api_param"
-GEO_AREA_TABLE = "geo_area"
-SENSOR_TABLE = "sensor"
+from airquality.io.io import IOManager
+from airquality.parser.parser import ParserFactory
 
 
 class SQLQueryBuilder(builtins.object):
     """
-    Class that defines @staticmethods for building queries in the right way.
+    Class that builds dynamically the sql query to be sent through the database
+    connection adapter to the database.
+
+    The __init__() method take the 'query_file_path' argument that defines where
+    it is located the query file.
+
+    During initialization, it is asked the IOManager to read the content of the file.
+    Then the ParserFactory returns the proper Parser object.
+    The parser is used to parse the file.
+    Parsed content is stored in an instance variable, so is available at any time
+    to this instance.
     """
 
-    @staticmethod
-    def select_mobile_sensor_ids(models: List[str]) -> str:
+    def __init__(self, query_file_path: str):
+        self.__path = query_file_path
+        self.__raw = IOManager.open_read_close_file(self.__path)
+
+        parser = ParserFactory.make_parser_from_extension_file(
+                file_extension = query_file_path.split('.')[-1],
+                raw_content = self.__raw
+        )
+
+        self.__parsed = parser.parse()
+
+
+    def select_mobile_sensor_ids(self, models: List[str]) -> str:
         """
-        Static method that builds the query for selecting the ids from
-        sensor table in mobile data schema by model name."""
+        This method returns a set of queries for selecting all the sensor ids
+        based on the 'models' list provided as argument.
+
+        The query_id is used to identify which field to use for retrieving the sql
+        query from the parsed data for building the query."""
+
+        query_id = "mobile_sensor_ids"
 
         if not models:
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: empty 'mobile' model list in "
-                             f"'{SQLQueryBuilder.select_mobile_sensor_ids.__name__}()'. "
-                             f"Please check your resource file.")
+            raise SystemExit(
+                f"{SQLQueryBuilder.__name__}: empty 'mobile' model list in "
+                f"'{SQLQueryBuilder.select_mobile_sensor_ids.__name__}()'. "
+                f"Please check your resource file.")
 
         query = ""
         for model in models:
-            query += f"SELECT s.id FROM {LEVEL0_MOBILE_SCHEMA}.{SENSOR_TABLE} AS s " \
-                    f"INNER JOIN {LEVEL0_MOBILE_SCHEMA}.{MANUFACTURER_INFO_TABLE} AS m " \
-                    f"ON m.id = s.manufacturer_id " \
-                    f"WHERE m.model_name = '{model}'; "
+            query += self.__parsed[query_id].format(model=model)
 
         return query

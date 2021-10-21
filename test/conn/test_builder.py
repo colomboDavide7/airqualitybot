@@ -13,12 +13,22 @@ from airquality.conn.builder import SQLQueryBuilder
 class TestSQLQueryBuilder(unittest.TestCase):
     """Class for testing the sql query builder."""
 
+    def setUp(self) -> None:
+        self.sql_builder = SQLQueryBuilder(query_file_path = "properties/sql_query.json")
+
+    def test_select_mobile_sensor_ids(self):
+
+        query = self.sql_builder.select_mobile_sensor_ids(["model1", "model2"])
+        self.assertIsNotNone(query)
+        self.assertIsInstance(query, str)
+
+
     def test_system_exit_with_empty_models(self):
         """Test SystemExit when mobile model list is passed."""
 
         models = []
         with self.assertRaises(SystemExit):
-            SQLQueryBuilder.select_mobile_sensor_ids(models)
+            self.sql_builder.select_mobile_sensor_ids(models)
 
 
 
