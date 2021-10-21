@@ -1,46 +1,54 @@
+###################### GENERAL TEST INFORMATION ######################
+
+The program is tested using 'unittest' framework implementation in python.
+
+The sections below gives you the commands for running test on a single module
+or running all tests once.
+
+
 ###################### RUN TEST RESOURCE LOADER ######################
 
-python -m tests.app.test_resource_loader
+python -m test.app.test_resource_loader
 
 ###################### RUN TEST SESSION ######################
 
-python -m tests.app.test_session
+python -m test.app.test_session
 
 ###################### RUN TEST RUNNER ######################
 
-python -m tests.runner.test_runner
+python -m test.runner.test_runner
 
 ###################### RUN TEST CONNECTION ######################
 
-python -m tests.conn.test_conn
+python -m test.conn.test_conn
 
 ###################### RUN TEST SQL QUERY BUILDER ######################
 
-python -m tests.conn.test_builder
+python -m test.conn.test_builder
 
 ###################### RUN TEST PARSER ######################
 
-python -m tests.parser.test_parser
+python -m test.parser.test_parser
 
 ###################### RUN TEST BOT ######################
 
-python -m tests.bot.test_bot
+python -m test.bot.test_bot
 
 ###################### RUN TEST API REQUEST ######################
 
-python -m tests.api.test_api
+python -m test.api.test_api
 
 ###################### RUN URL QUERYSTRING BUILDER ######################
 
-python -m tests.api.test_builder
+python -m test.api.test_builder
 
 ###################### RUN TEST DATABASE RESPONSE PARSER ######################
 
-python -m tests.parser.test_db_resp_parser
+python -m test.parser.test_db_resp_parser
 
 ###################### RUN TEST DATABASE SETTINGS BUILDER ######################
 
-python -m tests.app.test_db_settings_builder
+python -m test.app.test_db_settings_builder
 
 
 ###################### RUN ALL TESTS ######################

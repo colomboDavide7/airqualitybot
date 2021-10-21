@@ -11,6 +11,6 @@ Follow the instructions in this file to set up properly the project.
 3 - create a test file called 'test.txt' and put it into the 'properties' folder
     (this is used only for test purposes, leave it empty)
 
-4 - read 'docs/run.txt' for running the project
+4 - read 'docs/run_app.txt' for running the project
 
-5 - read 'docs/test.txt' for running all the tests
+5 - read 'docs/run_test.txt' for running all the tests

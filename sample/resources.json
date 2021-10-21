@@ -7,7 +7,7 @@
   },
   "server": {
     "host":   "your_local_host",
-    "port":   123456,
+    "port":   12345,
     "dbname": "your_database_name"
   },
   "users": {
