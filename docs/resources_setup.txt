@@ -35,8 +35,8 @@ You have to put inside:
 ############################# SERVER #############################
 
 The server object defines the basic server information for connecting to the
-database. The application relies on 'psycopg2' module for connecting to the
-database (see: https://pypi.org/project/psycopg2/ )
+database. The application offers a 'psycopg2' adapter for connecting to the
+database.
 
 You have to put inside:
 

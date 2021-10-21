@@ -9,7 +9,7 @@ from abc import ABC
 from typing import List
 from airquality.conn.builder import SQLQueryBuilder
 from airquality.parser.db_resp_parser import DatabaseResponseParser
-from airquality.conn.conn import DatabaseConnection
+from airquality.conn.conn import Psycopg2ConnectionAdapter
 
 
 class BaseBot(ABC):
@@ -20,7 +20,7 @@ class BaseBot(ABC):
                         statements execution
     """
 
-    def __init__(self, dbconn: DatabaseConnection):
+    def __init__(self, dbconn: Psycopg2ConnectionAdapter):
         self.__db_conn_interface = dbconn
         self.__db_conn_interface.open_conn()
 
@@ -38,7 +38,7 @@ class BotMobile(BaseBot):
     loading the data to the database.
     """
 
-    def __init__(self, dbconn: DatabaseConnection, sensor_models: List[str]):
+    def __init__(self, dbconn: Psycopg2ConnectionAdapter, sensor_models: List[str]):
         super().__init__(dbconn)
         self.__models = sensor_models
         query = SQLQueryBuilder.select_mobile_sensor_ids(self.__models)

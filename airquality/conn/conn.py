@@ -11,7 +11,7 @@ from typing import Dict, Any
 from abc import ABC, abstractmethod
 
 
-class Connection(ABC):
+class ConnectionAdapter(ABC):
 
     @abstractmethod
     def open_conn(self) -> bool:
@@ -36,7 +36,7 @@ class Connection(ABC):
         pass
 
 
-class DatabaseConnection(Connection):
+class Psycopg2ConnectionAdapter(ConnectionAdapter):
     """
     DatabaseConnection class is a wrapper class for psycopg2 connection
     object.
@@ -76,11 +76,11 @@ class DatabaseConnection(Connection):
                     self.__password = val
                     self.__set_ok |= 0b10000
                 else:
-                    print(f"{DatabaseConnection.__name__}: invalid key setting '{key}' is ignored.")
+                    print(f"{Psycopg2ConnectionAdapter.__name__}: invalid key setting '{key}' is ignored.")
 
         if self.__set_ok != 0b11111:
-            raise SystemExit(f"{DatabaseConnection.__name__}: cannot instantiate a DatabaseConnection object without "
-                             f"all settings arguments in method '{DatabaseConnection.__init__.__name__}()'.")
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot instantiate a DatabaseConnection object without "
+                             f"all settings arguments in method '{Psycopg2ConnectionAdapter.__init__.__name__}()'.")
 
 
     def close_conn(self) -> bool:
@@ -95,7 +95,7 @@ class DatabaseConnection(Connection):
         In this way, the 'is_open()' method continues to work properly.
         """
         if not self.is_open():
-            raise SystemExit(f"{DatabaseConnection.__name__}: cannot close connection that is not opened.")
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot close connection that is not opened.")
 
         self.__psycopg2_conn.close()
         self.__psycopg2_conn = None
@@ -112,7 +112,7 @@ class DatabaseConnection(Connection):
         If 'msg_str' is not a valid SQL, SystemExit exception is raised.
         """
         if not self.is_open():
-            raise SystemExit(f"{DatabaseConnection.__name__}: cannot send message when connection is closed.")
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot send message when connection is closed.")
 
         try:
             cursor = self.__psycopg2_conn.cursor()
@@ -121,7 +121,7 @@ class DatabaseConnection(Connection):
             response = cursor.fetchall()
         except Exception as err:
             self.close_conn()
-            raise SystemExit(f"{DatabaseConnection.__name__}: {str(err)}")
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: {str(err)}")
         return response
 
 
@@ -131,13 +131,13 @@ class DatabaseConnection(Connection):
         'psycopg2_conn' is None, otherwise a SystemExit exception is raised.
         """
         if self.is_open():
-            raise SystemExit(f"{DatabaseConnection.__name__}: cannot open connection that is already opened.")
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot open connection that is already opened.")
 
         try:
             self.__psycopg2_conn = psycopg2.connect(database = self.__dbname, port = self.__port, host = self.__hostname,
                                                     user = self.__username, password = self.__password)
         except Exception as err:
-            raise SystemExit(f"{DatabaseConnection.__name__}: {str(err)}")
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: {str(err)}")
         return True
 
 
@@ -150,17 +150,17 @@ class DatabaseConnection(Connection):
 
 
 ################################ FACTORIES ################################
-class ConnectionFactory(ABC):
+class ConnectionAdapterFactory(ABC):
 
     @abstractmethod
-    def create_connection(self, settings: Dict[str, Any]) -> Connection:
+    def create_connection(self, settings: Dict[str, Any]) -> ConnectionAdapter:
         """
         Abstract method for creating the right Connection subclass instance.
         """
         pass
 
 
-class DatabaseConnectionFactory(ConnectionFactory):
+class DatabaseConnectionAdapterFactory(ConnectionAdapterFactory):
 
-    def create_connection(self, settings: Dict[str, Any]) -> DatabaseConnection:
-        return DatabaseConnection(settings)
+    def create_connection(self, settings: Dict[str, Any]) -> Psycopg2ConnectionAdapter:
+        return Psycopg2ConnectionAdapter(settings)

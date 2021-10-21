@@ -7,14 +7,14 @@
 #################################################
 
 import unittest
-from airquality.api.api import AtmotubeAPIRequestFactory
+from airquality.api.api import AtmotubeAPIRequestAdapterFactory
 
 
-class TestAPI(unittest.TestCase):
+class TestAPIRequestAdapter(unittest.TestCase):
 
     def setUp(self) -> None:
         self.bad_api_address = "bad_address"
-        self.atmo_api_factory = AtmotubeAPIRequestFactory()
+        self.atmo_api_factory = AtmotubeAPIRequestAdapterFactory()
 
     def test_system_exit_fetch(self):
         """Test SystemExit when invalid URL is given."""
