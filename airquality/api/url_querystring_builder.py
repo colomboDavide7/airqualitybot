@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 09:52
-# @Description: This file defines the URL querystring builder class
+# @Description: this script defines a class for building valid URL querystring based on sensor type.
 #
 #################################################
 import builtins
@@ -14,19 +14,16 @@ CONCAT_SEPARATOR = "&"
 
 
 class URLQuerystringBuilder(builtins.object):
-    """
-    Class that defines @staticmethods for building the URL
-    querystring for fetching data from sensor's API."""
+    """Class that defines @staticmethods for building the URL querystring based on sensor type"""
 
     @staticmethod
     def AT_querystring_from_date(api_param: Dict[str, Any]) -> str:
-        """
-        Static method that builds a URL querystring for the Atmotube sensor using 'date' field.
+        """Static method that builds a URL querystring for the Atmotube sensor using 'date' field.
 
         -querystring:   the variable that holds the querystring
         -status_check:  binary variable used to check if all mandated parameters are provided
 
-        If api_key, mac or date parameters missed SystemExit exception is raised."""
+        If 'api_key', 'mac' or 'date' parameters missed, SystemExit exception is raised."""
 
         querystring = ""
         status_check = 0b000

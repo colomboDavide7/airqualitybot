@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: gio, 21-10-2021, 11:20
-# @Description: This script defines a class for Input/Output operations
+# @Description: this script defines a class for Input/Output operations.
 #
 #################################################
 import builtins

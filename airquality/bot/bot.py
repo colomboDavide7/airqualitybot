@@ -2,23 +2,21 @@
 #
 # @Author: davidecolombo
 # @Date: mar, 19-10-2021, 19:11
-# @Description: This module contains the BaseBot class and its subclasses
+# @Description: this script defines the classes that use database and sensor APIs.
 #
 #################################################
 from abc import ABC
 from typing import List
 from airquality.database.sql_query_builder import SQLQueryBuilder
-from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapter
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapter
 
 
 class BaseBot(ABC):
-    """
-    Abstract Base Class for bot objects.
+    """Abstract Base Class for bot objects.
 
     -db_conn_interface: instance of Psycopg2ConnectionAdapter
-    -query_builder:     instance of SQLQueryBuilder class
-    """
+    -query_builder:     instance of SQLQueryBuilder class"""
 
     def __init__(self, dbconn: Psycopg2ConnectionAdapter, query_builder: SQLQueryBuilder):
         self.__db_conn_interface = dbconn
@@ -36,18 +34,11 @@ class BaseBot(ABC):
 
 
 class BotMobile(BaseBot):
-    """
-    Subclass of BaseBot that handles mobile sensors data automatically.
+    """Subclass of BaseBot that handles mobile sensors data automatically.
 
-    The purpose of this class is to fetch data through the sensor's API and
-    loading the data to the database.
-    """
+    The purpose of this class is to fetch data from the sensor's API and loading them to the database."""
 
-    def __init__(self,
-                 dbconn: Psycopg2ConnectionAdapter,
-                 query_builder: SQLQueryBuilder,
-                 sensor_models: List[str]
-                 ):
+    def __init__(self, dbconn: Psycopg2ConnectionAdapter, query_builder: SQLQueryBuilder, sensor_models: List[str]):
         super().__init__(dbconn, query_builder)
         self.__models = sensor_models
         query = self.sqlbuilder.select_mobile_sensor_ids(self.__models)

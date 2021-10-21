@@ -2,8 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 08:09
-# @Description: This script contains the classes for connecting with the
-#               sensors API for fetching the data.
+# @Description: this script defines the classes for connecting to the sensor's APIs and fetching the data.
 #
 #################################################
 
@@ -25,11 +24,7 @@ class APIRequestAdapter(ABC):
 
     @abstractmethod
     def fetch(self, query_string: str) -> str:
-        """
-        Abstract method that defines the common interface through which
-        a subclass can fetch data from API.
-
-        Return the response string from the API."""
+        """Abstract method that defines the common interface for fetching data from API."""
         pass
 
 
@@ -38,11 +33,10 @@ class AtmotubeAPIRequestAdapter(APIRequestAdapter):
 
 
     def fetch(self, query_string: str) -> str:
-        """
-        This method takes the URL query string as argument and concatenate it
-        with the 'api_address' instance variable: the result if a valid URL.
+        """This method takes the URL query string as argument and concatenate it with the 'api_address' instance
+        variable: the result if a valid URL.
 
-        In case of failure of the request, SystemExit exception is raised."""
+        In case of request failure, SystemExit exception is raised."""
 
         url = self.api_address + '?' + query_string
         try:

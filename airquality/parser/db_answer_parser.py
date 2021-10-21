@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 11:36
-# @Description: This script defines a class for parsing database answers
+# @Description: this script defines a class for parsing database answers.
 #
 #################################################
 import builtins

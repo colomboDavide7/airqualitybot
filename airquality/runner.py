@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: lun, 18-10-2021, 12:29
-# @Description: This script contains the 'main()' function, i.e., the entry point for the application
+# @Description: this script defines the functions for parsing application arguments and 'main()'.
 #
 #################################################
 import sys

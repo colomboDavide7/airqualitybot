@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: lun, 18-10-2021, 18:18
-# @Description: this file defines the Session class and its behaviour
+# @Description: this script defines a class that holds the current session state of the application.
 #
 #################################################
 import builtins
@@ -13,8 +13,7 @@ class Session(builtins.object):
     """Session class represents the current session state of the application.
 
     - debug:    if True, print debug messages on the command line
-    - logging:  if True, log event locally
-    """
+    - logging:  if True, log event locally"""
 
     DEBUG_HEADER = "[DEBUG]: "
 
@@ -38,8 +37,8 @@ class Session(builtins.object):
         return self.__logging
 
     def debug_msg(self, msg: str) -> bool:
-        """This method print to the console the debug header followed by
-        the debug message passed as argument if debug mode is active."""
+        """This method print to the console the debug header followed by the 'msg' argument if debug mode is active."""
+
         if self.__debug:
             print(Session.DEBUG_HEADER + msg)
             return True

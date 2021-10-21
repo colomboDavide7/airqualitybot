@@ -2,8 +2,8 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 16:42
-# @Description: This script defines a class for picking particular resources
-#               at the right moment from all the parsed resources.
+# @Description: this script defines a class for picking resources from all the parsed resources.
+#
 #################################################
 import builtins
 from typing import Dict, Any, List

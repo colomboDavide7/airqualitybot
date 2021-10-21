@@ -2,8 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mar, 19-10-2021, 12:37
-# @Description: Script that defines the Connection class and its subclasses
-#               and defines the ConnectionFactory and its subclasses
+# @Description: this script defines the adapter classes for database connection.
 #
 #################################################
 import psycopg2

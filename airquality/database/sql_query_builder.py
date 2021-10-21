@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 10:29
-# @Description: This script contains a class that defines methods for dynamically building valid sql queries
+# @Description: this script defines a class for dynamically build valid sql queries.
 #
 #################################################
 import builtins
