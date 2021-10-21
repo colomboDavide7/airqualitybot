@@ -55,9 +55,15 @@ class BotAtmotube(BaseBot):
         super().__init__()
 
     def run(self):
-        pass
 
+        if not self.apiadapter:
+            raise SystemExit(f"{BotAtmotube.__name__}: missing api adapter.")
 
+        if not self.dbconn:
+            raise SystemExit(f"{BotAtmotube.__name__}: missing database connection adapter.")
+
+        if not self.sqlbuilder:
+            raise SystemExit(f"{BotAtmotube.__name__}: missing sql query builder.")
 
 ################################ FACTORY ################################
 class BotFactory(builtins.object):
