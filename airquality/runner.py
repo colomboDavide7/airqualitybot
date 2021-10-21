@@ -100,9 +100,11 @@ def main() -> None:
 
     session.debug_msg(f"{main.__name__}(): -------- STARTING THE PROGRAM --------")
     try:
+        # GET RAW RESOURCE FROM FILE
         raw_resources = IOManager.open_read_close_file(path = RESOURCES)
         session.debug_msg(f"{main.__name__}(): try to read resource file at '{RESOURCES}': OK")
-        
+
+        # PARSE RESOURCE
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = RESOURCES.split('.')[-1])
         parsed_resources = parser.parse(raw_resources)
         session.debug_msg(f"{main.__name__}(): try to parse raw resources: OK")
