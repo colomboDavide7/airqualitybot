@@ -30,19 +30,21 @@ class DatabaseSettingsBuilder(builtins.object):
         Static method that builds the database settings from the parsed
         resources passed by the ResourceLoader.
 
-        DatabaseConnection needed the server information, the username and the
+        DatabaseConnectionAdapter needs the server information, the username and the
         corresponding password. This method copies the server settings from the
         parsed resources and add username and password fields."""
 
         if parsed_resources.get(USERS_SETTINGS, None) is None:
             raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "
                              f"missing '{USERS_SETTINGS}' section in resource file in method "
-                             f"'{DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user.__name__}()'.")
+                             f"'{DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user.__name__}()'."
+                             f"Check your 'properties/resources.json' file.")
 
         if parsed_resources.get(SERVER_SETTINGS, None) is None:
             raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "
                              f"missing '{SERVER_SETTINGS}' section in resource file in method "
-                             f"'{DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user.__name__}()'.")
+                             f"'{DatabaseSettingsBuilder.create_db_settings_from_parsed_resources_for_user.__name__}()'."
+                             f"Check your 'properties/resources.json' file.")
 
         if username not in parsed_resources[USERS_SETTINGS].keys():
             raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "
@@ -62,9 +64,11 @@ class DatabaseSettingsBuilder(builtins.object):
         parsed_resources: Dict[str, Any],
         sensor_type: str
     ) -> List[str]:
-        """This method returns the list of all sensor models from sensor type.
+        """This method returns the list of all sensor models based on sensor type
+        defines in the 'models' section of the 'properties/resources.json' file.
 
-        If 'models' section is missing in resources file, SystemExit exception is raised.
+        If 'models' section is missing in 'properties/resources.json' file,
+        SystemExit exception is raised.
 
         If sensor_type is invalid, SystemExit exception is raised.
         """
@@ -72,7 +76,8 @@ class DatabaseSettingsBuilder(builtins.object):
         if parsed_resources.get(MODELS_SETTINGS, None) is None:
             raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "
                              f"missing '{MODELS_SETTINGS}' section in resource file in method "
-                             f"'{DatabaseSettingsBuilder.list_models_from_type.__name__}()'.")
+                             f"'{DatabaseSettingsBuilder.list_models_from_type.__name__}()'."
+                             f"Check your 'properties/resources.json' file.")
 
         if sensor_type not in parsed_resources[MODELS_SETTINGS].keys():
             raise SystemExit(f"{DatabaseSettingsBuilder.__name__}: "

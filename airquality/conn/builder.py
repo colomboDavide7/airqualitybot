@@ -41,8 +41,9 @@ class SQLQueryBuilder(builtins.object):
 
     def select_mobile_sensor_ids(self, models: List[str]) -> str:
         """
-        This method returns a set of queries for selecting all the sensor ids
-        based on the 'models' list provided as argument.
+        This method returns a string object that contains as many queries as the
+        models passed in the list. Each query can be executed for selecting the
+        sensor ids from the database.
 
         The query_id is used to identify which field to use for retrieving the sql
         query from the parsed data for building the query."""
