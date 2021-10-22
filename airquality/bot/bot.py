@@ -7,6 +7,7 @@
 #################################################
 import builtins
 from abc import ABC, abstractmethod
+from airquality.api.url_querystring_builder import URLQuerystringBuilder
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import ConnectionAdapter
@@ -77,13 +78,22 @@ class BotAtmotube(BaseBot):
         ids = DatabaseAnswerParser.parse_single_attribute_answer(answer)
         Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select sensor ids from identifier 'atmotube': OK")
 
-        # TRY TO GET SENSOR API PARAMETERS
+
         for sensor_id in ids:
+            # TRY TO GET SENSOR API PARAMETERS
             query = self.sqlbuilder.select_api_param_from_sensor_id(sensor_id = sensor_id)
             answer = self.dbconn.send(query)
-            param_name_value = DatabaseAnswerParser.parse_key_val_answer(answer)
+            api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
 
+            # ADD 'FROM DATE' TO API PARAM
+            # TODO: where to insert the date ??? FOR NOW SETTING IT MANUALLY
+            from_date = '2021-07-12'
+            api_param["date"] = from_date
+
+            # BUILD URL QUERYSTRING
+            querystring = URLQuerystringBuilder.AT_querystring_from_date(api_param)
+            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to build URL querystring: OK")
 
 ################################ FACTORY ################################
 class BotFactory(builtins.object):
