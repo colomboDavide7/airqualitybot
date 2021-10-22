@@ -120,7 +120,6 @@ class BotAtmotube(BaseBot):
 
             # BUILD QUERY FOR INSERTING DATA INTO TABLES
             packets = APIPacketPicket.pick_atmotube_api_packet(parsed_api_answer = parsed_api_answer["data"]["items"],
-                                                               sensor_id = sensor_id,
                                                                param_id_code = id_code_dict)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick API packets: OK")
 

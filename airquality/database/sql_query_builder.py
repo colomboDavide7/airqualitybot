@@ -69,7 +69,7 @@ class SQLQueryBuilder(builtins.object):
 
     def insert_measurement(self, packets: List[Dict[str, Any]]) -> str:
 
-        query_id = "insert_measurement"
+        query_id = "insert_mobile_measurement"
 
         if query_id not in self.__parsed.keys():
             raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
@@ -80,9 +80,9 @@ class SQLQueryBuilder(builtins.object):
 
         for packet in packets:
             query += f"({packet[APIPacketPicket.PARAM_ID]}, " \
-                     f"{packet[APIPacketPicket.SENSOR_ID]}, " \
                      f"{packet[APIPacketPicket.PARAM_VALUE]}, " \
-                     f"{packet[APIPacketPicket.TIMESTAMP]}),"
+                     f"{packet[APIPacketPicket.TIMESTAMP]}, " \
+                     f"{packet[APIPacketPicket.GEOMETRY]}),"
 
         query = query.strip(',') + ';'
         return query

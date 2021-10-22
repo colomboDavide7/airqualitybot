@@ -24,6 +24,10 @@ python -m test.bot.test_bot
 python -m test.database.test_db_conn_adapter
 python -m test.database.test_sql_query_builder
 
+###################### RUN TEST GEOM ######################
+
+python -m test.geom.test_postgis_geom_builder
+
 ###################### RUN TEST PARSER ######################
 
 python -m test.parser.test_file_parser
