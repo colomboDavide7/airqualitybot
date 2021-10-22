@@ -24,9 +24,9 @@ class APIRequestAdapter(builtins.object):
 
         url = self.__api_address + '?' + query_string
         try:
-            response = req.urlopen(url)
+            answer = req.urlopen(url).read()
         except Exception as err:
             raise SystemExit(f"{APIRequestAdapter.__name__}: {str(err)}")
         finally:
             req.urlcleanup()
-        return response
+        return answer

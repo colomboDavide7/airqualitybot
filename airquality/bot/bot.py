@@ -80,6 +80,7 @@ class BotAtmotube(BaseBot):
 
 
         for sensor_id in ids:
+            Session.get_current_session().debug_msg(f"---------- SENSOR {sensor_id} ----------")
             # TRY TO GET SENSOR API PARAMETERS
             query = self.sqlbuilder.select_api_param_from_sensor_id(sensor_id = sensor_id)
             answer = self.dbconn.send(query)
@@ -94,6 +95,11 @@ class BotAtmotube(BaseBot):
             # BUILD URL QUERYSTRING
             querystring = URLQuerystringBuilder.AT_querystring_from_date(api_param)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to build URL querystring: OK")
+
+            # MAKE API REQUEST
+            answer = self.apiadapter.fetch(querystring)
+            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to make API request: OK")
+
 
 ################################ FACTORY ################################
 class BotFactory(builtins.object):
