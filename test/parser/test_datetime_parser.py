@@ -31,9 +31,11 @@ class TestDatetimeParser(unittest.TestCase):
 
     def test_last_date_from_api_param(self):
         test_param = {"date": "2021-10-11 09:44:00"}
-        expected_output = "2021-10-11"
-        actual_output = DatetimeParser.last_date_from_api_param(test_param)
-        self.assertEqual(actual_output, expected_output)
+        expected_date = "2021-10-11"
+        expected_time = "09:44:00"
+        date, time = DatetimeParser.last_date_from_api_param(test_param)
+        self.assertEqual(date, expected_date)
+        self.assertEqual(time, expected_time)
 
     def test_system_exit_when_missing_date_param(self):
         test_param = {}
@@ -44,8 +46,8 @@ class TestDatetimeParser(unittest.TestCase):
 
     def test_empty_string_when_date_is_none(self):
         test_param = {"date": None}
-        actual_output = DatetimeParser.last_date_from_api_param(test_param)
-        self.assertEqual(actual_output, "")
+        date, time = DatetimeParser.last_date_from_api_param(test_param)
+        self.assertEqual(date, "")
 
 
 

@@ -27,13 +27,14 @@ class DatetimeParser(builtins.object):
         return ts.replace("T", " ")
 
     @staticmethod
-    def last_date_from_api_param(api_param: Dict[str, Any]) -> str:
+    def last_date_from_api_param(api_param: Dict[str, Any]):
 
         if "date" not in api_param.keys():
             raise SystemExit(f"{DatetimeParser.__name__}: missing 'date' key in method "
                              f"{DatetimeParser.last_date_from_api_param.__name__}.")
 
         date = ""
+        time = ""
         if api_param["date"] is not None:
             date, time = api_param["date"].split(" ")
-        return date
+        return date, time

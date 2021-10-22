@@ -97,15 +97,10 @@ class BotAtmotube(BaseBot):
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
 
-            from_date = DatetimeParser.last_date_from_api_param(api_param)
-
-            # TODO: run sensors request on a different thread x sensor
-
-
-            # # ADD 'FROM DATE' TO API PARAM
-            # # TODO: where to insert the date ??? FOR NOW SETTING IT MANUALLY
-            # from_date = '2021-07-12'
-            # api_param["date"] = from_date
+            # TRY TO GET LAST MEASURE TIMESTAMP
+            last_date, last_time = DatetimeParser.last_date_from_api_param(api_param)
+            api_param["date"] = last_date
+            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to get last measure timestamp: OK")
 
             # BUILD URL QUERYSTRING
             querystring = URLQuerystringBuilder.AT_querystring_from_date(api_param)
