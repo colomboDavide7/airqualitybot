@@ -116,11 +116,13 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
             cursor = self.__psycopg2_conn.cursor()
             cursor.execute(executable_sql_query)
             self.__psycopg2_conn.commit()
-            response = cursor.fetchall()
+            answer = ""
+            if executable_sql_query.startswith("SELECT"):
+                answer = cursor.fetchall()
         except Exception as err:
             self.close_conn()
             raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: {str(err)}")
-        return response
+        return answer
 
     def close_conn(self) -> bool:
         """This method closes the connection to the database.
