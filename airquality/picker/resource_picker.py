@@ -6,7 +6,7 @@
 #
 #################################################
 import builtins
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 
 LOGGER_SECTION = "logger"
@@ -62,9 +62,14 @@ class ResourcePicker(builtins.object):
         if bot_personality not in parsed_resources[API_ADDRESS_SECTION].keys():
             raise SystemExit(f"{ResourcePicker.__name__}: "
                              f"don't recognize personality '{bot_personality}' in method "
-                             f"'{ResourcePicker.pick_db_conn_properties_from_personality.__name__}()'."
+                             f"'{ResourcePicker.pick_api_address_from_number.__name__}()'."
+                             f"Check your 'properties/resources.json' file.")
+
+        if api_address_number not in parsed_resources[API_ADDRESS_SECTION][f"{bot_personality}"].keys():
+            raise SystemExit(f"{ResourcePicker.__name__}: "
+                             f"don't recognize api address number '{bot_personality}' in method "
+                             f"'{ResourcePicker.pick_api_address_from_number.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
 
         return parsed_resources[API_ADDRESS_SECTION][f"{bot_personality}"][f"{api_address_number}"]
-

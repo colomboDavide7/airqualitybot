@@ -11,14 +11,14 @@ from airquality.io.io import IOManager
 from airquality.bot.bot import BotFactory
 from airquality.app.session import Session
 from airquality.parser.file_parser import FileParserFactory
-from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.picker.resource_picker import ResourcePicker
+from airquality.api.api_request_adapter import APIRequestAdapter
+from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.api.api_request_adapter import APIRequestAdapterFactory
 
 
 USAGE = "USAGE: python -m airquality " \
-        "[--help or -h | --debug  or -d | --log or -l] personality"
+        "[--help or -h | --debug  or -d | --log or -l] personality api_address_number"
 
 RESOURCES  = "properties/resources.json"
 QUERIES    = "properties/sql_query.json"
@@ -32,7 +32,9 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
     If '-h' or '--help' is passed as first argument, the function will display
     the usage string and then exits with status code 0.
 
-    If not username is provided, SystemExit exception is raised.
+    If not personality is provided, SystemExit exception is raised.
+
+    If not api_address_number is provided, SystemExit exception is raised.
 
     Unknown or invalid arguments are ignored.
     """
@@ -135,12 +137,8 @@ def main() -> None:
         session.debug_msg(f"{main.__name__}(): try to instantiate sql query builder: OK")
 
         # GET API ADAPTER
-        api_adapter = APIRequestAdapterFactory.create_api_request_adapter(bot_personality = bot_personality)
-        session.debug_msg(f"{main.__name__}(): try to instantiate api adapter from personality '{bot_personality}': OK")
-
-        # SET API ADDRESS TO API ADAPTER
-        api_adapter.api_address = api_address
-        session.debug_msg(f"{main.__name__}(): set api address to api adapter: OK")
+        api_adapter = APIRequestAdapter(api_address = api_address)
+        session.debug_msg(f"{main.__name__}(): try to instantiate api adapter with address '{api_address}': OK")
 
         # CREATE BOT FROM BOT PERSONALITY
         bot = BotFactory.create_bot_from_personality(bot_personality = bot_personality)
@@ -153,6 +151,10 @@ def main() -> None:
         # SET DATABASE ADAPTER TO BOT
         bot.dbconn = dbconn
         session.debug_msg(f"{main.__name__}(): try to set database connection adapter to bot: OK")
+
+        # SET API ADAPTER TO BOT
+        bot.apiadapter = api_adapter
+        session.debug_msg(f"{main.__name__}(): try to set api adapter to bot: OK")
 
     except SystemExit as ex:
         session.debug_msg(str(ex))

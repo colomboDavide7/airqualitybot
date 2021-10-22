@@ -65,6 +65,8 @@ class BotAtmotube(BaseBot):
         if not self.sqlbuilder:
             raise SystemExit(f"{BotAtmotube.__name__}: missing sql query builder.")
 
+
+
 ################################ FACTORY ################################
 class BotFactory(builtins.object):
 

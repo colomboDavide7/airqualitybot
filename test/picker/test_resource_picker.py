@@ -73,6 +73,18 @@ class TestResourcePicker(unittest.TestCase):
                     api_address_number = "1"
             )
 
+    def test_system_exit_when_wrong_api_number(self):
+        parsed_res = {"api_address": {
+            "pers1": {"1": "api_address_1", "2": "api_address_2"}
+        }}
+
+        with self.assertRaises(SystemExit):
+            ResourcePicker.pick_api_address_from_number(
+                    parsed_resources = parsed_res,
+                    bot_personality = "pers1",
+                    api_address_number = "4"
+            )
+
 
 
 if __name__ == '__main__':
