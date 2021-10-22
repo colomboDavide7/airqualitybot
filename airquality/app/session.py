@@ -6,7 +6,6 @@
 #
 #################################################
 import builtins
-from typing import Dict, Any
 
 
 class Session(builtins.object):
@@ -15,26 +14,35 @@ class Session(builtins.object):
     - debug:    if True, print debug messages on the command line
     - logging:  if True, log event locally"""
 
+    __current_session = None
+
+    @staticmethod
+    def get_current_session():
+        if Session.__current_session is None:
+            Session.__current_session = Session()
+        return Session.__current_session
+
     DEBUG_HEADER = "[DEBUG]: "
 
-    def __init__(self, settings: Dict[str, Any]):
+    def __init__(self):
         self.__debug    = False
         self.__logging  = False
 
-        if settings:
-            for key, val in settings.items():
-                if key == 'debug':
-                    self.__debug = True
-                elif key == 'logging':
-                    self.__logging = True
-
     @property
-    def debug(self):
+    def debug(self) -> bool:
         return self.__debug
 
+    @debug.setter
+    def debug(self, value: bool):
+        self.__debug = value
+
     @property
-    def logging(self):
+    def logging(self) -> bool:
         return self.__logging
+
+    @logging.setter
+    def logging(self, value: bool):
+        self.__logging = value
 
     def debug_msg(self, msg: str) -> bool:
         """This method print to the console the debug header followed by the 'msg' argument if debug mode is active."""

@@ -74,6 +74,24 @@ def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
     return kwargs
 
 
+def set_session(session_kwargs: Dict[str, Any]) -> Session:
+    """This function takes a Session object and sets up it properly based on the optional argument
+    passed by the user from the command line."""
+
+    session = Session.get_current_session()
+
+    if session_kwargs:
+        for key in session_kwargs.keys():
+            if key == "debug":
+                session.debug = True
+            elif key == "logging":
+                session.logging = True
+    else:
+        session.debug = False
+        session.logging = False
+    return session
+
+
 ################################ MAIN FUNCTION ################################
 def main() -> None:
     """This function is the entry point for the application
@@ -97,7 +115,7 @@ def main() -> None:
     bot_personality = session_kwargs.pop("personality")
     api_address_number = session_kwargs.pop("api_address_number")
 
-    session = Session(session_kwargs)
+    session = set_session(session_kwargs)
     print(str(session))
 
     session.debug_msg(f"{main.__name__}(): -------- STARTING THE PROGRAM --------")
@@ -155,6 +173,10 @@ def main() -> None:
         # SET API ADAPTER TO BOT
         bot.apiadapter = api_adapter
         session.debug_msg(f"{main.__name__}(): try to set api adapter to bot: OK")
+
+        # RUN BOT
+        bot.run()
+        session.debug_msg(f"{main.__name__}(): try to run bot: OK")
 
     except SystemExit as ex:
         session.debug_msg(str(ex))
