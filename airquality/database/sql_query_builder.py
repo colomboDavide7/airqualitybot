@@ -33,11 +33,6 @@ class SQLQueryBuilder(builtins.object):
 
         query_id = "sensor_ids_from_identifier"
 
-        if not identifier:
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: identifier '{identifier}' provided in method "
-                             f"'{SQLQueryBuilder.select_sensor_ids_from_identifier.__name__}()' is not valid. "
-                             f"Please use a string that identifier your sensor model name.")
-
         if query_id not in self.__parsed.keys():
             raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
                              f"'{SQLQueryBuilder.select_sensor_ids_from_identifier.__name__}()'. "

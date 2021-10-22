@@ -14,22 +14,17 @@ class TestSQLQueryBuilder(unittest.TestCase):
     """Class for testing the sql query builder."""
 
     def setUp(self) -> None:
-        self.sql_builder = SQLQueryBuilder(query_file_path = "properties/sql_query.json")
+        self.sql_builder = SQLQueryBuilder(query_file_path = "properties/test_sql_query.json")
 
-    def test_select_mobile_sensor_ids(self):
+    def test_system_exit_select_sensor_ids_bad_query_identifier(self):
 
-        query = self.sql_builder.select_sensor_ids_from_identifier(["model1", "model2"])
-        self.assertIsNotNone(query)
-        self.assertIsInstance(query, str)
-
-
-    def test_system_exit_with_empty_models(self):
-        """Test SystemExit when mobile model list is passed."""
-
-        models = []
         with self.assertRaises(SystemExit):
-            self.sql_builder.select_sensor_ids_from_identifier(models)
+            self.sql_builder.select_sensor_ids_from_identifier(identifier = "test identifier")
 
+    def test_system_exit_select_api_param_bad_query_identifier(self):
+
+        with self.assertRaises(SystemExit):
+            self.sql_builder.select_api_param_from_sensor_id(sensor_id = 1)
 
 
 
