@@ -32,6 +32,7 @@ python -m test.parser.test_db_answer_parser
 ###################### RUN TEST PICKER ######################
 
 python -m test.picker.test_resource_picker
+python -m test.picker.test_api_picker
 
 ###################### RUN TEST RUNNER ######################
 

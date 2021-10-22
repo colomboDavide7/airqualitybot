@@ -112,10 +112,13 @@ class BotAtmotube(BaseBot):
             answer = self.apiadapter.fetch(querystring)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to make API request: OK")
 
-            # GET JSON PARSER FOR PARSING API ANSWER
+            # GET JSON PARSER FOR CONVERTING API ANSWER
             parser = FileParserFactory.file_parser_from_file_extension("json")
             parsed_api_answer = parser.parse(answer)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to parse API answer: OK")
+
+            # BUILD QUERY FOR INSERTING DATA INTO TABLES
+            print(len(parsed_api_answer["data"]["items"]))
 
 
 

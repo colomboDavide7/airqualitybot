@@ -31,6 +31,10 @@ class TestSQLQueryBuilder(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.sql_builder.select_measure_param_from_identifier(identifier = "atmotube")
 
+    def test_system_exit_insert_measurement_bad_query_identifier(self):
+
+        with self.assertRaises(SystemExit):
+            self.sql_builder.insert_measurement()
 
 if __name__ == '__main__':
     unittest.main()
