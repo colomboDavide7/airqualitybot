@@ -36,5 +36,15 @@ class TestSQLQueryBuilder(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.sql_builder.insert_measurement(builtins.object())
 
+    def test_update_last_packet_date_atmotube(self):
+
+        last_timestamp = "a_valid_timestamp"
+        sensor_id = 1
+        with self.assertRaises(SystemExit):
+            self.sql_builder.update_last_packet_date_atmotube(last_timestamp = last_timestamp, sensor_id = sensor_id)
+
+
+
+
 if __name__ == '__main__':
     unittest.main()

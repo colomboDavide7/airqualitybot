@@ -9,7 +9,7 @@ import builtins
 from typing import Dict, Any, List
 from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
-from airquality.picker.api_packet_picker import APIPacketPicket
+from airquality.picker import PARAM_ID, PARAM_VALUE, TIMESTAMP, GEOMETRY
 
 
 class SQLQueryBuilder(builtins.object):
@@ -79,10 +79,22 @@ class SQLQueryBuilder(builtins.object):
         query = self.__parsed[query_id]
 
         for packet in packets:
-            query += f"({packet[APIPacketPicket.PARAM_ID]}, " \
-                     f"{packet[APIPacketPicket.PARAM_VALUE]}, " \
-                     f"{packet[APIPacketPicket.TIMESTAMP]}, " \
-                     f"{packet[APIPacketPicket.GEOMETRY]}),"
+            query += f"({packet[PARAM_ID]}, " \
+                     f"{packet[PARAM_VALUE]}, " \
+                     f"{packet[TIMESTAMP]}, " \
+                     f"{packet[GEOMETRY]}),"
 
         query = query.strip(',') + ';'
         return query
+
+
+    def update_last_packet_date_atmotube(self, last_timestamp: str, sensor_id: int) -> str:
+
+        query_id = "update_last_packet_date_atmotube"
+
+        if query_id not in self.__parsed.keys():
+            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
+                             f"'{SQLQueryBuilder.insert_measurement.__name__}()'. "
+                             f"Please check your 'properties/sql_query.json' file.")
+
+        return self.__parsed[f"{query_id}"].format(par_val = last_timestamp, sens_id = sensor_id, par_name = "date")

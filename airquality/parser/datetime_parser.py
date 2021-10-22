@@ -6,7 +6,8 @@
 #
 #################################################
 import builtins
-from typing import Dict, Any
+from typing import Dict, Any, List
+from airquality.picker import TIMESTAMP
 
 
 class DatetimeParser(builtins.object):
@@ -38,3 +39,16 @@ class DatetimeParser(builtins.object):
         if api_param["date"] is not None:
             date, time = api_param["date"].split(" ")
         return date, time
+
+    @staticmethod
+    def last_timestamp_from_packets(packets: List[Dict[str, Any]]) -> str:
+
+        packet_id = 0
+        last_timestamp = ""
+
+        for packet in packets:
+            packet_id += 1
+            if packet_id == len(packets):
+                last_timestamp = packet[TIMESTAMP]
+
+        return last_timestamp

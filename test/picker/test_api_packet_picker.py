@@ -8,6 +8,7 @@
 
 
 import unittest
+from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY
 from airquality.picker.api_packet_picker import APIPacketPicket
 
 
@@ -22,10 +23,10 @@ class TestAPIPacketPicker(unittest.TestCase):
 
         test_param_id_code = {"param1": 1}
 
-        expected_answer = [{f"{APIPacketPicket.PARAM_ID}": 1,
-                            f"{APIPacketPicket.PARAM_VALUE}": "'value1'",
-                            f"{APIPacketPicket.TIMESTAMP}": "'a valid timestamp'",
-                            f"{APIPacketPicket.GEOMETRY}": "null"}]
+        expected_answer = [{f"{PARAM_ID}": 1,
+                            f"{PARAM_VALUE}": "'value1'",
+                            f"{TIMESTAMP}": "'a valid timestamp'",
+                            f"{GEOMETRY}": "null"}]
 
         actual_answer = APIPacketPicket.pick_atmotube_api_packet(parsed_api_answer = test_packet, param_id_code = test_param_id_code)
         self.assertEqual(actual_answer, expected_answer)

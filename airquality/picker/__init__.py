@@ -1,0 +1,5 @@
+PARAM_ID  = "par_id"
+SENSOR_ID = "sens_id"
+PARAM_VALUE = "par_val"
+TIMESTAMP = "ts"
+GEOMETRY = "geom"

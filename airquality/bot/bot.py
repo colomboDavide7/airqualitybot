@@ -125,6 +125,12 @@ class BotAtmotube(BaseBot):
             self.dbconn.send(query)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to insert sensor measurements: OK")
 
+            # GET LAST TIMESTAMP FROM PACKETS
+            last_timestamp = DatetimeParser.last_timestamp_from_packets(packets = packets)
+            query = self.sqlbuilder.update_last_packet_date_atmotube(last_timestamp = last_timestamp, sensor_id = sensor_id)
+            self.dbconn.send(query)
+            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to update last acquisition timestamp: OK")
+
 
 ################################ FACTORY ################################
 class BotFactory(builtins.object):

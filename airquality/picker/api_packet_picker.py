@@ -9,6 +9,7 @@ import builtins
 from typing import Dict, Any, List
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
+from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY
 
 
 class APIPacketPicket(builtins.object):
@@ -16,13 +17,6 @@ class APIPacketPicket(builtins.object):
     """This parameter are defined within the APIPacketPicker class and are used for building the output
     dictionary from the methods. The SQLQueryBuilder will use this variables to unpack the dictionary and
     create a query from it."""
-
-
-    PARAM_ID  = "par_id"
-    SENSOR_ID = "sens_id"
-    PARAM_VALUE = "par_val"
-    TIMESTAMP = "ts"
-    GEOMETRY = "geom"
 
 
     @staticmethod
@@ -43,8 +37,8 @@ class APIPacketPicket(builtins.object):
 
             for name, val in packet.items():
                 if name in param_id_code.keys():
-                    outcome.append({APIPacketPicket.PARAM_ID: param_id_code[name],
-                                    APIPacketPicket.PARAM_VALUE: f"'{val}'",
-                                    APIPacketPicket.TIMESTAMP: f"'{timestamp}'",
-                                    APIPacketPicket.GEOMETRY: geom})
+                    outcome.append({PARAM_ID: param_id_code[name],
+                                    PARAM_VALUE: f"'{val}'",
+                                    TIMESTAMP: f"'{timestamp}'",
+                                    GEOMETRY: geom})
         return outcome

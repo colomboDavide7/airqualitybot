@@ -7,6 +7,7 @@
 #################################################
 import unittest
 from airquality.parser.datetime_parser import DatetimeParser
+from airquality.picker import TIMESTAMP
 
 
 class TestDatetimeParser(unittest.TestCase):
@@ -48,6 +49,13 @@ class TestDatetimeParser(unittest.TestCase):
         test_param = {"date": None}
         date, time = DatetimeParser.last_date_from_api_param(test_param)
         self.assertEqual(date, "")
+
+
+    def test_last_timestamp_from_packets(self):
+        test_packet = [{f"{TIMESTAMP}": "ts1"}, {f"{TIMESTAMP}": "ts2"}, {f"{TIMESTAMP}": "ts3"}]
+        expected_output = "ts3"
+        actual_output = DatetimeParser.last_timestamp_from_packets(test_packet)
+        self.assertEqual(actual_output, expected_output)
 
 
 
