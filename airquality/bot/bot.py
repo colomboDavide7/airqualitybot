@@ -12,6 +12,7 @@ from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import ConnectionAdapter
 from airquality.api.api_request_adapter import APIRequestAdapter
+from airquality.parser.file_parser import FileParserFactory
 from airquality.app.session import Session
 
 
@@ -54,6 +55,8 @@ class BaseBot(ABC):
 
 class BotAtmotube(BaseBot):
 
+    SENSOR_IDENTIFIER = "atmotube"
+
     def __init__(self):
         super().__init__()
 
@@ -73,11 +76,16 @@ class BotAtmotube(BaseBot):
         Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to open connection to database: OK")
 
         # TRY TO GET SENSOR IDs
-        query = self.sqlbuilder.select_sensor_ids_from_identifier("atmotube")
+        query = self.sqlbuilder.select_sensor_ids_from_identifier(identifier = BotAtmotube.SENSOR_IDENTIFIER)
         answer = self.dbconn.send(query)
         ids = DatabaseAnswerParser.parse_single_attribute_answer(answer)
-        Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select sensor ids from identifier 'atmotube': OK")
+        Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select sensor ids from identifier: OK")
 
+        # TRY TO GET MEASURE PARAM (ID, CODE) FROM IDENTIFIER
+        query = self.sqlbuilder.select_measure_param_from_identifier(identifier = BotAtmotube.SENSOR_IDENTIFIER)
+        answer = self.dbconn.send(query)
+        id_code_dict = DatabaseAnswerParser.parse_key_val_answer(answer)
+        Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select measure param id from identifier: OK")
 
         for sensor_id in ids:
             Session.get_current_session().debug_msg(f"---------- SENSOR {sensor_id} ----------")
@@ -86,6 +94,10 @@ class BotAtmotube(BaseBot):
             answer = self.dbconn.send(query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
+
+
+            # TODO: run sensors request on a different thread x sensor
+
 
             # ADD 'FROM DATE' TO API PARAM
             # TODO: where to insert the date ??? FOR NOW SETTING IT MANUALLY
@@ -99,6 +111,12 @@ class BotAtmotube(BaseBot):
             # MAKE API REQUEST
             answer = self.apiadapter.fetch(querystring)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to make API request: OK")
+
+            # GET JSON PARSER FOR PARSING API ANSWER
+            parser = FileParserFactory.file_parser_from_file_extension("json")
+            parsed_api_answer = parser.parse(answer)
+            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to parse API answer: OK")
+
 
 
 ################################ FACTORY ################################

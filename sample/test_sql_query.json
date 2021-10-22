@@ -1,4 +1,5 @@
 {
-  "TEST_sensor_ids_from_identifier": "this is only for test purposes",
-  "TEST_api_param_from_sensor_id":  "this is only for test purposes"
+  "TEST_sensor_ids_from_identifier":    "this is only for test purposes",
+  "TEST_api_param_from_sensor_id":      "this is only for test purposes",
+  "TEST_measure_param_from_identifier": "this is only for test purposes"
 }

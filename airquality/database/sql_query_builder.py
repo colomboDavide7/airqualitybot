@@ -51,3 +51,14 @@ class SQLQueryBuilder(builtins.object):
                              f"Please check your 'properties/sql_query.json' file.")
 
         return self.__parsed[query_id].format(id = sensor_id)
+
+    def select_measure_param_from_identifier(self, identifier: str) -> str:
+
+        query_id = "measure_param_from_identifier"
+
+        if query_id not in self.__parsed.keys():
+            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
+                             f"'{SQLQueryBuilder.select_api_param_from_sensor_id.__name__}()'. "
+                             f"Please check your 'properties/sql_query.json' file.")
+
+        return self.__parsed[query_id].format(identifier=identifier)

@@ -26,6 +26,10 @@ class TestSQLQueryBuilder(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.sql_builder.select_api_param_from_sensor_id(sensor_id = 1)
 
+    def test_system_exit_select_measure_param_bad_query_identifier(self):
+
+        with self.assertRaises(SystemExit):
+            self.sql_builder.select_measure_param_from_identifier(identifier = "atmotube")
 
 
 if __name__ == '__main__':

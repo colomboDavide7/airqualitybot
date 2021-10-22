@@ -1,4 +1,5 @@
 {
   "sensor_ids_from_identifier": "SELECT s.your_id_field FROM your_schema.your_sensor_table AS s INNER JOIN your_schema.your_manufacturer_table AS m ON m.your_manufacturer_pk = s.your_manufacturer_fk WHERE model_name ILIKE '%{identifier}%';",
-  "api_param_from_sensor_id":   "SELECT your_name_field, your_value_field FROM your_schema.you_api_param_table WHERE your_sensor_id_field = {id};"
+  "api_param_from_sensor_id":   "SELECT your_name_field, your_value_field FROM your_schema.you_api_param_table WHERE your_sensor_id_field = {id};",
+  "measure_param_from_identifier": "SELECT your_param_id, your_param_code FROM your_schema.your_param_table WHERE your_param_name ILIKE '%{identifier}%';"
 }
