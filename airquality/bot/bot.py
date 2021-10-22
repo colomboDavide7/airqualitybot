@@ -78,9 +78,10 @@ class BotAtmotube(BaseBot):
         Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select sensor ids from identifier 'atmotube': OK")
 
         # TRY TO GET SENSOR API PARAMETERS
-        
-
-
+        query = self.sqlbuilder.select_api_param_from_sensor_id(sensor_ids = ids)
+        answer = self.dbconn.send(query)
+        param_name_value = DatabaseAnswerParser.parse_key_val_answer(answer)
+        Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
 
 ################################ FACTORY ################################
 class BotFactory(builtins.object):
