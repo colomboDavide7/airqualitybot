@@ -122,6 +122,12 @@ class BotAtmotube(BaseBot):
             packets = APIPacketPicket.pick_atmotube_api_packet(parsed_api_answer = parsed_api_answer["data"]["items"],
                                                                sensor_id = sensor_id,
                                                                param_id_code = id_code_dict)
+            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick API packets: OK")
+
+            # TRY INSERT MEASUREMENT
+            query = self.sqlbuilder.insert_measurement(packets)
+            self.dbconn.send(query)
+            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to insert sensor measurements: OK")
 
 
 ################################ FACTORY ################################

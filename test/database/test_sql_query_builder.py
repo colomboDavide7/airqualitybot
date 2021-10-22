@@ -5,7 +5,7 @@
 # @Description: unit test script
 #
 #################################################
-
+import builtins
 import unittest
 from airquality.database.sql_query_builder import SQLQueryBuilder
 
@@ -34,7 +34,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
     def test_system_exit_insert_measurement_bad_query_identifier(self):
 
         with self.assertRaises(SystemExit):
-            self.sql_builder.insert_measurement()
+            self.sql_builder.insert_measurement(builtins.object())
 
 if __name__ == '__main__':
     unittest.main()

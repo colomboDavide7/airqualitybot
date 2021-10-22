@@ -9,6 +9,7 @@ import builtins
 from typing import Dict, Any, List
 from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
+from airquality.picker.api_packet_picker import APIPacketPicket
 
 
 class SQLQueryBuilder(builtins.object):
@@ -66,7 +67,7 @@ class SQLQueryBuilder(builtins.object):
         return self.__parsed[query_id].format(identifier=identifier)
 
 
-    def insert_measurement(self, parsed_packet: List[Dict[str, Any]]) -> str:
+    def insert_measurement(self, packets: List[Dict[str, Any]]) -> str:
 
         query_id = "insert_measurement"
 
@@ -75,4 +76,13 @@ class SQLQueryBuilder(builtins.object):
                              f"'{SQLQueryBuilder.insert_measurement.__name__}()'. "
                              f"Please check your 'properties/sql_query.json' file.")
 
-        return self.__parsed[query_id]
+        query = self.__parsed[query_id]
+
+        for packet in packets:
+            query += f"({packet[APIPacketPicket.PARAM_ID]}, " \
+                     f"{packet[APIPacketPicket.SENSOR_ID]}, " \
+                     f"{packet[APIPacketPicket.PARAM_VALUE]}, " \
+                     f"{packet[APIPacketPicket.TIMESTAMP]}),"
+
+        query = query.strip(',') + ';'
+        return query
