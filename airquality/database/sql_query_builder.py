@@ -6,6 +6,7 @@
 #
 #################################################
 import builtins
+from typing import Dict, Any, List
 from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
 
@@ -65,7 +66,7 @@ class SQLQueryBuilder(builtins.object):
         return self.__parsed[query_id].format(identifier=identifier)
 
 
-    def insert_measurement(self) -> str:
+    def insert_measurement(self, parsed_packet: List[Dict[str, Any]]) -> str:
 
         query_id = "insert_measurement"
 

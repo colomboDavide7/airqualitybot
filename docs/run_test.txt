@@ -28,11 +28,12 @@ python -m test.database.test_sql_query_builder
 
 python -m test.parser.test_file_parser
 python -m test.parser.test_db_answer_parser
+python -m test.parser.test_datetime_parser
 
 ###################### RUN TEST PICKER ######################
 
 python -m test.picker.test_resource_picker
-python -m test.picker.test_api_picker
+python -m test.picker.test_api_packet_picker
 
 ###################### RUN TEST RUNNER ######################
 

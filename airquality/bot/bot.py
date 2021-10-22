@@ -12,6 +12,7 @@ from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import ConnectionAdapter
 from airquality.api.api_request_adapter import APIRequestAdapter
+from airquality.picker.api_packet_picker import APIPacketPicket
 from airquality.parser.file_parser import FileParserFactory
 from airquality.app.session import Session
 
@@ -118,8 +119,9 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to parse API answer: OK")
 
             # BUILD QUERY FOR INSERTING DATA INTO TABLES
-            print(len(parsed_api_answer["data"]["items"]))
-
+            packets = APIPacketPicket.pick_atmotube_api_packet(parsed_api_answer = parsed_api_answer["data"]["items"],
+                                                               sensor_id = sensor_id,
+                                                               param_id_code = id_code_dict)
 
 
 ################################ FACTORY ################################
