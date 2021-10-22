@@ -36,7 +36,7 @@ class APIPacketPicket(builtins.object):
         outcome = []
 
         for packet in parsed_api_answer:
-            timestamp = DatetimeParser.parser_atmotube_timestamp(packet["time"])
+            timestamp = DatetimeParser.parse_atmotube_timestamp(packet["time"])
             geom = "null"
             if packet.get("coords", None) is not None:
                 geom = PostGISGeomBuilder.build_ST_Point_from_coords(x = packet["coords"]["lon"], y = packet["coords"]["lat"])

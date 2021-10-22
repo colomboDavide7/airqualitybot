@@ -13,6 +13,7 @@ from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import ConnectionAdapter
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.picker.api_packet_picker import APIPacketPicket
+from airquality.parser.datetime_parser import DatetimeParser
 from airquality.parser.file_parser import FileParserFactory
 from airquality.app.session import Session
 
@@ -96,14 +97,15 @@ class BotAtmotube(BaseBot):
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
 
+            from_date = DatetimeParser.last_date_from_api_param(api_param)
 
             # TODO: run sensors request on a different thread x sensor
 
 
-            # ADD 'FROM DATE' TO API PARAM
-            # TODO: where to insert the date ??? FOR NOW SETTING IT MANUALLY
-            from_date = '2021-07-12'
-            api_param["date"] = from_date
+            # # ADD 'FROM DATE' TO API PARAM
+            # # TODO: where to insert the date ??? FOR NOW SETTING IT MANUALLY
+            # from_date = '2021-07-12'
+            # api_param["date"] = from_date
 
             # BUILD URL QUERYSTRING
             querystring = URLQuerystringBuilder.AT_querystring_from_date(api_param)
