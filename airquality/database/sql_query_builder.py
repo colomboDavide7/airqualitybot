@@ -6,7 +6,6 @@
 #
 #################################################
 import builtins
-from typing import List
 from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
 
@@ -47,7 +46,7 @@ class SQLQueryBuilder(builtins.object):
         return self.__parsed[query_id].format(identifier=identifier)
 
 
-    def select_api_param_from_sensor_id(self, sensor_ids: List[int]) -> str:
+    def select_api_param_from_sensor_id(self, sensor_id: int) -> str:
 
         query_id = "api_param_from_sensor_id"
 
@@ -56,7 +55,4 @@ class SQLQueryBuilder(builtins.object):
                              f"'{SQLQueryBuilder.select_api_param_from_sensor_id.__name__}()'. "
                              f"Please check your 'properties/sql_query.json' file.")
 
-        query = ""
-        for sensor_id in sensor_ids:
-            query += self.__parsed[query_id].format(id = sensor_id)
-        return query
+        return self.__parsed[query_id].format(id = sensor_id)
