@@ -69,14 +69,14 @@ class DatetimeParser(builtins.object):
 
 
     @staticmethod
-    def last_timestamp_from_packets(packets: List[Dict[str, Any]]) -> str:
+    def last_atmotube_measure_timestamp_from_packets(packets: List[Dict[str, Any]]) -> str:
 
-        packet_id = 0
         last_timestamp = ""
-
-        for packet in packets:
-            packet_id += 1
-            if packet_id == len(packets):
-                last_timestamp = packet[TIMESTAMP]
+        if packets:
+            packet_id = 0
+            for packet in packets:
+                packet_id += 1
+                if packet_id == len(packets):
+                    last_timestamp = packet[TIMESTAMP]
 
         return last_timestamp

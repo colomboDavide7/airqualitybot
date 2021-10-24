@@ -75,4 +75,8 @@ class SQLQueryBuilder(builtins.object):
 
         query_id = "update_last_packet_date_atmotube"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
-        return self.__parsed[f"{query_id}"].format(par_val = last_timestamp, sens_id = sensor_id, par_name = "date")
+
+        query = ""
+        if last_timestamp != "":
+            query = self.__parsed[f"{query_id}"].format(par_val = last_timestamp, sens_id = sensor_id, par_name = "date")
+        return query

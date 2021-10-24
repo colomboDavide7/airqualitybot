@@ -26,6 +26,12 @@ class TestSQLQueryBuilder(unittest.TestCase):
         actual_output = self.sql_builder.insert_measurements(packets = test_packets)
         self.assertEqual(actual_output, expected_output)
 
+    def test_empty_query_when_empty_timestamp(self):
+        test_timestamp = ""
+        expected_output = ""
+        actual_output = self.sql_builder.update_last_packet_date_atmotube(last_timestamp = test_timestamp,
+                                                                          sensor_id = 1)
+        self.assertEqual(actual_output, expected_output)
 
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ class TestDatetimeParser(unittest.TestCase):
     def test_last_timestamp_from_packets(self):
         test_packet = [{f"{TIMESTAMP}": "ts1"}, {f"{TIMESTAMP}": "ts2"}, {f"{TIMESTAMP}": "ts3"}]
         expected_output = "ts3"
-        actual_output = DatetimeParser.last_timestamp_from_packets(test_packet)
+        actual_output = DatetimeParser.last_atmotube_measure_timestamp_from_packets(test_packet)
         self.assertEqual(actual_output, expected_output)
 
 
@@ -61,6 +61,13 @@ class TestDatetimeParser(unittest.TestCase):
 
         with self.assertRaises(SystemExit):
             DatetimeParser.is_ts1_before_ts2(ts1 = test_ts2, ts2 = test_ts1)
+
+
+    def test_empty_timestamp_when_empty_packets(self):
+        test_packets = []
+        expected_output = ""
+        actual_output = DatetimeParser.last_atmotube_measure_timestamp_from_packets(test_packets)
+        self.assertEqual(actual_output, expected_output)
 
 
 if __name__ == '__main__':
