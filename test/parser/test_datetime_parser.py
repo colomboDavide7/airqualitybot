@@ -68,5 +68,12 @@ class TestDatetimeParser(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
 
+    def test_false_when_comparing_empty_timestamp_strings(self):
+        test_empty_ts = ""
+        test_valid_ts = "2021-10-01 09:44:00"
+        self.assertFalse(DatetimeParser.is_ts1_before_ts2(ts1 = test_empty_ts, ts2 = test_valid_ts))
+        self.assertFalse(DatetimeParser.is_ts1_before_ts2(ts2 = test_empty_ts, ts1 = test_valid_ts))
+
+
 if __name__ == '__main__':
     unittest.main()

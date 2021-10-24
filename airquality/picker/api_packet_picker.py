@@ -21,42 +21,33 @@ class APIPacketPicker(builtins.object):
 
 
     @staticmethod
-    def pick_atmotube_api_packet(parsed_api_answer: List[Dict[str, Any]], param_id_code: Dict[str, int]) -> List[Dict[str, Any]]:
+    def pick_atmotube_api_packets_from_last_timestamp_on(
+        parsed_api_answer: List[Dict[str, Any]],
+        param_id_code: Dict[str, int],
+        last_timestamp: str
+    ) -> List[Dict[str, Any]]:
         """Static method that returns a list of dictionaries. Each dictionary contains the key-value for inserting
         measurement into the database.
 
-        -key:   identifier for the database table attribute (one of the class variable defines in this class)
-        -value: value measured by the sensor."""
+        The dictionary keys are taken from (TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY).
+        This is done in order to ensure that other methods that takes the packets outputted by this method as argument,
+        can understand the structure.
+
+        The purpose of this method is to assemble a valid packet from the list of parsed packets taken from the APIs.
+
+        Each packet if translated in the form:
+            - param_id:     the id of the parameter taken from the 'param_id_code' argument.
+            - param_value:  the value of the parameter associated to the 'param_id'
+            - timestamp:    the current measure timestamp taken from the packet
+            - geometry:     the geometry object associated to the measure (POINT)
+
+        This structure is related to database tables."""
 
         outcome = EMPTY_LIST
 
         for packet in parsed_api_answer:
             timestamp = DatetimeParser.parse_atmotube_timestamp(packet["time"])
-            geom = "null"
-            if packet.get("coords", None) is not None:
-                geom = PostGISGeomBuilder.build_ST_Point_from_coords(x = packet["coords"]["lon"], y = packet["coords"]["lat"])
-
-            for name, val in packet.items():
-                if name in param_id_code.keys():
-                    outcome.append({PARAM_ID: param_id_code[name],
-                                    PARAM_VALUE: f"'{val}'",
-                                    TIMESTAMP: f"'{timestamp}'",
-                                    GEOMETRY: geom})
-        return outcome
-
-
-    @staticmethod
-    def pick_atmotube_api_packets_with_timestamp_offset(
-        parsed_api_answer: List[Dict[str, Any]],
-        param_id_code: Dict[str, int],
-        timestamp_offset: str
-    ) -> List[Dict[str, Any]]:
-
-        outcome = EMPTY_LIST
-
-        for packet in parsed_api_answer:
-            timestamp = DatetimeParser.parse_atmotube_timestamp(packet["time"])
-            if not DatetimeParser.is_ts1_before_ts2(ts1 = timestamp, ts2 = timestamp_offset):
+            if not DatetimeParser.is_ts1_before_ts2(ts1 = timestamp, ts2 = last_timestamp):
                 geom = "null"
                 if packet.get("coords", None) is not None:
                     geom = PostGISGeomBuilder.build_ST_Point_from_coords(x = packet["coords"]["lon"],

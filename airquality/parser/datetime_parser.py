@@ -10,6 +10,7 @@ import re
 import builtins
 from typing import Dict, Any, List
 from airquality.picker import TIMESTAMP
+from airquality.app import EMPTY_STRING
 
 
 class DatetimeParser(builtins.object):
@@ -55,6 +56,16 @@ class DatetimeParser(builtins.object):
 
     @staticmethod
     def is_ts1_before_ts2(ts1: str, ts2: str) -> bool:
+        f"""Static method that compares if 'ts1' timestamp string is before 'ts2' timestamp string.
+        
+        Both 'ts1' and 'ts2' are expected to be in the form: '{DatetimeParser.SQL_TIMESTAMP_PATTERN}'.
+        If 'ts1' or 'ts2' are empty, False is returned.
+        
+        If 'ts1' or 'ts2' format are invalid, SystemExit exception is raised."""
+
+        if ts1 == EMPTY_STRING or ts2 == EMPTY_STRING:
+            return False
+
         DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
                 ts = ts1,
                 pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
