@@ -54,8 +54,11 @@ class BaseBot(ABC):
     @abstractmethod
     def run(self):
         pass
+#############################################################################
 
+#                           ATMOTUBE BOT                                    #
 
+#############################################################################
 class BotAtmotube(BaseBot):
 
     SENSOR_IDENTIFIER = "atmotube"
@@ -142,6 +145,38 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to update last acquisition timestamp: OK")
 
 
+#############################################################################
+
+#                           PURPLEAIR BOT                                   #
+
+#############################################################################
+
+class BotPurpleair(BaseBot):
+
+
+    SENSOR_IDENTIFIER = "purpleair"
+
+
+    def run(self):
+
+        if not self.apiadapter:
+            raise SystemExit(f"{BotAtmotube.__name__}: missing api adapter.")
+
+        if not self.dbconn:
+            raise SystemExit(f"{BotAtmotube.__name__}: missing database connection adapter.")
+
+        if not self.sqlbuilder:
+            raise SystemExit(f"{BotAtmotube.__name__}: missing sql query builder.")
+
+
+
+
+
+
+
+
+
+
 ################################ FACTORY ################################
 class BotFactory(builtins.object):
 
@@ -151,5 +186,7 @@ class BotFactory(builtins.object):
 
         if bot_personality == "atmotube":
             return BotAtmotube()
+        elif bot_personality == "purpleair":
+            return BotPurpleair()
         else:
             raise SystemExit(f"{BotFactory.__name__}: invalid bot personality {bot_personality}.")
