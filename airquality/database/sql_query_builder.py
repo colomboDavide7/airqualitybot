@@ -25,57 +25,37 @@ class SQLQueryBuilder(builtins.object):
         self.__parsed = parser.parse(self.__raw)
 
 
-    def select_sensor_ids_from_identifier(self, identifier: str) -> str:
-        """This method returns a string that contains sql query for selecting
-
-        If 'identifier' is empty, SystemExit exception is raised.
-
-        If 'query_id' does not match one of the sql query identifier in 'properties/sql_query.json' file,
-        SystemExit exception is raised."""
-
-        query_id = "sensor_ids_from_identifier"
-
+    def _raise_exception_if_query_identifier_not_found(self, query_id: str):
         if query_id not in self.__parsed.keys():
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
-                             f"'{SQLQueryBuilder.select_sensor_ids_from_identifier.__name__}()'. "
+            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found. "
                              f"Please check your 'properties/sql_query.json' file.")
 
+
+    def select_sensor_ids_from_identifier(self, identifier: str) -> str:
+
+        query_id = "sensor_ids_from_identifier"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         return self.__parsed[query_id].format(identifier=identifier)
 
 
     def select_api_param_from_sensor_id(self, sensor_id: int) -> str:
 
         query_id = "api_param_from_sensor_id"
-
-        if query_id not in self.__parsed.keys():
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
-                             f"'{SQLQueryBuilder.select_api_param_from_sensor_id.__name__}()'. "
-                             f"Please check your 'properties/sql_query.json' file.")
-
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         return self.__parsed[query_id].format(id = sensor_id)
 
 
     def select_measure_param_from_identifier(self, identifier: str) -> str:
 
         query_id = "measure_param_from_identifier"
-
-        if query_id not in self.__parsed.keys():
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
-                             f"'{SQLQueryBuilder.select_api_param_from_sensor_id.__name__}()'. "
-                             f"Please check your 'properties/sql_query.json' file.")
-
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         return self.__parsed[query_id].format(identifier=identifier)
 
 
-    def insert_measurement(self, packets: List[Dict[str, Any]]) -> str:
+    def insert_measurements(self, packets: List[Dict[str, Any]]) -> str:
 
         query_id = "insert_mobile_measurement"
-
-        if query_id not in self.__parsed.keys():
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
-                             f"'{SQLQueryBuilder.insert_measurement.__name__}()'. "
-                             f"Please check your 'properties/sql_query.json' file.")
-
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         query = self.__parsed[query_id]
 
         for packet in packets:
@@ -91,10 +71,5 @@ class SQLQueryBuilder(builtins.object):
     def update_last_packet_date_atmotube(self, last_timestamp: str, sensor_id: int) -> str:
 
         query_id = "update_last_packet_date_atmotube"
-
-        if query_id not in self.__parsed.keys():
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found in method "
-                             f"'{SQLQueryBuilder.insert_measurement.__name__}()'. "
-                             f"Please check your 'properties/sql_query.json' file.")
-
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         return self.__parsed[f"{query_id}"].format(par_val = last_timestamp, sens_id = sensor_id, par_name = "date")

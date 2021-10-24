@@ -5,7 +5,6 @@
 # @Description: unit test script
 #
 #################################################
-import builtins
 import unittest
 from airquality.database.sql_query_builder import SQLQueryBuilder
 
@@ -14,35 +13,12 @@ class TestSQLQueryBuilder(unittest.TestCase):
     """Class for testing the sql query builder."""
 
     def setUp(self) -> None:
-        self.sql_builder = SQLQueryBuilder(query_file_path = "properties/test_sql_query.json")
+        self.sql_builder = SQLQueryBuilder(query_file_path = "properties/sql_query.json")
 
-    def test_system_exit_select_sensor_ids_bad_query_identifier(self):
-
+    def test_system_exit_when_query_identifier_not_found(self):
+        test_query_id = "bad query identifier"
         with self.assertRaises(SystemExit):
-            self.sql_builder.select_sensor_ids_from_identifier(identifier = "test identifier")
-
-    def test_system_exit_select_api_param_bad_query_identifier(self):
-
-        with self.assertRaises(SystemExit):
-            self.sql_builder.select_api_param_from_sensor_id(sensor_id = 1)
-
-    def test_system_exit_select_measure_param_bad_query_identifier(self):
-
-        with self.assertRaises(SystemExit):
-            self.sql_builder.select_measure_param_from_identifier(identifier = "atmotube")
-
-    def test_system_exit_insert_measurement_bad_query_identifier(self):
-
-        with self.assertRaises(SystemExit):
-            self.sql_builder.insert_measurement(builtins.object())
-
-    def test_update_last_packet_date_atmotube(self):
-
-        last_timestamp = "a_valid_timestamp"
-        sensor_id = 1
-        with self.assertRaises(SystemExit):
-            self.sql_builder.update_last_packet_date_atmotube(last_timestamp = last_timestamp, sensor_id = sensor_id)
-
+            self.sql_builder._raise_exception_if_query_identifier_not_found(query_id = test_query_id)
 
 
 

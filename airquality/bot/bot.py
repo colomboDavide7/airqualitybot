@@ -115,17 +115,17 @@ class BotAtmotube(BaseBot):
             parsed_api_answer = parser.parse(answer)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to parse API answer: OK")
 
-            # BUILD QUERY FOR INSERTING DATA INTO TABLES
+            # BUILD ATMOTUBE MEASURE PACKET FOR INSERTING DATA INTO TABLES
             packets = APIPacketPicket.pick_atmotube_api_packet(parsed_api_answer = parsed_api_answer["data"]["items"],
                                                                param_id_code = id_code_dict)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick API packets: OK")
 
-            # TRY INSERT MEASUREMENT
-            query = self.sqlbuilder.insert_measurement(packets)
+            # TRY TO BUILD QUERY FOR INSERTING MEASUREMENT INTO DATABASE
+            query = self.sqlbuilder.insert_measurements(packets)
             self.dbconn.send(query)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to insert sensor measurements: OK")
 
-            # GET LAST TIMESTAMP FROM PACKETS
+            # UPDATE LAST TIMESTAMP FROM PACKETS
             last_timestamp = DatetimeParser.last_timestamp_from_packets(packets = packets)
             query = self.sqlbuilder.update_last_packet_date_atmotube(last_timestamp = last_timestamp, sensor_id = sensor_id)
             self.dbconn.send(query)
