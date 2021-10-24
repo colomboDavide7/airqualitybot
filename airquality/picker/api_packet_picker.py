@@ -12,7 +12,7 @@ from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY
 
 
-class APIPacketPicket(builtins.object):
+class APIPacketPicker(builtins.object):
 
     """This parameter are defined within the APIPacketPicker class and are used for building the output
     dictionary from the methods. The SQLQueryBuilder will use this variables to unpack the dictionary and
@@ -48,6 +48,9 @@ class APIPacketPicket(builtins.object):
     def pick_last_atmotube_measure_timestamp_from_api_param(api_param: Dict[str, Any]) -> str:
 
         if "date" not in api_param.keys():
-            raise SystemExit(f"{APIPacketPicket.pick_last_atmotube_measure_timestamp_from_api_param.__name__}(): "
+            raise SystemExit(f"{APIPacketPicker.pick_last_atmotube_measure_timestamp_from_api_param.__name__}(): "
                              f"missing 'date' key in Atmotube api parameters.")
-        return api_param["date"]
+        date = ""
+        if api_param.get("date", None) is not None:
+            date = api_param["date"]
+        return date

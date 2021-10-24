@@ -12,7 +12,7 @@ from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import ConnectionAdapter
 from airquality.api.api_request_adapter import APIRequestAdapter
-from airquality.picker.api_packet_picker import APIPacketPicket
+from airquality.picker.api_packet_picker import APIPacketPicker
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.parser.file_parser import FileParserFactory
 from airquality.app.session import Session
@@ -98,8 +98,8 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
 
             # TRY TO PICK LAST ATMOTUBE TIMESTAMP FROM API PARAMETERS
-            last_atmotube_timestamp = APIPacketPicket.pick_last_atmotube_measure_timestamp_from_api_param(api_param)
-
+            last_atmotube_timestamp = APIPacketPicker.pick_last_atmotube_measure_timestamp_from_api_param(api_param)
+            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick last atmotube timestamp: OK")
 
             # TRY TO GET LAST MEASURE TIMESTAMP
             last_date, last_time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(last_atmotube_timestamp)
@@ -120,7 +120,7 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to parse API answer: OK")
 
             # BUILD ATMOTUBE MEASURE PACKET FOR INSERTING DATA INTO TABLES
-            packets = APIPacketPicket.pick_atmotube_api_packet(parsed_api_answer = parsed_api_answer["data"]["items"],
+            packets = APIPacketPicker.pick_atmotube_api_packet(parsed_api_answer = parsed_api_answer["data"]["items"],
                                                                param_id_code = id_code_dict)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick API packets: OK")
 
