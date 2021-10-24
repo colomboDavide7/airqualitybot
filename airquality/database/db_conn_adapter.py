@@ -112,11 +112,14 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
         if not self.is_open():
             raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot send message when connection is closed.")
 
+        answer = ""
+        if executable_sql_query == "":
+            return answer
+        
         try:
             cursor = self.__psycopg2_conn.cursor()
             cursor.execute(executable_sql_query)
             self.__psycopg2_conn.commit()
-            answer = ""
             if executable_sql_query.startswith("SELECT"):
                 answer = cursor.fetchall()
         except Exception as err:
