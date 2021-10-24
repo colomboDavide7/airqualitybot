@@ -56,15 +56,18 @@ class SQLQueryBuilder(builtins.object):
 
         query_id = "insert_mobile_measurement"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
-        query = self.__parsed[query_id]
 
-        for packet in packets:
-            query += f"({packet[PARAM_ID]}, " \
-                     f"{packet[PARAM_VALUE]}, " \
-                     f"{packet[TIMESTAMP]}, " \
-                     f"{packet[GEOMETRY]}),"
+        query = ""
+        if packets:
+            query = self.__parsed[query_id]
 
-        query = query.strip(',') + ';'
+            for packet in packets:
+                query += f"({packet[PARAM_ID]}, " \
+                         f"{packet[PARAM_VALUE]}, " \
+                         f"{packet[TIMESTAMP]}, " \
+                         f"{packet[GEOMETRY]}),"
+
+            query = query.strip(',') + ';'
         return query
 
 

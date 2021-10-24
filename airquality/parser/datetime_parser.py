@@ -5,6 +5,7 @@
 # @Description: this script defines a class for parsing sensor's API timestamps
 #
 #################################################
+import datetime
 import re
 import builtins
 from typing import Dict, Any, List
@@ -16,6 +17,7 @@ class DatetimeParser(builtins.object):
 
     ATMOTUBE_DATETIME_PATTERN = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z')
     SQL_TIMESTAMP_PATTERN = re.compile(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
+    DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
     @staticmethod
@@ -45,6 +47,25 @@ class DatetimeParser(builtins.object):
         )
         date, time = ts.split(" ")
         return date, time
+
+
+    @staticmethod
+    def is_ts1_before_ts2(ts1: str, ts2: str) -> bool:
+        DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+                ts = ts1,
+                pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
+        )
+
+        DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+                ts = ts2,
+                pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
+        )
+
+        ts1_datetime = datetime.datetime.strptime(ts1, DatetimeParser.DATETIME_FORMAT)
+        ts2_datetime = datetime.datetime.strptime(ts2, DatetimeParser.DATETIME_FORMAT)
+        if (ts2_datetime - ts1_datetime).total_seconds() >= 0:
+            return True
+        return False
 
 
     @staticmethod

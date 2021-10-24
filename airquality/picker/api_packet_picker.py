@@ -45,6 +45,32 @@ class APIPacketPicker(builtins.object):
 
 
     @staticmethod
+    def pick_atmotube_api_packets_with_timestamp_offset(
+        parsed_api_answer: List[Dict[str, Any]],
+        param_id_code: Dict[str, int],
+        timestamp_offset: str
+    ) -> List[Dict[str, Any]]:
+
+        outcome = []
+
+        for packet in parsed_api_answer:
+            timestamp = DatetimeParser.parse_atmotube_timestamp(packet["time"])
+            if not DatetimeParser.is_ts1_before_ts2(ts1 = timestamp, ts2 = timestamp_offset):
+                geom = "null"
+                if packet.get("coords", None) is not None:
+                    geom = PostGISGeomBuilder.build_ST_Point_from_coords(x = packet["coords"]["lon"],
+                                                                         y = packet["coords"]["lat"])
+
+                for name, val in packet.items():
+                    if name in param_id_code.keys():
+                        outcome.append({PARAM_ID: param_id_code[name],
+                                        PARAM_VALUE: f"'{val}'",
+                                        TIMESTAMP: f"'{timestamp}'",
+                                        GEOMETRY: geom})
+        return outcome
+
+
+    @staticmethod
     def pick_last_atmotube_measure_timestamp_from_api_param(api_param: Dict[str, Any]) -> str:
 
         if "date" not in api_param.keys():

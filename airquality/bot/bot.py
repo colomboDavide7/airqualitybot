@@ -101,12 +101,11 @@ class BotAtmotube(BaseBot):
             last_atmotube_timestamp = APIPacketPicker.pick_last_atmotube_measure_timestamp_from_api_param(api_param)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick last atmotube timestamp: OK")
 
-            # CHECK DATE TIMESTAMP NOT EMPTY
-            # TODO
-
-
-            # TRY TO GET LAST MEASURE TIMESTAMP
-            last_date, last_time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(last_atmotube_timestamp)
+            # TRY TO GET LAST ATMOTUBE MEASURE TIMESTAMP
+            last_date = ""
+            last_time = ""
+            if last_atmotube_timestamp != "":
+                last_date, last_time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(last_atmotube_timestamp)
             api_param["date"] = last_date
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to get last measure timestamp: OK")
 
@@ -124,8 +123,17 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to parse API answer: OK")
 
             # BUILD ATMOTUBE MEASURE PACKET FOR INSERTING DATA INTO TABLES
-            packets = APIPacketPicker.pick_atmotube_api_packet(parsed_api_answer = parsed_api_answer["data"]["items"],
-                                                               param_id_code = id_code_dict)
+            if last_time == "":
+                packets = APIPacketPicker.pick_atmotube_api_packet(
+                        parsed_api_answer = parsed_api_answer["data"]["items"],
+                        param_id_code = id_code_dict
+                )
+            else:
+                packets = APIPacketPicker.pick_atmotube_api_packets_with_timestamp_offset(
+                        parsed_api_answer = parsed_api_answer["data"]["items"],
+                        param_id_code = id_code_dict,
+                        timestamp_offset = last_atmotube_timestamp
+                )
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick API packets: OK")
 
             # TRY TO BUILD QUERY FOR INSERTING MEASUREMENT INTO DATABASE

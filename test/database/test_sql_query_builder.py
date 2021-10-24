@@ -20,6 +20,12 @@ class TestSQLQueryBuilder(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.sql_builder._raise_exception_if_query_identifier_not_found(query_id = test_query_id)
 
+    def test_empty_query_when_empty_packet_list(self):
+        test_packets = []
+        expected_output = ""
+        actual_output = self.sql_builder.insert_measurements(packets = test_packets)
+        self.assertEqual(actual_output, expected_output)
+
 
 
 if __name__ == '__main__':

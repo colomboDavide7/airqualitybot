@@ -46,6 +46,22 @@ class TestDatetimeParser(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
 
+    def test_is_ts1_before_ts2(self):
+        test_ts1 = "2021-10-01 09:43:59"
+        test_ts2 = "2021-10-01 09:44:00"
+        actual_output = DatetimeParser.is_ts1_before_ts2(ts1 = test_ts1, ts2 = test_ts2)
+        self.assertTrue(actual_output)
+
+
+    def test_error_when_timestamp_are_invalid(self):
+        test_ts1 = "bad_timestamp"
+        test_ts2 = "2021-10-01 09:44:00"
+        with self.assertRaises(SystemExit):
+            DatetimeParser.is_ts1_before_ts2(ts1 = test_ts1, ts2 = test_ts2)
+
+        with self.assertRaises(SystemExit):
+            DatetimeParser.is_ts1_before_ts2(ts1 = test_ts2, ts2 = test_ts1)
+
 
 if __name__ == '__main__':
     unittest.main()
