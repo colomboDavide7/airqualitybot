@@ -97,8 +97,12 @@ class BotAtmotube(BaseBot):
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
 
+            # TRY TO PICK LAST ATMOTUBE TIMESTAMP FROM API PARAMETERS
+            last_atmotube_timestamp = APIPacketPicket.pick_last_atmotube_measure_timestamp_from_api_param(api_param)
+
+
             # TRY TO GET LAST MEASURE TIMESTAMP
-            last_date, last_time = DatetimeParser.last_date_from_api_param(api_param)
+            last_date, last_time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(last_atmotube_timestamp)
             api_param["date"] = last_date
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to get last measure timestamp: OK")
 

@@ -18,17 +18,20 @@ class TestAPIPacketPicker(unittest.TestCase):
     def test_pick_atmotube_packet_without_geom(self):
         test_packet = [
             {"param1":  "value1",
-             "time":    "a valid timestamp"
+             "time":    "2021-10-11T09:44:00.000Z"
              }]
 
         test_param_id_code = {"param1": 1}
 
         expected_answer = [{f"{PARAM_ID}": 1,
                             f"{PARAM_VALUE}": "'value1'",
-                            f"{TIMESTAMP}": "'a valid timestamp'",
+                            f"{TIMESTAMP}": "'2021-10-11 09:44:00'",
                             f"{GEOMETRY}": "null"}]
 
-        actual_answer = APIPacketPicket.pick_atmotube_api_packet(parsed_api_answer = test_packet, param_id_code = test_param_id_code)
+        actual_answer = APIPacketPicket.pick_atmotube_api_packet(
+                parsed_api_answer = test_packet,
+                param_id_code = test_param_id_code
+        )
         self.assertEqual(actual_answer, expected_answer)
 
 

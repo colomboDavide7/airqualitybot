@@ -5,6 +5,7 @@
 # @Description: this script defines a class for parsing sensor's API timestamps
 #
 #################################################
+import re
 import builtins
 from typing import Dict, Any, List
 from airquality.picker import TIMESTAMP
@@ -13,31 +14,25 @@ from airquality.picker import TIMESTAMP
 class DatetimeParser(builtins.object):
 
 
+    ATMOTUBE_DATETIME_PATTERN = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z')
+
+
     @staticmethod
     def parse_atmotube_timestamp(ts: str) -> str:
-        if not isinstance(ts, str):
-            raise SystemExit(f"{DatetimeParser.__name__}: error while parsing timestamp in method "
-                             f"{DatetimeParser.parse_atmotube_timestamp.__name__}: "
-                             f"timestamp must be instance of class 'str'")
-
-        if ts == "":
-            raise SystemExit(f"{DatetimeParser.__name__}: cannot parse empty timestamp in method "
-                             f"{DatetimeParser.parse_atmotube_timestamp.__name__}")
-
+        if not re.match(DatetimeParser.ATMOTUBE_DATETIME_PATTERN, ts):
+            raise SystemExit(f"{DatetimeParser.parse_atmotube_timestamp.__name__}(): "
+                             f"cannot parse invalid Atmotube timestamp.")
         ts = ts.strip('Z')
+        ts, zone = ts.split('.')
         return ts.replace("T", " ")
 
+
     @staticmethod
-    def last_date_from_api_param(api_param: Dict[str, Any]):
-
-        if "date" not in api_param.keys():
-            raise SystemExit(f"{DatetimeParser.__name__}: missing 'date' key in method "
-                             f"{DatetimeParser.last_date_from_api_param.__name__}.")
-
+    def split_last_atmotube_measure_timestamp_from_api_param(last_atmotube_timestamp: str):
         date = ""
         time = ""
-        if api_param["date"] is not None:
-            date, time = api_param["date"].split(" ")
+        if last_atmotube_timestamp:
+            date, time = last_atmotube_timestamp.split(" ")
         return date, time
 
     @staticmethod

@@ -16,39 +16,30 @@ class TestDatetimeParser(unittest.TestCase):
     def test_parse_atmotube_timestamp(self):
 
         time = "2021-07-12T09:44:00.000Z"
-        expected_output = "2021-07-12 09:44:00.000"
+        expected_output = "2021-07-12 09:44:00"
         actual_output = DatetimeParser.parse_atmotube_timestamp(time)
         self.assertEqual(actual_output, expected_output)
 
-    def test_system_exit_while_parsing_atmotube_timestamp(self):
+    def test_system_exit_when_invalid_atmotube_timestamp(self):
 
-        time = 1234345
+        test_timestamp = "bad atmotube timestamp"
         with self.assertRaises(SystemExit):
-            DatetimeParser.parse_atmotube_timestamp(time)
+            DatetimeParser.parse_atmotube_timestamp(test_timestamp)
 
-        time = ""
-        with self.assertRaises(SystemExit):
-            DatetimeParser.parse_atmotube_timestamp(time)
 
     def test_last_date_from_api_param(self):
-        test_param = {"date": "2021-10-11 09:44:00"}
+        test_timestamp = "2021-10-11 09:44:00"
         expected_date = "2021-10-11"
         expected_time = "09:44:00"
-        date, time = DatetimeParser.last_date_from_api_param(test_param)
+        date, time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(test_timestamp)
         self.assertEqual(date, expected_date)
         self.assertEqual(time, expected_time)
 
-    def test_system_exit_when_missing_date_param(self):
-        test_param = {}
 
-        with self.assertRaises(SystemExit):
-            DatetimeParser.last_date_from_api_param(test_param)
-
-
-    def test_empty_string_when_date_is_none(self):
-        test_param = {"date": None}
-        date, time = DatetimeParser.last_date_from_api_param(test_param)
-        self.assertEqual(date, "")
+    # def test_empty_string_when_date_is_none(self):
+    #     test_param = {"date": None}
+    #     date, time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(test_param)
+    #     self.assertEqual(date, "")
 
 
     def test_last_timestamp_from_packets(self):

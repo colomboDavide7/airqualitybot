@@ -42,3 +42,12 @@ class APIPacketPicket(builtins.object):
                                     TIMESTAMP: f"'{timestamp}'",
                                     GEOMETRY: geom})
         return outcome
+
+
+    @staticmethod
+    def pick_last_atmotube_measure_timestamp_from_api_param(api_param: Dict[str, Any]) -> str:
+
+        if "date" not in api_param.keys():
+            raise SystemExit(f"{APIPacketPicket.pick_last_atmotube_measure_timestamp_from_api_param.__name__}(): "
+                             f"missing 'date' key in Atmotube api parameters.")
+        return api_param["date"]
