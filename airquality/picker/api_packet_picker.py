@@ -7,6 +7,7 @@
 #################################################
 import builtins
 from typing import Dict, Any, List
+from airquality.app import EMPTY_STRING, EMPTY_LIST
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY
@@ -27,7 +28,7 @@ class APIPacketPicker(builtins.object):
         -key:   identifier for the database table attribute (one of the class variable defines in this class)
         -value: value measured by the sensor."""
 
-        outcome = []
+        outcome = EMPTY_LIST
 
         for packet in parsed_api_answer:
             timestamp = DatetimeParser.parse_atmotube_timestamp(packet["time"])
@@ -51,7 +52,7 @@ class APIPacketPicker(builtins.object):
         timestamp_offset: str
     ) -> List[Dict[str, Any]]:
 
-        outcome = []
+        outcome = EMPTY_LIST
 
         for packet in parsed_api_answer:
             timestamp = DatetimeParser.parse_atmotube_timestamp(packet["time"])
@@ -71,12 +72,19 @@ class APIPacketPicker(builtins.object):
 
 
     @staticmethod
-    def pick_last_atmotube_measure_timestamp_from_api_param(api_param: Dict[str, Any]) -> str:
+    def pick_last_atmotube_measure_timestamp_or_empty_string(api_param: Dict[str, Any]) -> str:
+        """Static method which purpose is to return the 'date' value from the atmotube sensor 'api_param' argument.
+
+        If no 'date' key is present in 'api_param' dictionary, SystemExit exception is raised.
+
+        If 'date' value is None, an empty string is returned.
+
+        The 'date' value is None if it is the first acquisition for the Atmotube sensor associated to the 'api_param'."""
 
         if "date" not in api_param.keys():
-            raise SystemExit(f"{APIPacketPicker.pick_last_atmotube_measure_timestamp_from_api_param.__name__}(): "
+            raise SystemExit(f"{APIPacketPicker.pick_last_atmotube_measure_timestamp_or_empty_string.__name__}(): "
                              f"missing 'date' key in Atmotube api parameters.")
-        date = ""
+        date = EMPTY_STRING
         if api_param.get("date", None) is not None:
             date = api_param["date"]
         return date

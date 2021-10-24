@@ -21,15 +21,15 @@ class DatetimeParser(builtins.object):
 
 
     @staticmethod
-    def _raise_system_exit_when_bad_atmotube_timestamp_occurs(ts: str, pattern):
+    def _raise_system_exit_when_bad_timestamp_occurs(ts: str, pattern):
         if not re.match(pattern, ts):
-            raise SystemExit(f"{DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs.__name__}(): "
+            raise SystemExit(f"{DatetimeParser._raise_system_exit_when_bad_timestamp_occurs.__name__}(): "
                              f"cannot parse invalid timestamp.")
 
     @staticmethod
     def parse_atmotube_timestamp(ts: str) -> str:
 
-        DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+        DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
                 ts = ts,
                 pattern = DatetimeParser.ATMOTUBE_DATETIME_PATTERN
         )
@@ -39,24 +39,28 @@ class DatetimeParser(builtins.object):
 
 
     @staticmethod
-    def split_last_atmotube_measure_timestamp_from_api_param(ts: str):
+    def date_from_last_atmotube_measure_timestamp(ts: str):
+        f"""Static method that takes a timestamp and returns the date of it.
+        
+        The timestamp is supposed to be of the form: {DatetimeParser.SQL_TIMESTAMP_PATTERN}, otherwise
+        a SystemExit exception is raised."""
 
-        DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+        DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
                 ts = ts,
                 pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
         )
         date, time = ts.split(" ")
-        return date, time
+        return date
 
 
     @staticmethod
     def is_ts1_before_ts2(ts1: str, ts2: str) -> bool:
-        DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+        DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
                 ts = ts1,
                 pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
         )
 
-        DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+        DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
                 ts = ts2,
                 pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
         )

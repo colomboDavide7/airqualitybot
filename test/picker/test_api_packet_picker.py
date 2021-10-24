@@ -39,14 +39,14 @@ class TestAPIPacketPicker(unittest.TestCase):
         test_api_param = {"param1": "val1",
                           "param2": "val2"}
         with self.assertRaises(SystemExit):
-            APIPacketPicker.pick_last_atmotube_measure_timestamp_from_api_param(test_api_param)
+            APIPacketPicker.pick_last_atmotube_measure_timestamp_or_empty_string(test_api_param)
 
     def test_return_empty_string_when_date_is_None(self):
         test_api_param = {"param1": "val1",
                           "param2": "val2",
                           "date": None}
         expected_output = ""
-        actual_output = APIPacketPicker.pick_last_atmotube_measure_timestamp_from_api_param(test_api_param)
+        actual_output = APIPacketPicker.pick_last_atmotube_measure_timestamp_or_empty_string(test_api_param)
         self.assertEqual(actual_output, expected_output)
 
 
