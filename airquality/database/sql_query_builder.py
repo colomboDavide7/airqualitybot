@@ -8,6 +8,7 @@
 import builtins
 from typing import Dict, Any, List
 from airquality.io.io import IOManager
+from airquality.app import EMPTY_STRING
 from airquality.parser.file_parser import FileParserFactory
 from airquality.picker import PARAM_ID, PARAM_VALUE, TIMESTAMP, GEOMETRY
 
@@ -52,12 +53,17 @@ class SQLQueryBuilder(builtins.object):
         return self.__parsed[query_id].format(identifier=identifier)
 
 
-    def insert_measurements(self, packets: List[Dict[str, Any]]) -> str:
+    def insert_atmotube_measurement_packets(self, packets: List[Dict[str, Any]]) -> str:
+        """This method returns the query for inserting the Atmotube packets into the database.
+
+        It takes a List of packets (i.e., a dictionary) built by the APIPacketPicker.
+
+        If the packet list is empty, an EMPTY_STRING query is returned."""
 
         query_id = "insert_mobile_measurement"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
 
-        query = ""
+        query = EMPTY_STRING
         if packets:
             query = self.__parsed[query_id]
 
@@ -72,11 +78,17 @@ class SQLQueryBuilder(builtins.object):
 
 
     def update_last_packet_date_atmotube(self, last_timestamp: str, sensor_id: int) -> str:
+        """This method returns a query for updating the last acquisition timestamp of an atmotube sensor, in order
+        to let the bot knows the next time it runs from where to start in fetching data from API and for loading
+        into the database without redundancy.
+
+        If an EMPTY_STRING timestamp is passed as argument, an EMPTY_STRING query is returned.
+        """
 
         query_id = "update_last_packet_date_atmotube"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
 
-        query = ""
-        if last_timestamp != "":
+        query = EMPTY_STRING
+        if last_timestamp != EMPTY_STRING:
             query = self.__parsed[f"{query_id}"].format(par_val = last_timestamp, sens_id = sensor_id, par_name = "date")
         return query

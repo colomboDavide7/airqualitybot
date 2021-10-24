@@ -23,7 +23,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
     def test_empty_query_when_empty_packet_list(self):
         test_packets = []
         expected_output = ""
-        actual_output = self.sql_builder.insert_measurements(packets = test_packets)
+        actual_output = self.sql_builder.insert_atmotube_measurement_packets(packets = test_packets)
         self.assertEqual(actual_output, expected_output)
 
     def test_empty_query_when_empty_timestamp(self):

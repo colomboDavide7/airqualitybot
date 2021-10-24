@@ -131,7 +131,7 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick API packets: OK")
 
             # TRY TO BUILD QUERY FOR INSERTING MEASUREMENT INTO DATABASE
-            query = self.sqlbuilder.insert_measurements(packets)
+            query = self.sqlbuilder.insert_atmotube_measurement_packets(packets)
             self.dbconn.send(query)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to insert sensor measurements: OK")
 

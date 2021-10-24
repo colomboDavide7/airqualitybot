@@ -85,8 +85,11 @@ class DatetimeParser(builtins.object):
 
     @staticmethod
     def last_atmotube_measure_timestamp_from_packets(packets: List[Dict[str, Any]]) -> str:
+        """Static method that returns the Atmotube sensor timestamp that corresponds to the last packet inserted.
 
-        last_timestamp = ""
+        If the packet list is empty, an EMPTY_STRING timestamp is returned."""
+
+        last_timestamp = EMPTY_STRING
         if packets:
             packet_id = 0
             for packet in packets:

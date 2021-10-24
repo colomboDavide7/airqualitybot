@@ -7,6 +7,7 @@
 #################################################
 import psycopg2
 from typing import Dict, Any
+from airquality.app import EMPTY_STRING
 from abc import ABC, abstractmethod
 
 
@@ -112,8 +113,8 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
         if not self.is_open():
             raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot send message when connection is closed.")
 
-        answer = ""
-        if executable_sql_query == "":
+        answer = EMPTY_STRING
+        if executable_sql_query == EMPTY_STRING:
             return answer
         
         try:
