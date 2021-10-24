@@ -15,25 +15,37 @@ class DatetimeParser(builtins.object):
 
 
     ATMOTUBE_DATETIME_PATTERN = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z')
+    SQL_TIMESTAMP_PATTERN = re.compile(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
 
 
     @staticmethod
+    def _raise_system_exit_when_bad_atmotube_timestamp_occurs(ts: str, pattern):
+        if not re.match(pattern, ts):
+            raise SystemExit(f"{DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs.__name__}(): "
+                             f"cannot parse invalid timestamp.")
+
+    @staticmethod
     def parse_atmotube_timestamp(ts: str) -> str:
-        if not re.match(DatetimeParser.ATMOTUBE_DATETIME_PATTERN, ts):
-            raise SystemExit(f"{DatetimeParser.parse_atmotube_timestamp.__name__}(): "
-                             f"cannot parse invalid Atmotube timestamp.")
+
+        DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+                ts = ts,
+                pattern = DatetimeParser.ATMOTUBE_DATETIME_PATTERN
+        )
         ts = ts.strip('Z')
         ts, zone = ts.split('.')
         return ts.replace("T", " ")
 
 
     @staticmethod
-    def split_last_atmotube_measure_timestamp_from_api_param(last_atmotube_timestamp: str):
-        date = ""
-        time = ""
-        if last_atmotube_timestamp:
-            date, time = last_atmotube_timestamp.split(" ")
+    def split_last_atmotube_measure_timestamp_from_api_param(ts: str):
+
+        DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+                ts = ts,
+                pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
+        )
+        date, time = ts.split(" ")
         return date, time
+
 
     @staticmethod
     def last_timestamp_from_packets(packets: List[Dict[str, Any]]) -> str:

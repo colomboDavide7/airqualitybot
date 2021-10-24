@@ -101,6 +101,10 @@ class BotAtmotube(BaseBot):
             last_atmotube_timestamp = APIPacketPicker.pick_last_atmotube_measure_timestamp_from_api_param(api_param)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick last atmotube timestamp: OK")
 
+            # CHECK DATE TIMESTAMP NOT EMPTY
+            # TODO
+
+
             # TRY TO GET LAST MEASURE TIMESTAMP
             last_date, last_time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(last_atmotube_timestamp)
             api_param["date"] = last_date

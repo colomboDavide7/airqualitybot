@@ -24,7 +24,10 @@ class TestDatetimeParser(unittest.TestCase):
 
         test_timestamp = "bad atmotube timestamp"
         with self.assertRaises(SystemExit):
-            DatetimeParser.parse_atmotube_timestamp(test_timestamp)
+            DatetimeParser._raise_system_exit_when_bad_atmotube_timestamp_occurs(
+                    ts = test_timestamp,
+                    pattern = DatetimeParser.ATMOTUBE_DATETIME_PATTERN
+            )
 
 
     def test_last_date_from_api_param(self):
@@ -34,12 +37,6 @@ class TestDatetimeParser(unittest.TestCase):
         date, time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(test_timestamp)
         self.assertEqual(date, expected_date)
         self.assertEqual(time, expected_time)
-
-
-    # def test_empty_string_when_date_is_none(self):
-    #     test_param = {"date": None}
-    #     date, time = DatetimeParser.split_last_atmotube_measure_timestamp_from_api_param(test_param)
-    #     self.assertEqual(date, "")
 
 
     def test_last_timestamp_from_packets(self):
