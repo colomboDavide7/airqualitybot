@@ -13,7 +13,7 @@ from airquality.app import EMPTY_STRING, EMPTY_LIST
 from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
 from airquality.api.api_request_adapter import APIRequestAdapter
-from airquality.api.url_querystring_builder import URLQuerystringBuilder
+from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.database.sql_query_builder import SQLQueryBuilder
@@ -90,7 +90,8 @@ def main():
         api_adapter = APIRequestAdapter(parsed_setup_data[f"{PERSONALITY}"]["api_address"])
 
         # TRY TO BUILD QUERYSTRING FROM API PARAMETERS
-        querystring = URLQuerystringBuilder.PA_querystring_from_fields(api_param = parsed_setup_data[f"{PERSONALITY}"])
+        querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
+        querystring = querystring_builder.make_querystring(parameters = parsed_setup_data[f"{PERSONALITY}"])
         if DEBUG_MODE:
             print(DEBUG_HEADER + querystring)
 
@@ -106,6 +107,10 @@ def main():
         parsed_api_data = parser.parse(raw_string = raw_string)
         # if DEBUG_MODE:
         #     print(DEBUG_HEADER + str(parsed_api_data))
+
+        # TRY TO RESHAPE PARSE API REQUEST
+
+
 
         # TRY TO READ SERVER FILE
         raw_server = IOManager.open_read_close_file(path = SERVER_FILE)

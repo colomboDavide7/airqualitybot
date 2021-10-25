@@ -54,6 +54,7 @@ class BaseBot(ABC):
     @abstractmethod
     def run(self):
         pass
+
 #############################################################################
 
 #                           ATMOTUBE BOT                                    #

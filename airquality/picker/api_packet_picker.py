@@ -98,3 +98,4 @@ class APIPacketPicker(builtins.object):
                 reshaped_packets.append(packet)
 
         return reshaped_packets
+
