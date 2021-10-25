@@ -10,6 +10,7 @@ import builtins
 from typing import Dict, Any
 from abc import ABC, abstractmethod
 from json.decoder import JSONDecodeError
+from airquality.constants.shared_constants import EMPTY_STRING
 
 
 class FileParser(ABC):
@@ -23,6 +24,7 @@ class FileParser(ABC):
 class JSONFileParser(FileParser):
     """JSONFileParser class defines the business rules for parsing JSON file format."""
 
+
     def parse(self, raw_string: str) -> Dict[str, Any]:
         """Core method of this every FileParser instance that takes a raw string and parses it.
 
@@ -30,7 +32,7 @@ class JSONFileParser(FileParser):
 
         If some error occur while parsing the string, SystemExit exception is raised."""
 
-        if not raw_string:
+        if raw_string == EMPTY_STRING:
             raise SystemExit(f"{JSONFileParser.__name__}: cannot parse empty raw string.")
 
         try:
@@ -38,9 +40,6 @@ class JSONFileParser(FileParser):
         except JSONDecodeError as jerr:
             raise SystemExit(f"{JSONFileParser.__name__}: {str(jerr)}")
         return parsed
-
-    def __str__(self):
-        return f"{JSONFileParser.__name__}"
 
 
 class FileParserFactory(builtins.object):
@@ -51,9 +50,9 @@ class FileParserFactory(builtins.object):
     def file_parser_from_file_extension(file_extension: str) -> FileParser:
         """Factory method for creating FileParser objects from file extension.
 
-        Supported file extensions are: [ json ].
+        If invalid file extension is passed, SystemExit is raised.
 
-        If invalid file extension is passed, SystemExit is raised."""
+        Supported file extensions are: [ json ]."""
 
         if file_extension == 'json':
             return JSONFileParser()
