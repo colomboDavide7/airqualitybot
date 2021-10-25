@@ -11,6 +11,7 @@ import sys
 from typing import List
 from airquality.app import EMPTY_LIST
 from airquality.io.io import IOManager
+from setup import FIXED_SENSOR_PERSONALITIES
 from airquality.reshaper.reshaper import APIPacketReshaperFactory
 from airquality.parser.file_parser import FileParserFactory
 from airquality.api.api_request_adapter import APIRequestAdapter
@@ -176,6 +177,9 @@ def main():
                 first_sensor_id = sensor_id)
         dbconn.send(executable_sql_query = insert_api_param)
 
+################################ IF FIX SENSOR INSERT ALSO SENSOR AT LOCATION ################################
+        if PERSONALITY in FIXED_SENSOR_PERSONALITIES:
+            insert_sensor_at_location = query_builder
 
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')

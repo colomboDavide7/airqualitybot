@@ -8,9 +8,10 @@
 import builtins
 from typing import Dict, Any, List
 from airquality.app import EMPTY_STRING, EMPTY_LIST
+from airquality.geom import GEO_TYPE_ST_POINT_2D
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
-from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY, PURPLE_AIR_API_PARAM
+from airquality.geom.postgis_geom_builder import PosGISGeomBuilderFactory
+from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY, PURPLE_AIR_API_PARAM, PURPLE_AIR_GEO_PARAM
 
 
 class APIPacketPicker(builtins.object):
@@ -50,8 +51,8 @@ class APIPacketPicker(builtins.object):
             if not DatetimeParser.is_ts1_before_ts2(ts1 = timestamp, ts2 = last_timestamp):
                 geom = "null"
                 if packet.get("coords", None) is not None:
-                    geom = PostGISGeomBuilder.build_ST_Point_from_coords(x = packet["coords"]["lon"],
-                                                                         y = packet["coords"]["lat"])
+                    geom = PosGISGeomBuilder.build_ST_Point_from_coords(x = packet["coords"]["lon"],
+                                                                        y = packet["coords"]["lat"])
 
                 for name, val in packet.items():
                     if name in param_id_code.keys():
@@ -112,3 +113,23 @@ class APIPacketPicker(builtins.object):
                              f"invalid identifier '{identifier}'.")
 
         return api_param
+
+
+    @staticmethod
+    def pick_geometry_from_packet(packet: Dict[str, Any], identifier: str) -> str:
+
+        geo_param = {}
+        geo_factory = PosGISGeomBuilderFactory()
+        if identifier == "purpleair":
+            for param in PURPLE_AIR_GEO_PARAM:
+                if param not in packet.keys():
+                    raise SystemExit(f"{APIPacketPicker.pick_geometry_from_packet.__name__}: "
+                                     f"missing required geo param '{param}' for '{identifier}'.")
+                geo_param[param] = str(packet[param])
+
+            geo_builder = geo_factory.create_posGISGeomBuilder(bot_personality = identifier)
+            geom = geo_builder.build_geometry_type(geo_param = geo_param, geo_type = GEO_TYPE_ST_POINT_2D)
+        else:
+            raise SystemExit(f"{APIPacketPicker.pick_api_param_from_packet.__name__}: "
+                             f"invalid identifier '{identifier}'.")
+        return geom

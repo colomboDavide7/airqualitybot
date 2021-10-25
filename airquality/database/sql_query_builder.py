@@ -12,6 +12,7 @@ from airquality.app import EMPTY_STRING
 from airquality.parser.file_parser import FileParserFactory
 from airquality.picker import PARAM_ID, PARAM_VALUE, TIMESTAMP, GEOMETRY
 from airquality.picker.api_packet_picker import APIPacketPicker
+from airquality.parser.datetime_parser import DatetimeParser
 
 
 class SQLQueryBuilder(builtins.object):
@@ -137,6 +138,7 @@ class SQLQueryBuilder(builtins.object):
             query = query.strip(',') + ';'
         return query
 
+
     def insert_api_param(self, packets: List[Dict[str, Any]], identifier: str, first_sensor_id: int) -> str:
 
         query_id = "insert_api_param"
@@ -149,6 +151,23 @@ class SQLQueryBuilder(builtins.object):
                 api_param = APIPacketPicker.pick_api_param_from_packet(packet, identifier)
                 for key, val in api_param.items():
                     query += f"({first_sensor_id}, '{key}', '{val}'),"
+                first_sensor_id += 1
+            query = query.strip(',') + ';'
+        return query
+
+
+    def insert_sensor_at_location(self, packets: List[Dict[str, Any]], identifier: str, first_sensor_id: int) -> str:
+
+        query_id = "insert_sensor_at_location"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+        query = EMPTY_STRING
+
+        if packets:
+            query = self.__parsed[query_id]
+            for packet in packets:
+                geom = APIPacketPicker.pick_geometry_from_packet(packet = packet, identifier = identifier)
+                timestamp = DatetimeParser.current_timestamp_sql_compliant()
+                query += f"({first_sensor_id}, '{timestamp}', {geom}),"
                 first_sensor_id += 1
             query = query.strip(',') + ';'
         return query

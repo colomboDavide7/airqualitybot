@@ -98,3 +98,9 @@ class DatetimeParser(builtins.object):
                     last_timestamp = packet[TIMESTAMP]
 
         return last_timestamp
+
+
+    @staticmethod
+    def current_timestamp_sql_compliant() -> str:
+        ts = datetime.datetime.now().strftime(fmt = DatetimeParser.DATETIME_FORMAT)
+        return ts
