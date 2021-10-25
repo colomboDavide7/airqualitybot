@@ -103,7 +103,7 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
 
             # TRY TO PICK LAST ATMOTUBE TIMESTAMP FROM API PARAMETERS
-            last_atmotube_timestamp = APIPacketPicker.pick_last_atmotube_measure_timestamp_or_empty_string(api_param)
+            last_atmotube_timestamp = APIPacketPicker.pick_date_from_atmotube_api_param(api_param)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick last atmotube timestamp: OK")
 
             # TRY TO GET LAST ATMOTUBE MEASURE TIMESTAMP
@@ -128,7 +128,7 @@ class BotAtmotube(BaseBot):
 
             # BUILD ATMOTUBE MEASURE PACKET FOR INSERTING DATA INTO TABLES
             packets = APIPacketPicker.pick_atmotube_api_packets_from_last_timestamp_on(
-                    parsed_api_answer = parsed_api_answer["data"]["items"],
+                    packets = parsed_api_answer["data"]["items"],
                     param_id_code = id_code_dict,
                     last_timestamp = last_atmotube_timestamp
             )

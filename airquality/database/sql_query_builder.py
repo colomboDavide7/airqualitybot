@@ -8,15 +8,18 @@
 import builtins
 
 from typing import Dict, Any, List
-from airquality.constants.shared_constants import EMPTY_STRING, \
+from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, \
     PICKER2SQLBUILDER_PARAM_ID, PICKER2SQLBUILDER_PARAM_VAL, \
-    PICKER2SQLBUILDER_TIMESTAMP, PICKER2SQLBUILDER_GEOMETRY
+    PICKER2SQLBUILDER_TIMESTAMP, PICKER2SQLBUILDER_GEOMETRY, \
+    GEO_TYPE_ST_POINT_2D
 
 
 from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.picker.api_packet_picker import APIPacketPicker
+from airquality.filter.filter import APIPacketFilterFactory
+from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 
 
 class SQLQueryBuilder(builtins.object):
@@ -30,6 +33,7 @@ class SQLQueryBuilder(builtins.object):
         self.__raw = IOManager.open_read_close_file(self.__path)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = query_file_path.split('.')[-1])
         self.__parsed = parser.parse(self.__raw)
+        self.filter_factory = APIPacketFilterFactory()
 
 
     def _raise_exception_if_query_identifier_not_found(self, query_id: str):
@@ -129,17 +133,17 @@ class SQLQueryBuilder(builtins.object):
         query_id = "insert_sensors"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         query = EMPTY_STRING
+        if packets == EMPTY_LIST:
+            return query
 
-        if packets:
-            query = self.__parsed[query_id]
-            for packet in packets:
-                sensor_name = APIPacketPicker.pick_sensor_name_from_identifier(packet = packet, identifier = identifier)
-                query += f"('{identifier}', '{sensor_name}'),"
-            query = query.strip(',') + ';'
-        return query
+        query = self.__parsed[query_id]
+        for packet in packets:
+            sensor_name = APIPacketPicker.pick_sensor_name_from_identifier(packet = packet, identifier = identifier)
+            query += f"('{identifier}', '{sensor_name}'),"
+        return query.strip(',') + ';'
 
 
-    def insert_api_param_from_identifier(self, packets: List[Dict[str, Any]], identifier: str, first_sensor_id: int) -> str:
+    def insert_api_param(self, packets: List[Dict[str, Any]], first_sensor_id: int) -> str:
         """This method returns a query for inserting the 'sensor_id, param_name, param_value' tuples in the api param
         table. If 'packets' argument is empty, 'EMPTY_STRING' values is returned.
 
@@ -149,19 +153,18 @@ class SQLQueryBuilder(builtins.object):
         query_id = "insert_api_param"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         query = EMPTY_STRING
+        if packets == EMPTY_LIST:
+            return query
 
-        if packets:
-            query = self.__parsed[query_id]
-            for packet in packets:
-                api_param = APIPacketPicker.pick_api_param_from_packet(packet, identifier)
-                for key, val in api_param.items():
-                    query += f"({first_sensor_id}, '{key}', '{val}'),"
-                first_sensor_id += 1
-            query = query.strip(',') + ';'
-        return query
+        query = self.__parsed[query_id]
+        for packet in packets:
+            for key, val in packet.items():
+                query += f"({first_sensor_id}, '{key}', '{val}'),"
+            first_sensor_id += 1
+        return query.strip(',') + ';'
 
 
-    def insert_sensor_at_location(self, packets: List[Dict[str, Any]], identifier: str, first_sensor_id: int) -> str:
+    def insert_sensor_at_location(self, packets: List[Dict[str, Any]], first_sensor_id: int) -> str:
         """This method returns a query for inserting the 'sensor_id, valid_from, geom' tuples into the sensor at location
         table. If 'packets' argument is empty, 'EMPTY_STRING' values is returned.
 
@@ -171,13 +174,13 @@ class SQLQueryBuilder(builtins.object):
         query_id = "insert_sensor_at_location"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         query = EMPTY_STRING
+        if packets == EMPTY_LIST:
+            return query
 
-        if packets:
-            query = self.__parsed[query_id]
-            for packet in packets:
-                geom = APIPacketPicker.pick_geometry_from_packet(packet = packet, identifier = identifier)
-                timestamp = DatetimeParser.current_sqltimestamp()
-                query += f"({first_sensor_id}, '{timestamp}', {geom}),"
-                first_sensor_id += 1
-            query = query.strip(',') + ';'
-        return query
+        query = self.__parsed[query_id]
+        for packet in packets:
+            geom = PostGISGeomBuilder.build_geometry_type(geo_param = packet, geo_type = GEO_TYPE_ST_POINT_2D)
+            timestamp = DatetimeParser.current_sqltimestamp()
+            query += f"({first_sensor_id}, '{timestamp}', {geom}),"
+            first_sensor_id += 1
+        return query.strip(',') + ';'

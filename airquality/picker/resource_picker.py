@@ -6,7 +6,8 @@
 #
 #################################################
 import builtins
-from typing import Dict, Any
+from typing import Dict, Any, List
+from airquality.constants.shared_constants import PURPLE_AIR_API_PARAM, PURPLE_AIR_GEO_PARAM, EMPTY_LIST
 
 
 LOGGER_SECTION = "logger"
@@ -50,6 +51,7 @@ class ResourcePicker(builtins.object):
         settings["password"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["password"]
         return settings
 
+
     @staticmethod
     def pick_api_address_from_number(parsed_resources: Dict[str, Any], bot_personality: str, api_address_number: str) -> str:
 
@@ -73,3 +75,20 @@ class ResourcePicker(builtins.object):
 
 
         return parsed_resources[API_ADDRESS_SECTION][f"{bot_personality}"][f"{api_address_number}"]
+
+
+    @staticmethod
+    def pick_api_param_filter_list_from_personality(personality: str) -> List[str]:
+
+        if personality == "purpleair":
+            return PURPLE_AIR_API_PARAM
+        else:
+            return EMPTY_LIST
+
+
+    @staticmethod
+    def pick_geo_param_filter_list_from_personality(personality: str) -> List[str]:
+        if personality == "purpleair":
+            return PURPLE_AIR_GEO_PARAM
+        else:
+            return EMPTY_LIST

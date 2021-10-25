@@ -22,10 +22,10 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.picker.resource_picker import ResourcePicker
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.filter.filter import APIPacketFilterFactory
+from airquality.picker.resource_picker import ResourcePicker
 
 
 DEBUG_MODE  = False
@@ -50,7 +50,7 @@ def parse_sys_argv(args: List[str]):
     if not is_personality_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{INITIALIZE_USAGE}")
 
-
+################################ MAIN FUNCTION INITIALIZE MODULE ################################
 def main():
     """This function is the entry point for the 'initialize' module.
 
@@ -164,20 +164,44 @@ def main():
         dbconn.send(executable_sql_query = insert_sensor_query)
 
 ################################ INSERT API PARAM FOR SENSORS ################################
-        insert_api_param = query_builder.insert_api_param_from_identifier(
-                packets = filtered_packets,
-                identifier = PERSONALITY,
-                first_sensor_id = sensor_id)
+        filter_ = filter_factory.create_api_packet_filter(bot_personality = PERSONALITY)
+
+        ################################ GET API FILTER LIST ################################
+        api_filter_list = ResourcePicker.pick_api_param_filter_list_from_personality(personality = PERSONALITY)
+
+        ################################ FILTER PACKETS TO MAINTAIN ONLY THE API PARAM ################################
+        # Since we have a lot of arguments into a packet, we want to filter out those that are not used for
+        # building the query on 'api_param' table
+        api_filtered_packets = filter_.filter_packet(packets = filtered_packets, filter_list = api_filter_list)
+
+        ################################ ASK THE SQL QUERY BUILDER TO BUILD THE QUERY ################################
+        insert_api_param = query_builder.insert_api_param(packets = api_filtered_packets, first_sensor_id = sensor_id)
+
+        ################################ EXPLOIT THE DB CONN ADAPTER FOR EXECUTING THE QUERY #######################
         dbconn.send(executable_sql_query = insert_api_param)
 
 ################################ IF FIX SENSOR INSERT ALSO SENSOR AT LOCATION ################################
         if PERSONALITY in SENSOR_AT_LOCATION_PERSONALITIES:
-            insert_sensor_at_location = query_builder.insert_sensor_at_location(
-                    packets = filtered_packets,
-                    identifier = PERSONALITY,
-                    first_sensor_id = sensor_id
-            )
+
+            ################################ GET GEO FILTER LIST ################################
+            geo_filter_list = ResourcePicker.pick_geo_param_filter_list_from_personality(personality = PERSONALITY)
+
+            ################################ FILTER THE PACKETS TO MAINTAIN ONLY GEOM PARAM ############################
+            # Since we have a lot of arguments into a packet, we want to filter out those that are not used for
+            # building the query on 'sensor_at_location' table
+            geo_filtered_packets = filter_.filter_packet(packets = filtered_packets, filter_list = geo_filter_list)
+
+            ################################ ASK SQL QUERY BUILDER TO BUILD THE QUERY ################################
+            insert_sensor_at_location = query_builder.insert_sensor_at_location(packets = geo_filtered_packets,
+                                                                                first_sensor_id = sensor_id)
+
+            ################################ EXPLOIT THE DB CONN ADAPTER FOR EXECUTING THE QUERY #######################
             dbconn.send(executable_sql_query = insert_sensor_at_location)
+
+
+
+        # TODO: INSERT PURPLE AIR MEASURE PARAM !!!!!
+
 
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')

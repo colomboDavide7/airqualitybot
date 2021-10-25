@@ -7,26 +7,22 @@
 #################################################
 import builtins
 from typing import Dict, Any, List
-from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_STRING
-from airquality.geom import GEO_TYPE_ST_POINT_2D
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.geom.postgis_geom_builder import PostGISGeomBuilderFactory
-from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY, PURPLE_AIR_API_PARAM, PURPLE_AIR_GEO_PARAM
+from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
+from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_STRING, EMPTY_DICT, \
+    PICKER2SQLBUILDER_TIMESTAMP, PICKER2SQLBUILDER_PARAM_ID, PICKER2SQLBUILDER_PARAM_VAL, \
+    PICKER2SQLBUILDER_GEOMETRY, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE, \
+    GEO_TYPE_ST_POINT_2D, ATMOTUBE_DATE_PARAM, PURPLEAIR_NAME_PARAM, PURPLEAIR_SENSOR_IDX_PARAM
+
 
 
 class APIPacketPicker(builtins.object):
 
-    """This parameter are defined within the APIPacketPicker class and are used for building the output
-    dictionary from the methods. The SQLQueryBuilder will use this variables to unpack the dictionary and
-    create a query from it."""
-
 
     @staticmethod
-    def pick_atmotube_api_packets_from_last_timestamp_on(
-        parsed_api_answer: List[Dict[str, Any]],
-        param_id_code: Dict[str, int],
-        last_timestamp: str
-    ) -> List[Dict[str, Any]]:
+    def pick_atmotube_api_packets_from_last_timestamp_on(packets: List[Dict[str, Any]],
+                                                         param_id_code: Dict[str, int],
+                                                         last_timestamp: str) -> List[Dict[str, Any]]:
         """Static method that returns a list of dictionaries. Each dictionary contains the key-value for inserting
         measurement into the database.
 
@@ -45,94 +41,67 @@ class APIPacketPicker(builtins.object):
         This structure is related to database tables."""
 
         outcome = EMPTY_LIST
+        if packets == EMPTY_LIST:
+            return outcome
 
-        for packet in parsed_api_answer:
+        for packet in packets:
             timestamp = DatetimeParser.atmotube_to_sqltimestamp(packet["time"])
             if not DatetimeParser.is_ts2_after_ts1(ts1 = timestamp, ts2 = last_timestamp):
                 geom = "null"
                 if "coords" in packet.keys():
-                    geo_factory = PostGISGeomBuilderFactory()
-                    geo_builder = geo_factory.create_posGISGeomBuilder(bot_personality = "atmotube")
-                    geom = geo_builder.build_geometry_type(geo_param = {"longitude": packet["coords"]["lon"],
-                                                                        "latitude": packet["coords"]["lat"]},
-                                                           geo_type = GEO_TYPE_ST_POINT_2D)
+                    geom = PostGISGeomBuilder.build_geometry_type(
+                            geo_param = {GEOMBUILDER_LONGITUDE: packet["coords"]["lon"],
+                                         GEOMBUILDER_LATITUDE: packet["coords"]["lat"]},
+                            geo_type = GEO_TYPE_ST_POINT_2D)
 
                 for name, val in packet.items():
                     if name in param_id_code.keys():
-                        outcome.append({PARAM_ID: param_id_code[name],
-                                        PARAM_VALUE: f"'{val}'",
-                                        TIMESTAMP: f"'{timestamp}'",
-                                        GEOMETRY: geom})
+                        outcome.append({PICKER2SQLBUILDER_PARAM_ID: param_id_code[name],
+                                        PICKER2SQLBUILDER_PARAM_VAL: f"'{val}'",
+                                        PICKER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'",
+                                        PICKER2SQLBUILDER_GEOMETRY: geom})
         return outcome
 
 
     @staticmethod
-    def pick_last_atmotube_measure_timestamp_or_empty_string(api_param: Dict[str, Any]) -> str:
-        """Static method which purpose is to return the 'date' value from the atmotube sensor 'api_param' argument.
+    def pick_date_from_atmotube_api_param(api_param: Dict[str, Any]) -> str:
+        """Static method that returns the value associated to the 'date' key of the 'api_param' argument.
 
-        If no 'date' key is present in 'api_param' dictionary, SystemExit exception is raised.
+        If 'api_param' is equal to EMPTY_DICT, EMPTY_STRING value is returned.
 
-        If 'date' value is None, an empty string is returned.
+        If 'date' parameter is missing in 'api_param', SystemExit exception is raised.
 
-        The 'date' value is None if it is the first acquisition for the Atmotube sensor associated to the 'api_param'."""
+        If 'date' is None, EMPTY_STRING value is returned."""
 
-        if "date" not in api_param.keys():
-            raise SystemExit(f"{APIPacketPicker.pick_last_atmotube_measure_timestamp_or_empty_string.__name__}(): "
-                             f"missing 'date' key in Atmotube api parameters.")
         date = EMPTY_STRING
+        if api_param == EMPTY_DICT:
+            return date
+
+        if ATMOTUBE_DATE_PARAM not in api_param.keys():
+            raise SystemExit(f"{APIPacketPicker.pick_date_from_atmotube_api_param.__name__}(): "
+                             f"missing '{ATMOTUBE_DATE_PARAM}' key.")
+
         if api_param.get("date", None) is not None:
-            date = api_param["date"]
+            date = api_param[ATMOTUBE_DATE_PARAM]
         return date
 
 
     @staticmethod
     def pick_sensor_name_from_identifier(packet: Dict[str, Any], identifier: str) -> str:
+        """Static method that returns the sensor name assembled from the 'packet' based on 'identifier' argument.
+
+        If identifier is invalid, SystemExit exception is raised.
+
+        If key argument(s) for assembling the name is(are) missing, SystemExit exception is raised."""
+
+        keys = packet.keys()
 
         if identifier == "purpleair":
-            if "name" not in packet.keys() or "sensor_index" not in packet.keys():
+            if PURPLEAIR_NAME_PARAM not in keys or PURPLEAIR_SENSOR_IDX_PARAM not in keys:
                 raise SystemExit(f"{APIPacketPicker.pick_sensor_name_from_identifier.__name__}:"
-                                 f"missing 'name' or 'sensor_index' keys in purpleair packet.")
-
-            return f"{packet['name']} ({packet['sensor_index']})"
+                                 f"missing '{PURPLEAIR_NAME_PARAM}' or '{PURPLEAIR_SENSOR_IDX_PARAM}' keys.")
+            return f"{packet[PURPLEAIR_NAME_PARAM]} ({packet[PURPLEAIR_SENSOR_IDX_PARAM]})"
 
         else:
             raise SystemExit(f"{APIPacketPicker.pick_sensor_name_from_identifier.__name__}: "
                              f"invalid identifier '{identifier}'.")
-
-    @staticmethod
-    def pick_api_param_from_packet(packet: Dict[str, Any], identifier: str) -> Dict[str, Any]:
-
-        api_param = {}
-        if identifier == "purpleair":
-
-            for param in PURPLE_AIR_API_PARAM:
-                if param not in packet.keys():
-                    raise SystemExit(f"{APIPacketPicker.pick_api_param_from_packet.__name__}: "
-                                     f"missing required api param '{param}' for '{identifier}'.")
-                api_param[param] = packet[param]
-
-        else:
-            raise SystemExit(f"{APIPacketPicker.pick_api_param_from_packet.__name__}: "
-                             f"invalid identifier '{identifier}'.")
-
-        return api_param
-
-
-    @staticmethod
-    def pick_geometry_from_packet(packet: Dict[str, Any], identifier: str) -> str:
-
-        geo_param = {}
-        geo_factory = PostGISGeomBuilderFactory()
-        if identifier == "purpleair":
-            for param in PURPLE_AIR_GEO_PARAM:
-                if param not in packet.keys():
-                    raise SystemExit(f"{APIPacketPicker.pick_geometry_from_packet.__name__}: "
-                                     f"missing required geo param '{param}' for '{identifier}'.")
-                geo_param[param] = str(packet[param])
-
-            geo_builder = geo_factory.create_posGISGeomBuilder(bot_personality = identifier)
-            geom = geo_builder.build_geometry_type(geo_param = geo_param, geo_type = GEO_TYPE_ST_POINT_2D)
-        else:
-            raise SystemExit(f"{APIPacketPicker.pick_api_param_from_packet.__name__}: "
-                             f"invalid identifier '{identifier}'.")
-        return geom

@@ -29,9 +29,15 @@ EMPTY_STRING = ""
 EMPTY_LIST   = []
 EMPTY_DICT   = {}
 
-################################ VALID API PARAMETERS ################################
+################################ VALID ATMOTUBE API PARAMETERS ################################
 
-ATMOTUBE_API_PARAMETERS = ('api_key', 'mac', 'date', 'order')
+ATMOTUBE_DATE_PARAM = "date"
+ATMOTUBE_API_PARAMETERS = ('api_key', 'mac', ATMOTUBE_DATE_PARAM, 'order')
+
+################################ VALID PURPLE AIR API PARAM ################################
+
+PURPLEAIR_NAME_PARAM = "name"
+PURPLEAIR_SENSOR_IDX_PARAM = "sensor_index"
 
 ################################ PICKER-TO-QUERY_BUILDER CONSTANTS ################################
 
@@ -44,9 +50,9 @@ PICKER2SQLBUILDER_GEOMETRY  = "geom"
 ################################ MESSAGE ################################
 
 SENSOR_NAME = "name"
-PURPLE_AIR_API_PARAM = ("primary_id_a", "primary_key_a", "primary_id_b", "primary_key_b",
-                        "secondary_id_a", "secondary_key_a", "secondary_id_b", "secondary_key_b")
-PURPLE_AIR_GEO_PARAM = ("latitude", "longitude")
+PURPLE_AIR_API_PARAM = ["primary_id_a", "primary_key_a", "primary_id_b", "primary_key_b",
+                        "secondary_id_a", "secondary_key_a", "secondary_id_b", "secondary_key_b"]
+PURPLE_AIR_GEO_PARAM = ["latitude", "longitude"]
 
 ################################ GEOMETRY BUILDER CONSTANTS ################################
 
