@@ -49,3 +49,38 @@ class URLQuerystringBuilder(builtins.object):
 
         querystring = querystring.strip(CONCAT_SEPARATOR)
         return querystring
+
+
+    @staticmethod
+    def PA_querystring_from_fields(api_param: Dict[str, Any]):
+        """Static method that takes PurpleAir sensor's API parameters and builds a URL querystring from those."""
+
+        querystring = ""
+        api_key_missing = True
+        fields_missing = True
+
+        if api_param:
+            for key, val in api_param.items():
+                if key == "api_key":
+                    querystring += key + KEY_VAL_SEPARATOR + val + CONCAT_SEPARATOR
+                    api_key_missing = False
+                elif key == "fields":
+                    querystring += key + KEY_VAL_SEPARATOR
+                    if not isinstance(val, list):
+                        raise SystemExit(f"{URLQuerystringBuilder.PA_querystring_from_fields.__name__}:"
+                                         f"'fields' value is required to be a list")
+                    for f in val:
+                        querystring += f + ","
+                    querystring = querystring.strip(',')
+                    querystring += CONCAT_SEPARATOR
+                    fields_missing = False
+                else:
+                    querystring += key + KEY_VAL_SEPARATOR + val + CONCAT_SEPARATOR
+
+            querystring = querystring.strip(CONCAT_SEPARATOR)
+
+        if api_key_missing or fields_missing:
+            raise SystemExit(f"{URLQuerystringBuilder.PA_querystring_from_fields.__name__}: missing field error."
+                             f"Please, check your 'properties/setup.json'")
+
+        return querystring

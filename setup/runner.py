@@ -11,6 +11,8 @@ import sys
 from typing import List
 from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
+from airquality.api.api_request_adapter import APIRequestAdapter
+from airquality.api.url_querystring_builder import URLQuerystringBuilder
 
 
 SETUP_FILE = "properties/setup.json"
@@ -62,8 +64,13 @@ def main():
             print(str(parser))
 
         parsed_content = parser.parse(raw_string = raw_text)
-        if DEBUG_MODE:
-            print(parsed_content)
+        # if DEBUG_MODE:
+        #     print(parsed_content)
+
+        api_adapter = APIRequestAdapter(parsed_content[f"{PERSONALITY}"]["api_address"])
+        querystring = URLQuerystringBuilder.PA_querystring_from_fields(api_param = parsed_content[f"{PERSONALITY}"])
+        print(querystring)
+
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
     except Exception as ex:

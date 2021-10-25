@@ -53,5 +53,29 @@ class TestBuilder(unittest.TestCase):
         with self.assertRaises(SystemExit):
             URLQuerystringBuilder.AT_querystring_from_date(test_kwargs)
 
+    def test_build_purpleair_querystring(self):
+        test_param = {"api_key": "key", "fields": ["f1", "f2"], "opt": "val"}
+        expected_output = "api_key=key&fields=f1,f2&opt=val"
+        actual_output = URLQuerystringBuilder.PA_querystring_from_fields(api_param = test_param)
+        self.assertEqual(actual_output, expected_output)
+
+
+    def test_system_exit_when_fields_is_not_a_list_build_purpleair_querystring(self):
+
+        test_param = {"api_key": "key", "fields": "f1", "opt": "val"}
+        with self.assertRaises(SystemExit):
+            URLQuerystringBuilder.PA_querystring_from_fields(api_param = test_param)
+
+    def test_missing_parameters_build_purpleair_querystring(self):
+
+        test_param = {"fields": "f1", "opt": "val"}
+        with self.assertRaises(SystemExit):
+            URLQuerystringBuilder.PA_querystring_from_fields(api_param = test_param)
+
+        test_param = {"api_key": "key", "opt": "val"}
+        with self.assertRaises(SystemExit):
+            URLQuerystringBuilder.PA_querystring_from_fields(api_param = test_param)
+
+
 if __name__ == '__main__':
     unittest.main()
