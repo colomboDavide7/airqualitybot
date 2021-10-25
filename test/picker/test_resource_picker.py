@@ -22,7 +22,7 @@ class TestResourcePicker(unittest.TestCase):
 
 
         expected_output = {"key1": "val1", "key2": "val2", "username": "usr1", "password": "pwd1"}
-        actual_output = ResourcePicker.pick_db_conn_properties_from_personality(parsed_res, "pers1")
+        actual_output = ResourcePicker.pick_db_conn_properties(parsed_res, "pers1")
         self.assertEqual(actual_output, expected_output)
 
     def test_system_exit_when_missing_server_section(self):
@@ -30,14 +30,14 @@ class TestResourcePicker(unittest.TestCase):
 
         parsed_res = {"personality": {}}
         with self.assertRaises(SystemExit):
-            ResourcePicker.pick_db_conn_properties_from_personality(parsed_res, "pers1")
+            ResourcePicker.pick_db_conn_properties(parsed_res, "pers1")
 
     def test_system_exit_when_missing_personality_section(self):
         """Test SystemExit when 'users' section is missing from 'properties/resources.json'"""
 
         parsed_res = {"servers": {}}
         with self.assertRaises(SystemExit):
-            ResourcePicker.pick_db_conn_properties_from_personality(parsed_res, "pers1")
+            ResourcePicker.pick_db_conn_properties(parsed_res, "pers1")
 
     def test_pick_api_address_from_number(self):
         parsed_res = {"api_address": {

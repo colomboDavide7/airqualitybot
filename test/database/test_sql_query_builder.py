@@ -33,11 +33,6 @@ class TestSQLQueryBuilder(unittest.TestCase):
                                                                           sensor_id = 1)
         self.assertEqual(actual_output, expected_output)
 
-    def test_empty_string_when_wrong_personality_insert_manufacturer(self):
-
-        test_personality = "test_pers"
-        actual_output = self.sql_builder.insert_manufacturer(personality = test_personality)
-        self.assertEqual(actual_output, "")
 
 
 if __name__ == '__main__':

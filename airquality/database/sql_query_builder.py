@@ -106,15 +106,6 @@ class SQLQueryBuilder(builtins.object):
             query = self.__parsed[query_id].format(name="'PurpleAir Inc.'", model = "'PurpleAir PA-II'")
         return query
 
-    def select_max_manufacturer_id(self) -> str:
-        """This method returns a query for selecting the manufacturer id associated to the 'identifier' argument.
-
-        The identifier is searched into the model name."""
-
-        query_id = "select_max_manufacturer_id"
-        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
-
-        return self.__parsed[query_id]
 
     def select_max_sensor_id(self) -> str:
 
@@ -122,3 +113,9 @@ class SQLQueryBuilder(builtins.object):
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
 
         return self.__parsed[query_id]
+
+    def select_sensor_id_and_name(self, identifier: str) -> str:
+
+        query_id = "sensor_ids_name_from_identifier"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+        return self.__parsed[query_id].format(identifier = identifier)

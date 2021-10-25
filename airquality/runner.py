@@ -130,7 +130,7 @@ def main() -> None:
         session.debug_msg(f"{main.__name__}(): try to parse raw resources: OK")
 
         # GET DATABASE CONNECTION PROPERTIES FROM BOT PERSONALITY
-        properties = ResourcePicker.pick_db_conn_properties_from_personality(
+        properties = ResourcePicker.pick_db_conn_properties(
                 parsed_resources = parsed_resources,
                 bot_personality = bot_personality
         )

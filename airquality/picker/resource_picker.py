@@ -19,7 +19,7 @@ class ResourcePicker(builtins.object):
 
 
     @staticmethod
-    def pick_db_conn_properties_from_personality(parsed_resources: Dict[str, Any], bot_personality: str) -> Dict[str, Any]:
+    def pick_db_conn_properties(parsed_resources: Dict[str, Any], bot_personality: str) -> Dict[str, Any]:
         """Static method that picks the database properties from the parsed resources.
 
         If 'server' section is missing in 'properties/resources.json' file, SystemExit exception is raised.
@@ -29,19 +29,19 @@ class ResourcePicker(builtins.object):
         if parsed_resources.get(PERSONALITY_SECTION, None) is None:
             raise SystemExit(f"{ResourcePicker.__name__}: "
                              f"missing '{PERSONALITY_SECTION}' section in resource file in method "
-                             f"'{ResourcePicker.pick_db_conn_properties_from_personality.__name__}()'."
+                             f"'{ResourcePicker.pick_db_conn_properties.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
         if parsed_resources.get(SERVER_SECTION, None) is None:
             raise SystemExit(f"{ResourcePicker.__name__}: "
                              f"missing '{SERVER_SECTION}' section in resource file in method "
-                             f"'{ResourcePicker.pick_db_conn_properties_from_personality.__name__}()'."
+                             f"'{ResourcePicker.pick_db_conn_properties.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
         if bot_personality not in parsed_resources[PERSONALITY_SECTION].keys():
             raise SystemExit(f"{ResourcePicker.__name__}: "
                              f"don't recognize personality '{bot_personality}' in method "
-                             f"'{ResourcePicker.pick_db_conn_properties_from_personality.__name__}()'."
+                             f"'{ResourcePicker.pick_db_conn_properties.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
 
