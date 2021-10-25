@@ -39,6 +39,9 @@ class JSONFileParser(FileParser):
             raise SystemExit(f"{JSONFileParser.__name__}: {str(jerr)}")
         return parsed
 
+    def __str__(self):
+        return f"{JSONFileParser.__name__}"
+
 
 class FileParserFactory(builtins.object):
     """This class defines a @staticmethod for creating a FileParser object given the file extension."""
