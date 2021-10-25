@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-from airquality.runner import parse_sys_argv
+from fetch.runner import parse_sys_argv
 
 
 class TestRunner(unittest.TestCase):

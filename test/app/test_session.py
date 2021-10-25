@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.runner import set_session
+from fetch.runner import set_session
 
 
 class TestSession(unittest.TestCase):

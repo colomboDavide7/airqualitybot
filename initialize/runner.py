@@ -2,16 +2,21 @@
 #
 # @Author: davidecolombo
 # @Date: dom, 24-10-2021, 20:36
-# @Description: this script defines the main function for the 'setup' module
+# @Description: this script defines the main function for the 'initialize' module
 
 #               This module is used for loading for the first time the sensor's data to the
 #
 #################################################
 import sys
 from typing import List
+
+from airquality.constants.shared_constants import \
+    SENSOR_AT_LOCATION_PERSONALITIES, VALID_PERSONALITIES, \
+    API_FILE, SERVER_FILE, QUERY_FILE, \
+    DEBUG_HEADER, INITIALIZE_USAGE
+
 from airquality.app import EMPTY_LIST
 from airquality.io.io import IOManager
-from setup import FIXED_SENSOR_PERSONALITIES
 from airquality.reshaper.reshaper import APIPacketReshaperFactory
 from airquality.parser.file_parser import FileParserFactory
 from airquality.api.api_request_adapter import APIRequestAdapter
@@ -23,20 +28,7 @@ from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.filter.filter import APIPacketFilterFactory
 
 
-# PATH TO FILES
-SETUP_FILE  = "properties/setup.json"
-SERVER_FILE = "properties/server.json"
-QUERY_FILE  = "properties/sql_query.json"
-
-# DEBUG STRING HEADER
-DEBUG_HEADER = "[DEBUG]:"
-
-# USAGE STRING
-USAGE = "USAGE: python -m setup [-d or --debug] personality"
-
-# COMMAND LINE ARGUMENTS
-VALID_PERSONALITIES = ('purpleair', 'atmotube')
-DEBUG_MODE = False
+DEBUG_MODE  = False
 PERSONALITY = ""
 
 
@@ -56,18 +48,19 @@ def parse_sys_argv(args: List[str]):
             print(f"{parse_sys_argv.__name__}(): ignoring invalid option '{arg}'")
 
     if not is_personality_set:
-        raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{USAGE}")
+        raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{INITIALIZE_USAGE}")
 
 
 def main():
-    """This function is the entry point for the 'setup' module.
+    """This function is the entry point for the 'initialize' module.
 
     The module allows to set up all the information associated to the sensors and add them to the database."""
 
     args = sys.argv[1:]
-    if args:
-        parse_sys_argv(args)
+    if not args:
+        raise SystemExit(f"{main.__name__}: missing required argument. {INITIALIZE_USAGE}")
 
+    parse_sys_argv(args)
     print(f"{DEBUG_HEADER} personality = {PERSONALITY}")
     print(f"{DEBUG_HEADER} debug       = {DEBUG_MODE}")
 
@@ -124,8 +117,8 @@ def main():
 
 
 ################################ READ 'SETUP' FILE ################################
-        raw_setup_data = IOManager.open_read_close_file(path = SETUP_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = SETUP_FILE.split('.')[-1])
+        raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
         parsed_setup_data = parser.parse(raw_string = raw_setup_data)
 
 ################################ API REQUEST ADAPTER ################################
@@ -178,7 +171,7 @@ def main():
         dbconn.send(executable_sql_query = insert_api_param)
 
 ################################ IF FIX SENSOR INSERT ALSO SENSOR AT LOCATION ################################
-        if PERSONALITY in FIXED_SENSOR_PERSONALITIES:
+        if PERSONALITY in SENSOR_AT_LOCATION_PERSONALITIES:
             insert_sensor_at_location = query_builder.insert_sensor_at_location(
                     packets = filtered_packets,
                     identifier = PERSONALITY,
@@ -192,19 +185,3 @@ def main():
         print(str(ex))
         if isinstance(ex, SystemExit):
             sys.exit(1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
