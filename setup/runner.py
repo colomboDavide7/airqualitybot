@@ -166,13 +166,15 @@ def main():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
 ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
+        insert_sensor_query = query_builder.insert_sensors(packets = filtered_packets, identifier = PERSONALITY)
+        dbconn.send(executable_sql_query = insert_sensor_query)
 
-        if PERSONALITY == "purpleair":
-            insert_sensor_query = query_builder.insert_sensors(packets = filtered_packets, identifier = PERSONALITY)
-            dbconn.send(executable_sql_query = insert_sensor_query)
-
-        else:
-            print("I don't know what to do")
+################################ INSERT API PARAM FOR SENSORS ################################
+        insert_api_param = query_builder.insert_api_param(
+                packets = filtered_packets,
+                identifier = PERSONALITY,
+                first_sensor_id = sensor_id)
+        dbconn.send(executable_sql_query = insert_api_param)
 
 
 

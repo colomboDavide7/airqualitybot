@@ -58,10 +58,34 @@ class TestAPIPacketPicker(unittest.TestCase):
         actual_output = APIPacketPicker.pick_sensor_name_from_identifier(packet = test_packet, identifier = "purpleair")
         self.assertEqual(actual_output, expected_output)
 
+
     def test_invalid_purpleair_packet_while_picking_sensor_name(self):
         test_packet = {"arg1": "val1", "arg2": "val2"}
         with self.assertRaises(SystemExit):
             APIPacketPicker.pick_sensor_name_from_identifier(packet = test_packet, identifier = "purpleair")
+
+
+    def test_missing_required_param_pick_purpleair_api_param_from_packet(self):
+
+        test_packet = {"primary_id_a": "idA", "primary_key_a": "keyA"}
+        with self.assertRaises(SystemExit):
+            APIPacketPicker.pick_api_param_from_packet(packet = test_packet, identifier = "purpleair")
+
+    def test_successfully_pick_purpleair_api_param(self):
+        test_packet = {"primary_id_a": "idA", "primary_key_a": "keyA",
+                       "primary_id_b": "idB", "primary_key_b": "keyB",
+                       "secondary_id_a": "idA2", "secondary_key_a": "keyA2",
+                       "secondary_id_b": "idB2", "secondary_key_b": "keyB2",
+                       "ignored": "val", "ignored2": "val2", "ignored3": "val3"}
+
+        expected_output = {"primary_id_a": "idA", "primary_key_a": "keyA",
+                           "primary_id_b": "idB", "primary_key_b": "keyB",
+                           "secondary_id_a": "idA2", "secondary_key_a": "keyA2",
+                           "secondary_id_b": "idB2", "secondary_key_b": "keyB2"}
+
+        actual_output = APIPacketPicker.pick_api_param_from_packet(packet = test_packet, identifier = "purpleair")
+        self.assertEqual(actual_output, expected_output)
+
 
 
 if __name__ == '__main__':

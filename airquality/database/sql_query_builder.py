@@ -136,3 +136,19 @@ class SQLQueryBuilder(builtins.object):
                 query += f"('{identifier}', '{sensor_name}'),"
             query = query.strip(',') + ';'
         return query
+
+    def insert_api_param(self, packets: List[Dict[str, Any]], identifier: str, first_sensor_id: int) -> str:
+
+        query_id = "insert_api_param"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+        query = EMPTY_STRING
+
+        if packets:
+            query = self.__parsed[query_id]
+            for packet in packets:
+                api_param = APIPacketPicker.pick_api_param_from_packet(packet, identifier)
+                for key, val in api_param.items():
+                    query += f"({first_sensor_id}, '{key}', '{val}'),"
+                first_sensor_id += 1
+            query = query.strip(',') + ';'
+        return query

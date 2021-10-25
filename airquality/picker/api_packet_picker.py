@@ -10,7 +10,7 @@ from typing import Dict, Any, List
 from airquality.app import EMPTY_STRING, EMPTY_LIST
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
-from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY
+from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY, PURPLE_AIR_API_PARAM
 
 
 class APIPacketPicker(builtins.object):
@@ -85,7 +85,7 @@ class APIPacketPicker(builtins.object):
     def pick_sensor_name_from_identifier(packet: Dict[str, Any], identifier: str) -> str:
 
         if identifier == "purpleair":
-            if packet.get("name", None) is None or packet.get("sensor_index", None) is None:
+            if "name" not in packet.keys() or "sensor_index" not in packet.keys():
                 raise SystemExit(f"{APIPacketPicker.pick_sensor_name_from_identifier.__name__}:"
                                  f"missing 'name' or 'sensor_index' keys in purpleair packet.")
 
@@ -94,3 +94,21 @@ class APIPacketPicker(builtins.object):
         else:
             raise SystemExit(f"{APIPacketPicker.pick_sensor_name_from_identifier.__name__}: "
                              f"invalid identifier '{identifier}'.")
+
+    @staticmethod
+    def pick_api_param_from_packet(packet: Dict[str, Any], identifier: str) -> Dict[str, Any]:
+
+        api_param = {}
+        if identifier == "purpleair":
+
+            for param in PURPLE_AIR_API_PARAM:
+                if param not in packet.keys():
+                    raise SystemExit(f"{APIPacketPicker.pick_api_param_from_packet.__name__}: "
+                                     f"missing required api param '{param}' for '{identifier}'.")
+                api_param[param] = packet[param]
+
+        else:
+            raise SystemExit(f"{APIPacketPicker.pick_api_param_from_packet.__name__}: "
+                             f"invalid identifier '{identifier}'.")
+
+        return api_param
