@@ -7,6 +7,7 @@
 #################################################
 import builtins
 from typing import Dict, Any, List, Tuple
+from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT
 
 
 class DatabaseAnswerParser(builtins.object):
@@ -20,8 +21,8 @@ class DatabaseAnswerParser(builtins.object):
         If list of more-than-two-elements tuples or less-than-two-elements tuples is passed,
         SystemExit exception is raised."""
 
-        if not response:
-            return {}
+        if response == EMPTY_LIST:
+            return EMPTY_DICT
 
         if not isinstance(response[0], Tuple) or len(response[0]) != 2:
             raise SystemExit(f"{DatabaseAnswerParser.__name__}: error while parsing answer in "
@@ -39,8 +40,8 @@ class DatabaseAnswerParser(builtins.object):
 
         If list of more-than-one-element tuple is passed as argument, SystemExit exception is raised."""
 
-        if not response:
-            return []
+        if response == EMPTY_LIST:
+            return EMPTY_LIST
 
         if len(response[0]) > 1:
             raise SystemExit(f"{DatabaseAnswerParser.__name__}: error while parsing answer in "
