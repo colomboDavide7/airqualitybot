@@ -7,6 +7,7 @@
 #################################################
 import unittest
 from airquality.database.sql_query_builder import SQLQueryBuilder
+from airquality.app import EMPTY_STRING, EMPTY_LIST
 
 
 class TestSQLQueryBuilder(unittest.TestCase):
@@ -21,18 +22,23 @@ class TestSQLQueryBuilder(unittest.TestCase):
             self.sql_builder._raise_exception_if_query_identifier_not_found(query_id = test_query_id)
 
     def test_empty_query_when_empty_packet_list(self):
-        test_packets = []
-        expected_output = ""
+        test_packets = EMPTY_LIST
+        expected_output = EMPTY_STRING
         actual_output = self.sql_builder.insert_atmotube_measurement_packets(packets = test_packets)
         self.assertEqual(actual_output, expected_output)
 
     def test_empty_query_when_empty_timestamp(self):
-        test_timestamp = ""
-        expected_output = ""
+        test_timestamp = EMPTY_STRING
+        expected_output = EMPTY_STRING
         actual_output = self.sql_builder.update_last_packet_date_atmotube(last_timestamp = test_timestamp,
                                                                           sensor_id = 1)
         self.assertEqual(actual_output, expected_output)
 
+    def test_empty_string_query_if_empty_packet_list_when_insert_sensor(self):
+
+        expected_output = EMPTY_STRING
+        actual_output = self.sql_builder.insert_sensors(packets = EMPTY_LIST, identifier = "purpleair")
+        self.assertEqual(actual_output, expected_output)
 
 
 if __name__ == '__main__':
