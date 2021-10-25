@@ -114,8 +114,37 @@ class SQLQueryBuilder(builtins.object):
 
         return self.__parsed[query_id]
 
-    def select_sensor_id_and_name(self, identifier: str) -> str:
 
-        query_id = "sensor_ids_name_from_identifier"
+    def select_sensor_name(self, identifier: str) -> str:
+
+        query_id = "sensor_name_from_identifier"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         return self.__parsed[query_id].format(identifier = identifier)
+
+
+    def insert_sensors(self, packets: List[Dict[str, Any]], identifier: str) -> str:
+
+        query_id = "insert_sensors"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+        query = EMPTY_STRING
+        if packets:
+            query = self.__parsed[query_id]
+            for packet in packets:
+                query += f"('{identifier}', '{packet['name']} ({packet['sensor_index']})'),"
+            query = query.strip(',') + ';'
+        return query
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

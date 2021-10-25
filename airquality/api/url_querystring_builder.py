@@ -104,8 +104,7 @@ class URLQuerystringBuilderAtmotube(URLQuerystringBuilder):
                 if key in ('api_key', 'mac', 'date', 'order'):
                     querystring += key + KEY_VAL_SEPARATOR + val + CONCAT_SEPARATOR
                 else:
-                    print(f"{URLQuerystringBuilder.__name__}: ignore invalid argument '{key}' in method "
-                          f"'{URLQuerystringBuilder.AT_querystring_from_date.__name__}()'.")
+                    print(f"{URLQuerystringBuilder.make_querystring.__name__}: ignore invalid argument '{key}'.")
 
                 if key == 'api_key':
                     status_check |= 0b001
@@ -115,8 +114,7 @@ class URLQuerystringBuilderAtmotube(URLQuerystringBuilder):
                     status_check |= 0b100
 
         if status_check != 0b111:
-            raise SystemExit(f"{URLQuerystringBuilder.__name__}: missing required arguments in method "
-                             f"'{URLQuerystringBuilder.AT_querystring_from_date.__name__}()'.")
+            raise SystemExit(f"{URLQuerystringBuilder.make_querystring.__name__}: missing required arguments.")
 
         querystring = querystring.strip(CONCAT_SEPARATOR)
         return querystring

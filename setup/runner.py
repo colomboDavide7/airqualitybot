@@ -9,7 +9,7 @@
 #################################################
 import sys
 from typing import List
-from airquality.app import EMPTY_STRING, EMPTY_LIST
+from airquality.app import EMPTY_LIST
 from airquality.io.io import IOManager
 from airquality.reshaper.reshaper import APIPacketReshaperFactory
 from airquality.parser.file_parser import FileParserFactory
@@ -19,6 +19,7 @@ from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.filter.filter import APIPacketFilterFactory
 
 
 # PATH TO FILES
@@ -33,7 +34,7 @@ DEBUG_HEADER = "[DEBUG]:"
 USAGE = "USAGE: python -m setup [-d or --debug] personality"
 
 # COMMAND LINE ARGUMENTS
-VALID_PERSONALITIES = 'purpleair'
+VALID_PERSONALITIES = ('purpleair', 'atmotube')
 DEBUG_MODE = False
 PERSONALITY = ""
 
@@ -88,12 +89,28 @@ def main():
 ################################ SQL QUERY BUILDER ################################
         query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
-################################ SELECT SENSOR ID AND NAME FROM DATABASE ################################
+################################ SELECT SENSOR NAME FROM DATABASE ################################
         # The 'name_id_dict' variable is used to check if a given sensor taken from the API is already present
         # into the database.
-        query = query_builder.select_sensor_id_and_name(identifier = PERSONALITY)
+        query = query_builder.select_sensor_name(identifier = PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
-        name_id_dict = DatabaseAnswerParser.parse_key_val_answer(response = answer)
+        sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+        if not sensor_names and DEBUG_MODE:
+            print(f"{DEBUG_HEADER} no sensor corresponding to '{PERSONALITY}' personality.")
+
+################################ SELECT THE SENSOR ID FOR THE NEXT INSERTIONS ################################
+        # Since we have to insert new sensors we need some information:
+        #   - the sensor already exist?
+        #   - the max sensor id from the sensor table (needed as 'foreign key' for other tables)
+
+        sensor_id = 1
+        query = query_builder.select_max_sensor_id()
+        answer = dbconn.send(executable_sql_query = query)
+        max_sensor_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
+        if max_sensor_id != EMPTY_LIST:
+            if DEBUG_MODE:
+                print(f"{DEBUG_HEADER} found sensor in the database with id = {str(max_sensor_id[0])}.")
+            sensor_id = max_sensor_id[0] + 1
 
 
 
@@ -109,6 +126,8 @@ def main():
 ################################ QUERYSTRING BUILDER ################################
         querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
         querystring = querystring_builder.make_querystring(parameters = parsed_setup_data[f"{PERSONALITY}"])
+        if DEBUG_MODE:
+            print(f"{DEBUG_HEADER} {querystring}")
 
 ################################ FETCHING API DATA ################################
         raw_api_data = api_adapter.fetch(query_string = querystring)
@@ -120,16 +139,22 @@ def main():
         reshaper = reshaper_factory.create_api_packet_reshaper(bot_personality = PERSONALITY)
         reshaped_packets = reshaper.reshape_packet(parsed_api_answer = parsed_api_data)
 
+################################ FILTER API PACKET ################################
+        filter_factory = APIPacketFilterFactory()
+        api_packet_filter = filter_factory.create_api_packet_filter(bot_personality = PERSONALITY)
 
-################################ SELECT MAX SENSOR ID FROM DATABASE ################################
-        # query = query_builder.select_max_sensor_id()
-        # answer = dbconn.send(executable_sql_query = query)
-        # max_sensor_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
-        #
-        # if max_sensor_id == EMPTY_LIST:
-        #     sensor_id = 1
-        # else:
-        #     sensor_id = max_sensor_id[0] + 1
+
+
+
+################################ INSERT NEW SENSORS INTO THE DATABASE ################################
+
+        if PERSONALITY == "purpleair":
+            insert_sensor_query = query_builder.insert_sensors(packets = reshaped_packets, identifier = PERSONALITY)
+            if DEBUG_MODE:
+                print(f"{DEBUG_HEADER} {insert_sensor_query}")
+
+        else:
+            print("I don't know what to do")
 
 
 
