@@ -179,7 +179,12 @@ def main():
 
 ################################ IF FIX SENSOR INSERT ALSO SENSOR AT LOCATION ################################
         if PERSONALITY in FIXED_SENSOR_PERSONALITIES:
-            insert_sensor_at_location = query_builder
+            insert_sensor_at_location = query_builder.insert_sensor_at_location(
+                    packets = filtered_packets,
+                    identifier = PERSONALITY,
+                    first_sensor_id = sensor_id
+            )
+            dbconn.send(executable_sql_query = insert_sensor_at_location)
 
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')

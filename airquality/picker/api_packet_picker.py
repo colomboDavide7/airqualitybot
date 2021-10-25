@@ -50,9 +50,12 @@ class APIPacketPicker(builtins.object):
             timestamp = DatetimeParser.parse_atmotube_timestamp(packet["time"])
             if not DatetimeParser.is_ts1_before_ts2(ts1 = timestamp, ts2 = last_timestamp):
                 geom = "null"
-                if packet.get("coords", None) is not None:
-                    geom = PosGISGeomBuilder.build_ST_Point_from_coords(x = packet["coords"]["lon"],
-                                                                        y = packet["coords"]["lat"])
+                if "coords" in packet.keys():
+                    geo_factory = PosGISGeomBuilderFactory()
+                    geo_builder = geo_factory.create_posGISGeomBuilder(bot_personality = "atmotube")
+                    geom = geo_builder.build_geometry_type(geo_param = {"longitude": packet["coords"]["lon"],
+                                                                        "latitude": packet["coords"]["lat"]},
+                                                           geo_type = GEO_TYPE_ST_POINT_2D)
 
                 for name, val in packet.items():
                     if name in param_id_code.keys():

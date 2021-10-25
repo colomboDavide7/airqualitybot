@@ -55,6 +55,28 @@ class PosGISGeomBuilderPurpleair(PosGISGeomBuilder):
         return f"ST_GeomFromText('{geo_type}')"
 
 
+class PosGISGeomBuilderAtmotube(PosGISGeomBuilder):
+
+
+    def build_geometry_type(self, geo_param: Dict[str, Any], geo_type: str) -> str:
+
+        geo_string = EMPTY_STRING
+        if not geo_param:
+            return geo_string
+
+        if "latitude" not in geo_param.keys() or "longitude" not in geo_param.keys():
+            raise SystemExit(f"{PosGISGeomBuilderAtmotube.build_geometry_type.__name__}: "
+                             f"missing required parameters 'latitude' or 'longitude'.")
+
+        if geo_type == GEO_TYPE_ST_POINT_2D:
+            geo_type = geo_type.format(lat = geo_param["latitude"], lon = geo_param["longitude"])
+        else:
+            raise SystemExit(f"{PosGISGeomBuilderPurpleair.build_geometry_type.__name__}: "
+                             f"don't recognize geometry type '{geo_type}'.")
+
+        return f"ST_GeomFromText('{geo_type}')"
+
+
 ################################ FACTORY ################################
 class PosGISGeomBuilderFactory(builtins.object):
 
@@ -62,6 +84,8 @@ class PosGISGeomBuilderFactory(builtins.object):
     def create_posGISGeomBuilder(bot_personality: str) -> PosGISGeomBuilder:
         if bot_personality == "purpleair":
             return PosGISGeomBuilderPurpleair()
+        elif bot_personality == "atmotube":
+            return PosGISGeomBuilderAtmotube()
         else:
             raise SystemExit(f"{PosGISGeomBuilderFactory.create_posGISGeomBuilder.__name__}: "
                              f"invalid bot personality '{bot_personality}'.")
