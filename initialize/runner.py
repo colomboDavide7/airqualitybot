@@ -86,7 +86,7 @@ def main():
 ################################ SELECT SENSOR NAME FROM DATABASE ################################
         # The 'name_id_dict' variable is used to check if a given sensor taken from the API is already present
         # into the database.
-        query = query_builder.select_sensor_name(identifier = PERSONALITY)
+        query = query_builder.select_all_sensor_name_from_identifier(identifier = PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
 
@@ -160,11 +160,11 @@ def main():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
 ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
-        insert_sensor_query = query_builder.insert_sensors(packets = filtered_packets, identifier = PERSONALITY)
+        insert_sensor_query = query_builder.insert_sensors_from_identifier(packets = filtered_packets, identifier = PERSONALITY)
         dbconn.send(executable_sql_query = insert_sensor_query)
 
 ################################ INSERT API PARAM FOR SENSORS ################################
-        insert_api_param = query_builder.insert_api_param(
+        insert_api_param = query_builder.insert_api_param_from_identifier(
                 packets = filtered_packets,
                 identifier = PERSONALITY,
                 first_sensor_id = sensor_id)
