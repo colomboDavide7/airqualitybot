@@ -95,8 +95,15 @@ def main():
         query = query_builder.select_sensor_name(identifier = PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
-        if not sensor_names and DEBUG_MODE:
-            print(f"{DEBUG_HEADER} no sensor corresponding to '{PERSONALITY}' personality.")
+
+        if DEBUG_MODE:
+            if sensor_names:
+                for name in sensor_names:
+                    print(f"{DEBUG_HEADER} name = '{name}' is already present.")
+            else:
+                print(f"{DEBUG_HEADER} no sensor corresponding to '{PERSONALITY}' personality.")
+
+
 
 ################################ SELECT THE SENSOR ID FOR THE NEXT INSERTIONS ################################
         # Since we have to insert new sensors we need some information:
@@ -138,23 +145,36 @@ def main():
         reshaper_factory = APIPacketReshaperFactory()
         reshaper = reshaper_factory.create_api_packet_reshaper(bot_personality = PERSONALITY)
         reshaped_packets = reshaper.reshape_packet(parsed_api_answer = parsed_api_data)
+        if DEBUG_MODE:
+            print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
+            for packet in reshaped_packets:
+                print(30*'*')
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key} = {val}")
 
 ################################ FILTER API PACKET ################################
+        # Filter packets based on sensor names. This is done to avoid to insert sensors that are
+        # already present in the database.
         filter_factory = APIPacketFilterFactory()
         api_packet_filter = filter_factory.create_api_packet_filter(bot_personality = PERSONALITY)
-
+        filtered_packets = api_packet_filter.filter_packet(packets = reshaped_packets, filter_list = sensor_names)
+        if DEBUG_MODE:
+            print(20*"=" + " FILTERED PACKETS " + 20*'=')
+            for packet in filtered_packets:
+                print(30*'*')
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key} = {val}")
 
 
 
 ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
 
-        if PERSONALITY == "purpleair":
-            insert_sensor_query = query_builder.insert_sensors(packets = reshaped_packets, identifier = PERSONALITY)
-            if DEBUG_MODE:
-                print(f"{DEBUG_HEADER} {insert_sensor_query}")
-
-        else:
-            print("I don't know what to do")
+        # if PERSONALITY == "purpleair":
+        #     insert_sensor_query = query_builder.insert_sensors(packets = filtered_packets, identifier = PERSONALITY)
+        #     dbconn.send(executable_sql_query = insert_sensor_query)
+        #
+        # else:
+        #     print("I don't know what to do")
 
 
 

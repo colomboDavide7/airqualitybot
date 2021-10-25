@@ -29,10 +29,9 @@ class APIPacketFilterPurpleair(APIPacketFilter):
         filtered_packets = EMPTY_LIST
         if packets != EMPTY_LIST:
             for packet in packets:
-                sensor_name = packet["name"]
-                for filter_ in filter_list:
-                    if sensor_name != filter_:
-                        filtered_packets.append(packet)
+                sensor_name = f'{packet["name"]} ({packet["sensor_index"]})'
+                if sensor_name not in filter_list:
+                    filtered_packets.append(packet)
         return filtered_packets
 
 
