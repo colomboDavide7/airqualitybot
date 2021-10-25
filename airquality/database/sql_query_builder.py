@@ -92,3 +92,26 @@ class SQLQueryBuilder(builtins.object):
         if last_timestamp != EMPTY_STRING:
             query = self.__parsed[f"{query_id}"].format(par_val = last_timestamp, sens_id = sensor_id, par_name = "date")
         return query
+
+
+    def insert_manufacturer(self, personality: str) -> str:
+        """This method builds the query for inserting a new manufacturer record into the database by using the
+        'personality' argument."""
+
+        query_id = "insert_manufacturer"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+
+        query = EMPTY_STRING
+        if personality == "purpleair":
+            query = self.__parsed[query_id].format(name="'PurpleAir Inc.'", model = "'PurpleAir PA-II'")
+        return query
+
+    def select_max_manufacturer_id(self) -> str:
+        """This method returns a query for selecting the manufacturer id associated to the 'identifier' argument.
+
+        The identifier is searched into the model name."""
+
+        query_id = "select_max_manufacturer_id"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+
+        return self.__parsed[query_id]
