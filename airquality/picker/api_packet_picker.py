@@ -7,7 +7,7 @@
 #################################################
 import builtins
 from typing import Dict, Any, List
-from airquality.app import EMPTY_STRING, EMPTY_LIST
+from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_STRING
 from airquality.geom import GEO_TYPE_ST_POINT_2D
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geom_builder import PosGISGeomBuilderFactory

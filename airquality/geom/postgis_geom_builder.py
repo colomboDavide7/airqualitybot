@@ -8,7 +8,7 @@
 import builtins
 from typing import Dict, Any
 from abc import ABC, abstractmethod
-from airquality.app import EMPTY_STRING
+from airquality.constants.shared_constants import EMPTY_STRING
 from airquality.geom import GEO_TYPE_ST_POINT_2D
 
 

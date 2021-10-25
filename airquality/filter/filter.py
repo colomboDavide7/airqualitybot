@@ -8,28 +8,39 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
-from airquality.app import EMPTY_LIST
+from airquality.constants.shared_constants import EMPTY_LIST
+from airquality.picker.api_packet_picker import APIPacketPicker
 
 
 class APIPacketFilter(ABC):
-
+    """Abstract Base Class that defines method for filtering a set of packets coming from the sensor's API."""
 
     @abstractmethod
     def filter_packet(self, packets: List[Dict[str, Any]], filter_list: List[Any]) -> List[Dict[str, Any]]:
         pass
 
 
+
 class APIPacketFilterPurpleair(APIPacketFilter):
 
-    def filter_packet(self, packets: List[Dict[str, Any]], filter_list: List[Any]) -> List[Dict[str, Any]]:
 
-        if not filter_list:
+    def filter_packet(self, packets: List[Dict[str, Any]], filter_list: List[Any]) -> List[Dict[str, Any]]:
+        """This method defines the rules for filtering purpleair API packets based on names.
+
+        A valid purpleair name is of the form: 'sensor_name (sensor_index)'.
+
+        If 'filter_list' argument is equal to 'EMPTY_LIST', this method returns the packets as they are passed.
+
+        If 'packets' argument is equal to 'EMPTY_LIST' this method returns EMPTY_LIST value."""
+
+        if filter_list == EMPTY_LIST:
             return packets
 
         filtered_packets = EMPTY_LIST
         if packets != EMPTY_LIST:
             for packet in packets:
-                sensor_name = f'{packet["name"]} ({packet["sensor_index"]})'
+                # f'{packet["name"]} ({packet["sensor_index"]})'
+                sensor_name = APIPacketPicker.pick_sensor_name_from_identifier(packet = packet, identifier = "purpleair")
                 if sensor_name not in filter_list:
                     filtered_packets.append(packet)
         return filtered_packets
@@ -41,8 +52,7 @@ class APIPacketFilterFactory(builtins.object):
 
     @staticmethod
     def create_api_packet_filter(bot_personality: str) -> APIPacketFilter:
+        """Simple factory method for creating 'APIPacketFilter' instance from 'bot_personality'."""
+
         if bot_personality == "purpleair":
             return APIPacketFilterPurpleair()
-        else:
-            raise SystemExit(f"{APIPacketFilterFactory.create_api_packet_filter.__name__}: "
-                             f"invalid personality '{bot_personality}'.")

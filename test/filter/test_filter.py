@@ -7,28 +7,20 @@
 #################################################
 
 import unittest
-from airquality.filter.filter import APIPacketFilterFactory, APIPacketFilter
-from airquality.app import EMPTY_LIST
-
+from airquality.filter.filter import APIPacketFilterFactory
+from airquality.constants.shared_constants import EMPTY_LIST
 
 
 class TestFilter(unittest.TestCase):
 
+
     def setUp(self) -> None:
+        """This method is executed every time before a test."""
         self.factory = APIPacketFilterFactory()
 
-    def test_make_filter(self):
 
-        filter_ = self.factory.create_api_packet_filter(bot_personality = "purpleair")
-        self.assertIsNotNone(filter_)
-        self.assertIsInstance(filter_, APIPacketFilter)
-
-    def test_system_exit_bad_personality(self):
-
-        with self.assertRaises(SystemExit):
-            self.factory.create_api_packet_filter("bad_bot_personality")
-
-    def test_purpleair_filter(self):
+    def test_successfully_filter_purpleair_packets(self):
+        """This method tests the correct behaviour of the purple air filter class."""
 
         test_packets = [{"name": "n1", "sensor_index": "idx1"},
                         {"name": "n2", "sensor_index": "idx2"},
@@ -43,11 +35,14 @@ class TestFilter(unittest.TestCase):
 
 
     def test_purpleair_filter_with_empty_filter_list(self):
+        """This method tests the behaviour of the purpleair filter method with 'filter_list' argument equal to
+        'EMPTY_LIST'."""
+
         test_packets = [{"name": "n1", "sensor_index": "idx1"},
                         {"name": "n2", "sensor_index": "idx2"},
                         {"name": "n3", "sensor_index": "idx3"}]
 
-        test_filter_list = []
+        test_filter_list = EMPTY_LIST
         expected_output = [{"name": "n1", "sensor_index": "idx1"},
                            {"name": "n2", "sensor_index": "idx2"},
                            {"name": "n3", "sensor_index": "idx3"}]
@@ -57,6 +52,8 @@ class TestFilter(unittest.TestCase):
 
 
     def test_purpleair_filter_with_empty_packets(self):
+        """This method tests the return value of 'EMPTY_LIST' an empty list of packets is passed as argument."""
+
         test_packets = EMPTY_LIST
         test_filter_list = ["something1", "something2"]
         expected_output = EMPTY_LIST

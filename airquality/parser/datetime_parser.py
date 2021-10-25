@@ -10,7 +10,7 @@ import re
 import builtins
 from typing import Dict, Any, List
 from airquality.picker import TIMESTAMP
-from airquality.app import EMPTY_STRING
+from airquality.constants.shared_constants import EMPTY_STRING
 
 
 class DatetimeParser(builtins.object):
