@@ -23,3 +23,15 @@ QUERY_FILE  = "properties/sql_query.json"
 DEBUG_HEADER = "[DEBUG]:"
 INITIALIZE_USAGE = "USAGE: python -m initialize [-d or --debug] personality"
 
+################################ EMPTY CONSTANTS ################################
+
+EMPTY_STRING = ""
+EMPTY_LIST   = []
+
+################################ VALID API PARAMETERS ################################
+
+ATMOTUBE_API_PARAMETERS = ('api_key', 'mac', 'date', 'order')
+
+
+
+

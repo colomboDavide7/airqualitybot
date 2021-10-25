@@ -13,9 +13,9 @@ from typing import List
 from airquality.constants.shared_constants import \
     SENSOR_AT_LOCATION_PERSONALITIES, VALID_PERSONALITIES, \
     API_FILE, SERVER_FILE, QUERY_FILE, \
-    DEBUG_HEADER, INITIALIZE_USAGE
+    DEBUG_HEADER, INITIALIZE_USAGE, \
+    EMPTY_LIST
 
-from airquality.app import EMPTY_LIST
 from airquality.io.io import IOManager
 from airquality.reshaper.reshaper import APIPacketReshaperFactory
 from airquality.parser.file_parser import FileParserFactory
