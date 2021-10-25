@@ -8,39 +8,33 @@
 
 
 import unittest
-from airquality.app import EMPTY_STRING
-from airquality.geom import GEO_TYPE_ST_POINT_2D
-from airquality.geom.postgis_geom_builder import PosGISGeomBuilderFactory
+from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
+from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_DICT, \
+    GEO_TYPE_ST_POINT_2D, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE
 
 
 class TestPostGISGeomBuilder(unittest.TestCase):
 
 
-    def setUp(self) -> None:
-        self.factory = PosGISGeomBuilderFactory()
+    def test_empty_string_when_passing_empty_geo_param(self):
+        """Test 'EMPTY_STRING' output value when 'EMPTY_DICT' is passed."""
 
-
-    def test_empty_string_when_passing_empty_geo_param_build_purpleair_geo_type(self):
-
-        geo_builder = self.factory.create_posGISGeomBuilder(bot_personality = "purpleair")
-        actual_output = geo_builder.build_geometry_type(geo_param = {}, geo_type = GEO_TYPE_ST_POINT_2D)
+        actual_output = PostGISGeomBuilder.build_geometry_type(geo_param = EMPTY_DICT, geo_type = GEO_TYPE_ST_POINT_2D)
         self.assertEqual(actual_output, EMPTY_STRING)
 
 
-    def test_missing_param_purpleair_geo_type(self):
+    def test_system_exit_when_missing_param(self):
 
-        test_param = {"latitude": "45.676289"}
-        geo_builder = self.factory.create_posGISGeomBuilder(bot_personality = "purpleair")
+        test_param = {GEOMBUILDER_LATITUDE: "45.676289"}
         with self.assertRaises(SystemExit):
-            geo_builder.build_geometry_type(geo_param = test_param, geo_type = GEO_TYPE_ST_POINT_2D)
+            PostGISGeomBuilder.build_geometry_type(geo_param = test_param, geo_type = GEO_TYPE_ST_POINT_2D)
 
 
-    def test_system_exit_when_bad_geotype_purpleair_geometry(self):
+    def test_system_exit_when_bad_geotype_is_requested(self):
 
-        test_param = {"latitude": "45.676289", "longitude": "9.6473648"}
-        geo_builder = self.factory.create_posGISGeomBuilder(bot_personality = "purpleair")
+        test_param = {GEOMBUILDER_LATITUDE: "45.676289", GEOMBUILDER_LONGITUDE: "9.6473648"}
         with self.assertRaises(SystemExit):
-            geo_builder.build_geometry_type(geo_param = test_param, geo_type = "bad geometry type")
+            PostGISGeomBuilder.build_geometry_type(geo_param = test_param, geo_type = "bad geometry type")
 
 
 

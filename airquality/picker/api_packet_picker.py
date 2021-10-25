@@ -10,7 +10,7 @@ from typing import Dict, Any, List
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_STRING
 from airquality.geom import GEO_TYPE_ST_POINT_2D
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.geom.postgis_geom_builder import PosGISGeomBuilderFactory
+from airquality.geom.postgis_geom_builder import PostGISGeomBuilderFactory
 from airquality.picker import TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY, PURPLE_AIR_API_PARAM, PURPLE_AIR_GEO_PARAM
 
 
@@ -51,7 +51,7 @@ class APIPacketPicker(builtins.object):
             if not DatetimeParser.is_ts1_before_ts2(ts1 = timestamp, ts2 = last_timestamp):
                 geom = "null"
                 if "coords" in packet.keys():
-                    geo_factory = PosGISGeomBuilderFactory()
+                    geo_factory = PostGISGeomBuilderFactory()
                     geo_builder = geo_factory.create_posGISGeomBuilder(bot_personality = "atmotube")
                     geom = geo_builder.build_geometry_type(geo_param = {"longitude": packet["coords"]["lon"],
                                                                         "latitude": packet["coords"]["lat"]},
@@ -122,7 +122,7 @@ class APIPacketPicker(builtins.object):
     def pick_geometry_from_packet(packet: Dict[str, Any], identifier: str) -> str:
 
         geo_param = {}
-        geo_factory = PosGISGeomBuilderFactory()
+        geo_factory = PostGISGeomBuilderFactory()
         if identifier == "purpleair":
             for param in PURPLE_AIR_GEO_PARAM:
                 if param not in packet.keys():

@@ -7,85 +7,27 @@
 #################################################
 import builtins
 from typing import Dict, Any
-from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EMPTY_STRING
-from airquality.geom import GEO_TYPE_ST_POINT_2D
+from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_DICT, \
+    GEO_TYPE_ST_POINT_2D, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE
 
 
-class PosGISGeomBuilder(ABC):
-
-    EPSG_SRID = 26918
-
-    @abstractmethod
-    def build_geometry_type(self, geo_param: Dict[str, Any], geo_type: str) -> str:
-        pass
-
+class PostGISGeomBuilder(builtins.object):
 
     @staticmethod
-    def build_ST_Point_from_coords(x: float, y: float) -> str:
-        return f"ST_GeomFromText('POINT({x} {y})', {PosGISGeomBuilder.EPSG_SRID})"
-
-
-    @staticmethod
-    def build_ST_Point_from_geom_param(geom_param: Dict[str, Any]) -> str:
-        return EMPTY_STRING
-
-
-
-
-class PosGISGeomBuilderPurpleair(PosGISGeomBuilder):
-
-
-    def build_geometry_type(self, geo_param: Dict[str, Any], geo_type: str) -> str:
+    def build_geometry_type(geo_param: Dict[str, Any], geo_type: str) -> str:
 
         geo_string = EMPTY_STRING
-        if not geo_param:
+        if geo_param == EMPTY_DICT:
             return geo_string
 
-        if "latitude" not in geo_param.keys() or "longitude" not in geo_param.keys():
-            raise SystemExit(f"{PosGISGeomBuilderPurpleair.build_geometry_type.__name__}: "
-                             f"missing required parameters 'latitude' or 'longitude'.")
+        if GEOMBUILDER_LATITUDE not in geo_param.keys() or GEOMBUILDER_LONGITUDE not in geo_param.keys():
+            raise SystemExit(f"{PostGISGeomBuilder.build_geometry_type.__name__}: "
+                             f"missing required parameters (GEOMBUILDER_LATITUDE | GEOMBUILDER_LONGITUDE).")
 
         if geo_type == GEO_TYPE_ST_POINT_2D:
-            geo_type = geo_type.format(lat = geo_param["latitude"], lon = geo_param["longitude"])
+            geo_string = geo_type.format(lat = geo_param[GEOMBUILDER_LATITUDE], lon = geo_param[GEOMBUILDER_LONGITUDE])
         else:
-            raise SystemExit(f"{PosGISGeomBuilderPurpleair.build_geometry_type.__name__}: "
+            raise SystemExit(f"{PostGISGeomBuilder.build_geometry_type.__name__}: "
                              f"don't recognize geometry type '{geo_type}'.")
 
-        return f"ST_GeomFromText('{geo_type}')"
-
-
-class PosGISGeomBuilderAtmotube(PosGISGeomBuilder):
-
-
-    def build_geometry_type(self, geo_param: Dict[str, Any], geo_type: str) -> str:
-
-        geo_string = EMPTY_STRING
-        if not geo_param:
-            return geo_string
-
-        if "latitude" not in geo_param.keys() or "longitude" not in geo_param.keys():
-            raise SystemExit(f"{PosGISGeomBuilderAtmotube.build_geometry_type.__name__}: "
-                             f"missing required parameters 'latitude' or 'longitude'.")
-
-        if geo_type == GEO_TYPE_ST_POINT_2D:
-            geo_type = geo_type.format(lat = geo_param["latitude"], lon = geo_param["longitude"])
-        else:
-            raise SystemExit(f"{PosGISGeomBuilderPurpleair.build_geometry_type.__name__}: "
-                             f"don't recognize geometry type '{geo_type}'.")
-
-        return f"ST_GeomFromText('{geo_type}')"
-
-
-################################ FACTORY ################################
-class PosGISGeomBuilderFactory(builtins.object):
-
-    @staticmethod
-    def create_posGISGeomBuilder(bot_personality: str) -> PosGISGeomBuilder:
-        if bot_personality == "purpleair":
-            return PosGISGeomBuilderPurpleair()
-        elif bot_personality == "atmotube":
-            return PosGISGeomBuilderAtmotube()
-        else:
-            raise SystemExit(f"{PosGISGeomBuilderFactory.create_posGISGeomBuilder.__name__}: "
-                             f"invalid bot personality '{bot_personality}'.")
+        return f"ST_GeomFromText('{geo_string}')"
