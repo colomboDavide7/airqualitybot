@@ -9,98 +9,82 @@ import datetime
 import re
 import builtins
 from typing import Dict, Any, List
-from airquality.picker import TIMESTAMP
-from airquality.constants.shared_constants import EMPTY_STRING
+from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, PICKER2SQLBUILDER_TIMESTAMP, \
+    ATMOTUBE_DATETIME_REGEX_PATTERN, SQL_TIMESTAMP_REGEX_PATTERN, DATETIME2SQLTIMESTAMP_FORMAT
 
 
 class DatetimeParser(builtins.object):
 
 
-    ATMOTUBE_DATETIME_PATTERN = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z')
-    SQL_TIMESTAMP_PATTERN = re.compile(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
-    DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    @staticmethod
+    def _raise_system_exit_if_timestamp_does_not_match_pattern(ts: str, pattern: str) -> None:
+        if not re.match(re.compile(pattern), ts):
+            raise SystemExit(f"{DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern.__name__}(): "
+                             f"timestamp '{ts}' does not match regex patter '{pattern}'.")
 
 
     @staticmethod
-    def _raise_system_exit_when_bad_timestamp_occurs(ts: str, pattern):
-        if not re.match(pattern, ts):
-            raise SystemExit(f"{DatetimeParser._raise_system_exit_when_bad_timestamp_occurs.__name__}(): "
-                             f"cannot parse invalid timestamp.")
-
-    @staticmethod
-    def parse_atmotube_timestamp(ts: str) -> str:
-
-        DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
-                ts = ts,
-                pattern = DatetimeParser.ATMOTUBE_DATETIME_PATTERN
-        )
+    def atmotube_to_sqltimestamp(ts: str) -> str:
+        """Static method that takes atmotube timestamp and convert it into a valid SQL timestamp."""
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = ATMOTUBE_DATETIME_REGEX_PATTERN)
         ts = ts.strip('Z')
         ts, zone = ts.split('.')
         return ts.replace("T", " ")
 
 
     @staticmethod
-    def date_from_last_atmotube_measure_timestamp(ts: str):
-        f"""Static method that takes a timestamp and returns the date of it.
-        
-        The timestamp is supposed to be of the form: {DatetimeParser.SQL_TIMESTAMP_PATTERN}, otherwise
-        a SystemExit exception is raised."""
+    def sqltimestamp_date(ts: str):
+        """Static method that takes a SQL timestamp and returns the date part."""
 
-        DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
-                ts = ts,
-                pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
-        )
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = SQL_TIMESTAMP_REGEX_PATTERN)
         date, time = ts.split(" ")
         return date
 
 
     @staticmethod
-    def is_ts1_before_ts2(ts1: str, ts2: str) -> bool:
-        f"""Static method that compares if 'ts1' timestamp string is before 'ts2' timestamp string.
-        
-        Both 'ts1' and 'ts2' are expected to be in the form: '{DatetimeParser.SQL_TIMESTAMP_PATTERN}'.
-        If 'ts1' or 'ts2' are empty, False is returned.
-        
-        If 'ts1' or 'ts2' format are invalid, SystemExit exception is raised."""
+    def is_ts2_after_ts1(ts1: str, ts2: str) -> bool:
+        """Static method that compares if SQL timestamp 'ts2' is after 'ts1' SQL timestamp.
+
+        If EMPTY_STRING value is passed, return False.
+
+        If invalid SQL timestamp format, SystemExit exception is raised."""
 
         if ts1 == EMPTY_STRING or ts2 == EMPTY_STRING:
             return False
 
-        DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
-                ts = ts1,
-                pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
-        )
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts1, pattern = SQL_TIMESTAMP_REGEX_PATTERN)
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts2, pattern = SQL_TIMESTAMP_REGEX_PATTERN)
 
-        DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
-                ts = ts2,
-                pattern = DatetimeParser.SQL_TIMESTAMP_PATTERN
-        )
+        ts1_datetime = datetime.datetime.strptime(ts1, DATETIME2SQLTIMESTAMP_FORMAT)
+        ts2_datetime = datetime.datetime.strptime(ts2, DATETIME2SQLTIMESTAMP_FORMAT)
 
-        ts1_datetime = datetime.datetime.strptime(ts1, DatetimeParser.DATETIME_FORMAT)
-        ts2_datetime = datetime.datetime.strptime(ts2, DatetimeParser.DATETIME_FORMAT)
-        if (ts2_datetime - ts1_datetime).total_seconds() >= 0:
+        if (ts2_datetime - ts1_datetime).total_seconds() > 0:
             return True
         return False
 
 
     @staticmethod
-    def last_atmotube_measure_timestamp_from_packets(packets: List[Dict[str, Any]]) -> str:
-        """Static method that returns the Atmotube sensor timestamp that corresponds to the last packet inserted.
+    def last_packet_timestamp(packets: List[Dict[str, Any]]) -> str:
+        """Static method that returns the last packet timestamp taken from the 'packets' list.
 
-        If the packet list is empty, an EMPTY_STRING timestamp is returned."""
+        If the packet is equal to EMPTY_LIST, EMPTY_STRING timestamp is returned.
+
+        If PICKER2SQLBUILDER_TIMESTAMP field is missing in last packets, SystemExit exception is raised."""
 
         last_timestamp = EMPTY_STRING
-        if packets:
-            packet_id = 0
-            for packet in packets:
-                packet_id += 1
-                if packet_id == len(packets):
-                    last_timestamp = packet[TIMESTAMP]
+        if packets == EMPTY_LIST:
+            return last_timestamp
 
-        return last_timestamp
+        last_packet = packets[-1]
+        if PICKER2SQLBUILDER_TIMESTAMP not in last_packet.keys():
+            raise SystemExit(f"{DatetimeParser.last_packet_timestamp.__name__}: "
+                             f"missing required argument '{PICKER2SQLBUILDER_TIMESTAMP}'.")
+        return last_packet[PICKER2SQLBUILDER_TIMESTAMP]
 
 
     @staticmethod
-    def current_timestamp_sql_compliant() -> str:
-        ts = datetime.datetime.now().strftime(DatetimeParser.DATETIME_FORMAT)
+    def current_sqltimestamp() -> str:
+        """Static method that returns the current sql timestamp."""
+
+        ts = datetime.datetime.now().strftime(DATETIME2SQLTIMESTAMP_FORMAT)
         return ts

@@ -6,73 +6,65 @@
 #
 #################################################
 import unittest
+from airquality.constants.shared_constants import PICKER2SQLBUILDER_TIMESTAMP, EMPTY_LIST, EMPTY_STRING
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.picker import TIMESTAMP
 
 
 class TestDatetimeParser(unittest.TestCase):
 
 
-    def test_parse_atmotube_timestamp(self):
+    def test_successfully_parse_atmotube_timestamp(self):
+        """Test the conversion of an Atmotube timestamp to SQL timestamp."""
 
-        time = "2021-07-12T09:44:00.000Z"
+        test_ts = "2021-07-12T09:44:00.000Z"
         expected_output = "2021-07-12 09:44:00"
-        actual_output = DatetimeParser.parse_atmotube_timestamp(time)
+        actual_output = DatetimeParser.atmotube_to_sqltimestamp(test_ts)
         self.assertEqual(actual_output, expected_output)
+
 
     def test_system_exit_when_invalid_atmotube_timestamp(self):
+        """Test SystemExit when try to convert invalid atmotube timestamp."""
 
-        test_timestamp = "bad atmotube timestamp"
+        test_ts = "bad atmotube timestamp"
         with self.assertRaises(SystemExit):
-            DatetimeParser._raise_system_exit_when_bad_timestamp_occurs(
-                    ts = test_timestamp,
-                    pattern = DatetimeParser.ATMOTUBE_DATETIME_PATTERN
-            )
+            DatetimeParser.atmotube_to_sqltimestamp(ts = test_ts)
 
 
-    def test_last_date_from_api_param(self):
-        test_timestamp = "2021-10-11 09:44:00"
+    def test_successfully_extract_date_from_sqltimestamp(self):
+        """Test extracting data from SQL timestamp."""
+
+        test_ts = "2021-10-11 09:44:00"
         expected_output = "2021-10-11"
-        actual_output = DatetimeParser.date_from_last_atmotube_measure_timestamp(test_timestamp)
+        actual_output = DatetimeParser.sqltimestamp_date(ts = test_ts)
         self.assertEqual(actual_output, expected_output)
 
 
-    def test_last_timestamp_from_packets(self):
-        test_packet = [{f"{TIMESTAMP}": "ts1"}, {f"{TIMESTAMP}": "ts2"}, {f"{TIMESTAMP}": "ts3"}]
+    def test_successfully_get_last_packet_timestamp(self):
+        """Test take last packet timestamp."""
+
+        test_packets = [{f"{PICKER2SQLBUILDER_TIMESTAMP}": "ts1"},
+                        {f"{PICKER2SQLBUILDER_TIMESTAMP}": "ts2"},
+                        {f"{PICKER2SQLBUILDER_TIMESTAMP}": "ts3"}]
+
         expected_output = "ts3"
-        actual_output = DatetimeParser.last_atmotube_measure_timestamp_from_packets(test_packet)
+        actual_output = DatetimeParser.last_packet_timestamp(packets = test_packets)
         self.assertEqual(actual_output, expected_output)
 
 
-    def test_is_ts1_before_ts2(self):
+    def test_empty_string_value_with_empty_list_packets(self):
+        """Test EMPTY_STRING return value when try to pick last packet timestamp but packets is EMPTY_LIST."""
+
+        test_packets = EMPTY_LIST
+        expected_output = EMPTY_STRING
+        actual_output = DatetimeParser.last_packet_timestamp(test_packets)
+        self.assertEqual(actual_output, expected_output)
+
+    def test_successfully_verify_ts2_after_ts1(self):
+
         test_ts1 = "2021-10-01 09:43:59"
         test_ts2 = "2021-10-01 09:44:00"
-        actual_output = DatetimeParser.is_ts1_before_ts2(ts1 = test_ts1, ts2 = test_ts2)
-        self.assertTrue(actual_output)
-
-
-    def test_error_when_timestamp_are_invalid(self):
-        test_ts1 = "bad_timestamp"
-        test_ts2 = "2021-10-01 09:44:00"
-        with self.assertRaises(SystemExit):
-            DatetimeParser.is_ts1_before_ts2(ts1 = test_ts1, ts2 = test_ts2)
-
-        with self.assertRaises(SystemExit):
-            DatetimeParser.is_ts1_before_ts2(ts1 = test_ts2, ts2 = test_ts1)
-
-
-    def test_empty_timestamp_when_empty_packets(self):
-        test_packets = []
-        expected_output = ""
-        actual_output = DatetimeParser.last_atmotube_measure_timestamp_from_packets(test_packets)
-        self.assertEqual(actual_output, expected_output)
-
-
-    def test_false_when_comparing_empty_timestamp_strings(self):
-        test_empty_ts = ""
-        test_valid_ts = "2021-10-01 09:44:00"
-        self.assertFalse(DatetimeParser.is_ts1_before_ts2(ts1 = test_empty_ts, ts2 = test_valid_ts))
-        self.assertFalse(DatetimeParser.is_ts1_before_ts2(ts2 = test_empty_ts, ts1 = test_valid_ts))
+        self.assertTrue(DatetimeParser.is_ts2_after_ts1(ts1 = test_ts1, ts2 = test_ts2))
+        self.assertFalse(DatetimeParser.is_ts2_after_ts1(ts1 = test_ts2, ts2 = test_ts2))
 
 
 if __name__ == '__main__':

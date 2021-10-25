@@ -47,8 +47,8 @@ class APIPacketPicker(builtins.object):
         outcome = EMPTY_LIST
 
         for packet in parsed_api_answer:
-            timestamp = DatetimeParser.parse_atmotube_timestamp(packet["time"])
-            if not DatetimeParser.is_ts1_before_ts2(ts1 = timestamp, ts2 = last_timestamp):
+            timestamp = DatetimeParser.atmotube_to_sqltimestamp(packet["time"])
+            if not DatetimeParser.is_ts2_after_ts1(ts1 = timestamp, ts2 = last_timestamp):
                 geom = "null"
                 if "coords" in packet.keys():
                     geo_factory = PostGISGeomBuilderFactory()

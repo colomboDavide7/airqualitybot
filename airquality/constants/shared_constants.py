@@ -53,10 +53,19 @@ PURPLE_AIR_GEO_PARAM = ("latitude", "longitude")
 GEOMBUILDER_LATITUDE  = "latitude"
 GEOMBUILDER_LONGITUDE = "longitude"
 
-################################ POSGIS GEOMETRY TYPE ################################
+################################ POSTGIS GEOMETRY TYPE ################################
 
 GEO_TYPE_ST_POINT_2D = "POINT({lon} {lat})"
 
-################################ POSGIS SRID CONSTANTS ################################
+################################ POSTGIS SRID CONSTANTS ################################
 
 EPSG_SRID = 26918
+
+################################ DATETIME REGULAR EXPRESSION PATTERN ################################
+
+ATMOTUBE_DATETIME_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z'
+SQL_TIMESTAMP_REGEX_PATTERN     = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
+
+################################ DATETIME FORMAT FOR DATETIME2STR CONVERSION ################################
+
+DATETIME2SQLTIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"

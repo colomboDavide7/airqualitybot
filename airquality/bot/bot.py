@@ -109,7 +109,7 @@ class BotAtmotube(BaseBot):
             # TRY TO GET LAST ATMOTUBE MEASURE TIMESTAMP
             last_date = EMPTY_STRING
             if last_atmotube_timestamp != EMPTY_STRING:
-                last_date = DatetimeParser.date_from_last_atmotube_measure_timestamp(last_atmotube_timestamp)
+                last_date = DatetimeParser.sqltimestamp_date(last_atmotube_timestamp)
             api_param["date"] = last_date
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to get last measure timestamp: OK")
 
@@ -140,7 +140,7 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to insert sensor measurements: OK")
 
             # UPDATE LAST TIMESTAMP FROM PACKETS
-            last_timestamp = DatetimeParser.last_atmotube_measure_timestamp_from_packets(packets = packets)
+            last_timestamp = DatetimeParser.last_packet_timestamp(packets = packets)
             query = self.sqlbuilder.update_last_packet_date_atmotube(last_timestamp = last_timestamp, sensor_id = sensor_id)
             self.dbconn.send(query)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to update last acquisition timestamp: OK")

@@ -176,7 +176,7 @@ class SQLQueryBuilder(builtins.object):
             query = self.__parsed[query_id]
             for packet in packets:
                 geom = APIPacketPicker.pick_geometry_from_packet(packet = packet, identifier = identifier)
-                timestamp = DatetimeParser.current_timestamp_sql_compliant()
+                timestamp = DatetimeParser.current_sqltimestamp()
                 query += f"({first_sensor_id}, '{timestamp}', {geom}),"
                 first_sensor_id += 1
             query = query.strip(',') + ';'
