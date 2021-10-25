@@ -82,15 +82,15 @@ def main():
             print(DEBUG_HEADER + str(parser))
 
         # TRY TO PARSE FILE RAW TEXT
-        parsed_content = parser.parse(raw_string = raw_text)
+        parsed_setup_data = parser.parse(raw_string = raw_text)
         # if DEBUG_MODE:
-        #     print(parsed_content)
+        #     print(parsed_setup_data)
 
         # MAKE API REQUEST ADAPTER
-        api_adapter = APIRequestAdapter(parsed_content[f"{PERSONALITY}"]["api_address"])
+        api_adapter = APIRequestAdapter(parsed_setup_data[f"{PERSONALITY}"]["api_address"])
 
         # TRY TO BUILD QUERYSTRING FROM API PARAMETERS
-        querystring = URLQuerystringBuilder.PA_querystring_from_fields(api_param = parsed_content[f"{PERSONALITY}"])
+        querystring = URLQuerystringBuilder.PA_querystring_from_fields(api_param = parsed_setup_data[f"{PERSONALITY}"])
         if DEBUG_MODE:
             print(DEBUG_HEADER + querystring)
 
@@ -103,9 +103,9 @@ def main():
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = 'json')
 
         # TRY TO PARSE API REQUEST
-        parsed_string = parser.parse(raw_string = raw_string)
+        parsed_api_data = parser.parse(raw_string = raw_string)
         # if DEBUG_MODE:
-        #     print(DEBUG_HEADER + str(parsed_string))
+        #     print(DEBUG_HEADER + str(parsed_api_data))
 
         # TRY TO READ SERVER FILE
         raw_server = IOManager.open_read_close_file(path = SERVER_FILE)
@@ -140,15 +140,15 @@ def main():
         # INSERT BELOW, SINCE THE MANUFACTURER ID IS THE FOREIGN KEY IN THE 'SENSOR' TABLE.
         query = query_builder.select_max_manufacturer_id()
         answer = dbconn.send(executable_sql_query = query)
-        manufacturer_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
+        max_manufacturer_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
 
         # IF THE 'MANUFACTURER' TABLE IS EMPTY, AN EMPTY LIST IS RETURNED.
         # IN THIS CASE, THE ID IS SET TO ZERO.
-        if manufacturer_id == EMPTY_LIST:
+        if max_manufacturer_id == EMPTY_LIST:
             manufacturer_id = 1
         else:
             # INCREMENT MAX MANUFACTURER ID BY ONE, SINCE WE NEED THE ID OF OUR NEW MANUFACTURER
-            manufacturer_id = manufacturer_id[0] + 1
+            manufacturer_id = max_manufacturer_id[0] + 1
 
         if DEBUG_MODE:
             print(DEBUG_HEADER + str(manufacturer_id))
@@ -159,7 +159,25 @@ def main():
             print(DEBUG_HEADER + query)
 
         # TRY TO INSERT NEW MANUFACTURER INTO THE DATABASE
-        dbconn.send(executable_sql_query = query)
+        # dbconn.send(executable_sql_query = query)
+
+
+        # SELECT MAX SENSOR ID
+        query = query_builder.select_max_sensor_id()
+        answer = dbconn.send(executable_sql_query = query)
+        max_sensor_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
+
+        if max_sensor_id == EMPTY_LIST:
+            sensor_id = 1
+        else:
+            sensor_id = max_sensor_id[0] + 1
+
+        # TRY TO INSERT ALL THE SENSORS
+        # for sensor_data in parsed_api_data["data"]:
+        #     sensor_id += 1
+        #     print(20*'*' + f" SENSOR {sensor_id}" + 20*'*')
+        #     for i in range(len(sensor_data)):
+        #         print(parsed_api_data["fields"][i] + " = " + str(sensor_data[i]))
 
 
 

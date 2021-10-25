@@ -79,3 +79,22 @@ class APIPacketPicker(builtins.object):
         if api_param.get("date", None) is not None:
             date = api_param["date"]
         return date
+
+
+    @staticmethod
+    def reshape_purpleair_api_packets(parsed_api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+
+        reshaped_packets = []
+        n_fields = len(parsed_api_answer["fields"])
+
+        if parsed_api_answer["data"] != EMPTY_LIST:
+            for data in parsed_api_answer["data"]:
+                packet = {}
+                for i in range(n_fields):
+                    key = parsed_api_answer["fields"][i]
+                    val = data[i]
+                    packet[key] = val
+
+                reshaped_packets.append(packet)
+
+        return reshaped_packets

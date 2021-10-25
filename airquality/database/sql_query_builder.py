@@ -115,3 +115,10 @@ class SQLQueryBuilder(builtins.object):
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
 
         return self.__parsed[query_id]
+
+    def select_max_sensor_id(self) -> str:
+
+        query_id = "select_max_sensor_id"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+
+        return self.__parsed[query_id]

@@ -53,5 +53,24 @@ class TestAPIPacketPicker(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
 
+    def test_reshape_purpleair_packet(self):
+
+        test_api_answer = {
+            "fields": ["f1", "f2"],
+            "data": [
+                ["v1", "v2"],
+                ["v3", "v4"]
+            ]
+        }
+
+        expected_answer = [
+            {"f1": "v1", "f2": "v2"},
+            {"f1": "v3", "f2": "v4"}
+        ]
+        actual_answer = APIPacketPicker.reshape_purpleair_api_packets(parsed_api_answer = test_api_answer)
+        self.assertEqual(actual_answer, expected_answer)
+
+
+
 if __name__ == '__main__':
     unittest.main()
