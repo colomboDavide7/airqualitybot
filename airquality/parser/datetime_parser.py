@@ -102,5 +102,5 @@ class DatetimeParser(builtins.object):
 
     @staticmethod
     def current_timestamp_sql_compliant() -> str:
-        ts = datetime.datetime.now().strftime(fmt = DatetimeParser.DATETIME_FORMAT)
+        ts = datetime.datetime.now().strftime(DatetimeParser.DATETIME_FORMAT)
         return ts
