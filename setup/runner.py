@@ -15,6 +15,7 @@ from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.api.url_querystring_builder import URLQuerystringBuilder
 
 
+DEBUG_HEADER = "[DEBUG]:"
 SETUP_FILE = "properties/setup.json"
 USAGE = "USAGE: python -m setup [-d or --debug] personality"
 VALID_PERSONALITIES = 'purpleair'
@@ -50,26 +51,50 @@ def main():
     if args:
         parse_sys_argv(args)
 
-    print(f"Personality: {PERSONALITY}")
-    print(f"Is debug mode?  {DEBUG_MODE}")
+    print(f"{DEBUG_HEADER} personality = {PERSONALITY}")
+    print(f"{DEBUG_HEADER} debug       = {DEBUG_MODE}")
 
     try:
         print(20*'-' + " START THE PROGRAM " + 20*'-')
+
+        # TRY TO READ FILE
         raw_text = IOManager.open_read_close_file(path = SETUP_FILE)
         # if DEBUG_MODE:
         #     print(raw_text)
 
+        # GET THE FILE PARSER
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = SETUP_FILE.split('.')[-1])
         if DEBUG_MODE:
-            print(str(parser))
+            print(DEBUG_HEADER + str(parser))
 
+        # TRY TO PARSE FILE RAW TEXT
         parsed_content = parser.parse(raw_string = raw_text)
         # if DEBUG_MODE:
         #     print(parsed_content)
 
+        # MAKE API REQUEST ADAPTER
         api_adapter = APIRequestAdapter(parsed_content[f"{PERSONALITY}"]["api_address"])
+
+        # TRY TO BUILD QUERYSTRING FROM API PARAMETERS
         querystring = URLQuerystringBuilder.PA_querystring_from_fields(api_param = parsed_content[f"{PERSONALITY}"])
-        print(querystring)
+        if DEBUG_MODE:
+            print(DEBUG_HEADER + querystring)
+
+        # TRY TO FETCH DATA FROM PURPLE AIR API
+        raw_string = api_adapter.fetch(query_string = querystring)
+        # if DEBUG_MODE:
+        #     print(raw_string)
+
+        # GET JSON PARSER
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension = 'json')
+
+        # TRY TO PARSE API REQUEST
+        parsed_string = parser.parse(raw_string = raw_string)
+        # if DEBUG_MODE:
+        #     print(DEBUG_HEADER + str(parsed_string))
+
+        
+
 
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
