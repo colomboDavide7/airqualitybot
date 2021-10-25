@@ -11,6 +11,7 @@ import sys
 from typing import List
 from airquality.app import EMPTY_STRING, EMPTY_LIST
 from airquality.io.io import IOManager
+from airquality.picker.api_packet_picker import APIPacketPicker
 from airquality.parser.file_parser import FileParserFactory
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
@@ -109,7 +110,7 @@ def main():
         #     print(DEBUG_HEADER + str(parsed_api_data))
 
         # TRY TO RESHAPE PARSE API REQUEST
-
+        reshaped_packets = APIPacketPicker.reshape_purpleair_api_packets(parsed_api_answer = parsed_api_data)
 
 
         # TRY TO READ SERVER FILE
