@@ -11,6 +11,7 @@ from airquality.io.io import IOManager
 from airquality.app import EMPTY_STRING
 from airquality.parser.file_parser import FileParserFactory
 from airquality.picker import PARAM_ID, PARAM_VALUE, TIMESTAMP, GEOMETRY
+from airquality.picker.api_packet_picker import APIPacketPicker
 
 
 class SQLQueryBuilder(builtins.object):
@@ -127,24 +128,11 @@ class SQLQueryBuilder(builtins.object):
         query_id = "insert_sensors"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
         query = EMPTY_STRING
+
         if packets:
             query = self.__parsed[query_id]
             for packet in packets:
-                query += f"('{identifier}', '{packet['name']} ({packet['sensor_index']})'),"
+                sensor_name = APIPacketPicker.pick_sensor_name_from_identifier(packet = packet, identifier = identifier)
+                query += f"('{identifier}', '{sensor_name}'),"
             query = query.strip(',') + ';'
         return query
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

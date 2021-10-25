@@ -79,3 +79,18 @@ class APIPacketPicker(builtins.object):
         if api_param.get("date", None) is not None:
             date = api_param["date"]
         return date
+
+
+    @staticmethod
+    def pick_sensor_name_from_identifier(packet: Dict[str, Any], identifier: str) -> str:
+
+        if identifier == "purpleair":
+            if packet.get("name", None) is None or packet.get("sensor_index", None) is None:
+                raise SystemExit(f"{APIPacketPicker.pick_sensor_name_from_identifier.__name__}:"
+                                 f"missing 'name' or 'sensor_index' keys in purpleair packet.")
+
+            return f"{packet['name']} ({packet['sensor_index']})"
+
+        else:
+            raise SystemExit(f"{APIPacketPicker.pick_sensor_name_from_identifier.__name__}: "
+                             f"invalid identifier '{identifier}'.")

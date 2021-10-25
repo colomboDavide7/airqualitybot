@@ -165,16 +165,14 @@ def main():
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
-
-
 ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
 
-        # if PERSONALITY == "purpleair":
-        #     insert_sensor_query = query_builder.insert_sensors(packets = filtered_packets, identifier = PERSONALITY)
-        #     dbconn.send(executable_sql_query = insert_sensor_query)
-        #
-        # else:
-        #     print("I don't know what to do")
+        if PERSONALITY == "purpleair":
+            insert_sensor_query = query_builder.insert_sensors(packets = filtered_packets, identifier = PERSONALITY)
+            dbconn.send(executable_sql_query = insert_sensor_query)
+
+        else:
+            print("I don't know what to do")
 
 
 
