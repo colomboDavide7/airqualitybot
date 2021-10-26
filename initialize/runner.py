@@ -17,7 +17,7 @@ from airquality.constants.shared_constants import \
     EMPTY_LIST
 
 from airquality.io.io import IOManager
-from airquality.reshaper.reshaper import APIPacketReshaperFactory
+from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.parser.file_parser import FileParserFactory
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
@@ -214,6 +214,8 @@ def main():
         # TODO: INSERT PURPLE AIR MEASURE PARAM !!!!!
 
 
+################################ CLOSE DATABASE CONNECTION ################################
+        dbconn.close_conn()
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
     except Exception as ex:

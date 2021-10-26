@@ -11,6 +11,7 @@
 
 VALID_PERSONALITIES = ('purpleair', 'atmotube')
 SENSOR_AT_LOCATION_PERSONALITIES = ('purpleair',)
+MOBILE_SENSOR_PERSONALITIES = ("atmotube", )
 
 ################################ PATH OF THE FILES USED IN THE PROJECT ################################
 

@@ -20,7 +20,7 @@ class TestAPIPacketPicker(unittest.TestCase):
         test_api_param = {"param1": "val1",
                           "param2": "val2"}
         with self.assertRaises(SystemExit):
-            APIPacketPicker.pick_date_from_atmotube_api_param(test_api_param)
+            APIPacketPicker.pick_date_from_api_param_by_identifier(test_api_param, identifier = "atmotube")
 
 
     def test_return_empty_string_when_date_is_None(self):
@@ -28,8 +28,9 @@ class TestAPIPacketPicker(unittest.TestCase):
                           "param2": "val2",
                           "date": None}
         expected_output = ""
-        actual_output = APIPacketPicker.pick_date_from_atmotube_api_param(test_api_param)
+        actual_output = APIPacketPicker.pick_date_from_api_param_by_identifier(test_api_param, identifier = "atmotube")
         self.assertEqual(actual_output, expected_output)
+
 
     def test_pick_purpleair_sensor_name_from_identifier(self):
         test_packet = {"name": "n1", "sensor_index": "idx1"}

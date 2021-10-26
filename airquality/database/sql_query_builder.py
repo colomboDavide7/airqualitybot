@@ -49,7 +49,7 @@ class SQLQueryBuilder(builtins.object):
         return self.__parsed[query_id].format(identifier=identifier)
 
 
-    def select_api_param_from_sensor_id(self, sensor_id: int) -> str:
+    def select_sensor_api_param(self, sensor_id: int) -> str:
         """This method return a query for selecting 'param_name, param_value' tuples associated to a given "sensor_id"."""
 
         query_id = "api_param_from_sensor_id"

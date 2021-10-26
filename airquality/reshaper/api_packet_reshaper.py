@@ -20,13 +20,6 @@ class APIPacketReshaper(ABC):
         pass
 
 
-class APIPacketReshaperAtmotube(APIPacketReshaper):
-
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
-        pass
-
-
-
 class APIPacketReshaperPurpleair(APIPacketReshaper):
 
 
@@ -56,5 +49,5 @@ class APIPacketReshaperFactory(builtins.object):
     def create_api_packet_reshaper(cls, bot_personality: str) -> APIPacketReshaper:
         if bot_personality == "purpleair":
             return APIPacketReshaperPurpleair()
-        elif bot_personality == "atmotube":
-            return APIPacketReshaperAtmotube()
+        else:
+            raise SystemExit(f"{APIPacketReshaperFactory.__name__}: don't recognized personality '{bot_personality}'.")

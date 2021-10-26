@@ -11,11 +11,12 @@ from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.api.api_request_adapter import APIRequestAdapter
+from airquality.picker.api_packet_picker import APIPacketPicker
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.constants.shared_constants import FETCH_USAGE, VALID_PERSONALITIES, DEBUG_HEADER, \
-    SERVER_FILE, QUERY_FILE, API_FILE
+    SERVER_FILE, QUERY_FILE, API_FILE, MOBILE_SENSOR_PERSONALITIES
 
 
 DEBUG_MODE = False
@@ -133,6 +134,35 @@ def main() -> None:
             print(20 * "=" + " PARAM_CODE TO PARAM_ID MAPPING " + 20 * '=')
             for code, id_ in paramcode2paramid_map.items():
                 print(f"{DEBUG_HEADER} {code}={id_}")
+
+
+################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
+
+        for sensor_id in sensor_ids:
+
+            ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
+            query = query_builder.select_sensor_api_param(sensor_id = sensor_id)
+            answer = dbconn.send(executable_sql_query = query)
+            paramname2paramvalue_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+
+            if DEBUG_MODE:
+                print(20 * "=" + " API PARAM_NAME TO PARAM_VALUE MAPPING " + 20 * '=')
+                for name, value in paramname2paramvalue_map.items():
+                    print(f"{DEBUG_HEADER} {name}={value}")
+
+            ################################ DO THE STUFF BELOW ONLY FOR MOBILE SENSORS ################################
+            if PERSONALITY in MOBILE_SENSOR_PERSONALITIES:
+
+                ################################ PICK DATE PARAMETERS FROM API PARAM ################################
+                last_fetch_timestamp = APIPacketPicker.pick_date_from_api_param_by_identifier(api_param = paramname2paramvalue_map,
+                                                                                              identifier = PERSONALITY)
+
+
+
+
+
+
+
 
 
 

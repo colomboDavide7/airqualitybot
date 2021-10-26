@@ -51,7 +51,7 @@ class APIPacketPicker(builtins.object):
 
 
     @classmethod
-    def pick_date_from_atmotube_api_param(cls, api_param: Dict[str, Any]) -> str:
+    def pick_date_from_api_param_by_identifier(cls, api_param: Dict[str, Any], identifier: str) -> str:
         """Static method that returns the value associated to the 'date' key of the 'api_param' argument.
 
         If 'api_param' is equal to EMPTY_DICT, EMPTY_STRING value is returned.
@@ -62,12 +62,18 @@ class APIPacketPicker(builtins.object):
         if api_param == EMPTY_DICT:
             return date
 
-        if ATMOTUBE_DATE_PARAM not in api_param.keys():
-            raise SystemExit(f"{APIPacketPicker.pick_date_from_atmotube_api_param.__name__}(): "
-                             f"missing '{ATMOTUBE_DATE_PARAM}' key.")
+        if identifier == "atmotube":
 
-        if api_param.get("date", None) is not None:
-            date = api_param[ATMOTUBE_DATE_PARAM]
+            if ATMOTUBE_DATE_PARAM not in api_param.keys():
+                raise SystemExit(f"{APIPacketPicker.pick_date_from_api_param_by_identifier.__name__}(): "
+                                 f"missing '{ATMOTUBE_DATE_PARAM}' key.")
+
+            if api_param.get(ATMOTUBE_DATE_PARAM, None) is not None:
+                date = api_param[ATMOTUBE_DATE_PARAM]
+        else:
+            raise SystemExit(f"{APIPacketPicker.pick_date_from_api_param_by_identifier.__name__}:"
+                             f"invalid personality '{identifier}'.")
+
         return date
 
 

@@ -78,23 +78,8 @@ class BotAtmotube(BaseBot):
         if not self.sqlbuilder:
             raise SystemExit(f"{BotAtmotube.__name__}: missing sql query builder.")
 
-        # TRY TO GET MEASURE PARAM (ID, CODE) FROM IDENTIFIER
-        query = self.sqlbuilder.select_measure_param_from_identifier(identifier = BotAtmotube.SENSOR_IDENTIFIER)
-        answer = self.dbconn.send(query)
-        id_code_dict = DatabaseAnswerParser.parse_key_val_answer(answer)
-        Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select measure param id from identifier: OK")
-
         for sensor_id in ids:
-            Session.get_current_session().debug_msg(f"---------- SENSOR {sensor_id} ----------")
-            # TRY TO GET SENSOR API PARAMETERS
-            query = self.sqlbuilder.select_api_param_from_sensor_id(sensor_id = sensor_id)
-            answer = self.dbconn.send(query)
-            api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
-            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to select api parameter from sensor ids: OK")
 
-            # TRY TO PICK LAST ATMOTUBE TIMESTAMP FROM API PARAMETERS
-            last_atmotube_timestamp = APIPacketPicker.pick_date_from_atmotube_api_param(api_param)
-            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick last atmotube timestamp: OK")
 
             # TRY TO GET LAST ATMOTUBE MEASURE TIMESTAMP
             last_date = EMPTY_STRING
