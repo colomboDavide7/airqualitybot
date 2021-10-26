@@ -14,7 +14,8 @@ from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, \
 
 
 class DatetimePacketFilter(ABC):
-
+    """Abstract Base Class for datetime filter instances. The purpose of this set of classes is to filter out all
+    the packets downloaded from the API that are acquired before a given filter timestamp."""
 
     @abstractmethod
     def filter_packets(self, packets: Dict[str, Any], sqltimestamp: str) -> List[Dict[str, Any]]:
@@ -25,6 +26,11 @@ class DatetimePacketFilterAtmotube(DatetimePacketFilter):
 
 
     def filter_packets(self, packets: Dict[str, Any], sqltimestamp: str) -> List[Dict[str, Any]]:
+        """This method takes the atmotube api answer and filters out the packets that are occurred before the
+        'sqltimestamp' argument.
+
+        If 'sqltimestamp' argument is equal to EMPTY_STRING, no filtering operation is applied.
+        If the items downloaded from the API are empty, EMPTY_LIST is returned."""
 
         items = packets["data"]["items"]
         if sqltimestamp == EMPTY_STRING:
