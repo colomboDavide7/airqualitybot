@@ -8,17 +8,15 @@
 import builtins
 
 from typing import Dict, Any, List
+from airquality.io.io import IOManager
+from airquality.parser.file_parser import FileParserFactory
+from airquality.parser.datetime_parser import DatetimeParser
+from airquality.picker.resource_picker import ResourcePicker
+from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, \
     RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, \
     RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_GEOMETRY, \
     GEO_TYPE_ST_POINT_2D
-
-
-from airquality.io.io import IOManager
-from airquality.parser.file_parser import FileParserFactory
-from airquality.parser.datetime_parser import DatetimeParser
-from airquality.picker.api_packet_picker import APIPacketPicker
-from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 
 
 class SQLQueryBuilder(builtins.object):
@@ -136,7 +134,7 @@ class SQLQueryBuilder(builtins.object):
 
         query = self.__parsed[query_id]
         for packet in packets:
-            sensor_name = APIPacketPicker.pick_sensor_name_from_identifier(packet = packet, identifier = identifier)
+            sensor_name = ResourcePicker.pick_sensor_name_from_identifier(packet = packet, personality = identifier)
             query += f"('{identifier}', '{sensor_name}'),"
         return query.strip(',') + ';'
 

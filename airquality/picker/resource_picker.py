@@ -8,7 +8,8 @@
 import builtins
 from typing import Dict, Any, List
 from airquality.constants.shared_constants import PURPLE_AIR_API_PARAM, PURPLE_AIR_GEO_PARAM, EMPTY_LIST, \
-    MOBILE_SENSOR_PERSONALITIES
+    MOBILE_SENSOR_PERSONALITIES, PURPLEAIR_SENSOR_IDX_PARAM, PURPLEAIR_NAME_PARAM, \
+    ATMOTUBE_DATE_PARAM
 
 
 LOGGER_SECTION = "logger"
@@ -101,5 +102,19 @@ class ResourcePicker(builtins.object):
             raise SystemExit(f"{ResourcePicker.pick_last_timestamp_from_api_param_by_personality.__name__}: "
                              f"cannot call this method with personality = '{personality}'.")
 
+        sqltimestamp = ""
         if personality == "atmotube":
-            return api_param["date"]
+            if api_param.get(ATMOTUBE_DATE_PARAM, None) is not None:
+                sqltimestamp = api_param[ATMOTUBE_DATE_PARAM]
+
+        return sqltimestamp
+
+
+    @classmethod
+    def pick_sensor_name_from_identifier(cls, packet: Dict[str, Any], personality: str) -> str:
+
+        if personality == "purpleair":
+            return f"{packet[PURPLEAIR_NAME_PARAM]} ({packet[PURPLEAIR_SENSOR_IDX_PARAM]})"
+        else:
+            raise SystemExit(f"{ResourcePicker.pick_sensor_name_from_identifier.__name__}: cannot pick name for "
+                             f"personality = '{personality}'.")

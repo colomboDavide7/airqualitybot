@@ -61,6 +61,7 @@ def parse_sys_argv(args: List[str]):
     if not is_api_address_number_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing required api address number.")
 
+
 ################################ MAIN FUNCTION INITIALIZE MODULE ################################
 def main():
     """This function is the entry point for the 'initialize' module.
@@ -78,7 +79,7 @@ def main():
     try:
         print(20*'-' + " START THE PROGRAM " + 20*'-')
 
-################################ READ 'SERVER' FILE ################################
+################################ READ SERVER FILE ################################
         raw_server_data = IOManager.open_read_close_file(path = SERVER_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = SERVER_FILE.split('.')[-1])
         parsed_server_data = parser.parse(raw_string = raw_server_data)
@@ -106,8 +107,7 @@ def main():
                 for name in sensor_names:
                     print(f"{DEBUG_HEADER} name = '{name}' is already present.")
             else:
-                print(f"{DEBUG_HEADER} no sensor corresponding to '{PERSONALITY}' personality.")
-
+                print(f"{DEBUG_HEADER} found {len(sensor_names)} sensors corresponding to '{PERSONALITY}' personality.")
 
 
 ################################ SELECT THE SENSOR ID FOR THE NEXT INSERTIONS ################################
@@ -119,7 +119,7 @@ def main():
         query = query_builder.select_max_sensor_id()
         answer = dbconn.send(executable_sql_query = query)
         max_sensor_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
-        if max_sensor_id != EMPTY_LIST:
+        if max_sensor_id[0] is not None:
             if DEBUG_MODE:
                 print(f"{DEBUG_HEADER} found sensor in the database with id = {str(max_sensor_id[0])}.")
             sensor_id = max_sensor_id[0] + 1
@@ -127,7 +127,7 @@ def main():
 
 
 
-################################ READ 'SETUP' FILE ################################
+################################ READ API FILE ################################
         raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(raw_string = raw_setup_data)
@@ -171,6 +171,11 @@ def main():
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
+################################ IF THERE ARE NO NEW SENSORS TO ADD, STOP THE PROGRAM ################################
+        if filtered_packets == EMPTY_LIST:
+            if DEBUG_MODE:
+                print(f"{DEBUG_HEADER} all the sensors found are already present into the database.")
+                sys.exit(0)
 
 ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
         insert_sensor_query = query_builder.insert_sensors_from_identifier(packets = filtered_packets, identifier = PERSONALITY)
