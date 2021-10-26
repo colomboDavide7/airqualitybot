@@ -37,27 +37,7 @@ class TestDatetimeParser(unittest.TestCase):
         expected_output = "2021-10-11"
         actual_output = DatetimeParser.sqltimestamp_date(ts = test_ts)
         self.assertEqual(actual_output, expected_output)
-
-
-    def test_successfully_get_last_packet_timestamp(self):
-        """Test take last packet timestamp."""
-
-        test_packets = [{f"{RESHAPER2SQLBUILDER_TIMESTAMP}": "ts1"},
-                        {f"{RESHAPER2SQLBUILDER_TIMESTAMP}": "ts2"},
-                        {f"{RESHAPER2SQLBUILDER_TIMESTAMP}": "ts3"}]
-
-        expected_output = "ts3"
-        actual_output = DatetimeParser.last_packet_timestamp(packets = test_packets)
-        self.assertEqual(actual_output, expected_output)
-
-
-    def test_empty_string_value_with_empty_list_packets(self):
-        """Test EMPTY_STRING return value when try to pick last packet timestamp but packets is EMPTY_LIST."""
-
-        test_packets = EMPTY_LIST
-        expected_output = EMPTY_STRING
-        actual_output = DatetimeParser.last_packet_timestamp(test_packets)
-        self.assertEqual(actual_output, expected_output)
+        
 
     def test_successfully_verify_ts2_after_ts1(self):
 
