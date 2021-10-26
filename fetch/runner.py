@@ -6,90 +6,53 @@
 #
 #################################################
 import sys
-from typing import List, Dict, Any
+from typing import List
 from airquality.io.io import IOManager
-from airquality.bot.bot import BotFactory
-from airquality.app.session import Session
 from airquality.parser.file_parser import FileParserFactory
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 
-
-USAGE = "USAGE: python -m airquality " \
-        "[--help or -h | --debug  or -d | --log or -l] personality api_address_number"
-
-RESOURCES  = "properties/resources.json"
-QUERIES    = "properties/sql_query.json"
-VALID_PERSONALITY = ('atmotube', 'purpleair')
+from airquality.constants.shared_constants import FETCH_USAGE, VALID_PERSONALITIES, DEBUG_HEADER, \
+    SERVER_FILE, QUERY_FILE, API_FILE
 
 
-def parse_sys_argv(args: List[str]) -> Dict[str, Any]:
-    """
-    Function that parses the command line arguments
+DEBUG_MODE = False
+PERSONALITY = ""
+API_ADDRESS_N = ""
 
-    If '-h' or '--help' is passed as first argument, the function will display
-    the usage string and then exits with status code 0.
 
-    If not personality is provided, SystemExit exception is raised.
+def parse_sys_argv(args: List[str]):
 
-    If not api_address_number is provided, SystemExit exception is raised.
-
-    Unknown or invalid arguments are ignored.
-    """
+    global DEBUG_MODE
+    global PERSONALITY
+    global API_ADDRESS_N
 
     if args[0] in ("--help", "-h"):
-        print(USAGE)
+        print(FETCH_USAGE)
         sys.exit(0)
 
-    kwargs = {}
     is_personality_set = False
     is_api_address_number_set = False
 
     for arg in args:
-        if arg.startswith('-'):
-            if arg in ("-d", "--debug"):
-                kwargs["debug"] = True
-            elif arg in ("-l", "--log"):
-                kwargs["logging"] = True
-            else:
-                print(f"{parse_sys_argv.__name__}: ignore invalid option '{arg}'.")
+        if arg in ("-d", "--debug"):
+            DEBUG_MODE = True
+        elif not is_personality_set and arg in VALID_PERSONALITIES:
+            PERSONALITY = arg
+            is_personality_set = True
+        elif not is_api_address_number_set and arg.isdigit():
+            API_ADDRESS_N = arg
+            is_api_address_number_set = True
         else:
-            if not is_personality_set and arg in VALID_PERSONALITY:
-                kwargs["personality"] = arg
-                is_personality_set = True
-            elif not is_api_address_number_set and arg.isdigit():
-                kwargs["api_address_number"] = arg
-                is_api_address_number_set = True
-            else:
-                print(f"{parse_sys_argv.__name__}: ignore invalid option '{arg}'.")
+            print(f"{parse_sys_argv.__name__}: ignore invalid option '{arg}'.")
 
     if not is_personality_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing required bot personality.")
 
     if not is_api_address_number_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing required api address number.")
-
-    return kwargs
-
-
-def set_session(session_kwargs: Dict[str, Any]) -> Session:
-    """This function takes a Session object and sets up it properly based on the optional argument
-    passed by the user from the command line."""
-
-    session = Session.get_current_session()
-
-    if session_kwargs:
-        for key in session_kwargs.keys():
-            if key == "debug":
-                session.debug = True
-            elif key == "logging":
-                session.logging = True
-    else:
-        session.debug = False
-        session.logging = False
-    return session
 
 
 ################################ MAIN FUNCTION ################################
@@ -100,86 +63,58 @@ def main() -> None:
 
     The application expects two optional command line option-argument:
     1) --help or -h:  display help on program usage (MUST BE THE FIRST)
-    2) --log or -l:   turn on local logging
-    3) --debug or -d: run the application in debug mode
-    4) personality:   the bot personality for connecting to APIs and database
-    5) api address number: the api address number from the 'api_address' section in the resource file
-    """.format(usage = USAGE)
+    2) --debug or -d: run the application in debug mode
+    3) personality:   the bot personality for connecting to APIs and database
+    4) api address number: the api address number from the 'api_address' section in the resource file
+    """.format(usage = FETCH_USAGE)
 
     args = sys.argv[1:]
     if not args:
-        print(USAGE)
+        print(FETCH_USAGE)
         sys.exit(1)
 
-    session_kwargs = parse_sys_argv(args)
-    bot_personality = session_kwargs.pop("personality")
-    api_address_number = session_kwargs.pop("api_address_number")
+    parse_sys_argv(args)
+    print(f"{DEBUG_HEADER} personality = {PERSONALITY}")
+    print(f"{DEBUG_HEADER} api address number = {API_ADDRESS_N}")
+    print(f"{DEBUG_HEADER} debug       = {DEBUG_MODE}")
 
-    session = set_session(session_kwargs)
-    print(str(session))
-
-    session.debug_msg(f"{main.__name__}(): -------- STARTING THE PROGRAM --------")
     try:
-        # GET RAW RESOURCE FROM FILE
-        raw_resources = IOManager.open_read_close_file(path = RESOURCES)
-        session.debug_msg(f"{main.__name__}(): try to read resource file at '{RESOURCES}': OK")
+        print(20 * '-' + " START THE PROGRAM " + 20 * '-')
 
-        # PARSE RESOURCE
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = RESOURCES.split('.')[-1])
-        parsed_resources = parser.parse(raw_resources)
-        session.debug_msg(f"{main.__name__}(): try to parse raw resources: OK")
+################################ READ 'SERVER' FILE ################################
+        raw_server_data = IOManager.open_read_close_file(path = SERVER_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension = SERVER_FILE.split('.')[-1])
+        parsed_server_data = parser.parse(raw_string = raw_server_data)
 
-        # GET DATABASE CONNECTION PROPERTIES FROM BOT PERSONALITY
-        properties = ResourcePicker.pick_db_conn_properties(
-                parsed_resources = parsed_resources,
-                bot_personality = bot_personality
-        )
-        session.debug_msg(f"{main.__name__}(): try to pick database connection properties: OK")
+################################ PICK DATABASE CONNECTION PROPERTIES ################################
+        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources = parsed_server_data,
+                                                             bot_personality = PERSONALITY)
 
-        # GET API ADDRESS FROM BOT PERSONALITY AND API ADDRESS NUMBER
-        api_address = ResourcePicker.pick_api_address_from_number(
-                parsed_resources = parsed_resources,
-                bot_personality = bot_personality,
-                api_address_number = api_address_number
-        )
-        session.debug_msg(f"{main.__name__}(): try to pick api address for personality '{bot_personality}' "
-                          f"with number '{api_address_number}': OK")
-
-        # CREATE DATABASE ADAPTER
+################################ DATABASE CONNECTION ADAPTER ################################
         db_conn_factory = Psycopg2ConnectionAdapterFactory()
-        dbconn = db_conn_factory.create_database_connection_adapter(properties)
-        session.debug_msg(f"{main.__name__}(): try to instantiate psycopg2 connection adapter: OK")
+        dbconn = db_conn_factory.create_database_connection_adapter(settings = db_settings)
+        dbconn.open_conn()
 
-        # CREATE QUERY BUILDER
-        query_builder = SQLQueryBuilder(query_file_path = QUERIES)
-        session.debug_msg(f"{main.__name__}(): try to instantiate sql query builder: OK")
+################################ SQL QUERY BUILDER ################################
+        query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
-        # GET API ADAPTER
-        api_adapter = APIRequestAdapter(api_address = api_address)
-        session.debug_msg(f"{main.__name__}(): try to instantiate api adapter with address '{api_address}': OK")
+################################ READ 'SETUP' FILE ################################
+        raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
+        parsed_api_data = parser.parse(raw_string = raw_setup_data)
 
-        # CREATE BOT FROM BOT PERSONALITY
-        bot = BotFactory.create_bot_from_personality(bot_personality = bot_personality)
-        session.debug_msg(f"{main.__name__}(): try to instantiate bot from personality '{bot_personality}': OK")
+################################ API REQUEST ADAPTER ################################
+        api_adapter = APIRequestAdapter(parsed_api_data[PERSONALITY]["api_address"][API_ADDRESS_N])
 
-        # SET QUERY BUILDER TO BOT
-        bot.sqlbuilder = query_builder
-        session.debug_msg(f"{main.__name__}(): try to set query builder to bot: OK")
+        if DEBUG_MODE:
+            print(f"{DEBUG_HEADER} {parsed_api_data[PERSONALITY]['api_address'][API_ADDRESS_N]}")
 
-        # SET DATABASE ADAPTER TO BOT
-        bot.dbconn = dbconn
-        session.debug_msg(f"{main.__name__}(): try to set database connection adapter to bot: OK")
+################################ MESSAGE ################################
 
-        # SET API ADAPTER TO BOT
-        bot.apiadapter = api_adapter
-        session.debug_msg(f"{main.__name__}(): try to set api adapter to bot: OK")
 
-        # RUN BOT
-        bot.run()
-        session.debug_msg(f"{main.__name__}(): try to run bot: OK")
+
+        print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
 
     except SystemExit as ex:
-        session.debug_msg(str(ex))
+        print(str(ex))
         sys.exit(1)
-
-    session.debug_msg(f"{main.__name__}(): -------- PROGRAM ENDS WITH SUCCESS --------")

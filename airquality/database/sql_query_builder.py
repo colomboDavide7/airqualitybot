@@ -18,7 +18,6 @@ from airquality.io.io import IOManager
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.picker.api_packet_picker import APIPacketPicker
-from airquality.filter.filter import APIPacketFilterFactory
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 
 
@@ -33,7 +32,6 @@ class SQLQueryBuilder(builtins.object):
         self.__raw = IOManager.open_read_close_file(self.__path)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = query_file_path.split('.')[-1])
         self.__parsed = parser.parse(self.__raw)
-        self.filter_factory = APIPacketFilterFactory()
 
 
     def _raise_exception_if_query_identifier_not_found(self, query_id: str):

@@ -7,8 +7,8 @@
 #################################################
 import psycopg2
 from typing import Dict, Any
-from airquality.app import EMPTY_STRING
 from abc import ABC, abstractmethod
+from airquality.constants.shared_constants import EMPTY_STRING
 
 
 class ConnectionAdapter(ABC):

@@ -24,19 +24,23 @@ from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.filter.filter import APIPacketFilterFactory
+from airquality.filter.filter import APIPacketFilter
 from airquality.picker.resource_picker import ResourcePicker
 
 
 DEBUG_MODE  = False
 PERSONALITY = ""
+API_ADDRESS_N = ""
 
 
 def parse_sys_argv(args: List[str]):
 
     global DEBUG_MODE
     global PERSONALITY
+    global API_ADDRESS_N
+
     is_personality_set = False
+    is_api_address_number_set = False
 
     for arg in args:
         if arg in ("-d", "--debug"):
@@ -44,11 +48,17 @@ def parse_sys_argv(args: List[str]):
         elif arg in VALID_PERSONALITIES and not is_personality_set:
             PERSONALITY = arg
             is_personality_set = True
+        elif arg.isdigit() and not is_api_address_number_set:
+            API_ADDRESS_N = arg
+            is_api_address_number_set = True
         else:
             print(f"{parse_sys_argv.__name__}(): ignoring invalid option '{arg}'")
 
     if not is_personality_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{INITIALIZE_USAGE}")
+
+    if not is_api_address_number_set:
+        raise SystemExit(f"{parse_sys_argv.__name__}(): missing required api address number.")
 
 ################################ MAIN FUNCTION INITIALIZE MODULE ################################
 def main():
@@ -84,7 +94,7 @@ def main():
         query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
 ################################ SELECT SENSOR NAME FROM DATABASE ################################
-        # The 'name_id_dict' variable is used to check if a given sensor taken from the API is already present
+        # The 'sensor_names' variable is used to check if a given sensor taken from the API is already present
         # into the database.
         query = query_builder.select_all_sensor_name_from_identifier(identifier = PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
@@ -119,14 +129,14 @@ def main():
 ################################ READ 'SETUP' FILE ################################
         raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_setup_data = parser.parse(raw_string = raw_setup_data)
+        parsed_api_data = parser.parse(raw_string = raw_setup_data)
 
 ################################ API REQUEST ADAPTER ################################
-        api_adapter = APIRequestAdapter(parsed_setup_data[f"{PERSONALITY}"]["api_address"])
+        api_adapter = APIRequestAdapter(parsed_api_data[f"{PERSONALITY}"]["api_address"][API_ADDRESS_N])
 
 ################################ QUERYSTRING BUILDER ################################
         querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
-        querystring = querystring_builder.make_querystring(parameters = parsed_setup_data[f"{PERSONALITY}"])
+        querystring = querystring_builder.make_querystring(parameters = parsed_api_data[f"{PERSONALITY}"])
         if DEBUG_MODE:
             print(f"{DEBUG_HEADER} {querystring}")
 

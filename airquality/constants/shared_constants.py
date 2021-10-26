@@ -22,6 +22,7 @@ QUERY_FILE  = "properties/sql_query.json"
 
 DEBUG_HEADER = "[DEBUG]:"
 INITIALIZE_USAGE = "USAGE: python -m initialize [-d or --debug] personality"
+FETCH_USAGE = "USAGE: python -m airquality [--help or -h | --debug  or -d] personality api_address_number"
 
 ################################ EMPTY CONSTANTS ################################
 

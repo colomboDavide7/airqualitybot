@@ -11,10 +11,6 @@ or running all tests once.
 python -m test.api.test_api_request_adapter
 python -m test.api.test_url_querystring_builder
 
-###################### RUN TEST APP ######################
-
-python -m test.app.test_session
-
 ###################### RUN TEST BOT ######################
 
 python -m test.bot.test_bot
@@ -38,10 +34,6 @@ python -m test.parser.test_datetime_parser
 
 python -m test.picker.test_resource_picker
 python -m test.picker.test_api_packet_picker
-
-###################### RUN TEST RUNNER ######################
-
-python -m test.runner.test_runner
 
 
 
