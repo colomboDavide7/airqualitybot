@@ -127,14 +127,19 @@ def main() -> None:
             for id_ in sensor_ids:
                 print(f"{DEBUG_HEADER} {id_}")
 
+################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
+        if sensor_ids == EMPTY_LIST:
+            print(f"{DEBUG_HEADER} no sensor associated to personality = '{PERSONALITY}'.")
+            sys.exit(0)
+
 ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
         query = query_builder.select_measure_param_from_identifier(identifier = PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
-        paramcode2paramid_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+        measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
         if DEBUG_MODE:
-            print(20 * "=" + " PARAM_CODE TO PARAM_ID MAPPING " + 20 * '=')
-            for code, id_ in paramcode2paramid_map.items():
+            print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
+            for code, id_ in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {code}={id_}")
 
 
@@ -192,7 +197,7 @@ def main() -> None:
                     ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
                     reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = PERSONALITY)
                     reshaped_packets = reshaper.reshape_packets(packets = filtered_packets,
-                                                                measure_param_map = paramcode2paramid_map)
+                                                                measure_param_map = measure_param_map)
 
                     if DEBUG_MODE:
                         print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
@@ -215,6 +220,10 @@ def main() -> None:
                     dbconn.send(executable_sql_query = query)
 
 
+            ################################ CODE IMPLEMENTED FOR POLLUTION STATIONS ################################
+            else:
+                print(f"fetching for pollution station is already not implemented.")
+                sys.exit(0)
 
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')

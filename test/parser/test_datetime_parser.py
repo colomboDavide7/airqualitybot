@@ -6,7 +6,6 @@
 #
 #################################################
 import unittest
-from airquality.constants.shared_constants import RESHAPER2SQLBUILDER_TIMESTAMP, EMPTY_LIST, EMPTY_STRING
 from airquality.parser.datetime_parser import DatetimeParser
 
 
@@ -37,7 +36,7 @@ class TestDatetimeParser(unittest.TestCase):
         expected_output = "2021-10-11"
         actual_output = DatetimeParser.sqltimestamp_date(ts = test_ts)
         self.assertEqual(actual_output, expected_output)
-        
+
 
     def test_successfully_verify_ts2_after_ts1(self):
 
