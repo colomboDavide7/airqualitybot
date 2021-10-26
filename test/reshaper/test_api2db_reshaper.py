@@ -18,10 +18,8 @@ class TestAPI2DatabaseReshaper(unittest.TestCase):
         self.factory = API2DatabaseReshaperFactory()
 
     def test_successfully_reshape_atmotube_packets(self):
-        test_packets = {"data": {
-            "items": [{"par1": "val1", "par2": "val2", ATMOTUBE_TIME_PARAM: "2021-10-11T09:44:00.000Z",
-                       ATMOTUBE_COORDS_PARAM: {"lat": 45.232098, "lon": 9.7663}}]}
-        }
+        test_packets = [{"par1": "val1", "par2": "val2", ATMOTUBE_TIME_PARAM: "2021-10-11T09:44:00.000Z",
+                         ATMOTUBE_COORDS_PARAM: {"lat": 45.232098, "lon": 9.7663}}]
 
         test_code2id_map = {"par1": 8, "par2": 9}
         expected_output = [{RESHAPER2SQLBUILDER_PARAM_ID: 8, RESHAPER2SQLBUILDER_PARAM_VAL: "'val1'",
@@ -33,6 +31,26 @@ class TestAPI2DatabaseReshaper(unittest.TestCase):
         reshaper = self.factory.create_api2database_reshaper(bot_personality = "atmotube")
         actual_output = reshaper.reshape_packets(packets = test_packets, measure_param_map = test_code2id_map)
         self.assertEqual(actual_output, expected_output)
+
+
+    def test_empty_list_when_empty_packets_atmotube_reshaper(self):
+        test_packets = []
+
+        test_code2id_map = {"par1": 8, "par2": 9}
+        expected_output = []
+        reshaper = self.factory.create_api2database_reshaper(bot_personality = "atmotube")
+        actual_output = reshaper.reshape_packets(packets = test_packets, measure_param_map = test_code2id_map)
+        self.assertEqual(actual_output, expected_output)
+
+
+    def test_system_exit_when_reshape_parameters_are_empty_atmotube_reshaper(self):
+        test_packets = [{"par1": "val1", "par2": "val2", ATMOTUBE_TIME_PARAM: "2021-10-11T09:44:00.000Z",
+                         ATMOTUBE_COORDS_PARAM: {"lat": 45.232098, "lon": 9.7663}}]
+
+        test_code2id_map = {}
+        reshaper = self.factory.create_api2database_reshaper(bot_personality = "atmotube")
+        with self.assertRaises(SystemExit):
+            reshaper.reshape_packets(packets = test_packets, measure_param_map = test_code2id_map)
 
 
 if __name__ == '__main__':

@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
-from airquality.constants.shared_constants import EMPTY_LIST, \
+from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
     ATMOTUBE_TIME_PARAM, ATMOTUBE_COORDS_PARAM, \
     GEO_TYPE_ST_POINT_2D, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE, \
     RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, \
@@ -34,6 +34,10 @@ class API2DatabaseReshaperAtmotube(API2DatabaseReshaper):
         reshaped_packets = []
         if packets == EMPTY_LIST:
             return reshaped_packets
+
+        if measure_param_map == EMPTY_DICT:
+            raise SystemExit(f"{API2DatabaseReshaperAtmotube.__name__}: cannot reshape packets when reshape mapping is"
+                             f"empty.")
 
         for packet in packets:
             timestamp = DatetimeParser.atmotube_to_sqltimestamp(packet[ATMOTUBE_TIME_PARAM])
