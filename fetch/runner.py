@@ -208,7 +208,7 @@ def main() -> None:
                                     print(f"{DEBUG_HEADER} {key}={val}")
 
                     ################################ CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE #################
-                    query = query_builder.insert_atmotube_measurement_packets(reshaped_packets)
+                    query = query_builder.insert_atmotube_measurements(reshaped_packets)
                     dbconn.send(executable_sql_query = query)
 
                     ############### UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH ###############
