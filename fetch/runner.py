@@ -15,6 +15,7 @@ from airquality.picker.api_packet_picker import APIPacketPicker
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.constants.shared_constants import FETCH_USAGE, VALID_PERSONALITIES, DEBUG_HEADER, \
     SERVER_FILE, QUERY_FILE, API_FILE, MOBILE_SENSOR_PERSONALITIES
 
@@ -143,21 +144,23 @@ def main() -> None:
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
             query = query_builder.select_sensor_api_param(sensor_id = sensor_id)
             answer = dbconn.send(executable_sql_query = query)
-            paramname2paramvalue_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+            api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
             if DEBUG_MODE:
-                print(20 * "=" + " API PARAM_NAME TO PARAM_VALUE MAPPING " + 20 * '=')
-                for name, value in paramname2paramvalue_map.items():
+                print(20 * "=" + " API PARAMETERS " + 20 * '=')
+                for name, value in api_param.items():
                     print(f"{DEBUG_HEADER} {name}={value}")
 
             ################################ DO THE STUFF BELOW ONLY FOR MOBILE SENSORS ################################
             if PERSONALITY in MOBILE_SENSOR_PERSONALITIES:
 
-                ################################ PICK DATE PARAMETERS FROM API PARAM ################################
-                last_fetch_timestamp = APIPacketPicker.pick_date_from_api_param_by_identifier(api_param = paramname2paramvalue_map,
-                                                                                              identifier = PERSONALITY)
+                ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
+                querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
+                querystring = querystring_builder.make_querystring(parameters = api_param)
 
-
+                if DEBUG_MODE:
+                    print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
+                    print(f"{DEBUG_HEADER} {querystring}")
 
 
 

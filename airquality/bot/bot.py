@@ -81,12 +81,6 @@ class BotAtmotube(BaseBot):
         for sensor_id in ids:
 
 
-            # TRY TO GET LAST ATMOTUBE MEASURE TIMESTAMP
-            last_date = EMPTY_STRING
-            if last_atmotube_timestamp != EMPTY_STRING:
-                last_date = DatetimeParser.sqltimestamp_date(last_atmotube_timestamp)
-            api_param["date"] = last_date
-            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to get last measure timestamp: OK")
 
             # BUILD URL QUERYSTRING
             querystring = URLQuerystringBuilder.AT_querystring_from_date(api_param)
@@ -119,50 +113,3 @@ class BotAtmotube(BaseBot):
             query = self.sqlbuilder.update_last_packet_date_atmotube(last_timestamp = last_timestamp, sensor_id = sensor_id)
             self.dbconn.send(query)
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to update last acquisition timestamp: OK")
-
-
-#############################################################################
-
-#                           PURPLEAIR BOT                                   #
-
-#############################################################################
-
-class BotPurpleair(BaseBot):
-
-
-    SENSOR_IDENTIFIER = "purpleair"
-
-
-    def run(self):
-
-        if not self.apiadapter:
-            raise SystemExit(f"{BotAtmotube.__name__}: missing api adapter.")
-
-        if not self.dbconn:
-            raise SystemExit(f"{BotAtmotube.__name__}: missing database connection adapter.")
-
-        if not self.sqlbuilder:
-            raise SystemExit(f"{BotAtmotube.__name__}: missing sql query builder.")
-
-
-
-
-
-
-
-
-
-
-################################ FACTORY ################################
-class BotFactory(builtins.object):
-
-
-    @staticmethod
-    def create_bot_from_personality(bot_personality: str) -> BaseBot:
-
-        if bot_personality == "atmotube":
-            return BotAtmotube()
-        elif bot_personality == "purpleair":
-            return BotPurpleair()
-        else:
-            raise SystemExit(f"{BotFactory.__name__}: invalid bot personality {bot_personality}.")

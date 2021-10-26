@@ -8,6 +8,7 @@
 import builtins
 from typing import Dict, Any
 from abc import ABC, abstractmethod
+from airquality.parser.datetime_parser import DatetimeParser
 from airquality.constants.shared_constants import ATMOTUBE_API_PARAMETERS, EMPTY_DICT
 
 
@@ -25,6 +26,7 @@ class URLQuerystringBuilder(ABC):
 
 class URLQuerystringBuilderAtmotube(URLQuerystringBuilder):
 
+
     def make_querystring(self, parameters: Dict[str, Any]) -> str:
         """This method defines the rules for building a valid Atmotube querystring for fetching data from API.
 
@@ -39,28 +41,26 @@ class URLQuerystringBuilderAtmotube(URLQuerystringBuilder):
         See: https://app.swaggerhub.com/apis/Atmotube/cloud_api/1.1#/AtmotubeDataItem."""
 
         querystring = ""
-        status_check = 0b000
 
-        if parameters:
-            for key, val in parameters.items():
-                if key in ATMOTUBE_API_PARAMETERS:
-                    querystring += key + KEY_VAL_SEPARATOR + val + CONCAT_SEPARATOR
-                else:
-                    print(f"{URLQuerystringBuilder.make_querystring.__name__}: ignore invalid argument '{key}'.")
+        keys = parameters.keys()
 
-                if key == 'api_key':
-                    status_check |= 0b001
-                elif key == 'mac':
-                    status_check |= 0b010
-                elif key == 'date':
-                    status_check |= 0b100
+        if parameters != EMPTY_DICT:
 
-        if status_check != 0b111:
-            raise SystemExit(f"{URLQuerystringBuilder.make_querystring.__name__}: missing required arguments.")
+            if 'api_key' not in keys or 'mac' not in keys or 'date' not in keys:
+                raise SystemExit(f"{URLQuerystringBuilderAtmotube.__name__}: missing 'api_key' or 'mac' or 'date' keys.")
+
+            querystring += 'api_key' + KEY_VAL_SEPARATOR + parameters['api_key'] + CONCAT_SEPARATOR
+            querystring += 'mac' + KEY_VAL_SEPARATOR + parameters['mac'] + CONCAT_SEPARATOR
+            if parameters.get('date', None) is not None:
+                date = DatetimeParser.sqltimestamp_date(parameters['date'])
+                querystring += 'date' + KEY_VAL_SEPARATOR + date + CONCAT_SEPARATOR
+
+            for key in keys:
+                if key not in ('api_key', 'mac', 'date'):
+                    querystring += key + KEY_VAL_SEPARATOR + parameters[key] + CONCAT_SEPARATOR
 
         querystring = querystring.strip(CONCAT_SEPARATOR)
         return querystring
-
 
 
 class URLQuerystringBuilderPurpleair(URLQuerystringBuilder):
