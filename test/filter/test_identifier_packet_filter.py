@@ -7,11 +7,11 @@
 #################################################
 
 import unittest
-from airquality.filter.filter import APIPacketFilter
-from airquality.constants.shared_constants import EMPTY_LIST, ATMOTUBE_TIME_PARAM
+from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
+from airquality.constants.shared_constants import EMPTY_LIST
 
 
-class TestFilter(unittest.TestCase):
+class TestIdentifierPacketFilter(unittest.TestCase):
 
 
     def test_successfully_filter_purpleair_packets(self):
@@ -24,9 +24,8 @@ class TestFilter(unittest.TestCase):
         test_filter_list = ["n1 (idx1)"]
         expected_output = [{"name": "n2", "sensor_index": "idx2"},
                            {"name": "n3", "sensor_index": "idx3"}]
-        actual_output = APIPacketFilter.filter_packet_by_sensor_name(packets = test_packets,
-                                                                     filter_name_list = test_filter_list,
-                                                                     identifier = "purpleair")
+        filter_ = IdentifierPacketFilterFactory.create_identifier_filter(bot_personality = "purpleair")
+        actual_output = filter_.filter_packets(packets = test_packets, identifiers = test_filter_list)
         self.assertEqual(actual_output, expected_output)
 
 
@@ -42,9 +41,8 @@ class TestFilter(unittest.TestCase):
         expected_output = [{"name": "n1", "sensor_index": "idx1"},
                            {"name": "n2", "sensor_index": "idx2"},
                            {"name": "n3", "sensor_index": "idx3"}]
-        actual_output = APIPacketFilter.filter_packet_by_sensor_name(packets = test_packets,
-                                                                     filter_name_list = test_filter_list,
-                                                                     identifier = "purpleair")
+        filter_ = IdentifierPacketFilterFactory.create_identifier_filter(bot_personality = "purpleair")
+        actual_output = filter_.filter_packets(packets = test_packets, identifiers = test_filter_list)
         self.assertEqual(actual_output, expected_output)
 
 
@@ -54,9 +52,8 @@ class TestFilter(unittest.TestCase):
         test_packets = EMPTY_LIST
         test_filter_list = ["something1", "something2"]
         expected_output = EMPTY_LIST
-        actual_output = APIPacketFilter.filter_packet_by_sensor_name(packets = test_packets,
-                                                                     filter_name_list = test_filter_list,
-                                                                     identifier = "purpleair")
+        filter_ = IdentifierPacketFilterFactory.create_identifier_filter(bot_personality = "purpleair")
+        actual_output = filter_.filter_packets(packets = test_packets, identifiers = test_filter_list)
         self.assertEqual(actual_output, expected_output)
 
 

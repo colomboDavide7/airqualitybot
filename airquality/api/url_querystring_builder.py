@@ -100,8 +100,8 @@ class URLQuerystringBuilderPurpleair(URLQuerystringBuilder):
 ################################ FACTORY ################################
 class URLQuerystringBuilderFactory(builtins.object):
 
-    @staticmethod
-    def create_querystring_builder(bot_personality: str) -> URLQuerystringBuilder:
+    @classmethod
+    def create_querystring_builder(cls, bot_personality: str) -> URLQuerystringBuilder:
         """Simple factory method that returns a specific instance of URLQuerystringBuilder based on
         'bot_personality'."""
 
@@ -109,3 +109,6 @@ class URLQuerystringBuilderFactory(builtins.object):
             return URLQuerystringBuilderAtmotube()
         elif bot_personality == "purpleair":
             return URLQuerystringBuilderPurpleair()
+        else:
+            raise SystemExit(f"{URLQuerystringBuilderFactory.__name__}: cannot instantiate {URLQuerystringBuilder.__name__} "
+                             f"instance for personality='{bot_personality}'.")

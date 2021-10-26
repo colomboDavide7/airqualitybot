@@ -13,7 +13,7 @@ from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, \
     ATMOTUBE_TIME_PARAM
 
 
-class DatetimeFilter(ABC):
+class DatetimePacketFilter(ABC):
 
 
     @abstractmethod
@@ -21,7 +21,7 @@ class DatetimeFilter(ABC):
         pass
 
 
-class DatetimeFilterAtmotube(DatetimeFilter):
+class DatetimePacketFilterAtmotube(DatetimePacketFilter):
 
 
     def filter_packets(self, packets: List[Dict[str, Any]], sqltimestamp: str) -> List[Dict[str, Any]]:
@@ -39,13 +39,14 @@ class DatetimeFilterAtmotube(DatetimeFilter):
 
 
 ################################ DATETIME FILTER FACTORY ################################
-class DatetimeFilterFactory(builtins.object):
+class DatetimePacketFilterFactory(builtins.object):
 
 
     @classmethod
-    def create_datetime_filter(cls, bot_personality: str) -> DatetimeFilter:
+    def create_datetime_filter(cls, bot_personality: str) -> DatetimePacketFilter:
 
         if bot_personality == "atmotube":
-            return DatetimeFilterAtmotube()
+            return DatetimePacketFilterAtmotube()
         else:
-            raise SystemExit(f"{DatetimeFilterFactory.__name__}: invalid personality '{bot_personality}'.")
+            raise SystemExit(f"{DatetimePacketFilterFactory.__name__}: cannot instantiate {DatetimePacketFilter.__name__} "
+                             f"instance for personality='{bot_personality}'.")

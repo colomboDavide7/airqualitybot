@@ -24,7 +24,7 @@ from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.filter.filter import APIPacketFilter
+from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
 from airquality.picker.resource_picker import ResourcePicker
 
 
@@ -154,18 +154,22 @@ def main():
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
+################################ CREATE IDENTIFIER FILTER FOR FILTERING PACKETS FROM API ################################
+        filter_factory = IdentifierPacketFilterFactory()
+        filter_ = filter_factory.create_identifier_filter(bot_personality = PERSONALITY)
+
+
 ################################ FILTER API PACKET ################################
         # Filter packets based on sensor names. This is done to avoid to insert sensors that are
         # already present in the database.
-        filtered_packets = APIPacketFilter.filter_packet_by_sensor_name(packets = reshaped_packets,
-                                                                        filter_name_list = sensor_names,
-                                                                        identifier = PERSONALITY)
+        filtered_packets = filter_.filter_packets(packets = reshaped_packets, identifiers = sensor_names)
         if DEBUG_MODE:
             print(20*"=" + " FILTERED PACKETS " + 20*'=')
             for packet in filtered_packets:
                 print(30*'*')
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
+
 
 ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
         insert_sensor_query = query_builder.insert_sensors_from_identifier(packets = filtered_packets, identifier = PERSONALITY)
@@ -179,9 +183,9 @@ def main():
         ################################ FILTER PACKETS TO MAINTAIN ONLY THE API PARAM ################################
         # Since we have a lot of arguments into a packet, we want to filter out those that are not used for
         # building the query on 'api_param' table
-        api_filtered_packets = APIPacketFilter.filter_packet_by_sensor_name(packets = filtered_packets,
-                                                                            filter_name_list = api_filter_list,
-                                                                            identifier = PERSONALITY)
+
+        api_filtered_packets = IdentifierFilter.filter_packet_by_sensor_name(packets = filtered_packets,
+                                                                             filter_name_list = api_filter_list)
 
         ################################ ASK THE SQL QUERY BUILDER TO BUILD THE QUERY ################################
         insert_api_param = query_builder.insert_api_param(packets = api_filtered_packets, first_sensor_id = sensor_id)
@@ -198,9 +202,9 @@ def main():
             ################################ FILTER THE PACKETS TO MAINTAIN ONLY GEOM PARAM ############################
             # Since we have a lot of arguments into a packet, we want to filter out those that are not used for
             # building the query on 'sensor_at_location' table
-            geo_filtered_packets = APIPacketFilter.filter_packet_by_sensor_name(packets = filtered_packets,
-                                                                                filter_name_list = geo_filter_list,
-                                                                                identifier = PERSONALITY)
+            geo_filtered_packets = IdentifierFilter.filter_packet_by_sensor_name(packets = filtered_packets,
+                                                                                 filter_name_list = geo_filter_list,
+                                                                                 identifier = PERSONALITY)
 
             ################################ ASK SQL QUERY BUILDER TO BUILD THE QUERY ################################
             insert_sensor_at_location = query_builder.insert_sensor_at_location(packets = geo_filtered_packets,
