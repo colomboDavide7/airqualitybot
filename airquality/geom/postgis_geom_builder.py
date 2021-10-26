@@ -13,8 +13,10 @@ from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_DICT, \
 
 class PostGISGeomBuilder(builtins.object):
 
-    @staticmethod
-    def build_geometry_type(geo_param: Dict[str, Any], geo_type: str) -> str:
+    @classmethod
+    def build_geometry_type(cls, geo_param: Dict[str, Any], geo_type: str) -> str:
+        """Class method that takes a set of geometry parameters (latitude, longitude) and a geometry type string
+        and returns a string for building the respective PostGIS geometry type."""
 
         geo_string = EMPTY_STRING
         if geo_param == EMPTY_DICT:

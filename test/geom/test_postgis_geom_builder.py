@@ -24,6 +24,7 @@ class TestPostGISGeomBuilder(unittest.TestCase):
 
 
     def test_system_exit_when_missing_param(self):
+        """Test SystemExit when some parameter is missing from 'geo_param' argument."""
 
         test_param = {GEOMBUILDER_LATITUDE: "45.676289"}
         with self.assertRaises(SystemExit):
@@ -31,6 +32,7 @@ class TestPostGISGeomBuilder(unittest.TestCase):
 
 
     def test_system_exit_when_bad_geotype_is_requested(self):
+        """Test SystemExit when bad geometry type is passed."""
 
         test_param = {GEOMBUILDER_LATITUDE: "45.676289", GEOMBUILDER_LONGITUDE: "9.6473648"}
         with self.assertRaises(SystemExit):
