@@ -45,9 +45,11 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
 ################################ FACTORY ################################
 class APIPacketReshaperFactory(builtins.object):
 
+
     @classmethod
     def create_api_packet_reshaper(cls, bot_personality: str) -> APIPacketReshaper:
         if bot_personality == "purpleair":
             return APIPacketReshaperPurpleair()
         else:
-            raise SystemExit(f"{APIPacketReshaperFactory.__name__}: don't recognized personality '{bot_personality}'.")
+            raise SystemExit(f"{APIPacketReshaperFactory.__name__}: cannot instantiate {APIPacketReshaper.__name__} "
+                             f"instance for personality='{bot_personality}'.")
