@@ -205,7 +205,7 @@ def main():
             ################################ ASK SQL QUERY BUILDER TO BUILD THE QUERY ################################
             insert_sensor_at_location = query_builder.insert_sensor_at_location(packets = geo_filtered_packets,
                                                                                 first_sensor_id = sensor_id)
-            
+
             ################################ EXPLOIT THE DB CONN ADAPTER FOR EXECUTING THE QUERY #######################
             dbconn.send(executable_sql_query = insert_sensor_at_location)
 

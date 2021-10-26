@@ -13,7 +13,7 @@ from airquality.picker.resource_picker import ResourcePicker
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-
+from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.constants.shared_constants import FETCH_USAGE, VALID_PERSONALITIES, DEBUG_HEADER, \
     SERVER_FILE, QUERY_FILE, API_FILE
 
@@ -89,6 +89,10 @@ def main() -> None:
 ################################ PICK DATABASE CONNECTION PROPERTIES ################################
         db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources = parsed_server_data,
                                                              bot_personality = PERSONALITY)
+        if DEBUG_MODE:
+            print(20 * "=" + " DATABASE SETTINGS " + 20 * '=')
+            for key, val in db_settings.items():
+                print(f"{DEBUG_HEADER} {key}={val}")
 
 ################################ DATABASE CONNECTION ADAPTER ################################
         db_conn_factory = Psycopg2ConnectionAdapterFactory()
@@ -107,9 +111,29 @@ def main() -> None:
         api_adapter = APIRequestAdapter(parsed_api_data[PERSONALITY]["api_address"][API_ADDRESS_N])
 
         if DEBUG_MODE:
+            print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {parsed_api_data[PERSONALITY]['api_address'][API_ADDRESS_N]}")
 
-################################ MESSAGE ################################
+################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
+        query = query_builder.select_sensor_ids_from_identifier(identifier = PERSONALITY)
+        answer = dbconn.send(executable_sql_query = query)
+        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+
+        if DEBUG_MODE:
+            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
+            for id_ in sensor_ids:
+                print(f"{DEBUG_HEADER} {id_}")
+
+################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
+        query = query_builder.select_measure_param_from_identifier(identifier = PERSONALITY)
+        answer = dbconn.send(executable_sql_query = query)
+        paramcode2paramid_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+
+        if DEBUG_MODE:
+            print(20 * "=" + " PARAM_CODE TO PARAM_ID MAPPING " + 20 * '=')
+            for code, id_ in paramcode2paramid_map.items():
+                print(f"{DEBUG_HEADER} {code}={id_}")
+
 
 
 
