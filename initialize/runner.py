@@ -147,12 +147,12 @@ def main():
         reshaper_factory = APIPacketReshaperFactory()
         reshaper = reshaper_factory.create_api_packet_reshaper(bot_personality = PERSONALITY)
         reshaped_packets = reshaper.reshape_packet(api_answer = parsed_api_data)
-        # if DEBUG_MODE:
-        #     print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
-        #     for packet in reshaped_packets:
-        #         print(30*'*')
-        #         for key, val in packet.items():
-        #             print(f"{DEBUG_HEADER} {key} = {val}")
+        if DEBUG_MODE:
+            print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
+            for packet in reshaped_packets:
+                print(30*'*')
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key} = {val}")
 
 ################################ FILTER API PACKET ################################
         # Filter packets based on sensor names. This is done to avoid to insert sensors that are
@@ -160,17 +160,15 @@ def main():
         filtered_packets = APIPacketFilter.filter_packet_by_sensor_name(packets = reshaped_packets,
                                                                         filter_name_list = sensor_names,
                                                                         identifier = PERSONALITY)
-        # if DEBUG_MODE:
-        #     print(20*"=" + " FILTERED PACKETS " + 20*'=')
-        #     for packet in filtered_packets:
-        #         print(30*'*')
-        #         for key, val in packet.items():
-        #             print(f"{DEBUG_HEADER} {key} = {val}")
+        if DEBUG_MODE:
+            print(20*"=" + " FILTERED PACKETS " + 20*'=')
+            for packet in filtered_packets:
+                print(30*'*')
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key} = {val}")
 
 ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
         insert_sensor_query = query_builder.insert_sensors_from_identifier(packets = filtered_packets, identifier = PERSONALITY)
-        if DEBUG_MODE:
-            print(f"{DEBUG_HEADER} {insert_sensor_query}")
         dbconn.send(executable_sql_query = insert_sensor_query)
 
 ################################ INSERT API PARAM FOR SENSORS ################################
@@ -187,8 +185,6 @@ def main():
 
         ################################ ASK THE SQL QUERY BUILDER TO BUILD THE QUERY ################################
         insert_api_param = query_builder.insert_api_param(packets = api_filtered_packets, first_sensor_id = sensor_id)
-        if DEBUG_MODE:
-            print(f"{DEBUG_HEADER} {insert_api_param}")
 
         ################################ EXPLOIT THE DB CONN ADAPTER FOR EXECUTING THE QUERY #######################
         dbconn.send(executable_sql_query = insert_api_param)
@@ -209,8 +205,7 @@ def main():
             ################################ ASK SQL QUERY BUILDER TO BUILD THE QUERY ################################
             insert_sensor_at_location = query_builder.insert_sensor_at_location(packets = geo_filtered_packets,
                                                                                 first_sensor_id = sensor_id)
-            if DEBUG_MODE:
-                print(f"{DEBUG_HEADER} {insert_sensor_at_location}")
+            
             ################################ EXPLOIT THE DB CONN ADAPTER FOR EXECUTING THE QUERY #######################
             dbconn.send(executable_sql_query = insert_sensor_at_location)
 

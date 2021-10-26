@@ -34,7 +34,7 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
         """This method takes a purpleair API answer and reshape it by creating a dictionary association between the
         'fields' parameter and the 'data' parameter for each item in the 'data' list."""
 
-        reshaped_packets = EMPTY_LIST
+        reshaped_packets = []
         fields = api_answer[PURPLEAIR_FIELDS_PARAM]
         n_fields = len(fields)
 
