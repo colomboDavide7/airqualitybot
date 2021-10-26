@@ -84,7 +84,7 @@ def main() -> None:
     try:
         print(20 * '-' + " START THE PROGRAM " + 20 * '-')
 
-################################ READ 'SERVER' FILE ################################
+################################ READ SERVER FILE ################################
         raw_server_data = IOManager.open_read_close_file(path = SERVER_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = SERVER_FILE.split('.')[-1])
         parsed_server_data = parser.parse(raw_string = raw_server_data)
@@ -105,7 +105,7 @@ def main() -> None:
 ################################ SQL QUERY BUILDER ################################
         query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
-################################ READ 'SETUP' FILE ################################
+################################ READ API FILE ################################
         raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(raw_string = raw_setup_data)

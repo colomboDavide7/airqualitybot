@@ -31,7 +31,7 @@ class DatetimePacketFilterAtmotube(DatetimePacketFilter):
             return items
 
         filtered_packets = []
-        if packets != EMPTY_LIST:
+        if items != EMPTY_LIST:
             for item in items:
                 timestamp = DatetimeParser.atmotube_to_sqltimestamp(item[ATMOTUBE_TIME_PARAM])
                 if DatetimeParser.is_ts2_after_ts1(ts1 = sqltimestamp, ts2 = timestamp):
