@@ -9,8 +9,7 @@
 
 import unittest
 from airquality.picker.api_packet_picker import APIPacketPicker
-from airquality.constants.shared_constants import ATMOTUBE_TIME_PARAM, ATMOTUBE_COORDS_PARAM, \
-    PICKER2SQLBUILDER_PARAM_ID, PICKER2SQLBUILDER_PARAM_VAL, PICKER2SQLBUILDER_TIMESTAMP, PICKER2SQLBUILDER_GEOMETRY
+from airquality.constants.shared_constants import ATMOTUBE_TIME_PARAM
 
 
 class TestAPIPacketPicker(unittest.TestCase):
@@ -56,21 +55,6 @@ class TestAPIPacketPicker(unittest.TestCase):
         test_packet = {"par1": "val1", "par2": "val2"}
         with self.assertRaises(SystemExit):
             APIPacketPicker.pick_packet_timestamp_from_identifier(packet = test_packet, identifier = "atmotube")
-
-
-    # def test_successfully_reshape_atmotube_packets(self):
-    #     test_packets = [{"par1": "val1", "par2": "val2",
-    #                      ATMOTUBE_TIME_PARAM: "2021-10-11T09:44:00.000Z",
-    #                      ATMOTUBE_COORDS_PARAM: {"lat": 45.232098, "lon": 9.7663}}]
-    #     test_code2id_map = {"par1": 8, "par2": 9}
-    #     expected_output = [{PICKER2SQLBUILDER_PARAM_ID: 8, PICKER2SQLBUILDER_PARAM_VAL: "'val1'",
-    #                         PICKER2SQLBUILDER_TIMESTAMP: "'2021-10-11 09:44:00'",
-    #                         PICKER2SQLBUILDER_GEOMETRY: "ST_GeomFromText('POINT(9.7663 45.232098)')"},
-    #                        {PICKER2SQLBUILDER_PARAM_ID: 9, PICKER2SQLBUILDER_PARAM_VAL: "'val2'",
-    #                         PICKER2SQLBUILDER_TIMESTAMP: "'2021-10-11 09:44:00'",
-    #                         PICKER2SQLBUILDER_GEOMETRY: "ST_GeomFromText('POINT(9.7663 45.232098)')"}]
-    #     actual_output = APIPacketPicker.reshape_atmotube_packets(packets = test_packets, paramcode2paramid_map = test_code2id_map)
-    #     self.assertEqual(actual_output, expected_output)
 
 
 if __name__ == '__main__':

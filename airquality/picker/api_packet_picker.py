@@ -21,36 +21,6 @@ class APIPacketPicker(builtins.object):
 
 
     @classmethod
-    def reshape_atmotube_packets(cls, packets: List[Dict[str, Any]], paramcode2paramid_map: Dict[str, int]
-                                 ) -> List[Dict[str, Any]]:
-        """Class method that takes a list of packets from an atmotube sensor API and reshape each packet in order
-        to be compliant with the strucure of the 'mobile_measurement' table in the database.
-
-        If packets is equal to EMPTY_LIST, EMPTY_LIST value is returned."""
-
-        outcome = EMPTY_LIST
-        if packets == EMPTY_LIST:
-            return outcome
-
-        for packet in packets:
-            timestamp = DatetimeParser.atmotube_to_sqltimestamp(packet[ATMOTUBE_TIME_PARAM])
-            geom = "null"
-            if ATMOTUBE_COORDS_PARAM in packet.keys():
-                geom = PostGISGeomBuilder.build_geometry_type(
-                        geo_param = {GEOMBUILDER_LONGITUDE: packet[ATMOTUBE_COORDS_PARAM]["lon"],
-                                     GEOMBUILDER_LATITUDE: packet[ATMOTUBE_COORDS_PARAM]["lat"]},
-                        geo_type = GEO_TYPE_ST_POINT_2D)
-
-            for name, val in packet.items():
-                if name in paramcode2paramid_map.keys():
-                    outcome.append({PICKER2SQLBUILDER_PARAM_ID: paramcode2paramid_map[name],
-                                    PICKER2SQLBUILDER_PARAM_VAL: f"'{val}'",
-                                    PICKER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'",
-                                    PICKER2SQLBUILDER_GEOMETRY: geom})
-        return outcome
-
-
-    @classmethod
     def pick_date_from_api_param_by_identifier(cls, api_param: Dict[str, Any], identifier: str) -> str:
         """Static method that returns the value associated to the 'date' key of the 'api_param' argument.
 
