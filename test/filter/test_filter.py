@@ -7,16 +7,11 @@
 #################################################
 
 import unittest
-from airquality.filter.filter import APIPacketFilterFactory
-from airquality.constants.shared_constants import EMPTY_LIST
+from airquality.filter.filter import APIPacketFilter
+from airquality.constants.shared_constants import EMPTY_LIST, ATMOTUBE_TIME_PARAM
 
 
 class TestFilter(unittest.TestCase):
-
-
-    def setUp(self) -> None:
-        """This method is executed every time before a test."""
-        self.factory = APIPacketFilterFactory()
 
 
     def test_successfully_filter_purpleair_packets(self):
@@ -29,8 +24,9 @@ class TestFilter(unittest.TestCase):
         test_filter_list = ["n1 (idx1)"]
         expected_output = [{"name": "n2", "sensor_index": "idx2"},
                            {"name": "n3", "sensor_index": "idx3"}]
-        purpleair_filter = self.factory.create_api_packet_filter(bot_personality = "purpleair")
-        actual_output = purpleair_filter.filter_packet(packets = test_packets, filter_list = test_filter_list)
+        actual_output = APIPacketFilter.filter_packet_by_sensor_name(packets = test_packets,
+                                                                     filter_name_list = test_filter_list,
+                                                                     identifier = "purpleair")
         self.assertEqual(actual_output, expected_output)
 
 
@@ -46,8 +42,9 @@ class TestFilter(unittest.TestCase):
         expected_output = [{"name": "n1", "sensor_index": "idx1"},
                            {"name": "n2", "sensor_index": "idx2"},
                            {"name": "n3", "sensor_index": "idx3"}]
-        purpleair_filter = self.factory.create_api_packet_filter(bot_personality = "purpleair")
-        actual_output = purpleair_filter.filter_packet(packets = test_packets, filter_list = test_filter_list)
+        actual_output = APIPacketFilter.filter_packet_by_sensor_name(packets = test_packets,
+                                                                     filter_name_list = test_filter_list,
+                                                                     identifier = "purpleair")
         self.assertEqual(actual_output, expected_output)
 
 
@@ -57,9 +54,24 @@ class TestFilter(unittest.TestCase):
         test_packets = EMPTY_LIST
         test_filter_list = ["something1", "something2"]
         expected_output = EMPTY_LIST
-        purpleair_filter = self.factory.create_api_packet_filter(bot_personality = "purpleair")
-        actual_output = purpleair_filter.filter_packet(packets = test_packets, filter_list = test_filter_list)
+        actual_output = APIPacketFilter.filter_packet_by_sensor_name(packets = test_packets,
+                                                                     filter_name_list = test_filter_list,
+                                                                     identifier = "purpleair")
         self.assertEqual(actual_output, expected_output)
+
+
+
+    # def test_successfully_filter_atmotube_packets(self):
+    #     test_packets = [{ATMOTUBE_TIME_PARAM: "2021-10-11T09:44:00.000Z"},
+    #                     {ATMOTUBE_TIME_PARAM: "2021-10-11T09:45:00.000Z"},
+    #                     {ATMOTUBE_TIME_PARAM: "2021-10-11T09:46:00.000Z"}]
+    #     test_sqltimestamp = "2021-10-11 09:45:00"
+    #     expected_output = [{ATMOTUBE_TIME_PARAM: "2021-10-11T09:46:00.000Z"}]
+    #     actual_output = APIPacketFilter.filter_packet_from_timestamp_on(packets = test_packets,
+    #                                                                     sqltimestamp = test_sqltimestamp,
+    #                                                                     identifier = "atmotube")
+    #     self.assertEqual(actual_output, expected_output)
+
 
 
 if __name__ == '__main__':

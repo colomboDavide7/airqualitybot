@@ -127,9 +127,9 @@ class BotAtmotube(BaseBot):
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to parse API answer: OK")
 
             # BUILD ATMOTUBE MEASURE PACKET FOR INSERTING DATA INTO TABLES
-            packets = APIPacketPicker.pick_atmotube_api_packets_from_last_timestamp_on(
+            packets = APIPacketPicker.reshape_atmotube_packets(
                     packets = parsed_api_answer["data"]["items"],
-                    param_id_code = id_code_dict,
+                    paramcode2paramid_map = id_code_dict,
                     last_timestamp = last_atmotube_timestamp
             )
             Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to pick API packets: OK")

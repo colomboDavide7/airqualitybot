@@ -16,15 +16,15 @@ from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, PICK
 class DatetimeParser(builtins.object):
 
 
-    @staticmethod
-    def _raise_system_exit_if_timestamp_does_not_match_pattern(ts: str, pattern: str) -> None:
+    @classmethod
+    def _raise_system_exit_if_timestamp_does_not_match_pattern(cls, ts: str, pattern: str) -> None:
         if not re.match(re.compile(pattern), ts):
             raise SystemExit(f"{DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern.__name__}(): "
                              f"timestamp '{ts}' does not match regex patter '{pattern}'.")
 
 
-    @staticmethod
-    def atmotube_to_sqltimestamp(ts: str) -> str:
+    @classmethod
+    def atmotube_to_sqltimestamp(cls, ts: str) -> str:
         """Static method that takes atmotube timestamp and convert it into a valid SQL timestamp."""
         DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = ATMOTUBE_DATETIME_REGEX_PATTERN)
         ts = ts.strip('Z')
@@ -32,8 +32,8 @@ class DatetimeParser(builtins.object):
         return ts.replace("T", " ")
 
 
-    @staticmethod
-    def sqltimestamp_date(ts: str):
+    @classmethod
+    def sqltimestamp_date(cls, ts: str):
         """Static method that takes a SQL timestamp and returns the date part."""
 
         DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = SQL_TIMESTAMP_REGEX_PATTERN)
@@ -41,8 +41,8 @@ class DatetimeParser(builtins.object):
         return date
 
 
-    @staticmethod
-    def is_ts2_after_ts1(ts1: str, ts2: str) -> bool:
+    @classmethod
+    def is_ts2_after_ts1(cls, ts1: str, ts2: str) -> bool:
         """Static method that compares if SQL timestamp 'ts2' is after 'ts1' SQL timestamp.
 
         If EMPTY_STRING value is passed, return False.
@@ -63,8 +63,8 @@ class DatetimeParser(builtins.object):
         return False
 
 
-    @staticmethod
-    def last_packet_timestamp(packets: List[Dict[str, Any]]) -> str:
+    @classmethod
+    def last_packet_timestamp(cls, packets: List[Dict[str, Any]]) -> str:
         """Static method that returns the last packet timestamp taken from the 'packets' list.
 
         If the packet is equal to EMPTY_LIST, EMPTY_STRING timestamp is returned.
@@ -82,8 +82,8 @@ class DatetimeParser(builtins.object):
         return last_packet[PICKER2SQLBUILDER_TIMESTAMP]
 
 
-    @staticmethod
-    def current_sqltimestamp() -> str:
+    @classmethod
+    def current_sqltimestamp(cls) -> str:
         """Static method that returns the current sql timestamp."""
 
         ts = datetime.datetime.now().strftime(DATETIME2SQLTIMESTAMP_FORMAT)

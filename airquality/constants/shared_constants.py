@@ -32,6 +32,8 @@ EMPTY_DICT   = {}
 ################################ VALID ATMOTUBE API PARAMETERS ################################
 
 ATMOTUBE_DATE_PARAM = "date"
+ATMOTUBE_TIME_PARAM = "time"
+ATMOTUBE_COORDS_PARAM = "coords"
 ATMOTUBE_API_PARAMETERS = ('api_key', 'mac', ATMOTUBE_DATE_PARAM, 'order')
 
 ################################ VALID PURPLE AIR API PARAM ################################

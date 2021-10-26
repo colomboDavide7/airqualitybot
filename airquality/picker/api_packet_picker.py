@@ -12,65 +12,50 @@ from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_STRING, EMPTY_DICT, \
     PICKER2SQLBUILDER_TIMESTAMP, PICKER2SQLBUILDER_PARAM_ID, PICKER2SQLBUILDER_PARAM_VAL, \
     PICKER2SQLBUILDER_GEOMETRY, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE, \
-    GEO_TYPE_ST_POINT_2D, ATMOTUBE_DATE_PARAM, PURPLEAIR_NAME_PARAM, PURPLEAIR_SENSOR_IDX_PARAM
+    GEO_TYPE_ST_POINT_2D, ATMOTUBE_DATE_PARAM, PURPLEAIR_NAME_PARAM, PURPLEAIR_SENSOR_IDX_PARAM, \
+    ATMOTUBE_TIME_PARAM, ATMOTUBE_COORDS_PARAM
 
 
 
 class APIPacketPicker(builtins.object):
 
 
-    @staticmethod
-    def pick_atmotube_api_packets_from_last_timestamp_on(packets: List[Dict[str, Any]],
-                                                         param_id_code: Dict[str, int],
-                                                         last_timestamp: str) -> List[Dict[str, Any]]:
-        """Static method that returns a list of dictionaries. Each dictionary contains the key-value for inserting
-        measurement into the database.
+    @classmethod
+    def reshape_atmotube_packets(cls, packets: List[Dict[str, Any]], paramcode2paramid_map: Dict[str, int]
+                                 ) -> List[Dict[str, Any]]:
+        """Class method that takes a list of packets from an atmotube sensor API and reshape each packet in order
+        to be compliant with the strucure of the 'mobile_measurement' table in the database.
 
-        The dictionary keys are taken from (TIMESTAMP, PARAM_VALUE, PARAM_ID, GEOMETRY).
-        This is done in order to ensure that other methods that takes the packets outputted by this method as argument,
-        can understand the structure.
-
-        The purpose of this method is to assemble a valid packet from the list of parsed packets taken from the APIs.
-
-        Each packet if translated in the form:
-            - param_id:     the id of the parameter taken from the 'param_id_code' argument.
-            - param_value:  the value of the parameter associated to the 'param_id'
-            - timestamp:    the current measure timestamp taken from the packet
-            - geometry:     the geometry object associated to the measure (POINT)
-
-        This structure is related to database tables."""
+        If packets is equal to EMPTY_LIST, EMPTY_LIST value is returned."""
 
         outcome = EMPTY_LIST
         if packets == EMPTY_LIST:
             return outcome
 
         for packet in packets:
-            timestamp = DatetimeParser.atmotube_to_sqltimestamp(packet["time"])
-            if not DatetimeParser.is_ts2_after_ts1(ts1 = timestamp, ts2 = last_timestamp):
-                geom = "null"
-                if "coords" in packet.keys():
-                    geom = PostGISGeomBuilder.build_geometry_type(
-                            geo_param = {GEOMBUILDER_LONGITUDE: packet["coords"]["lon"],
-                                         GEOMBUILDER_LATITUDE: packet["coords"]["lat"]},
-                            geo_type = GEO_TYPE_ST_POINT_2D)
+            timestamp = DatetimeParser.atmotube_to_sqltimestamp(packet[ATMOTUBE_TIME_PARAM])
+            geom = "null"
+            if ATMOTUBE_COORDS_PARAM in packet.keys():
+                geom = PostGISGeomBuilder.build_geometry_type(
+                        geo_param = {GEOMBUILDER_LONGITUDE: packet[ATMOTUBE_COORDS_PARAM]["lon"],
+                                     GEOMBUILDER_LATITUDE: packet[ATMOTUBE_COORDS_PARAM]["lat"]},
+                        geo_type = GEO_TYPE_ST_POINT_2D)
 
-                for name, val in packet.items():
-                    if name in param_id_code.keys():
-                        outcome.append({PICKER2SQLBUILDER_PARAM_ID: param_id_code[name],
-                                        PICKER2SQLBUILDER_PARAM_VAL: f"'{val}'",
-                                        PICKER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'",
-                                        PICKER2SQLBUILDER_GEOMETRY: geom})
+            for name, val in packet.items():
+                if name in paramcode2paramid_map.keys():
+                    outcome.append({PICKER2SQLBUILDER_PARAM_ID: paramcode2paramid_map[name],
+                                    PICKER2SQLBUILDER_PARAM_VAL: f"'{val}'",
+                                    PICKER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'",
+                                    PICKER2SQLBUILDER_GEOMETRY: geom})
         return outcome
 
 
-    @staticmethod
-    def pick_date_from_atmotube_api_param(api_param: Dict[str, Any]) -> str:
+    @classmethod
+    def pick_date_from_atmotube_api_param(cls, api_param: Dict[str, Any]) -> str:
         """Static method that returns the value associated to the 'date' key of the 'api_param' argument.
 
         If 'api_param' is equal to EMPTY_DICT, EMPTY_STRING value is returned.
-
         If 'date' parameter is missing in 'api_param', SystemExit exception is raised.
-
         If 'date' is None, EMPTY_STRING value is returned."""
 
         date = EMPTY_STRING
@@ -86,12 +71,11 @@ class APIPacketPicker(builtins.object):
         return date
 
 
-    @staticmethod
-    def pick_sensor_name_from_identifier(packet: Dict[str, Any], identifier: str) -> str:
+    @classmethod
+    def pick_sensor_name_from_identifier(cls, packet: Dict[str, Any], identifier: str) -> str:
         """Static method that returns the sensor name assembled from the 'packet' based on 'identifier' argument.
 
         If identifier is invalid, SystemExit exception is raised.
-
         If key argument(s) for assembling the name is(are) missing, SystemExit exception is raised."""
 
         keys = packet.keys()
@@ -104,4 +88,23 @@ class APIPacketPicker(builtins.object):
 
         else:
             raise SystemExit(f"{APIPacketPicker.pick_sensor_name_from_identifier.__name__}: "
+                             f"invalid identifier '{identifier}'.")
+
+
+    @classmethod
+    def pick_packet_timestamp_from_identifier(cls, packet: Dict[str, Any], identifier: str):
+        """Class method that returns the parsed sql timestamp from the packet based on identifier argument.
+
+        If timestamp param is missing from the packet, SystemExit exception is raised.
+        If 'identifier' is not recognized, SystemExit exception is raised. """
+
+        keys = packet.keys()
+
+        if identifier == "atmotube":
+            if ATMOTUBE_TIME_PARAM not in keys:
+                raise SystemExit(f"{APIPacketPicker.pick_packet_timestamp_from_identifier.__name__}: "
+                                 f"missing '{ATMOTUBE_TIME_PARAM}' key.")
+            return DatetimeParser.atmotube_to_sqltimestamp(ts = packet[ATMOTUBE_TIME_PARAM])
+        else:
+            raise SystemExit(f"{APIPacketPicker.pick_packet_timestamp_from_identifier.__name__}: "
                              f"invalid identifier '{identifier}'.")
