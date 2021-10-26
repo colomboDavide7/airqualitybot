@@ -7,7 +7,8 @@
 #################################################
 
 import unittest
-from airquality.reshaper.reshaper import APIPacketReshaperFactory, APIPacketReshaper
+from airquality.reshaper.reshaper import APIPacketReshaperFactory
+from airquality.constants.shared_constants import PURPLEAIR_FIELDS_PARAM, PURPLEAIR_DATA_PARAM, EMPTY_LIST
 
 
 class TestAPIPacketReshaper(unittest.TestCase):
@@ -16,22 +17,11 @@ class TestAPIPacketReshaper(unittest.TestCase):
         self.factory = APIPacketReshaperFactory()
 
 
-    def test_reshaper_factory(self):
-        reshaper = self.factory.create_api_packet_reshaper(bot_personality = "purpleair")
-        self.assertIsInstance(reshaper, APIPacketReshaper)
-        self.assertIsNotNone(reshaper)
-
-
-    def test_system_exit_with_invalid_personality(self):
-        with self.assertRaises(SystemExit):
-            self.factory.create_api_packet_reshaper(bot_personality = "bad_bot_personality")
-
-
     def test_reshape_purpleair_packets(self):
         purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality = "purpleair")
         test_api_answer = {
-            "fields": ["f1", "f2"],
-            "data": [
+            PURPLEAIR_FIELDS_PARAM: ["f1", "f2"],
+            PURPLEAIR_DATA_PARAM: [
                 ["v1", "v2"],
                 ["v3", "v4"]
             ]
@@ -41,9 +31,19 @@ class TestAPIPacketReshaper(unittest.TestCase):
             {"f1": "v1", "f2": "v2"},
             {"f1": "v3", "f2": "v4"}
         ]
-        actual_answer = purpleair_reshaper.reshape_packet(parsed_api_answer = test_api_answer)
+        actual_answer = purpleair_reshaper.reshape_packet(api_answer = test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
+
+    def test_empty_list_value_when_empty_data_reshape_purpleair_packets(self):
+        purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality = "purpleair")
+        test_api_answer = {
+            PURPLEAIR_FIELDS_PARAM: ["f1", "f2"],
+            PURPLEAIR_DATA_PARAM: EMPTY_LIST
+        }
+        expected_answer = EMPTY_LIST
+        actual_answer = purpleair_reshaper.reshape_packet(api_answer = test_api_answer)
+        self.assertEqual(actual_answer, expected_answer)
 
 
 if __name__ == '__main__':

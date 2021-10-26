@@ -8,51 +8,53 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
-from airquality.app import EMPTY_LIST
+from airquality.constants.shared_constants import EMPTY_LIST, \
+    PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM
 
 
 class APIPacketReshaper(ABC):
 
 
     @abstractmethod
-    def reshape_packet(self, parsed_api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
 
 class APIPacketReshaperAtmotube(APIPacketReshaper):
 
-    def reshape_packet(self, parsed_api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
 
 
 class APIPacketReshaperPurpleair(APIPacketReshaper):
 
-    def reshape_packet(self, parsed_api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
-        reshaped_packets = []
-        n_fields = len(parsed_api_answer["fields"])
 
-        if parsed_api_answer["data"] != EMPTY_LIST:
-            for data in parsed_api_answer["data"]:
-                packet = {}
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """This method takes a purpleair API answer and reshape it by creating a dictionary association between the
+        'fields' parameter and the 'data' parameter for each item in the 'data' list."""
+
+        reshaped_packets = EMPTY_LIST
+        fields = api_answer[PURPLEAIR_FIELDS_PARAM]
+        n_fields = len(fields)
+
+        if api_answer[PURPLEAIR_DATA_PARAM] != EMPTY_LIST:
+            for data in api_answer[PURPLEAIR_DATA_PARAM]:
+                rpacket = {}
                 for i in range(n_fields):
-                    key = parsed_api_answer["fields"][i]
+                    key = fields[i]
                     val = data[i]
-                    packet[key] = val
-
-                reshaped_packets.append(packet)
-
+                    rpacket[key] = val
+                reshaped_packets.append(rpacket)
         return reshaped_packets
+
 
 ################################ FACTORY ################################
 class APIPacketReshaperFactory(builtins.object):
 
-    @staticmethod
-    def create_api_packet_reshaper(bot_personality: str) -> APIPacketReshaper:
+    @classmethod
+    def create_api_packet_reshaper(cls, bot_personality: str) -> APIPacketReshaper:
         if bot_personality == "purpleair":
             return APIPacketReshaperPurpleair()
         elif bot_personality == "atmotube":
             return APIPacketReshaperAtmotube()
-        else:
-            raise SystemExit(f"{APIPacketReshaperFactory.create_api_packet_reshaper.__name__}: "
-                             f"invalid bot personality '{bot_personality}'.")

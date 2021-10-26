@@ -40,6 +40,8 @@ ATMOTUBE_API_PARAMETERS = ('api_key', 'mac', ATMOTUBE_DATE_PARAM, 'order')
 
 PURPLEAIR_NAME_PARAM = "name"
 PURPLEAIR_SENSOR_IDX_PARAM = "sensor_index"
+PURPLEAIR_FIELDS_PARAM = "fields"
+PURPLEAIR_DATA_PARAM   = "data"
 
 ################################ PICKER-TO-QUERY_BUILDER CONSTANTS ################################
 

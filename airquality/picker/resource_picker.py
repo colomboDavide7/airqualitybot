@@ -19,12 +19,11 @@ API_ADDRESS_SECTION = "api_address"
 class ResourcePicker(builtins.object):
 
 
-    @staticmethod
-    def pick_db_conn_properties(parsed_resources: Dict[str, Any], bot_personality: str) -> Dict[str, Any]:
-        """Static method that picks the database properties from the parsed resources.
+    @classmethod
+    def pick_db_conn_properties(cls, parsed_resources: Dict[str, Any], bot_personality: str) -> Dict[str, Any]:
+        """Class method that picks the database properties from the parsed resources.
 
         If 'server' section is missing in 'properties/resources.json' file, SystemExit exception is raised.
-
         If 'bot_personality' is invalid, SystemExit exception is raised."""
 
         if parsed_resources.get(PERSONALITY_SECTION, None) is None:
@@ -52,8 +51,8 @@ class ResourcePicker(builtins.object):
         return settings
 
 
-    @staticmethod
-    def pick_api_address_from_number(parsed_resources: Dict[str, Any], bot_personality: str, api_address_number: str) -> str:
+    @classmethod
+    def pick_api_address_from_number(cls, parsed_resources: Dict[str, Any], bot_personality: str, api_address_number: str) -> str:
 
         if parsed_resources.get(API_ADDRESS_SECTION, None) is None:
             raise SystemExit(f"{ResourcePicker.__name__}: "
@@ -77,17 +76,17 @@ class ResourcePicker(builtins.object):
         return parsed_resources[API_ADDRESS_SECTION][f"{bot_personality}"][f"{api_address_number}"]
 
 
-    @staticmethod
-    def pick_api_param_filter_list_from_personality(personality: str) -> List[str]:
+    @classmethod
+    def pick_api_param_filter_list_from_personality(cls, bot_personality: str) -> List[str]:
 
-        if personality == "purpleair":
+        if bot_personality == "purpleair":
             return PURPLE_AIR_API_PARAM
         else:
             return EMPTY_LIST
 
 
-    @staticmethod
-    def pick_geo_param_filter_list_from_personality(personality: str) -> List[str]:
+    @classmethod
+    def pick_geo_param_filter_list_from_personality(cls, personality: str) -> List[str]:
         if personality == "purpleair":
             return PURPLE_AIR_GEO_PARAM
         else:

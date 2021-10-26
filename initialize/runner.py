@@ -167,7 +167,7 @@ def main():
         filter_ = filter_factory.create_api_packet_filter(bot_personality = PERSONALITY)
 
         ################################ GET API FILTER LIST ################################
-        api_filter_list = ResourcePicker.pick_api_param_filter_list_from_personality(personality = PERSONALITY)
+        api_filter_list = ResourcePicker.pick_api_param_filter_list_from_personality(bot_personality = PERSONALITY)
 
         ################################ FILTER PACKETS TO MAINTAIN ONLY THE API PARAM ################################
         # Since we have a lot of arguments into a packet, we want to filter out those that are not used for
