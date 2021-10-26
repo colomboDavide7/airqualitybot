@@ -7,7 +7,8 @@
 #################################################
 import builtins
 from typing import Dict, Any, List
-from airquality.constants.shared_constants import PURPLE_AIR_API_PARAM, PURPLE_AIR_GEO_PARAM, EMPTY_LIST
+from airquality.constants.shared_constants import PURPLE_AIR_API_PARAM, PURPLE_AIR_GEO_PARAM, EMPTY_LIST, \
+    MOBILE_SENSOR_PERSONALITIES
 
 
 LOGGER_SECTION = "logger"
@@ -91,3 +92,14 @@ class ResourcePicker(builtins.object):
             return PURPLE_AIR_GEO_PARAM
         else:
             return EMPTY_LIST
+
+
+    @classmethod
+    def pick_last_timestamp_from_api_param_by_personality(cls, api_param: Dict[str, Any], personality: str) -> str:
+
+        if personality not in MOBILE_SENSOR_PERSONALITIES:
+            raise SystemExit(f"{ResourcePicker.pick_last_timestamp_from_api_param_by_personality.__name__}: "
+                             f"cannot call this method with personality = '{personality}'.")
+
+        if personality == "atmotube":
+            return api_param["date"]

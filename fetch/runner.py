@@ -171,8 +171,10 @@ def main() -> None:
                 api_answer = parser.parse(raw_string = api_answer)
 
                 ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
+                filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(api_param = api_param,
+                                                                                                       personality = PERSONALITY)
                 filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
-                filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = api_param["date"])
+                filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
 
                 if DEBUG_MODE:
                     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
