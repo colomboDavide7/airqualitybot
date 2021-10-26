@@ -16,31 +16,35 @@ class TestDatabaseConnectionAdapter(unittest.TestCase):
     def setUp(self) -> None:
         self.settings = {"port": 12345, "dbname": "some_db_name", "host": "some_host_name",
                          "username": "some_user_name", "password": "some_password"}
-        self.dbfactory = Psycopg2ConnectionAdapterFactory()
-        self.psycopg2_adapter    = self.dbfactory.create_database_connection_adapter(self.settings)
+        self.psycopg2_adapter    = Psycopg2ConnectionAdapterFactory().create_database_connection_adapter(self.settings)
+
 
     def test_missing_setting_argument(self):
         """Test SystemExit when some setting argument is missing."""
-        settings = {"port": 12345,
-                    "dbname": "some_db_name"}
-        with self.assertRaises(SystemExit):
-            self.dbfactory.create_database_connection_adapter(settings)
 
-    def test_system_exit_when_open_conn_with_invalid_arguments(self):
-        """Test SystemExit when open connection with invalid database arguments."""
+        test_settings = {"port": 12345, "dbname": "some_db_name"}
+
+        with self.assertRaises(SystemExit):
+            Psycopg2ConnectionAdapterFactory().create_database_connection_adapter(test_settings)
+
+
+    def test_system_exit_when_opening_connection_with_wrong_settings(self):
+        """Test SystemExit when open connection with invalid database settings."""
+
         with self.assertRaises(SystemExit):
             self.psycopg2_adapter.open_conn()
 
-    def test_system_exit_close_conn(self):
-        """
-        Test SystemExit when try to close a connection that is not opened.
-        """
+
+    def test_system_exit_when_closing_connection(self):
+        """Test SystemExit when try to close a connection that is not opened."""
+
         with self.assertRaises(SystemExit):
             self.psycopg2_adapter.close_conn()
 
-    def test_system_exit_send(self):
-        """Test SystemExit when try to send message through the connection but
-        it is closed."""
+
+    def test_system_exit_when_sending_invalid_executable_query(self):
+        """Test SystemExit when try to send message through the connection but it is closed."""
+
         with self.assertRaises(SystemExit):
             self.psycopg2_adapter.send("some_sql_statement;")
 

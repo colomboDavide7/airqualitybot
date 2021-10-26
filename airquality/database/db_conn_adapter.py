@@ -8,7 +8,7 @@
 import psycopg2
 from typing import Dict, Any
 from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EMPTY_STRING
+from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_DICT
 
 
 class ConnectionAdapter(ABC):
@@ -46,8 +46,7 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
     -password:  if any, the valid password for the username
     -set_ok:    binary number with 5 digits that is used for checking settings"""
 
-    def __init__(self,
-                 settings: Dict[str, Any]):
+    def __init__(self, settings: Dict[str, Any]):
         self.__port = None
         self.__dbname = None
         self.__hostname = None
@@ -56,7 +55,7 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
         self.__psycopg2_conn = None
         self.__set_ok = 0b00000
 
-        if settings:
+        if settings != EMPTY_DICT:
             for key, val in settings.items():
                 if key == 'port':
                     self.__port = val
