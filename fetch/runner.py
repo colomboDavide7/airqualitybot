@@ -180,6 +180,16 @@ def main() -> None:
                         for key, val in rpacket.items():
                             print(f"{DEBUG_HEADER} {key}={val}")
 
+                ################################ CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE #################
+                query = query_builder.insert_atmotube_measurement_packets(reshaped_packets)
+                dbconn.send(executable_sql_query = query)
+
+                ############### UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH ################
+                print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1]['ts']}")
+
+                query = query_builder.update_last_packet_date_atmotube(last_timestamp = reshaped_packets[-1]["ts"],
+                                                                       sensor_id = sensor_id)
+                dbconn.send(executable_sql_query = query)
 
 
 
