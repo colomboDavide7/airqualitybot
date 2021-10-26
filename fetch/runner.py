@@ -42,7 +42,7 @@ def parse_sys_argv(args: List[str]):
     for arg in args:
         if arg in ("-d", "--debug"):
             DEBUG_MODE = True
-        elif not is_personality_set and arg in VALID_PERSONALITIES:
+        elif not is_personality_set and arg in ('purpleair', ):
             PERSONALITY = arg
             is_personality_set = True
         elif not is_api_address_number_set and arg.isdigit():
