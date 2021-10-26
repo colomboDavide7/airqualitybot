@@ -16,8 +16,9 @@ from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.parser.file_parser import FileParserFactory
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
+from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
 from airquality.constants.shared_constants import FETCH_USAGE, VALID_PERSONALITIES, DEBUG_HEADER, \
-    SERVER_FILE, QUERY_FILE, API_FILE, MOBILE_SENSOR_PERSONALITIES
+    SERVER_FILE, QUERY_FILE, API_FILE, MOBILE_SENSOR_PERSONALITIES, EMPTY_LIST
 
 
 DEBUG_MODE = False
@@ -169,27 +170,47 @@ def main() -> None:
                 parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
                 api_answer = parser.parse(raw_string = api_answer)
 
-                ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
-                reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = PERSONALITY)
-                reshaped_packets = reshaper.reshape_packets(packets = api_answer, measure_param_map = paramcode2paramid_map)
+                ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
+                filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
+                filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = api_param["date"])
 
                 if DEBUG_MODE:
-                    print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
-                    for i in range(10):
-                        rpacket = reshaped_packets[i]
-                        for key, val in rpacket.items():
-                            print(f"{DEBUG_HEADER} {key}={val}")
+                    print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
+                    if filtered_packets != EMPTY_LIST:
+                        for i in range(10):
+                            rpacket = filtered_packets[i]
+                            for key, val in rpacket.items():
+                                print(f"{DEBUG_HEADER} {key}={val}")
 
-                ################################ CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE #################
-                query = query_builder.insert_atmotube_measurement_packets(reshaped_packets)
-                dbconn.send(executable_sql_query = query)
+################################ INSERT NEW MEASURE ONLY IF THERE ARE NEW MEASURE ################################
 
-                ############### UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH ################
-                print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1]['ts']}")
+                if filtered_packets != EMPTY_LIST:
 
-                query = query_builder.update_last_packet_date_atmotube(last_timestamp = reshaped_packets[-1]["ts"],
-                                                                       sensor_id = sensor_id)
-                dbconn.send(executable_sql_query = query)
+
+                    ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
+                    reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = PERSONALITY)
+                    reshaped_packets = reshaper.reshape_packets(packets = filtered_packets,
+                                                                measure_param_map = paramcode2paramid_map)
+
+                    if DEBUG_MODE:
+                        print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
+                        if reshaped_packets != EMPTY_LIST:
+                            for i in range(10):
+                                rpacket = reshaped_packets[i]
+                                for key, val in rpacket.items():
+                                    print(f"{DEBUG_HEADER} {key}={val}")
+
+                    ################################ CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE #################
+                    query = query_builder.insert_atmotube_measurement_packets(reshaped_packets)
+                    dbconn.send(executable_sql_query = query)
+
+                    ############### UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH ###############
+                    if DEBUG_MODE:
+                        print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1]['ts']}")
+
+                    query = query_builder.update_last_packet_date_atmotube(last_timestamp = reshaped_packets[-1]["ts"],
+                                                                           sensor_id = sensor_id)
+                    dbconn.send(executable_sql_query = query)
 
 
 

@@ -8,8 +8,7 @@
 import datetime
 import re
 import builtins
-from typing import Dict, Any, List
-from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, PICKER2SQLBUILDER_TIMESTAMP, \
+from airquality.constants.shared_constants import EMPTY_STRING, \
     ATMOTUBE_DATETIME_REGEX_PATTERN, SQL_TIMESTAMP_REGEX_PATTERN, DATETIME2SQLTIMESTAMP_FORMAT
 
 
@@ -62,24 +61,6 @@ class DatetimeParser(builtins.object):
             return True
         return False
 
-
-    @classmethod
-    def last_packet_timestamp(cls, packets: List[Dict[str, Any]]) -> str:
-        """Static method that returns the last packet timestamp taken from the 'packets' list.
-
-        If the packet is equal to EMPTY_LIST, EMPTY_STRING timestamp is returned.
-
-        If PICKER2SQLBUILDER_TIMESTAMP field is missing in last packets, SystemExit exception is raised."""
-
-        last_timestamp = EMPTY_STRING
-        if packets == EMPTY_LIST:
-            return last_timestamp
-
-        last_packet = packets[-1]
-        if PICKER2SQLBUILDER_TIMESTAMP not in last_packet.keys():
-            raise SystemExit(f"{DatetimeParser.last_packet_timestamp.__name__}: "
-                             f"missing required argument '{PICKER2SQLBUILDER_TIMESTAMP}'.")
-        return last_packet[PICKER2SQLBUILDER_TIMESTAMP]
 
 
     @classmethod

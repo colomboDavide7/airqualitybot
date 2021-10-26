@@ -17,24 +17,25 @@ class DatetimePacketFilter(ABC):
 
 
     @abstractmethod
-    def filter_packets(self, packets: List[Dict[str, Any]], sqltimestamp: str) -> List[Dict[str, Any]]:
+    def filter_packets(self, packets: Dict[str, Any], sqltimestamp: str) -> List[Dict[str, Any]]:
         pass
 
 
 class DatetimePacketFilterAtmotube(DatetimePacketFilter):
 
 
-    def filter_packets(self, packets: List[Dict[str, Any]], sqltimestamp: str) -> List[Dict[str, Any]]:
+    def filter_packets(self, packets: Dict[str, Any], sqltimestamp: str) -> List[Dict[str, Any]]:
 
+        items = packets["data"]["items"]
         if sqltimestamp == EMPTY_STRING:
-            return EMPTY_STRING
+            return items
 
         filtered_packets = []
         if packets != EMPTY_LIST:
-            for packet in packets:
-                timestamp = DatetimeParser.atmotube_to_sqltimestamp(packet[ATMOTUBE_TIME_PARAM])
+            for item in items:
+                timestamp = DatetimeParser.atmotube_to_sqltimestamp(item[ATMOTUBE_TIME_PARAM])
                 if DatetimeParser.is_ts2_after_ts1(ts1 = sqltimestamp, ts2 = timestamp):
-                    filtered_packets.append(packet)
+                    filtered_packets.append(item)
         return filtered_packets
 
 

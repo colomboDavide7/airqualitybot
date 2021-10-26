@@ -9,8 +9,8 @@ import builtins
 
 from typing import Dict, Any, List
 from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, \
-    PICKER2SQLBUILDER_PARAM_ID, PICKER2SQLBUILDER_PARAM_VAL, \
-    PICKER2SQLBUILDER_TIMESTAMP, PICKER2SQLBUILDER_GEOMETRY, \
+    RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, \
+    RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_GEOMETRY, \
     GEO_TYPE_ST_POINT_2D
 
 
@@ -81,10 +81,10 @@ class SQLQueryBuilder(builtins.object):
             query = self.__parsed[query_id]
 
             for packet in packets:
-                query += f"({packet[PICKER2SQLBUILDER_PARAM_ID]}, " \
-                         f"{packet[PICKER2SQLBUILDER_PARAM_VAL]}, " \
-                         f"{packet[PICKER2SQLBUILDER_TIMESTAMP]}, " \
-                         f"{packet[PICKER2SQLBUILDER_GEOMETRY]}),"
+                query += f"({packet[RESHAPER2SQLBUILDER_PARAM_ID]}, " \
+                         f"{packet[RESHAPER2SQLBUILDER_PARAM_VAL]}, " \
+                         f"{packet[RESHAPER2SQLBUILDER_TIMESTAMP]}, " \
+                         f"{packet[RESHAPER2SQLBUILDER_GEOMETRY]}),"
 
             query = query.strip(',') + ';'
         return query

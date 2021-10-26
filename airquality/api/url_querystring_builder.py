@@ -9,7 +9,7 @@ import builtins
 from typing import Dict, Any
 from abc import ABC, abstractmethod
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.constants.shared_constants import ATMOTUBE_API_PARAMETERS, EMPTY_DICT
+from airquality.constants.shared_constants import EMPTY_DICT
 
 
 KEY_VAL_SEPARATOR = "="
@@ -41,7 +41,6 @@ class URLQuerystringBuilderAtmotube(URLQuerystringBuilder):
         See: https://app.swaggerhub.com/apis/Atmotube/cloud_api/1.1#/AtmotubeDataItem."""
 
         querystring = ""
-
         keys = parameters.keys()
 
         if parameters != EMPTY_DICT:

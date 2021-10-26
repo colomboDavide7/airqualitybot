@@ -46,8 +46,8 @@ class FileParserFactory(builtins.object):
     """This class defines a @staticmethod for creating a FileParser object given the file extension."""
 
 
-    @staticmethod
-    def file_parser_from_file_extension(file_extension: str) -> FileParser:
+    @classmethod
+    def file_parser_from_file_extension(cls, file_extension: str) -> FileParser:
         """Factory method for creating FileParser objects from file extension.
 
         If invalid file extension is passed, SystemExit is raised.
@@ -57,4 +57,5 @@ class FileParserFactory(builtins.object):
         if file_extension == 'json':
             return JSONFileParser()
         else:
-            raise SystemExit(f"{FileParserFactory.__name__}: unknown parser for file extension '{file_extension}'.")
+            raise SystemExit(f"{FileParserFactory.__name__}: unknown {FileParser.__name__} for file extension "
+                             f"'{file_extension}'.")

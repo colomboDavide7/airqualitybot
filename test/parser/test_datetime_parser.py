@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-from airquality.constants.shared_constants import PICKER2SQLBUILDER_TIMESTAMP, EMPTY_LIST, EMPTY_STRING
+from airquality.constants.shared_constants import RESHAPER2SQLBUILDER_TIMESTAMP, EMPTY_LIST, EMPTY_STRING
 from airquality.parser.datetime_parser import DatetimeParser
 
 
@@ -42,9 +42,9 @@ class TestDatetimeParser(unittest.TestCase):
     def test_successfully_get_last_packet_timestamp(self):
         """Test take last packet timestamp."""
 
-        test_packets = [{f"{PICKER2SQLBUILDER_TIMESTAMP}": "ts1"},
-                        {f"{PICKER2SQLBUILDER_TIMESTAMP}": "ts2"},
-                        {f"{PICKER2SQLBUILDER_TIMESTAMP}": "ts3"}]
+        test_packets = [{f"{RESHAPER2SQLBUILDER_TIMESTAMP}": "ts1"},
+                        {f"{RESHAPER2SQLBUILDER_TIMESTAMP}": "ts2"},
+                        {f"{RESHAPER2SQLBUILDER_TIMESTAMP}": "ts3"}]
 
         expected_output = "ts3"
         actual_output = DatetimeParser.last_packet_timestamp(packets = test_packets)

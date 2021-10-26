@@ -14,27 +14,26 @@ from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.constants.shared_constants import EMPTY_LIST, \
     ATMOTUBE_TIME_PARAM, ATMOTUBE_COORDS_PARAM, \
     GEO_TYPE_ST_POINT_2D, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE, \
-    PICKER2SQLBUILDER_PARAM_ID, PICKER2SQLBUILDER_PARAM_VAL, PICKER2SQLBUILDER_TIMESTAMP, PICKER2SQLBUILDER_GEOMETRY
+    RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, \
+    RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_GEOMETRY
 
 
 class API2DatabaseReshaper(ABC):
 
 
     @abstractmethod
-    def reshape_packets(self, packets: Dict[str, Any], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packets(self, packets: List[Dict[str, Any]], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
 
 class API2DatabaseReshaperAtmotube(API2DatabaseReshaper):
 
 
-    def reshape_packets(self, packets: Dict[str, Any], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packets(self, packets: List[Dict[str, Any]], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
 
-        packets = packets["data"]["items"]
-
-        outcome = []
+        reshaped_packets = []
         if packets == EMPTY_LIST:
-            return outcome
+            return reshaped_packets
 
         for packet in packets:
             timestamp = DatetimeParser.atmotube_to_sqltimestamp(packet[ATMOTUBE_TIME_PARAM])
@@ -47,11 +46,11 @@ class API2DatabaseReshaperAtmotube(API2DatabaseReshaper):
 
             for name, val in packet.items():
                 if name in measure_param_map.keys():
-                    outcome.append({PICKER2SQLBUILDER_PARAM_ID: measure_param_map[name],
-                                    PICKER2SQLBUILDER_PARAM_VAL: f"'{val}'",
-                                    PICKER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'",
-                                    PICKER2SQLBUILDER_GEOMETRY: geom})
-        return outcome
+                    reshaped_packets.append({RESHAPER2SQLBUILDER_PARAM_ID: measure_param_map[name],
+                                             RESHAPER2SQLBUILDER_PARAM_VAL: f"'{val}'",
+                                             RESHAPER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'",
+                                             RESHAPER2SQLBUILDER_GEOMETRY: geom})
+        return reshaped_packets
 
 
 
