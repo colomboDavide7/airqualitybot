@@ -75,15 +75,6 @@ class TestBuilder(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
 
-    def test_system_exit_when_fields_is_not_a_list_build_purpleair_querystring(self):
-        """Test SystemExit when field is not a type 'list'."""
-
-        test_param = {"api_key": "key", "fields": "f1", "opt": "val"}
-        purpleair_builder = self.factory.create_querystring_builder(bot_personality = "purpleair")
-        with self.assertRaises(SystemExit):
-            purpleair_builder.make_querystring(parameters = test_param)
-
-
     def test_system_exit_missing_parameters_build_purpleair_querystring(self):
         """Test SystemExit when missing required purple air parameters."""
 

@@ -8,7 +8,7 @@
 import builtins
 from typing import Dict, Any
 from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import ATMOTUBE_API_PARAMETERS
+from airquality.constants.shared_constants import ATMOTUBE_API_PARAMETERS, EMPTY_DICT
 
 
 KEY_VAL_SEPARATOR = "="
@@ -76,35 +76,24 @@ class URLQuerystringBuilderPurpleair(URLQuerystringBuilder):
         See: https://api.purpleair.com/#api-welcome-using-api-keys."""
 
         querystring = ""
-        api_key_missing = True
-        fields_missing = True
+        keys = parameters.keys()
 
-        if parameters:
-            for key, val in parameters.items():
-                if key == "api_key":
-                    querystring += key + KEY_VAL_SEPARATOR + val + CONCAT_SEPARATOR
-                    api_key_missing = False
-                elif key == "fields":
-                    querystring += key + KEY_VAL_SEPARATOR
-                    if not isinstance(val, list):
-                        raise SystemExit(f"{URLQuerystringBuilder.make_querystring.__name__}:"
-                                         f"'fields' value is required to be a list")
-                    for f in val:
-                        querystring += f + ","
-                    querystring = querystring.strip(',')
-                    querystring += CONCAT_SEPARATOR
-                    fields_missing = False
-                else:
-                    querystring += key + KEY_VAL_SEPARATOR + val + CONCAT_SEPARATOR
+        if parameters != EMPTY_DICT:
 
+            if 'api_key' not in keys or 'fields' not in keys:
+                raise SystemExit(f"{URLQuerystringBuilderPurpleair.__name__}: missing 'api_key' or 'fields' keys.")
+
+            querystring += 'api_key' + KEY_VAL_SEPARATOR + parameters['api_key'] + CONCAT_SEPARATOR
+            querystring += 'fields' + KEY_VAL_SEPARATOR
+            for field in parameters['fields']:
+                querystring += field + ','
+            querystring = querystring.strip(',') + CONCAT_SEPARATOR
+
+            for key in keys:
+                if key not in ('api_address', 'api_key', 'fields'):
+                    querystring += key + KEY_VAL_SEPARATOR + parameters[key] + CONCAT_SEPARATOR
             querystring = querystring.strip(CONCAT_SEPARATOR)
-
-        if api_key_missing or fields_missing:
-            raise SystemExit(f"{URLQuerystringBuilder.make_querystring.__name__}: missing field error."
-                             f"Please, check your 'properties/setup.json'")
-
         return querystring
-
 
 
 

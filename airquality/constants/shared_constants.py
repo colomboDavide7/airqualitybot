@@ -44,6 +44,9 @@ PURPLEAIR_SENSOR_IDX_PARAM = "sensor_index"
 PURPLEAIR_FIELDS_PARAM = "fields"
 PURPLEAIR_DATA_PARAM   = "data"
 
+################################ QUERYSTRING ARGUMENTS ################################
+
+
 ################################ PICKER-TO-QUERY_BUILDER CONSTANTS ################################
 
 PICKER2SQLBUILDER_PARAM_ID  = "par_id"
