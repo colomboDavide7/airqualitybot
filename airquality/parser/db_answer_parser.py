@@ -11,11 +11,11 @@ from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT
 
 
 class DatabaseAnswerParser(builtins.object):
-    """Class that defines @staticmethods for parsing psycopg2 database answers."""
+    """Class that defines @classmethods for parsing psycopg2 database answers."""
 
 
-    @staticmethod
-    def parse_key_val_answer(response: List[Tuple[str, Any]]) -> Dict[str, Any]:
+    @classmethod
+    def parse_key_val_answer(cls, response: List[Tuple[str, Any]]) -> Dict[str, Any]:
         """Static method that parses list of key-value tuples into dictionary.
 
         If list of more-than-two-elements tuples or less-than-two-elements tuples is passed,
@@ -34,8 +34,8 @@ class DatabaseAnswerParser(builtins.object):
         return parsed
 
 
-    @staticmethod
-    def parse_single_attribute_answer(response: List[Tuple[Any]]) -> List[Any]:
+    @classmethod
+    def parse_single_attribute_answer(cls, response: List[Tuple[Any]]) -> List[Any]:
         """Static method that parses a List of one-element tuple into a list.
 
         If list of more-than-one-element tuple is passed as argument, SystemExit exception is raised."""

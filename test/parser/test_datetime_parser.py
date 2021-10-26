@@ -40,7 +40,7 @@ class TestDatetimeParser(unittest.TestCase):
 
     def test_successfully_verify_ts2_after_ts1(self):
         """Test sqltimestamp comparison."""
-        
+
         test_ts1 = "2021-10-01 09:43:59"
         test_ts2 = "2021-10-01 09:44:00"
         self.assertTrue(DatetimeParser.is_ts2_after_ts1(ts1 = test_ts1, ts2 = test_ts2))

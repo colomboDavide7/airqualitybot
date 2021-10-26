@@ -13,6 +13,7 @@ from airquality.constants.shared_constants import EMPTY_LIST
 
 
 class APIPacketPicker(ABC):
+    """Abstract Base Class for selecting (picking) a set of parameters from the API packets."""
 
 
     @abstractmethod
@@ -24,6 +25,11 @@ class APIPacketPickerPurpleair(APIPacketPicker):
 
 
     def pick_packet_params(self, packets: List[Dict[str, Any]], param2pick: List[str]) -> List[Dict[str, Any]]:
+        """This method build a new packet list from the 'packets' argument by picking only the parameters contained
+        in the 'param2pick' list.
+
+        If 'packets' is equal to EMPTY_LIST, empty list is returned.
+        If 'param2pick' is equal to EMPTY_LIST, no picking operation is applied to packets."""
 
         new_packets = []
         if packets == EMPTY_LIST:

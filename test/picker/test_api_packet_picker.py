@@ -20,6 +20,8 @@ class TestAPIPacketPicker(unittest.TestCase):
 
 
     def test_successfully_pick_purpleair_api_param(self):
+        """Test the success scenario when picking purpleair parameters."""
+
         test_packets = [{"primary_id_a": "idA1", "primary_key_a": "keyA1",
                          "primary_id_b": "idB1", "primary_key_b": "keyB1",
                          "secondary_id_a": "idA2", "secondary_key_a": "keyA2",
@@ -36,6 +38,8 @@ class TestAPIPacketPicker(unittest.TestCase):
 
 
     def test_empty_list_when_passing_empty_packets_purpleair_picker(self):
+        """Test empty list return value when 'packets' is empty."""
+
         test_packets = []
         expected_output = []
         picker = self.factory.create_api_packet_picker(bot_personality = "purpleair")
@@ -44,6 +48,8 @@ class TestAPIPacketPicker(unittest.TestCase):
 
 
     def test_same_packets_when_passing_empty_param2pick_purpleair_picker(self):
+        """Test output equal to input when 'param2pick' is empty."""
+
         test_packets = [{"primary_id_a": "idA1", "primary_key_a": "keyA1",
                          "primary_id_b": "idB1", "primary_key_b": "keyB1",
                          "secondary_id_a": "idA2", "secondary_key_a": "keyA2",
@@ -61,6 +67,8 @@ class TestAPIPacketPicker(unittest.TestCase):
 
 
     def test_system_exit_when_missing_param2pick_purpleair_picker(self):
+        """Test SystemExit if try to pick missing parameters."""
+
         test_packets = [{"primary_id_a": "idA1", "primary_key_a": "keyA1",
                          "primary_id_b": "idB1", "primary_key_b": "keyB1",
                          "secondary_id_a": "idA2", "secondary_key_a": "keyA2",
