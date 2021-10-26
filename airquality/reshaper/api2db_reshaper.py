@@ -21,14 +21,16 @@ class API2DatabaseReshaper(ABC):
 
 
     @abstractmethod
-    def reshape_packets(self, packets: List[Dict[str, Any]], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packets(self, packets: Dict[str, Any], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
 
 class API2DatabaseReshaperAtmotube(API2DatabaseReshaper):
 
 
-    def reshape_packets(self, packets: List[Dict[str, Any]], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packets(self, packets: Dict[str, Any], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
+
+        packets = packets["data"]["items"]
 
         outcome = []
         if packets == EMPTY_LIST:

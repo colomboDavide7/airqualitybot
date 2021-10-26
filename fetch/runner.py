@@ -8,14 +8,14 @@
 import sys
 from typing import List
 from airquality.io.io import IOManager
-from airquality.parser.file_parser import FileParserFactory
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.api.api_request_adapter import APIRequestAdapter
-from airquality.picker.api_packet_picker import APIPacketPicker
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
+from airquality.parser.file_parser import FileParserFactory
+from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
 from airquality.constants.shared_constants import FETCH_USAGE, VALID_PERSONALITIES, DEBUG_HEADER, \
     SERVER_FILE, QUERY_FILE, API_FILE, MOBILE_SENSOR_PERSONALITIES
 
@@ -141,6 +141,8 @@ def main() -> None:
 
         for sensor_id in sensor_ids:
 
+            print(20 * "*" + f" {sensor_id} " + 20 * '*')
+
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
             query = query_builder.select_sensor_api_param(sensor_id = sensor_id)
             answer = dbconn.send(executable_sql_query = query)
@@ -162,9 +164,21 @@ def main() -> None:
                     print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
                     print(f"{DEBUG_HEADER} {querystring}")
 
+                ################################ FETCH DATA FROM API ################################
+                api_answer = api_adapter.fetch(query_string = querystring)
+                parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
+                api_answer = parser.parse(raw_string = api_answer)
 
+                ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
+                reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = PERSONALITY)
+                reshaped_packets = reshaper.reshape_packets(packets = api_answer, measure_param_map = paramcode2paramid_map)
 
-
+                if DEBUG_MODE:
+                    print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
+                    for i in range(10):
+                        rpacket = reshaped_packets[i]
+                        for key, val in rpacket.items():
+                            print(f"{DEBUG_HEADER} {key}={val}")
 
 
 

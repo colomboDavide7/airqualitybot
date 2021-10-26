@@ -81,20 +81,6 @@ class BotAtmotube(BaseBot):
         for sensor_id in ids:
 
 
-
-            # BUILD URL QUERYSTRING
-            querystring = URLQuerystringBuilder.AT_querystring_from_date(api_param)
-            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to build URL querystring: OK")
-
-            # MAKE API REQUEST
-            answer = self.apiadapter.fetch(querystring)
-            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to make API request: OK")
-
-            # GET JSON PARSER FOR CONVERTING API ANSWER
-            parser = FileParserFactory.file_parser_from_file_extension("json")
-            parsed_api_answer = parser.parse(answer)
-            Session.get_current_session().debug_msg(f"{BotAtmotube.__name__}: try to parse API answer: OK")
-
             # BUILD ATMOTUBE MEASURE PACKET FOR INSERTING DATA INTO TABLES
             packets = APIPacketPicker.reshape_atmotube_packets(
                     packets = parsed_api_answer["data"]["items"],
