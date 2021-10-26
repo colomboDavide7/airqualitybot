@@ -13,7 +13,9 @@ from airquality.constants.shared_constants import EMPTY_LIST, \
 
 
 class IdentifierPacketFilter(ABC):
-    """Abstract Base Class that defines method for filtering a set of packets coming from the sensor's API."""
+    """Abstract Base Class that defines an abstract method for filtering API answer packets based on a sensor identifier.
+
+    This can be useful to check whether a given sensor is already present in the database or not."""
 
 
     @abstractmethod
@@ -25,6 +27,9 @@ class IdentifierPacketFilterPurpleair(IdentifierPacketFilter):
 
 
     def filter_packets(self, packets: List[Dict[str, Any]], identifiers: List[str]) -> List[Dict[str, Any]]:
+        """This method filters the purpleair packets based on 'sensor_name' that is computed dynamically inside the method.
+
+        The 'identifiers' argument is a list of purpleair 'sensor_name'(s)."""
 
         if identifiers == EMPTY_LIST:
             return packets

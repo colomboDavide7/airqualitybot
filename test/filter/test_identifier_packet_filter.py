@@ -15,7 +15,7 @@ class TestIdentifierPacketFilter(unittest.TestCase):
 
 
     def test_successfully_filter_purpleair_packets(self):
-        """This method tests the correct behaviour of the purple air filter class."""
+        """This method tests the correct behaviour of the purpleair filter class."""
 
         test_packets = [{"name": "n1", "sensor_index": "idx1"},
                         {"name": "n2", "sensor_index": "idx2"},
