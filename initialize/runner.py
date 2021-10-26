@@ -138,6 +138,8 @@ def main():
 ################################ QUERYSTRING BUILDER ################################
         querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
         querystring = querystring_builder.make_querystring(parameters = parsed_api_data[f"{PERSONALITY}"])
+        if DEBUG_MODE:
+            print(f"{DEBUG_HEADER} {querystring}")
 
 ################################ FETCHING API DATA ################################
         raw_api_data = api_adapter.fetch(query_string = querystring)

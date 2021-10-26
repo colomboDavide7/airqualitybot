@@ -55,7 +55,7 @@ class URLQuerystringBuilderAtmotube(URLQuerystringBuilder):
                 querystring += 'date' + KEY_VAL_SEPARATOR + date + CONCAT_SEPARATOR
 
             for key in keys:
-                if key not in ('api_key', 'mac', 'date'):
+                if key not in ('api_address', 'api_key', 'mac', 'date'):
                     querystring += key + KEY_VAL_SEPARATOR + parameters[key] + CONCAT_SEPARATOR
 
         querystring = querystring.strip(CONCAT_SEPARATOR)
