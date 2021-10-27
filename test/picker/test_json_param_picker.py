@@ -8,7 +8,7 @@
 
 
 import unittest
-from airquality.picker.json_param_picker import JSONParamPickerFactory
+from airquality.picker.json_param_picker import JSONParamPicker
 
 
 class TestJSONParamPicker(unittest.TestCase):
@@ -19,8 +19,7 @@ class TestJSONParamPicker(unittest.TestCase):
         test_path2key = ["key1", "key2"]
         expected_output = "val2"
 
-        picker = JSONParamPickerFactory().create_json_picker(bot_personality = "purpleair")
-        actual_output = picker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
+        actual_output = JSONParamPicker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
         self.assertEqual(actual_output, expected_output)
 
 
@@ -28,31 +27,28 @@ class TestJSONParamPicker(unittest.TestCase):
         test_json = {"key1": {"key2": "val2", "key3": "val3"}}
         test_path2key = []
 
-        picker = JSONParamPickerFactory().create_json_picker(bot_personality = "purpleair")
         with self.assertRaises(SystemExit):
-            picker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
+            JSONParamPicker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
 
 
     def test_system_exit_when_parsed_json_is_empty_purpleair_json_picker(self):
         test_json = {}
         test_path2key = ["some_key", "some_key2"]
 
-        picker = JSONParamPickerFactory().create_json_picker(bot_personality = "purpleair")
         with self.assertRaises(SystemExit):
-            picker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
+            JSONParamPicker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
 
 
     def test_system_exit_when_invalid_key_in_path2key_purpleair_json_picker(self):
         test_json = {"key1": {"key2": "val2", "key3": "val3"}}
         test_path2key = ["key1", "bad_key"]
 
-        picker = JSONParamPickerFactory().create_json_picker(bot_personality = "purpleair")
         with self.assertRaises(SystemExit):
-            picker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
+            JSONParamPicker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
 
         test_path2key = ["bad_key"]
         with self.assertRaises(SystemExit):
-            picker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
+            JSONParamPicker.pick_parameter(parsed_json = test_json, path2key = test_path2key)
 
 
 

@@ -14,54 +14,32 @@
 #
 #################################################
 import builtins
-from abc import ABC, abstractmethod
-from typing import Dict,Any, List
-from airquality.constants.shared_constants import EMPTY_DICT, EMPTY_STRING, EMPTY_LIST
+from typing import Dict, Any, List
+from airquality.constants.shared_constants import EMPTY_DICT, EMPTY_LIST
 
 
-class JSONParamPicker(ABC):
+class JSONParamPicker(builtins.object):
 
 
-    @abstractmethod
-    def pick_parameter(self, parsed_json: Dict[str, Any], path2key: List[str]) -> Any:
-        pass
-
-
-class JSONParamPickerPurpleair(JSONParamPicker):
-
-
-    def pick_parameter(self, parsed_json: Dict[str, Any], path2key: List[str]) -> Any:
+    @classmethod
+    def pick_parameter(cls, parsed_json: Dict[str, Any], path2key: List[str]) -> Any:
 
         if parsed_json == EMPTY_DICT:
-            raise SystemExit(f"{JSONParamPickerPurpleair.__name__}: cannot pick parameter when 'parsed_json' argument is emtpy.")
+            raise SystemExit(f"{JSONParamPicker.__name__}: cannot pick parameter when 'parsed_json' argument is emtpy.")
 
         if path2key == EMPTY_LIST:
-            raise SystemExit(f"{JSONParamPickerPurpleair.__name__}: cannot pick parameter when 'path2key' argument is emtpy.")
+            raise SystemExit(f"{JSONParamPicker.__name__}: cannot pick parameter when 'path2key' argument is emtpy.")
 
         # pop the first key
         first_key = path2key.pop(0)
         if first_key not in parsed_json.keys():
-            raise SystemExit(f"{JSONParamPickerPurpleair.__name__}: cannot pick value corresponding to key='{first_key}'.")
+            raise SystemExit(f"{JSONParamPicker.__name__}: cannot pick value corresponding to key='{first_key}'.")
         value = parsed_json[first_key]
 
         # Recursive search
         for key in path2key:
             if key not in value.keys():
-                raise SystemExit(f"{JSONParamPickerPurpleair.__name__}: cannot pick value corresponding to key='{key}'.")
+                raise SystemExit(f"{JSONParamPicker.__name__}: cannot pick value corresponding to key='{key}'.")
             value = value[key]
 
         return value
-
-
-################################ FACTORY ################################
-class JSONParamPickerFactory(builtins.object):
-
-
-    @classmethod
-    def create_json_picker(cls, bot_personality: str) -> JSONParamPicker:
-
-        if bot_personality == "purpleair":
-            return JSONParamPickerPurpleair()
-        else:
-            raise SystemExit(f"{JSONParamPickerFactory.__name__}: cannot instantiate {JSONParamPicker.__name__} "
-                             f"instance for personality='{bot_personality}'.")

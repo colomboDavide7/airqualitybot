@@ -8,6 +8,7 @@
 import sys
 from typing import List
 from airquality.io.io import IOManager
+from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.database.sql_query_builder import SQLQueryBuilder
@@ -110,12 +111,16 @@ def main() -> None:
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(raw_string = raw_setup_data)
 
-################################ API REQUEST ADAPTER ################################
-        api_adapter = APIRequestAdapter(parsed_api_data[PERSONALITY]["api_address"][API_ADDRESS_N])
-
+################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
+        path2key = [PERSONALITY, "api_address", API_ADDRESS_N]
+        api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
         if DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')
-            print(f"{DEBUG_HEADER} {parsed_api_data[PERSONALITY]['api_address'][API_ADDRESS_N]}")
+            print(f"{DEBUG_HEADER} {api_address}")
+
+
+################################ API REQUEST ADAPTER ################################
+        api_adapter = APIRequestAdapter(api_address = api_address)
 
 ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
         query = query_builder.select_sensor_ids_from_identifier(identifier = PERSONALITY)
