@@ -88,6 +88,8 @@ SQL_TIMESTAMP_REGEX_PATTERN     = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
 DATETIME2SQLTIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 ################################ THINGSPEAK API PARAM2PICK ################################
+"""Pay attention to the order of this variable inside the list: remember to put channel id and channel key in the same
+list index: these are going to be used by the Database2APIReshaper."""
 
 THINGSPEAK_CH_ID_2PICK = ["primary_id_a", "primary_id_b", "secondary_id_a", "secondary_id_b"]
 THINGSPEAK_KEY_2PICK = ["primary_key_a", "primary_key_b", "secondary_key_a", "secondary_key_b"]
