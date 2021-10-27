@@ -17,6 +17,7 @@ from airquality.constants.shared_constants import \
     EMPTY_LIST
 
 from airquality.io.io import IOManager
+from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.api_packet_picker import APIPacketPickerFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.parser.file_parser import FileParserFactory
@@ -132,14 +133,21 @@ def main():
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(raw_string = raw_setup_data)
 
+
+################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
+        path2key = [PERSONALITY, "api_address", API_ADDRESS_N]
+        api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
+        if DEBUG_MODE:
+            print(20 * "=" + " API ADDRESS " + 20 * '=')
+            print(f"{DEBUG_HEADER} {api_address}")
+
+
 ################################ API REQUEST ADAPTER ################################
-        api_adapter = APIRequestAdapter(parsed_api_data[PERSONALITY]['api_address'][API_ADDRESS_N])
+        api_adapter = APIRequestAdapter(api_address = api_address)
 
 ################################ QUERYSTRING BUILDER ################################
         querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
         querystring = querystring_builder.make_querystring(parameters = parsed_api_data[PERSONALITY])
-        if DEBUG_MODE:
-            print(f"{DEBUG_HEADER} {querystring}")
 
 ################################ FETCHING API DATA ################################
         raw_api_data = api_adapter.fetch(querystring = querystring)
