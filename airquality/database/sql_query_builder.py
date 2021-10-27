@@ -79,6 +79,15 @@ class SQLQueryBuilder(builtins.object):
         return self.__parsed[query_id].format(identifier = identifier)
 
 
+    def select_last_acquisition_timestamp_from_station_id(self, station_id: int):
+        """This method returns a query for selecting the most recent timestamp associated with the given 'station_id'
+        from the 'station_measurement' table. (valid for thingspeak and purpleair)."""
+
+        query_id = "select_last_acquisition_timestamp_from_station_id"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+        return self.__parsed[query_id].format(sens_id = station_id)
+
+
 ################################ METHODS THAT RETURN INSERT QUERY ################################
 
 

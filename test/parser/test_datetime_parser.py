@@ -51,14 +51,14 @@ class TestDatetimeParser(unittest.TestCase):
     def test_from_date_to_string(self):
 
         test_date = datetime.datetime(year = 2019, month = 1, day = 1)
-        expected_output = "2019-01-01"
+        expected_output = "2019-01-01 00:00:00"
         actual_output = DatetimeParser.date2string(date = test_date)
         self.assertEqual(actual_output, expected_output)
 
 
     def test_from_string_to_date(self):
 
-        test_date_string = "2019-01-01"
+        test_date_string = "2019-01-01 00:00:00"
         date_obj = DatetimeParser.string2date(date = test_date_string)
         self.assertIsInstance(date_obj, datetime.date)
 

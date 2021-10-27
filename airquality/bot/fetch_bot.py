@@ -119,6 +119,18 @@ class FetchBotThingspeak(FetchBot):
 
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
+            ###################### SELECT LAST SENSOR MEASUREMENT TIMESTAMP FROM DATABASE ##############################
+            query = query_builder.select_last_acquisition_timestamp_from_station_id(station_id = sensor_id)
+            answer = dbconn.send(executable_sql_query = query)
+            parsed_timestamp = DatabaseAnswerParser.parse_single_attribute_answer(answer)
+
+            if sc.DEBUG_MODE:
+                if parsed_timestamp == EMPTY_LIST:
+                    print(f"{DEBUG_HEADER} no measure present into the database for sensor_id = {sensor_id}.")
+                else:
+                    print(f"{DEBUG_HEADER} {parsed_timestamp[0]}")
+
+
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
             query = query_builder.select_sensor_api_param(sensor_id = sensor_id)
             answer = dbconn.send(executable_sql_query = query)
@@ -154,9 +166,17 @@ class FetchBotThingspeak(FetchBot):
 
 ################################ DEFINE START DATE AND STOP DATE FOR FETCHING DATA FROM API ################################
 
-                from_date = DatetimeParser.string2date(date = '2019-01-01')
-                to_date   = DatetimeParser.add_days_to_date(date = from_date, days = 7)
                 stop_date = DatetimeParser.today()
+                from_date = DatetimeParser.string2date(date = '2018-01-01 00:00:00')
+
+                if parsed_timestamp != EMPTY_LIST:
+                    if (from_date - stop_date).total_seconds() < 0:
+                        timestamp_str = DatetimeParser.date2string(date = parsed_timestamp[0])
+                        from_date = DatetimeParser.string2date(date = timestamp_str)
+
+                to_date   = DatetimeParser.add_days_to_date(date = from_date, days = 7)
+                if (to_date - stop_date).total_seconds() > 0:
+                    to_date = stop_date
 
                 # CONTINUE UNTIL TODAY IS REACHED
                 while (stop_date - from_date).total_seconds() >= 0:
@@ -181,14 +201,17 @@ class FetchBotThingspeak(FetchBot):
 
                     if sc.DEBUG_MODE:
                         print(20 * "=" + " API PACKETS " + 20 * '=')
-                        for i in range(3):
-                            packet = parsed_api_packets["feeds"][i]
-                            for key, val in packet.items():
-                                print(f"{DEBUG_HEADER} {key}={val}")
+                        if parsed_api_packets["feeds"] != EMPTY_LIST:
+                            for i in range(3):
+                                packet = parsed_api_packets["feeds"][i]
+                                for key, val in packet.items():
+                                    print(f"{DEBUG_HEADER} {key}={val}")
+
 
 ################################ INCREMENT THE PERIOD FOR DATA FETCHING ################################
                     from_date = DatetimeParser.add_days_to_date(date = from_date, days = 7)
                     to_date = DatetimeParser.add_days_to_date(date = from_date, days = 7)
+
                     if (to_date - stop_date).total_seconds() >= 0:
                         to_date = stop_date
 

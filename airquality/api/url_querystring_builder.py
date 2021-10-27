@@ -123,6 +123,8 @@ class URLQuerystringBuilderThingspeak(URLQuerystringBuilder):
             querystring += 'api_key' + KEY_VAL_SEPARATOR + parameters['api_key'] + CONCAT_SEPARATOR
             querystring += 'start' + KEY_VAL_SEPARATOR + parameters['start'] + CONCAT_SEPARATOR
             querystring += 'end' + KEY_VAL_SEPARATOR + parameters['end']
+
+            querystring = querystring.replace(" ", "%20")
         return querystring
 
 

@@ -21,14 +21,14 @@ class DatetimeParser(builtins.object):
 
 
     @classmethod
-    def date2string(cls, date: datetime.date) -> str:
-        date_string = date.strftime('%Y-%m-%d')
+    def date2string(cls, date: datetime.datetime) -> str:
+        date_string = date.strftime('%Y-%m-%d %H:%M:%S')
         return date_string
 
 
     @classmethod
     def string2date(cls, date: str) -> datetime.datetime:
-        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        date = datetime.datetime.strptime(date, DATETIME2SQLTIMESTAMP_FORMAT)
         return date
 
 
