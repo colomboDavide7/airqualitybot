@@ -169,10 +169,11 @@ class FetchBotThingspeak(FetchBot):
                 stop_date = DatetimeParser.today()
                 from_date = DatetimeParser.string2date(date = '2018-01-01 00:00:00')
 
+                # CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN SENSOR_ID
                 if parsed_timestamp != EMPTY_LIST:
-                    if (from_date - stop_date).total_seconds() < 0:
-                        timestamp_str = DatetimeParser.date2string(date = parsed_timestamp[0])
-                        from_date = DatetimeParser.string2date(date = timestamp_str)
+                    # CHECK IF THERE ARE SOME MEASUREMENTS TO FETCH
+                    if (parsed_timestamp[0] - stop_date).total_seconds() < 0:
+                        from_date = parsed_timestamp[0]
 
                 to_date   = DatetimeParser.add_days_to_date(date = from_date, days = 7)
                 if (to_date - stop_date).total_seconds() > 0:
@@ -185,7 +186,6 @@ class FetchBotThingspeak(FetchBot):
                     querystring_param = {'api_key': reshaped_api_param[channel_id],
                                          'start': DatetimeParser.date2string(date = from_date),
                                          'end': DatetimeParser.date2string(date = to_date)}
-
 
                     # BUILD URL QUERYSTRING
                     querystring = querystring_builder.make_querystring(parameters = querystring_param)
