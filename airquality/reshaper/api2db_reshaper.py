@@ -36,7 +36,7 @@ class API2DatabaseReshaperAtmotube(API2DatabaseReshaper):
             return reshaped_packets
 
         if measure_param_map == EMPTY_DICT:
-            raise SystemExit(f"{API2DatabaseReshaperAtmotube.__name__}: cannot reshape packets when reshape mapping is"
+            raise SystemExit(f"{API2DatabaseReshaperAtmotube.__name__}: cannot reshape packets when reshape mapping is "
                              f"empty.")
 
         for packet in packets:
@@ -68,4 +68,5 @@ class API2DatabaseReshaperFactory(builtins.object):
         if bot_personality == "atmotube":
             return API2DatabaseReshaperAtmotube()
         else:
-            raise SystemExit(f"{API2DatabaseReshaperFactory.__name__}: invalid personality '{bot_personality}'.")
+            raise SystemExit(f"{API2DatabaseReshaperFactory.__name__}: cannot instantiate {API2DatabaseReshaper.__name__} "
+                             f"instance for personality='{bot_personality}'.")
