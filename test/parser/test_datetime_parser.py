@@ -72,5 +72,20 @@ class TestDatetimeParser(unittest.TestCase):
         self.assertIsInstance(actual_output, datetime.date)
 
 
+    def test_successfully_convert_timestamp_from_thingspeak_to_sql(self):
+
+        test_ts = "2021-10-27T05:36:59Z"
+        expected_output = "2021-10-27 05:36:59"
+        actual_output = DatetimeParser.thingspeak_to_sqltimestamp(ts = test_ts)
+        self.assertEqual(actual_output, expected_output)
+
+
+    def test_system_exit_while_parsing_thingspeak_timestamp(self):
+
+        test_ts = "bad_timestamp"
+        with self.assertRaises(SystemExit):
+            DatetimeParser.thingspeak_to_sqltimestamp(ts = test_ts)
+
+
 if __name__ == '__main__':
     unittest.main()

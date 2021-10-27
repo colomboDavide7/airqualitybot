@@ -8,8 +8,11 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
-from airquality.constants.shared_constants import EMPTY_LIST, \
-    PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM
+from airquality.parser.datetime_parser import DatetimeParser
+from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
+    PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
+    THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
+    THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
 
 
 class APIPacketReshaper(ABC):
@@ -42,6 +45,51 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
         return reshaped_packets
 
 
+################################ THINGSPEAK API PACKET RESHAPER ################################
+
+class APIPacketReshaperThingspeak(APIPacketReshaper):
+
+
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+
+        if api_answer == EMPTY_DICT:
+            raise SystemExit(f"{APIPacketReshaperThingspeak.__name__}: cannot reshaper api answer when is empty.")
+
+        channel = api_answer["channel"]
+        field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
+
+        # SELECT THE RESHAPE MAPPING BASED ON PRIMARY/SECONDARY DATA AND CHANNEL A/B
+        if '_b' in channel["name"]:
+            if 'Counters' in channel["name"]:
+                field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
+            else:
+                field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B
+        else:
+            if 'Counters' in channel["name"]:
+                field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
+
+        # Decode the "fieldN" value in the 'api_answer' header with the chosen mapping (field_to_use)
+        selected_fields = {}
+        for param in channel.keys():
+            if channel[param] in field_to_use.keys():
+                selected_fields[param] = field_to_use[channel[param]]
+
+
+        reshaped_packets = []
+        feeds = api_answer["feeds"]
+        for feed in feeds:
+            reshaped_packet = {}
+            timestamp = DatetimeParser.thingspeak_to_sqltimestamp(ts = feed["created_at"])
+            reshaped_packet["time"] = timestamp
+            for field in feed.keys():
+                if field in selected_fields.keys():
+                    reshaped_packet[selected_fields[field]] = feed[field]
+            reshaped_packets.append(reshaped_packet)
+        return reshaped_packets
+
+
+
+
 ################################ FACTORY ################################
 class APIPacketReshaperFactory(builtins.object):
 
@@ -50,6 +98,8 @@ class APIPacketReshaperFactory(builtins.object):
     def create_api_packet_reshaper(cls, bot_personality: str) -> APIPacketReshaper:
         if bot_personality == "purpleair":
             return APIPacketReshaperPurpleair()
+        elif bot_personality == "thingspeak":
+            return APIPacketReshaperThingspeak()
         else:
             raise SystemExit(f"{APIPacketReshaperFactory.__name__}: cannot instantiate {APIPacketReshaper.__name__} "
                              f"instance for personality='{bot_personality}'.")

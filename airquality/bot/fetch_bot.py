@@ -16,6 +16,7 @@ import airquality.constants.system_constants as sc
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
+from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
 from airquality.reshaper.db2api_reshaper import Database2APIReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
@@ -199,13 +200,28 @@ class FetchBotThingspeak(FetchBot):
                     parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
                     parsed_api_packets = parser.parse(raw_string = api_packets)
 
-                    if sc.DEBUG_MODE:
-                        print(20 * "=" + " API PACKETS " + 20 * '=')
-                        if parsed_api_packets["feeds"] != EMPTY_LIST:
-                            for i in range(3):
-                                packet = parsed_api_packets["feeds"][i]
-                                for key, val in packet.items():
-                                    print(f"{DEBUG_HEADER} {key}={val}")
+                    # if sc.DEBUG_MODE:
+                    #     print(20 * "=" + " API PACKETS " + 20 * '=')
+                    #     if parsed_api_packets["feeds"] != EMPTY_LIST:
+                    #         for i in range(3):
+                    #             packet = parsed_api_packets["feeds"][i]
+                    #             for key, val in packet.items():
+                    #                 print(f"{DEBUG_HEADER} {key}={val}")
+
+################################ CONTINUE ONLY IF THERE ARE VALID PACKETS FROM APIS ################################
+                    if parsed_api_packets["feeds"] != EMPTY_LIST:
+
+                        #################### API 2 DATABASE RESHAPER FOR PREPARING PACKETS FOR INSERTION ###################
+                        api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = sc.PERSONALITY)
+                        reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer = parsed_api_packets)
+
+                        if sc.DEBUG_MODE:
+                            print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+                            if reshaped_api_packets != EMPTY_LIST:
+                                for i in range(3):
+                                    packet = reshaped_api_packets[i]
+                                    for key, val in packet.items():
+                                        print(f"{DEBUG_HEADER} {key}={val}")
 
 
 ################################ INCREMENT THE PERIOD FOR DATA FETCHING ################################

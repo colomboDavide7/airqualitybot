@@ -9,7 +9,8 @@ import datetime
 import re
 import builtins
 from airquality.constants.shared_constants import EMPTY_STRING, \
-    ATMOTUBE_DATETIME_REGEX_PATTERN, SQL_TIMESTAMP_REGEX_PATTERN, DATETIME2SQLTIMESTAMP_FORMAT
+    ATMOTUBE_DATETIME_REGEX_PATTERN, SQL_TIMESTAMP_REGEX_PATTERN, DATETIME2SQLTIMESTAMP_FORMAT, \
+    THINGSPEAK_DATETIME_REGEX_PATTERN
 
 
 class DatetimeParser(builtins.object):
@@ -47,6 +48,14 @@ class DatetimeParser(builtins.object):
         DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = ATMOTUBE_DATETIME_REGEX_PATTERN)
         ts = ts.strip('Z')
         ts, zone = ts.split('.')
+        return ts.replace("T", " ")
+
+
+    @classmethod
+    def thingspeak_to_sqltimestamp(cls, ts: str) -> str:
+
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = THINGSPEAK_DATETIME_REGEX_PATTERN)
+        ts = ts.strip('Z')
         return ts.replace("T", " ")
 
 
