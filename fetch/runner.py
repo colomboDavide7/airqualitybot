@@ -6,6 +6,7 @@
 #
 #################################################
 import sys
+import time
 from typing import List
 from airquality.bot.fetch_bot import FetchBotFactory
 from airquality.constants.shared_constants import FETCH_USAGE, VALID_PERSONALITIES, DEBUG_HEADER
@@ -66,8 +67,11 @@ def main() -> None:
     try:
         print(20 * '-' + " START THE PROGRAM " + 20 * '-')
 
+        start_time = time.perf_counter()
         fetch_bot = FetchBotFactory().create_fetch_bot(bot_personality = sc.PERSONALITY)
         fetch_bot.run()
+        end_time = time.perf_counter()
+        print(f"{DEBUG_HEADER} elapsed time: {end_time - start_time}")
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
 

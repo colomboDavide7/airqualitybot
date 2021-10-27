@@ -5,6 +5,7 @@
 # @Description: unit test script
 #
 #################################################
+import datetime
 import unittest
 from airquality.parser.datetime_parser import DatetimeParser
 
@@ -45,6 +46,30 @@ class TestDatetimeParser(unittest.TestCase):
         test_ts2 = "2021-10-01 09:44:00"
         self.assertTrue(DatetimeParser.is_ts2_after_ts1(ts1 = test_ts1, ts2 = test_ts2))
         self.assertFalse(DatetimeParser.is_ts2_after_ts1(ts1 = test_ts2, ts2 = test_ts2))
+
+
+    def test_from_date_to_string(self):
+
+        test_date = datetime.datetime(year = 2019, month = 1, day = 1)
+        expected_output = "2019-01-01"
+        actual_output = DatetimeParser.date2string(date = test_date)
+        self.assertEqual(actual_output, expected_output)
+
+
+    def test_from_string_to_date(self):
+
+        test_date_string = "2019-01-01"
+        date_obj = DatetimeParser.string2date(date = test_date_string)
+        self.assertIsInstance(date_obj, datetime.date)
+
+
+    def test_add_days_to_date(self):
+
+        test_starting_date = datetime.datetime(year = 2019, month = 1, day = 1)
+        expected_output = datetime.datetime(year = 2019, month = 1, day = 11)
+        actual_output = DatetimeParser.add_days_to_date(date = test_starting_date, days = 10)
+        self.assertEqual(actual_output, expected_output)
+        self.assertIsInstance(actual_output, datetime.date)
 
 
 if __name__ == '__main__':

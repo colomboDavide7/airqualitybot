@@ -19,6 +19,7 @@ from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
 from airquality.reshaper.db2api_reshaper import Database2APIReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
@@ -28,7 +29,7 @@ from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, \
-    EMPTY_LIST, PURPLEAIR_PERSONALITY, THINGSPEAK_KEY_2PICK, THINGSPEAK_CH_ID_2PICK
+    EMPTY_LIST, PURPLEAIR_PERSONALITY
 
 
 ################################################################################################
@@ -83,6 +84,10 @@ class FetchBotThingspeak(FetchBot):
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
+        ################################ QUERYSTRING BUILDER ################################
+        querystring_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality = sc.PERSONALITY)
+
+
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
         query = query_builder.select_sensor_ids_from_identifier(identifier = PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
@@ -133,52 +138,77 @@ class FetchBotThingspeak(FetchBot):
                 for ch_id, ch_key in reshaped_api_param.items():
                     print(f"{DEBUG_HEADER} {ch_id}={ch_key}")
 
-            # ################################ PICK CHANNEL IDS FROM DATABASE API PARAMETERS ################################
-            # channel_ids = APIParamPicker.pick_param(api_param = api_param, param2pick = THINGSPEAK_CH_ID_2PICK)
-            #
-            # if sc.DEBUG_MODE:
-            #     print(20 * "=" + " CHANNEL IDS " + 20 * '=')
-            #     for channel_id in channel_ids:
-            #         print(f"{DEBUG_HEADER} {api_param[channel_id]}")
-            #
-            # ################################ PICK CHANNEL KEYS FROM DATABASE API PARAMETERS ################################
-            # channel_keys = APIParamPicker.pick_param(api_param = api_param, param2pick = THINGSPEAK_KEY_2PICK)
-            #
-            # if sc.DEBUG_MODE:
-            #     print(20 * "=" + " CHANNEL KEYS " + 20 * '=')
-            #     for channel_key in channel_keys:
-            #         print(f"{DEBUG_HEADER} {api_param[channel_key]}")
+
+################################ FORMAT API ADDRESS AND BUILD QUERYSTRING FOR EACH CHANNEL ################################
+
+            for channel_id in reshaped_api_param.keys():
+
+                # FORMAT API ADDRESS WITH CHANNEL ID
+                formatted_api_address = api_address.format(channel_id = channel_id)
+
+                # CREATE API REQUEST ADAPTER
+                api_adapter = APIRequestAdapter(api_address = formatted_api_address)
+                if sc.DEBUG_MODE:
+                    print(20 * "=" + " API ADDRESS " + 20 * '=')
+                    print(f"{DEBUG_HEADER} {formatted_api_address}")
+
+################################ DEFINE START DATE AND STOP DATE FOR FETCHING DATA FROM API ################################
+
+                from_date = DatetimeParser.string2date(date = '2019-01-01')
+                to_date   = DatetimeParser.add_days_to_date(date = from_date, days = 7)
+                stop_date = DatetimeParser.today()
+
+                # CONTINUE UNTIL TODAY IS REACHED
+                while (stop_date - from_date).total_seconds() >= 0:
+
+                    # GET QUERYSTRING PARAMETERS
+                    querystring_param = {'api_key': reshaped_api_param[channel_id],
+                                         'start': DatetimeParser.date2string(date = from_date),
+                                         'end': DatetimeParser.date2string(date = to_date)}
+
+
+                    # BUILD URL QUERYSTRING
+                    querystring = querystring_builder.make_querystring(parameters = querystring_param)
+                    if sc.DEBUG_MODE:
+                        print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
+                        print(f"{DEBUG_HEADER} {querystring}")
+
+
+                    # FETCH DATA FROM API
+                    api_packets = api_adapter.fetch(querystring)
+                    parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
+                    parsed_api_packets = parser.parse(raw_string = api_packets)
+
+                    if sc.DEBUG_MODE:
+                        print(20 * "=" + " API PACKETS " + 20 * '=')
+                        for i in range(3):
+                            packet = parsed_api_packets["feeds"][i]
+                            for key, val in packet.items():
+                                print(f"{DEBUG_HEADER} {key}={val}")
+
+################################ INCREMENT THE PERIOD FOR DATA FETCHING ################################
+                    from_date = DatetimeParser.add_days_to_date(date = from_date, days = 7)
+                    to_date = DatetimeParser.add_days_to_date(date = from_date, days = 7)
+                    if (to_date - stop_date).total_seconds() >= 0:
+                        to_date = stop_date
 
 
 
-            # ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
-            # querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
-            # querystring = querystring_builder.make_querystring(parameters = api_param)
-            #
-            # if DEBUG_MODE:
-            #     print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
-            #     print(f"{DEBUG_HEADER} {querystring}")
-            #
-            #
-            # ################################ FETCH DATA FROM API ################################
-            # api_answer = api_adapter.fetch(querystring = querystring)
-            # parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
-            # api_answer = parser.parse(raw_string = api_answer)
-            #
-            # ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
-            # filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(
-            #     api_param = api_param,
-            #     personality = PERSONALITY)
-            # filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
-            # filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
-            #
-            # if DEBUG_MODE:
-            #     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
-            #     if filtered_packets != EMPTY_LIST:
-            #         for i in range(10):
-            #             rpacket = filtered_packets[i]
-            #             for key, val in rpacket.items():
-            #                 print(f"{DEBUG_HEADER} {key}={val}")
+
+                    # ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
+                    # filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(
+                    #     api_param = api_param,
+                    #     personality = PERSONALITY)
+                    # filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
+                    # filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
+                    #
+                    # if DEBUG_MODE:
+                    #     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
+                    #     if filtered_packets != EMPTY_LIST:
+                    #         for i in range(10):
+                    #             rpacket = filtered_packets[i]
+                    #             for key, val in rpacket.items():
+                    #                 print(f"{DEBUG_HEADER} {key}={val}")
 
 
 

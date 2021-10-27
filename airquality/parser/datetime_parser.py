@@ -15,6 +15,28 @@ from airquality.constants.shared_constants import EMPTY_STRING, \
 class DatetimeParser(builtins.object):
 
 
+    @classmethod
+    def today(cls) -> datetime.datetime:
+        return datetime.datetime.today()
+
+
+    @classmethod
+    def date2string(cls, date: datetime.date) -> str:
+        date_string = date.strftime('%Y-%m-%d')
+        return date_string
+
+
+    @classmethod
+    def string2date(cls, date: str) -> datetime.datetime:
+        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        return date
+
+
+    @classmethod
+    def add_days_to_date(cls, date: datetime.datetime, days: int) -> datetime.datetime:
+        new_date = date + datetime.timedelta(days = days)
+        return new_date
+
     ################################ ATMOTUBE TIMESTAMP FORMATTING METHOD ################################
 
 
