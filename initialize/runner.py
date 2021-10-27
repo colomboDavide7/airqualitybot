@@ -11,7 +11,7 @@ import sys
 from typing import List
 
 from airquality.constants.shared_constants import \
-    SENSOR_AT_LOCATION_PERSONALITIES, VALID_PERSONALITIES, \
+    VALID_PERSONALITIES, \
     API_FILE, SERVER_FILE, QUERY_FILE, \
     DEBUG_HEADER, INITIALIZE_USAGE, \
     EMPTY_LIST
@@ -142,7 +142,7 @@ def main():
             print(f"{DEBUG_HEADER} {querystring}")
 
 ################################ FETCHING API DATA ################################
-        raw_api_data = api_adapter.fetch(query_string = querystring)
+        raw_api_data = api_adapter.fetch(querystring = querystring)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = 'json')
         parsed_api_data = parser.parse(raw_string = raw_api_data)
 
@@ -198,18 +198,15 @@ def main():
         dbconn.send(executable_sql_query = query)
 
 ################################ IF FIX SENSOR INSERT ALSO SENSOR AT LOCATION ################################
-        if PERSONALITY in SENSOR_AT_LOCATION_PERSONALITIES:
-
-            ###################### PICK ONLY GEO PARAMETERS FROM ALL PARAMETERS IN THE PACKETS #########################
-            geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality = PERSONALITY)
-            new_geo_packets = picker.pick_packet_params(packets = filtered_packets, param2pick = geo_param2pick)
-
-            ################################ INSERT THE RECORDS INTO THE DATABASE ################################
-            query = query_builder.insert_sensor_at_location(packets = new_geo_packets, first_sensor_id = sensor_id)
-            dbconn.send(executable_sql_query = query)
-
-
-        # TODO: INSERT PURPLE AIR MEASURE PARAM !!!!!
+        # if PERSONALITY in SENSOR_AT_LOCATION_PERSONALITIES:
+        #
+        #     ###################### PICK ONLY GEO PARAMETERS FROM ALL PARAMETERS IN THE PACKETS #########################
+        #     geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality = PERSONALITY)
+        #     new_geo_packets = picker.pick_packet_params(packets = filtered_packets, param2pick = geo_param2pick)
+        #
+        #     ################################ INSERT THE RECORDS INTO THE DATABASE ################################
+        #     query = query_builder.insert_sensor_at_location(packets = new_geo_packets, first_sensor_id = sensor_id)
+        #     dbconn.send(executable_sql_query = query)
 
 
 ################################ CLOSE DATABASE CONNECTION ################################

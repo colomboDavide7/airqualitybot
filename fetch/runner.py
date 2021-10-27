@@ -42,7 +42,7 @@ def parse_sys_argv(args: List[str]):
     for arg in args:
         if arg in ("-d", "--debug"):
             DEBUG_MODE = True
-        elif not is_personality_set and arg in ('purpleair', ):
+        elif not is_personality_set and arg in VALID_PERSONALITIES:
             PERSONALITY = arg
             is_personality_set = True
         elif not is_api_address_number_set and arg.isdigit():
@@ -171,7 +171,7 @@ def main() -> None:
                     print(f"{DEBUG_HEADER} {querystring}")
 
                 ################################ FETCH DATA FROM API ################################
-                api_answer = api_adapter.fetch(query_string = querystring)
+                api_answer = api_adapter.fetch(querystring = querystring)
                 parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
                 api_answer = parser.parse(raw_string = api_answer)
 

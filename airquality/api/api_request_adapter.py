@@ -15,14 +15,13 @@ class APIRequestAdapter(builtins.object):
     def __init__(self, api_address):
         self.__api_address = api_address
 
-
-    def fetch(self, query_string: str) -> str:
+    def fetch(self, querystring: str) -> str:
         """This method takes the URL query string as argument and concatenate it with the 'api_address' instance
         variable: the result if a valid URL.
 
         In case of request failure, SystemExit exception is raised."""
 
-        url = self.__api_address + '?' + query_string
+        url = self.__api_address + '?' + querystring
         try:
             answer = req.urlopen(url).read()
         except Exception as err:
