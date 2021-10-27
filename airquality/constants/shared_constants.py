@@ -44,6 +44,7 @@ PURPLEAIR_NAME_PARAM = "name"
 PURPLEAIR_SENSOR_IDX_PARAM = "sensor_index"
 PURPLEAIR_FIELDS_PARAM = "fields"
 PURPLEAIR_DATA_PARAM   = "data"
+PURPLEAIR_CH_ID_PARAM = "channel_id"
 
 ################################ QUERYSTRING ARGUMENTS ################################
 
