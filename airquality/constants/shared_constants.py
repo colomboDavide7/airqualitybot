@@ -9,7 +9,8 @@
 
 ################################ DEFINE VALID PERSONALITIES FOR 'SENSOR AT LOCATION' ################################
 
-VALID_PERSONALITIES = ('purpleair', 'atmotube')
+PURPLEAIR_PERSONALITY = "purpleair"
+VALID_PERSONALITIES = (PURPLEAIR_PERSONALITY, 'atmotube', 'thingspeak')
 SENSOR_AT_LOCATION_PERSONALITIES = ('purpleair',)
 MOBILE_SENSOR_PERSONALITIES = ("atmotube", )
 
@@ -85,3 +86,8 @@ SQL_TIMESTAMP_REGEX_PATTERN     = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
 ################################ DATETIME FORMAT FOR DATETIME2STR CONVERSION ################################
 
 DATETIME2SQLTIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+################################ THINGSPEAK API PARAM2PICK ################################
+
+THINGSPEAK_CH_ID_2PICK = ["primary_id_a", "primary_id_b", "secondary_id_a", "secondary_id_b"]
+THINGSPEAK_KEY_2PICK = ["primary_key_a", "primary_key_b", "secondary_key_a", "secondary_key_b"]

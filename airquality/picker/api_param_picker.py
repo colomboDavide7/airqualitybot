@@ -11,14 +11,14 @@ from airquality.constants.shared_constants import EMPTY_DICT, EMPTY_LIST
 
 
 
-class APIParamPickerPurpleair(builtins.object):
+class APIParamPicker(builtins.object):
 
 
     @classmethod
     def pick_param(cls, api_param: Dict[str, Any], param2pick: List[str]) -> Dict[str, Any]:
 
         if api_param == EMPTY_DICT:
-            raise SystemExit(f"{APIParamPickerPurpleair.__name__}: cannot pick parameters when api param is empty.")
+            raise SystemExit(f"{APIParamPicker.__name__}: cannot pick parameters when api param is empty.")
 
         if param2pick == EMPTY_LIST:
             return api_param
@@ -27,6 +27,6 @@ class APIParamPickerPurpleair(builtins.object):
         picked = {}
         for param in param2pick:
             if param not in keys:
-                raise SystemExit(f"{APIParamPickerPurpleair.__name__}: param = '{param}' is missing.")
+                raise SystemExit(f"{APIParamPicker.__name__}: param = '{param}' is missing.")
             picked[param] = api_param[param]
         return picked

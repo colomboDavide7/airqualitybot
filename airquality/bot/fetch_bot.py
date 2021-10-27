@@ -10,7 +10,7 @@ import builtins
 from abc import ABC, abstractmethod
 
 # IMPORT GLOBAL VARIABLE FROM FETCH MODULE
-from fetch.runner import PERSONALITY, DEBUG_MODE, API_ADDRESS_N
+import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
@@ -21,13 +21,14 @@ from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
+from airquality.picker.api_param_picker import APIParamPicker
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, \
-    EMPTY_LIST
+    EMPTY_LIST, PURPLEAIR_PERSONALITY, THINGSPEAK_KEY_2PICK, THINGSPEAK_CH_ID_2PICK
 
 
 ################################################################################################
@@ -44,7 +45,7 @@ class FetchBot(ABC):
 
 
 
-class FetchBotPurpleair(FetchBot):
+class FetchBotThingspeak(FetchBot):
 
 
     def run(self):
@@ -56,8 +57,8 @@ class FetchBotPurpleair(FetchBot):
 
         ################################ PICK DATABASE CONNECTION PROPERTIES ################################
         db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources = parsed_server_data,
-                                                             bot_personality = PERSONALITY)
-        if DEBUG_MODE:
+                                                             bot_personality = sc.PERSONALITY)
+        if sc.DEBUG_MODE:
             print(20 * "=" + " DATABASE SETTINGS " + 20 * '=')
             for key, val in db_settings.items():
                 print(f"{DEBUG_HEADER} {key}={val}")
@@ -76,37 +77,33 @@ class FetchBotPurpleair(FetchBot):
         parsed_api_data = parser.parse(raw_string = raw_setup_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
-        path2key = [PERSONALITY, "api_address", API_ADDRESS_N]
+        path2key = [sc.PERSONALITY, "api_address", sc.API_ADDRESS_N]
         api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
-        if DEBUG_MODE:
+        if sc.DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
-            if API_ADDRESS_N == "2":
-                print(f"{DEBUG_HEADER} fetching historical data from ThingSpeak API.")
-            else:
-                print(f"{DEBUG_HEADER} fetching new data from PurpleAir API.")
 
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
-        query = query_builder.select_sensor_ids_from_identifier(identifier = PERSONALITY)
+        query = query_builder.select_sensor_ids_from_identifier(identifier = PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
 
-        if DEBUG_MODE:
+        if sc.DEBUG_MODE:
             print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
             for id_ in sensor_ids:
                 print(f"{DEBUG_HEADER} {id_}")
 
 ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
         if sensor_ids == EMPTY_LIST:
-            print(f"{DEBUG_HEADER} no sensor associated to personality = '{PERSONALITY}'.")
+            print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
             sys.exit(0)
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
-        query = query_builder.select_measure_param_from_identifier(identifier = PERSONALITY)
+        query = query_builder.select_measure_param_from_identifier(identifier = PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
-        if DEBUG_MODE:
+        if sc.DEBUG_MODE:
             print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
             for code, id_ in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {code}={id_}")
@@ -122,39 +119,57 @@ class FetchBotPurpleair(FetchBot):
             answer = dbconn.send(executable_sql_query = query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
-            if DEBUG_MODE:
+            if sc.DEBUG_MODE:
                 print(20 * "=" + " API PARAMETERS " + 20 * '=')
                 for name, value in api_param.items():
                     print(f"{DEBUG_HEADER} {name}={value}")
 
-            ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
-            querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
-            querystring = querystring_builder.make_querystring(parameters = api_param)
+            ################################ PICK CHANNEL IDS FROM DATABASE API PARAMETERS ################################
+            channel_ids = APIParamPicker.pick_param(api_param = api_param, param2pick = THINGSPEAK_CH_ID_2PICK)
 
-            if DEBUG_MODE:
-                print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
-                print(f"{DEBUG_HEADER} {querystring}")
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " CHANNEL IDS " + 20 * '=')
+                for channel_id in channel_ids:
+                    print(f"{DEBUG_HEADER} {api_param[channel_id]}")
+
+            ################################ PICK CHANNEL KEYS FROM DATABASE API PARAMETERS ################################
+            channel_keys = APIParamPicker.pick_param(api_param = api_param, param2pick = THINGSPEAK_KEY_2PICK)
+
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " CHANNEL KEYS " + 20 * '=')
+                for channel_key in channel_keys:
+                    print(f"{DEBUG_HEADER} {api_param[channel_key]}")
 
 
-            ################################ FETCH DATA FROM API ################################
-            api_answer = api_adapter.fetch(querystring = querystring)
-            parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
-            api_answer = parser.parse(raw_string = api_answer)
 
-            ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
-            filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(
-                api_param = api_param,
-                personality = PERSONALITY)
-            filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
-            filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
-
-            if DEBUG_MODE:
-                print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
-                if filtered_packets != EMPTY_LIST:
-                    for i in range(10):
-                        rpacket = filtered_packets[i]
-                        for key, val in rpacket.items():
-                            print(f"{DEBUG_HEADER} {key}={val}")
+                # ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
+                # querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
+                # querystring = querystring_builder.make_querystring(parameters = api_param)
+                #
+                # if DEBUG_MODE:
+                #     print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
+                #     print(f"{DEBUG_HEADER} {querystring}")
+                #
+                #
+                # ################################ FETCH DATA FROM API ################################
+                # api_answer = api_adapter.fetch(querystring = querystring)
+                # parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
+                # api_answer = parser.parse(raw_string = api_answer)
+                #
+                # ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
+                # filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(
+                #     api_param = api_param,
+                #     personality = PERSONALITY)
+                # filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
+                # filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
+                #
+                # if DEBUG_MODE:
+                #     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
+                #     if filtered_packets != EMPTY_LIST:
+                #         for i in range(10):
+                #             rpacket = filtered_packets[i]
+                #             for key, val in rpacket.items():
+                #                 print(f"{DEBUG_HEADER} {key}={val}")
 
 
 
@@ -183,8 +198,8 @@ class FetchBotAtmotube(FetchBot):
 
         ################################ PICK DATABASE CONNECTION PROPERTIES ################################
         db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources = parsed_server_data,
-                                                             bot_personality = PERSONALITY)
-        if DEBUG_MODE:
+                                                             bot_personality = sc.PERSONALITY)
+        if sc.DEBUG_MODE:
             print(20 * "=" + " DATABASE SETTINGS " + 20 * '=')
             for key, val in db_settings.items():
                 print(f"{DEBUG_HEADER} {key}={val}")
@@ -203,9 +218,9 @@ class FetchBotAtmotube(FetchBot):
         parsed_api_data = parser.parse(raw_string = raw_setup_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
-        path2key = [PERSONALITY, "api_address", API_ADDRESS_N]
+        path2key = [sc.PERSONALITY, "api_address", sc.API_ADDRESS_N]
         api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
-        if DEBUG_MODE:
+        if sc.DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
@@ -214,26 +229,26 @@ class FetchBotAtmotube(FetchBot):
 
 
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
-        query = query_builder.select_sensor_ids_from_identifier(identifier = PERSONALITY)
+        query = query_builder.select_sensor_ids_from_identifier(identifier = sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
 
-        if DEBUG_MODE:
+        if sc.DEBUG_MODE:
             print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
             for id_ in sensor_ids:
                 print(f"{DEBUG_HEADER} {id_}")
 
         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
         if sensor_ids == EMPTY_LIST:
-            print(f"{DEBUG_HEADER} no sensor associated to personality = '{PERSONALITY}'.")
+            print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
             sys.exit(0)
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
-        query = query_builder.select_measure_param_from_identifier(identifier = PERSONALITY)
+        query = query_builder.select_measure_param_from_identifier(identifier = sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
-        if DEBUG_MODE:
+        if sc.DEBUG_MODE:
             print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
             for code, id_ in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {code}={id_}")
@@ -249,16 +264,16 @@ class FetchBotAtmotube(FetchBot):
             answer = dbconn.send(executable_sql_query = query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
-            if DEBUG_MODE:
+            if sc.DEBUG_MODE:
                 print(20 * "=" + " API PARAMETERS " + 20 * '=')
                 for name, value in api_param.items():
                     print(f"{DEBUG_HEADER} {name}={value}")
 
             ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
-            querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
+            querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = sc.PERSONALITY)
             querystring = querystring_builder.make_querystring(parameters = api_param)
 
-            if DEBUG_MODE:
+            if sc.DEBUG_MODE:
                 print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
                 print(f"{DEBUG_HEADER} {querystring}")
 
@@ -269,11 +284,11 @@ class FetchBotAtmotube(FetchBot):
 
             ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
             filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(api_param = api_param,
-                                                                                                   personality = PERSONALITY)
-            filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
+                                                                                                   personality = sc.PERSONALITY)
+            filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = sc.PERSONALITY)
             filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
 
-            if DEBUG_MODE:
+            if sc.DEBUG_MODE:
                 print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
                 if filtered_packets != EMPTY_LIST:
                     for i in range(10):
@@ -285,11 +300,11 @@ class FetchBotAtmotube(FetchBot):
             if filtered_packets != EMPTY_LIST:
 
                 ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
-                reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = PERSONALITY)
+                reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
                 reshaped_packets = reshaper.reshape_packets(packets = filtered_packets,
                                                             measure_param_map = measure_param_map)
 
-                if DEBUG_MODE:
+                if sc.DEBUG_MODE:
                     print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
                     if reshaped_packets != EMPTY_LIST:
                         for i in range(10):
@@ -304,7 +319,7 @@ class FetchBotAtmotube(FetchBot):
 
 
                 ############### UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH ###############
-                if DEBUG_MODE:
+                if sc.DEBUG_MODE:
                     print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1]['ts']}")
 
                 query = query_builder.update_last_packet_date_atmotube(last_timestamp = reshaped_packets[-1]["ts"],
@@ -321,8 +336,8 @@ class FetchBotFactory(builtins.object):
     @classmethod
     def create_fetch_bot(cls, bot_personality: str) -> FetchBot:
 
-        if bot_personality == "purpleair":
-            return FetchBotPurpleair()
+        if bot_personality == "thingspeak":
+            return FetchBotThingspeak()
         elif bot_personality == "atmotube":
             return FetchBotAtmotube()
         else:
