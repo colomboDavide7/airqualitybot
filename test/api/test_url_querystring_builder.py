@@ -75,6 +75,29 @@ class TestBuilder(unittest.TestCase):
             purpleair_builder.make_querystring(parameters = test_param)
 
 
+################################ THING SPEAK QUERYSTRING BUILDER TESTS ################################
+
+
+    def test_successfully_build_thingspeak_querystring(self):
+
+        test_param = {'api_key': "key", 'start': 'ts1', 'end': 'ts2'}
+        expected_output = "api_key=key&start=ts1&end=ts2"
+        thingspeak_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = "thingspeak")
+        actual_output = thingspeak_builder.make_querystring(parameters = test_param)
+        self.assertEqual(actual_output, expected_output)
+
+
+    def test_system_exit_when_missing_parameters_thingspeak_builder(self):
+
+        test_param = {'start': 'ts1', 'end': 'ts2'}
+        thingspeak_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = "thingspeak")
+        with self.assertRaises(SystemExit):
+            thingspeak_builder.make_querystring(parameters = test_param)
+
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -99,6 +99,33 @@ class URLQuerystringBuilderPurpleair(URLQuerystringBuilder):
         return querystring
 
 
+class URLQuerystringBuilderThingspeak(URLQuerystringBuilder):
+
+
+    def make_querystring(self, parameters: Dict[str, Any]) -> str:
+        """This method defines the rules for building thingspeak URL querystring for fetching data from API.
+
+        Required parameters are:
+            - api_key:  private purple air api key
+            - start:    starting timestamp
+            - end:      end timestamp
+
+        See: https://ch.mathworks.com/help/thingspeak/readdata.html."""
+
+        querystring = ""
+        keys = parameters.keys()
+
+        if parameters != EMPTY_DICT:
+
+            if 'api_key' not in keys or 'start' not in keys or 'end' not in keys:
+                raise SystemExit(f"{URLQuerystringBuilderThingspeak.__name__}: missing 'api_key' or 'start' or 'end' keys.")
+
+            querystring += 'api_key' + KEY_VAL_SEPARATOR + parameters['api_key'] + CONCAT_SEPARATOR
+            querystring += 'start' + KEY_VAL_SEPARATOR + parameters['start'] + CONCAT_SEPARATOR
+            querystring += 'end' + KEY_VAL_SEPARATOR + parameters['end']
+        return querystring
+
+
 
 ################################ FACTORY ################################
 class URLQuerystringBuilderFactory(builtins.object):
@@ -112,6 +139,8 @@ class URLQuerystringBuilderFactory(builtins.object):
             return URLQuerystringBuilderAtmotube()
         elif bot_personality == "purpleair":
             return URLQuerystringBuilderPurpleair()
+        elif bot_personality == "thingspeak":
+            return URLQuerystringBuilderThingspeak()
         else:
             raise SystemExit(f"{URLQuerystringBuilderFactory.__name__}: cannot instantiate {URLQuerystringBuilder.__name__} "
                              f"instance for personality='{bot_personality}'.")
