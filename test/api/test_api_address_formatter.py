@@ -21,7 +21,7 @@ class TestAPIAddressFormatter(unittest.TestCase):
         expected_output = "https://www.somesite.com/channels/123456/format.json"
         formatter = APIAddressFormatterFactory().create_api_address_formatter(bot_personality = "purpleair")
         formatter.raw_address = test_address
-        actual_output = formatter.format_address(fmt = test_fmt)
+        actual_output = formatter.format_address(api_address_number = "2", fmt = test_fmt)
         self.assertEqual(actual_output, expected_output)
 
 
@@ -30,7 +30,7 @@ class TestAPIAddressFormatter(unittest.TestCase):
         test_fmt = {PURPLEAIR_CH_ID_PARAM: "123456"}
         formatter = APIAddressFormatterFactory().create_api_address_formatter(bot_personality = "purpleair")
         with self.assertRaises(SystemExit):
-            formatter.format_address(fmt = test_fmt)
+            formatter.format_address(api_address_number = "2", fmt = test_fmt)
 
 
     def test_system_exit_when_missing_formatter_key_purpleair_formatter(self):
@@ -40,9 +40,23 @@ class TestAPIAddressFormatter(unittest.TestCase):
         formatter = APIAddressFormatterFactory().create_api_address_formatter(bot_personality = "purpleair")
         formatter.raw_address = test_address
         with self.assertRaises(SystemExit):
-            formatter.format_address(fmt = test_fmt)
+            formatter.format_address(api_address_number = "2", fmt = test_fmt)
+
+
+    def test_raw_address_when_formatting_purpleair_address(self):
+
+        test_fmt = {PURPLEAIR_CH_ID_PARAM: "123456"}
+        test_address = "https://www.somesite.com/sensors/v1/"
+        expected_output = "https://www.somesite.com/sensors/v1/"
+        formatter = APIAddressFormatterFactory().create_api_address_formatter(bot_personality = "purpleair")
+        formatter.raw_address = test_address
+        actual_output = formatter.format_address(api_address_number = "1", fmt = test_fmt)
+        self.assertEqual(actual_output, expected_output)
+
+
 
 ################################ DEFAULT FORMATTER TESTS ################################
+
 
     def test_successfully_format_api_address_default_formatter(self):
 
@@ -50,7 +64,7 @@ class TestAPIAddressFormatter(unittest.TestCase):
         expected_output = "some_api_address"
         formatter = APIAddressFormatterFactory().create_api_address_formatter(bot_personality = "atmotube")
         formatter.raw_address = test_address
-        actual_output = formatter.format_address(fmt = {"some": "val"})
+        actual_output = formatter.format_address(api_address_number = "", fmt = {"some": "val"})
         self.assertEqual(actual_output, expected_output)
 
     def test_system_exit_when_missing_raw_address_default_formatter(self):
@@ -58,7 +72,7 @@ class TestAPIAddressFormatter(unittest.TestCase):
         test_fmt = {PURPLEAIR_CH_ID_PARAM: "123456"}
         formatter = APIAddressFormatterFactory().create_api_address_formatter(bot_personality = "purpleair")
         with self.assertRaises(SystemExit):
-            formatter.format_address(fmt = test_fmt)
+            formatter.format_address(api_address_number = "", fmt = test_fmt)
 
 
 

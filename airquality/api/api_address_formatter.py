@@ -29,14 +29,14 @@ class APIAddressFormatter(ABC):
 
 
     @abstractmethod
-    def format_address(self, fmt: Dict[str, Any]) -> str:
+    def format_address(self, api_address_number: str, fmt: Dict[str, Any]) -> str:
         pass
 
 
 class DefaultAPIAddressFormatter(APIAddressFormatter):
 
 
-    def format_address(self, fmt: Dict[str, Any] = None) -> str:
+    def format_address(self, api_address_number: str = None, fmt: Dict[str, Any] = None) -> str:
 
         if self.raw_address is None:
             raise SystemExit(f"{APIAddressFormatterPurpleair.__name__}: cannot format 'None' API address.")
@@ -49,19 +49,22 @@ class APIAddressFormatterPurpleair(APIAddressFormatter):
 
     def __init__(self):
         super().__init__()
-        self.__formatted_address = ""
 
 
-    def format_address(self, fmt: Dict[str, Any]) -> str:
+    def format_address(self, api_address_number: str, fmt: Dict[str, Any]) -> str:
 
         if self.raw_address is None:
             raise SystemExit(f"{APIAddressFormatterPurpleair.__name__}: cannot format 'None' API address.")
 
-        if PURPLEAIR_CH_ID_PARAM not in fmt.keys():
-            raise SystemExit(f"{APIAddressFormatterPurpleair.__name__}: missing '{PURPLEAIR_CH_ID_PARAM}' key.")
+        formatted = self.raw_address
+        if api_address_number == "2":
+            """In this case, we are using ThingSpeak api address, so we need to format the address."""
 
-        self.__formatted_address = self.raw_address.format(channel_id = fmt[PURPLEAIR_CH_ID_PARAM])
-        return self.__formatted_address
+            if PURPLEAIR_CH_ID_PARAM not in fmt.keys():
+                raise SystemExit(f"{APIAddressFormatterPurpleair.__name__}: missing '{PURPLEAIR_CH_ID_PARAM}' key.")
+
+            formatted = self.raw_address.format(channel_id = fmt[PURPLEAIR_CH_ID_PARAM])
+        return formatted
 
 
 

@@ -8,6 +8,7 @@
 import sys
 from typing import List
 from airquality.io.io import IOManager
+from airquality.api.api_address_formatter import APIAddressFormatterFactory
 from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.api.api_request_adapter import APIRequestAdapter
@@ -104,7 +105,7 @@ def main() -> None:
         dbconn.open_conn()
 
 ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
+        # query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
 ################################ READ API FILE ################################
         raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
@@ -121,6 +122,12 @@ def main() -> None:
 
 ################################ API REQUEST ADAPTER ################################
         api_adapter = APIRequestAdapter(api_address = api_address)
+
+
+
+# ********
+
+
 
 ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
         query = query_builder.select_sensor_ids_from_identifier(identifier = PERSONALITY)
@@ -166,6 +173,15 @@ def main() -> None:
 
             ################################ DO THE STUFF BELOW ONLY FOR MOBILE SENSORS ################################
             if PERSONALITY in MOBILE_SENSOR_PERSONALITIES:
+
+                # ################################ FORMAT API ADDRESS ################################
+                # api_address_formatter = APIAddressFormatterFactory().create_api_address_formatter(bot_personality = PERSONALITY)
+                # formatted_address = api_address_formatter.format_address(api_address_number = API_ADDRESS_N,
+                #                                                          fmt = )
+                #
+                # if DEBUG_MODE:
+                #     print(20 * "=" + " FORMATTED ADDRESS " + 20 * '=')
+                #     print(f"{DEBUG_HEADER} {formatted_address}")
 
                 ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
                 querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
