@@ -13,6 +13,7 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.reshaper.api2db_station_reshaper import API2DatabaseStationReshaperFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
@@ -215,18 +216,27 @@ class FetchBotThingspeak(FetchBot):
                         api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = sc.PERSONALITY)
                         reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer = parsed_api_packets)
 
-                        if sc.DEBUG_MODE:
-                            if reshaped_api_packets != EMPTY_LIST:
-                                print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
-                                for i in range(3):
-                                    packet = reshaped_api_packets[i]
-                                    for key, val in packet.items():
-                                        print(f"{DEBUG_HEADER} {key}={val}")
+                        # if sc.DEBUG_MODE:
+                        #     if reshaped_api_packets != EMPTY_LIST:
+                        #         print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+                        #         for i in range(3):
+                        #             packet = reshaped_api_packets[i]
+                        #             for key, val in packet.items():
+                        #                 print(f"{DEBUG_HEADER} {key}={val}")
 
                         ############### API 2 DATABASE RESHAPER FOR BUILDING THE QUERY LATER ###########################
-                        api2db_reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
+                        api2db_reshaper = API2DatabaseStationReshaperFactory().create_reshaper(bot_personality = sc.PERSONALITY)
                         db_ready_packets = api2db_reshaper.reshape_packets(packets = reshaped_api_packets,
-                                                                           measure_param_map = measure_param_map)
+                                                                           measure_param_map = measure_param_map,
+                                                                           sensor_id = sensor_id)
+
+                        # if sc.DEBUG_MODE:
+                        #     if db_ready_packets != EMPTY_LIST:
+                        #         print(20 * "=" + " DATABASE READY PACKETS " + 20 * '=')
+                        #         for i in range(3):
+                        #             packet = db_ready_packets[i]
+                        #             for key, val in packet.items():
+                        #                 print(f"{DEBUG_HEADER} {key}={val}")
 
 
 
