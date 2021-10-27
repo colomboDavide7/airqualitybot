@@ -17,11 +17,11 @@ from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
+from airquality.reshaper.db2api_reshaper import Database2APIReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
-from airquality.picker.api_param_picker import APIParamPicker
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
@@ -124,52 +124,61 @@ class FetchBotThingspeak(FetchBot):
                 for name, value in api_param.items():
                     print(f"{DEBUG_HEADER} {name}={value}")
 
-            ################################ PICK CHANNEL IDS FROM DATABASE API PARAMETERS ################################
-            channel_ids = APIParamPicker.pick_param(api_param = api_param, param2pick = THINGSPEAK_CH_ID_2PICK)
+            ################### RESHAPE API DATA FOR GETTING THE COUPLE CHANNEL_ID: CHANNEL_KEY ########################
+            db2api_reshaper = Database2APIReshaperFactory().create_reshaper(bot_personality = sc.PERSONALITY)
+            reshaped_api_param = db2api_reshaper.reshape_data(api_param = api_param)
 
             if sc.DEBUG_MODE:
-                print(20 * "=" + " CHANNEL IDS " + 20 * '=')
-                for channel_id in channel_ids:
-                    print(f"{DEBUG_HEADER} {api_param[channel_id]}")
+                print(20 * "=" + " RESHAPED API PARAM " + 20 * '=')
+                for ch_id, ch_key in reshaped_api_param.items():
+                    print(f"{DEBUG_HEADER} {ch_id}={ch_key}")
 
-            ################################ PICK CHANNEL KEYS FROM DATABASE API PARAMETERS ################################
-            channel_keys = APIParamPicker.pick_param(api_param = api_param, param2pick = THINGSPEAK_KEY_2PICK)
+            # ################################ PICK CHANNEL IDS FROM DATABASE API PARAMETERS ################################
+            # channel_ids = APIParamPicker.pick_param(api_param = api_param, param2pick = THINGSPEAK_CH_ID_2PICK)
+            #
+            # if sc.DEBUG_MODE:
+            #     print(20 * "=" + " CHANNEL IDS " + 20 * '=')
+            #     for channel_id in channel_ids:
+            #         print(f"{DEBUG_HEADER} {api_param[channel_id]}")
+            #
+            # ################################ PICK CHANNEL KEYS FROM DATABASE API PARAMETERS ################################
+            # channel_keys = APIParamPicker.pick_param(api_param = api_param, param2pick = THINGSPEAK_KEY_2PICK)
+            #
+            # if sc.DEBUG_MODE:
+            #     print(20 * "=" + " CHANNEL KEYS " + 20 * '=')
+            #     for channel_key in channel_keys:
+            #         print(f"{DEBUG_HEADER} {api_param[channel_key]}")
 
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " CHANNEL KEYS " + 20 * '=')
-                for channel_key in channel_keys:
-                    print(f"{DEBUG_HEADER} {api_param[channel_key]}")
 
 
-
-                # ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
-                # querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
-                # querystring = querystring_builder.make_querystring(parameters = api_param)
-                #
-                # if DEBUG_MODE:
-                #     print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
-                #     print(f"{DEBUG_HEADER} {querystring}")
-                #
-                #
-                # ################################ FETCH DATA FROM API ################################
-                # api_answer = api_adapter.fetch(querystring = querystring)
-                # parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
-                # api_answer = parser.parse(raw_string = api_answer)
-                #
-                # ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
-                # filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(
-                #     api_param = api_param,
-                #     personality = PERSONALITY)
-                # filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
-                # filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
-                #
-                # if DEBUG_MODE:
-                #     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
-                #     if filtered_packets != EMPTY_LIST:
-                #         for i in range(10):
-                #             rpacket = filtered_packets[i]
-                #             for key, val in rpacket.items():
-                #                 print(f"{DEBUG_HEADER} {key}={val}")
+            # ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
+            # querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = PERSONALITY)
+            # querystring = querystring_builder.make_querystring(parameters = api_param)
+            #
+            # if DEBUG_MODE:
+            #     print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
+            #     print(f"{DEBUG_HEADER} {querystring}")
+            #
+            #
+            # ################################ FETCH DATA FROM API ################################
+            # api_answer = api_adapter.fetch(querystring = querystring)
+            # parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
+            # api_answer = parser.parse(raw_string = api_answer)
+            #
+            # ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
+            # filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(
+            #     api_param = api_param,
+            #     personality = PERSONALITY)
+            # filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
+            # filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
+            #
+            # if DEBUG_MODE:
+            #     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
+            #     if filtered_packets != EMPTY_LIST:
+            #         for i in range(10):
+            #             rpacket = filtered_packets[i]
+            #             for key, val in rpacket.items():
+            #                 print(f"{DEBUG_HEADER} {key}={val}")
 
 
 
