@@ -61,7 +61,7 @@ def main():
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
         print(f"{DEBUG_HEADER} total time = {end_time - start_time}")
-        
+
     except Exception as ex:
         print(str(ex))
         if isinstance(ex, SystemExit):

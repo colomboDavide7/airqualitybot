@@ -12,7 +12,8 @@ import builtins
 from typing import Dict, Any, List
 from abc import ABC, abstractmethod
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
-    RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_SENSOR_ID, RESHAPER2SQLBUILDER_PARAM_VAL, RESHAPER2SQLBUILDER_PARAM_ID
+    RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_SENSOR_ID, RESHAPER2SQLBUILDER_PARAM_VAL, RESHAPER2SQLBUILDER_PARAM_ID, \
+    THINGSPEAK_API_RESHAPER_TIME
 
 
 class API2DatabaseStationReshaper(ABC):
@@ -40,7 +41,7 @@ class API2DatabaseStationReshaperThingspeak(API2DatabaseStationReshaper):
 
         reshaped_packets = []
         for packet in packets:
-            timestamp = packet["time"]
+            timestamp = packet[THINGSPEAK_API_RESHAPER_TIME]
             for name, val in packet.items():
                 if name in measure_param_map.keys():
                     reshaped_packets.append({RESHAPER2SQLBUILDER_PARAM_ID: measure_param_map[name],

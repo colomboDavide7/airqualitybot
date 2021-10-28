@@ -108,3 +108,17 @@ THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A = {"0.3um": "0.3_um_count_a", "0.5um":
 THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B = {"0.3um": "0.3_um_count_b", "0.5um": "0.5_um_count_b",
                                              "1.0um": "1.0_um_count_b", "2.5um": "2.5_um_count_b",
                                              "5.0um": "5.0_um_count_b", "10.0um": "10.0_um_count_b"}
+
+################################ THINGSPEAK API PACKET RESHAPER CONSTANTS ################################
+
+THINGSPEAK_API_RESHAPER_TIME = "time"
+
+
+################################ THINGSPEAK API DECODE CONSTANTS ################################
+
+THINGSPEAK_API_DECODE_FEEDS = "feeds"
+THINGSPEAK_API_DECODE_CHANNEL = "channel"
+THINGSPEAK_API_DECODE_NAME = "name"
+THINGSPEAK_API_DECODE_CREATED_AT = "created_at"
+THINGSPEAK_CHANNEL_DECODE = "_b"
+THINGSPEAK_COUNTERS_DECODE = "Counters"

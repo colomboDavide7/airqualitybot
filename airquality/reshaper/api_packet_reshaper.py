@@ -14,6 +14,14 @@ from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
 
+# ThingSpeak APIPacketReshaper constants for reshaping API packets
+from airquality.constants.shared_constants import THINGSPEAK_API_RESHAPER_TIME
+
+# ThingSpeak API packet decoding constants for decoding an API packet
+from airquality.constants.shared_constants import THINGSPEAK_API_DECODE_FEEDS, THINGSPEAK_API_DECODE_CHANNEL, \
+    THINGSPEAK_API_DECODE_NAME, THINGSPEAK_API_DECODE_CREATED_AT, THINGSPEAK_CHANNEL_DECODE, THINGSPEAK_COUNTERS_DECODE
+
+
 
 class APIPacketReshaper(ABC):
 
@@ -55,17 +63,18 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
         if api_answer == EMPTY_DICT:
             raise SystemExit(f"{APIPacketReshaperThingspeak.__name__}: cannot reshaper api answer when is empty.")
 
-        channel = api_answer["channel"]
+        channel = api_answer[THINGSPEAK_API_DECODE_CHANNEL]
         field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
+        sensor_name = channel[THINGSPEAK_API_DECODE_NAME]
 
         # SELECT THE RESHAPE MAPPING BASED ON PRIMARY/SECONDARY DATA AND CHANNEL A/B
-        if '_b' in channel["name"]:
-            if 'Counters' in channel["name"]:
+        if THINGSPEAK_CHANNEL_DECODE in sensor_name:
+            if THINGSPEAK_COUNTERS_DECODE in sensor_name:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
             else:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B
         else:
-            if 'Counters' in channel["name"]:
+            if THINGSPEAK_COUNTERS_DECODE in sensor_name:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
 
         # Decode the "fieldN" value in the 'api_answer' header with the chosen mapping (field_to_use)
@@ -76,11 +85,11 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
 
 
         reshaped_packets = []
-        feeds = api_answer["feeds"]
+        feeds = api_answer[THINGSPEAK_API_DECODE_FEEDS]
         for feed in feeds:
             reshaped_packet = {}
-            timestamp = DatetimeParser.thingspeak_to_sqltimestamp(ts = feed["created_at"])
-            reshaped_packet["time"] = timestamp
+            timestamp = DatetimeParser.thingspeak_to_sqltimestamp(ts = feed[THINGSPEAK_API_DECODE_CREATED_AT])
+            reshaped_packet[THINGSPEAK_API_RESHAPER_TIME] = timestamp
             for field in feed.keys():
                 if field in selected_fields.keys():
                     reshaped_packet[selected_fields[field]] = feed[field]
