@@ -17,6 +17,10 @@ from airquality.constants.shared_constants import GEO_USAGE, VALID_PERSONALITIES
 
 def parse_sys_argv(args: List[str]):
 
+    if args[0] in ("--help", "-h"):
+        print(GEO_USAGE)
+        sys.exit(0)
+
     is_personality_set = False
     is_api_address_number_set = False
 

@@ -1,15 +1,13 @@
 ###################### OPTIONAL ARGUMENTS ######################
 
-You can run the program with two optional arguments:
+You can run the program with optional arguments:
 
     - debug:    prints debug messages on the console
-    - logging:  write logs to log files
 
 To turn on 'debug mode' use '-d' or '--debug' options
-To turn on 'logging mode' use '-l' or '--log' options
 
-If you don't pass any of these options, the program assumes debug and
-logging mode are off.
+If you don't pass any of these options, the program assumes debug
+mode is off.
 
 ###################### GET USAGE HELP ######################
 
@@ -23,7 +21,7 @@ and stops because it assumes you don't know how to run the program.
 You must pass to the program:
 
     - personality:          used to identify which bot run
-    - api address number:   used to identify which API connects to
+    - api address number:   used to identify which API address take for fetching data
 
 A valid 'personality' is one within the 'personality' section defined in the 'sample/resources.json'.
 A valid 'api address number' is one within the 'api_address' section define in the 'sample/resources.json'.
