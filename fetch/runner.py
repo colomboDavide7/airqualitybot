@@ -20,7 +20,6 @@ def parse_sys_argv(args: List[str]):
         sys.exit(0)
 
     is_personality_set = False
-    is_api_address_number_set = False
 
     for arg in args:
         if arg in ("-d", "--debug"):
@@ -28,31 +27,15 @@ def parse_sys_argv(args: List[str]):
         elif not is_personality_set and arg in VALID_PERSONALITIES:
             sc.PERSONALITY = arg
             is_personality_set = True
-        elif not is_api_address_number_set and arg.isdigit():
-            sc.API_ADDRESS_N = arg
-            is_api_address_number_set = True
         else:
             print(f"{parse_sys_argv.__name__}: ignore invalid option '{arg}'.")
 
     if not is_personality_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing required bot personality.")
 
-    if not is_api_address_number_set:
-        raise SystemExit(f"{parse_sys_argv.__name__}(): missing required api address number.")
-
 
 ################################ MAIN FUNCTION ################################
-def main() -> None:
-    """This function is the entry point for the application
-
-    {usage}
-
-    The application expects two optional command line option-argument:
-    1) --help or -h:  display help on program usage (MUST BE THE FIRST)
-    2) --debug or -d: run the application in debug mode
-    3) personality:   the bot personality for connecting to APIs and database
-    4) api address number: the api address number from the 'api_address' section in the resource file
-    """.format(usage = FETCH_USAGE)
+def main():
 
     args = sys.argv[1:]
     if not args:
@@ -61,7 +44,6 @@ def main() -> None:
 
     parse_sys_argv(args)
     print(f"{DEBUG_HEADER} personality = {sc.PERSONALITY}")
-    print(f"{DEBUG_HEADER} api address number = {sc.API_ADDRESS_N}")
     print(f"{DEBUG_HEADER} debug       = {sc.DEBUG_MODE}")
 
     try:

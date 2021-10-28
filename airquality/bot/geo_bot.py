@@ -103,7 +103,7 @@ class GeoBotPurpleair(GeoBot):
         parsed_api_data = parser.parse(raw_string = raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
-        path2key = [sc.PERSONALITY, "api_address", sc.API_ADDRESS_N]
+        path2key = [sc.PERSONALITY, "api_address"]
         api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
         if sc.DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')

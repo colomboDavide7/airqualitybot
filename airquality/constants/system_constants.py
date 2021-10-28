@@ -8,4 +8,3 @@
 
 DEBUG_MODE = False
 PERSONALITY = ""
-API_ADDRESS_N = ""

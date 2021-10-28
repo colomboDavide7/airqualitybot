@@ -22,7 +22,6 @@ def parse_sys_argv(args: List[str]):
         sys.exit(0)
 
     is_personality_set = False
-    is_api_address_number_set = False
 
     for arg in args:
         if arg in ("-d", "--debug"):
@@ -30,17 +29,11 @@ def parse_sys_argv(args: List[str]):
         elif arg in VALID_PERSONALITIES and not is_personality_set:
             sc.PERSONALITY = arg
             is_personality_set = True
-        elif arg.isdigit() and not is_api_address_number_set:
-            sc.API_ADDRESS_N = arg
-            is_api_address_number_set = True
         else:
             print(f"{parse_sys_argv.__name__}(): ignoring invalid option '{arg}'")
 
     if not is_personality_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{GEO_USAGE}")
-
-    if not is_api_address_number_set:
-        raise SystemExit(f"{parse_sys_argv.__name__}(): missing required api address number.")
 
 
 ################################ MAIN FUNCTION ################################
