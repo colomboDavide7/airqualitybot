@@ -15,7 +15,7 @@ from airquality.picker.resource_picker import ResourcePicker
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, \
     RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, \
-    RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_GEOMETRY, \
+    RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_GEOMETRY, RESHAPER2SQLBUILDER_SENSOR_ID, \
     GEO_TYPE_ST_POINT_2D
 
 
@@ -105,7 +105,7 @@ class SQLQueryBuilder(builtins.object):
         query_id = "insert_mobile_measurement"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
 
-        query = EMPTY_STRING
+        query = ""
         if packets != EMPTY_LIST:
             query = self.__parsed[query_id]
             for packet in packets:
@@ -118,6 +118,27 @@ class SQLQueryBuilder(builtins.object):
         return query
 
 
+    def insert_station_measurements(self, packets: List[Dict[str, Any]]) -> str:
+
+        query_id = "insert_station_measurements"
+        self._raise_exception_if_query_identifier_not_found(query_id)
+
+        query = ""
+        if packets == EMPTY_LIST:
+            return query
+
+        query = self.__parsed[query_id]
+        for packet in packets:
+            query += f"({packet[RESHAPER2SQLBUILDER_PARAM_ID]}, " \
+                     f"{packet[RESHAPER2SQLBUILDER_SENSOR_ID]}, " \
+                     f"{packet[RESHAPER2SQLBUILDER_PARAM_VAL]}," \
+                     f"{packet[RESHAPER2SQLBUILDER_TIMESTAMP]}),"
+
+        query = query.strip(',') + ';'
+        return query
+
+
+
     def insert_sensors_from_identifier(self, packets: List[Dict[str, Any]], identifier: str) -> str:
         """This method returns a query for inserting the 'sensor_type, sensor_name' tuples into the sensor table.
 
@@ -125,7 +146,7 @@ class SQLQueryBuilder(builtins.object):
 
         query_id = "insert_sensors"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
-        query = EMPTY_STRING
+        query = ""
         if packets == EMPTY_LIST:
             return query
 
@@ -145,7 +166,7 @@ class SQLQueryBuilder(builtins.object):
 
         query_id = "insert_api_param"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
-        query = EMPTY_STRING
+        query = ""
         if packets == EMPTY_LIST:
             return query
 
@@ -166,7 +187,7 @@ class SQLQueryBuilder(builtins.object):
 
         query_id = "insert_sensor_at_location"
         self._raise_exception_if_query_identifier_not_found(query_id = query_id)
-        query = EMPTY_STRING
+        query = ""
         if packets == EMPTY_LIST:
             return query
 

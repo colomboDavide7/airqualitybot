@@ -238,8 +238,13 @@ class FetchBotThingspeak(FetchBot):
                         #             for key, val in packet.items():
                         #                 print(f"{DEBUG_HEADER} {key}={val}")
 
+                        ################# BUILD THE QUERY FOR INSERTING THE PACKETS INTO THE DATABASE ##################
+                        query = query_builder.insert_station_measurements(packets = db_ready_packets)
+                        dbconn.send(executable_sql_query = query)
 
-
+                        # if sc.DEBUG_MODE:
+                        #     print(20 * "=" + " INSERT INTO QUERY " + 20 * '=')
+                        #     print(f"{DEBUG_HEADER} {query}")
 
 
 
