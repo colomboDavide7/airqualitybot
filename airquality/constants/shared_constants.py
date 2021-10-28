@@ -79,7 +79,6 @@ GEOMBUILDER_LONGITUDE = "longitude"
 ################################ POSTGIS GEOMETRY TYPE ################################
 
 GEO_TYPE_ST_POINT_2D = "POINT({lon} {lat})"
-GEOTYPE_PATTERN = r"ST_GeomFromText('\w+')"
 
 ################################ POSTGIS SRID CONSTANTS ################################
 

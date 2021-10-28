@@ -16,7 +16,6 @@ class TestAPIPacketReshaper(unittest.TestCase):
     def setUp(self) -> None:
         self.factory = APIPacketReshaperFactory()
 
-
     def test_reshape_purpleair_packets(self):
         purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality = "purpleair")
         test_api_answer = {
@@ -34,7 +33,6 @@ class TestAPIPacketReshaper(unittest.TestCase):
         actual_answer = purpleair_reshaper.reshape_packet(api_answer = test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
-
     def test_empty_list_value_when_empty_data_reshape_purpleair_packets(self):
         purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality = "purpleair")
         test_api_answer = {
@@ -45,12 +43,9 @@ class TestAPIPacketReshaper(unittest.TestCase):
         actual_answer = purpleair_reshaper.reshape_packet(api_answer = test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
-
-################################ TEST RESHAPE THINGSPEAK API PACKET ################################
-
+    ################################ TEST RESHAPE THINGSPEAK API PACKET ################################
 
     def test_successfully_reshape_thingspeak_api_packets(self):
-
         test_api_answer = {"channel": {"name": "AirMonitor_4e17",
                                        "field1": "PM1.0 (ATM)",
                                        "field2": "PM2.5 (ATM)",
@@ -65,27 +60,26 @@ class TestAPIPacketReshaper(unittest.TestCase):
                                        },
                            "feeds": [
                                {"created_at": "2021-10-27T05:36:59Z",
-                                  "entry_id": 910021,
-                                  "field1": "42.35",
-                                  "field2": "63.05",
-                                  "field3": "76.32",
-                                  "field4": "6022",
-                                  "field5": "-60",
-                                  "field6": "50",
-                                  "field7": "60",
-                                  "field8": "53.63"},
+                                "entry_id": 910021,
+                                "field1": "42.35",
+                                "field2": "63.05",
+                                "field3": "76.32",
+                                "field4": "6022",
+                                "field5": "-60",
+                                "field6": "50",
+                                "field7": "60",
+                                "field8": "53.63"},
                                {"created_at": "2021-10-27T05:38:59Z",
-                                  "entry_id": 910022,
-                                  "field1": "41.07",
-                                  "field2": "61.54",
-                                  "field3": "70.31",
-                                  "field4": "6024",
-                                  "field5": "-61",
-                                  "field6": "50",
-                                  "field7": "60",
-                                  "field8": "52.85"}
+                                "entry_id": 910022,
+                                "field1": "41.07",
+                                "field2": "61.54",
+                                "field3": "70.31",
+                                "field4": "6024",
+                                "field5": "-61",
+                                "field6": "50",
+                                "field7": "60",
+                                "field8": "52.85"}
                            ]}
-
 
         expected_answer = [
             {"time": "2021-10-27 05:36:59",
@@ -104,8 +98,6 @@ class TestAPIPacketReshaper(unittest.TestCase):
         reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = "thingspeak")
         actual_output = reshaper.reshape_packet(api_answer = test_api_answer)
         self.assertEqual(actual_output, expected_answer)
-
-
 
 
 if __name__ == '__main__':
