@@ -20,23 +20,28 @@ and stops because it assumes you don't know how to run the program.
 
 You must pass to the program:
 
-    - personality:          used to identify which bot run
-    - api address number:   used to identify which API address take for fetching data
+    - personality:          one within (atmotube, thingspeak, purpleair)
 
-A valid 'personality' is one within the 'personality' section defined in the 'sample/resources.json'.
-A valid 'api address number' is one within the 'api_address' section define in the 'sample/resources.json'.
+The bot personality defines which bot is run and which API is used to
+fetch the data. The bot personality only affects 'how the work is done'.
 
-Please, read the 'docs/resources_setup.txt' for more information about 'personality' section.
+###################### BOT TYPES ######################
+
+You can run three bot types:
+
+- initialize
+- geo
+- fetch
+
+The bot type affects only 'what task is done'.
+
+You can find more information in the 'README.md' file.
 
 ###################### VALID COMMAND EXAMPLES ######################
 
-python -m airquality personality api_address_number
-python -m airquality --debug personality api_address_number
-python -m airquality --log -d personality api_address_number
-python -m airquality --help
+python -m fetch personality
+python -m initialize --debug personality
+python -m geo --help
 
-###################### INVALID COMMAND EXAMPLES ######################
 
-python -m airquality --debug personality
-python -m airquality --log -d api_address_number
-python -m airquality api_address_number
+
