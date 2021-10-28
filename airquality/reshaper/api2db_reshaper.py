@@ -14,28 +14,28 @@ from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
     ATMOTUBE_TIME_PARAM, ATMOTUBE_COORDS_PARAM, \
     GEO_TYPE_ST_POINT_2D, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE, \
-    RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, \
-    RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_GEOMETRY
+    RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_GEOMETRY, \
+    PURPLEAIR_LAT_PARAM, PURPLEAIR_LON_PARAM, PURPLEAIR_SENSOR_IDX_PARAM, PURPLEAIR_NAME_PARAM
 
 
 class API2DatabaseReshaper(ABC):
 
 
     @abstractmethod
-    def reshape_packets(self, packets: List[Dict[str, Any]], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packets(self, packets: List[Dict[str, Any]], reshape_mapping: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
 
 class API2DatabaseReshaperAtmotube(API2DatabaseReshaper):
 
 
-    def reshape_packets(self, packets: List[Dict[str, Any]], measure_param_map: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packets(self, packets: List[Dict[str, Any]], reshape_mapping: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         reshaped_packets = []
         if packets == EMPTY_LIST:
             return reshaped_packets
 
-        if measure_param_map == EMPTY_DICT:
+        if reshape_mapping == EMPTY_DICT:
             raise SystemExit(f"{API2DatabaseReshaperAtmotube.__name__}: cannot reshape packets when reshape mapping is "
                              f"empty.")
 
@@ -49,11 +49,48 @@ class API2DatabaseReshaperAtmotube(API2DatabaseReshaper):
                         geo_type = GEO_TYPE_ST_POINT_2D)
 
             for name, val in packet.items():
-                if name in measure_param_map.keys():
-                    reshaped_packets.append({RESHAPER2SQLBUILDER_PARAM_ID: measure_param_map[name],
+                if name in reshape_mapping.keys():
+                    reshaped_packets.append({RESHAPER2SQLBUILDER_PARAM_ID: reshape_mapping[name],
                                              RESHAPER2SQLBUILDER_PARAM_VAL: f"'{val}'",
                                              RESHAPER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'",
                                              RESHAPER2SQLBUILDER_GEOMETRY: geom})
+        return reshaped_packets
+
+
+
+class API2DatabaseReshaperPurpleair(API2DatabaseReshaper):
+
+
+    def reshape_packets(self, packets: List[Dict[str, Any]], reshape_mapping: Dict[str, Any]) -> List[Dict[str, Any]]:
+
+        if packets == EMPTY_LIST:
+            return []
+
+        if reshape_mapping == EMPTY_DICT:
+            raise SystemExit(f"{API2DatabaseReshaperPurpleair.__name__}: cannot reshape packets when reshape mapping is "
+                             f"empty.")
+
+        reshaped_packets = []
+        for packet in packets:
+            # GET THE PACKET KEYS TO AVOID CALLING THE METHOD MULTIPLE TIMES
+            keys = packet.keys()
+
+            # CHECK IF THERE ARE LATITUDE AND LONGITUDE INSIDE THE PACKET
+            if PURPLEAIR_LAT_PARAM not in keys or PURPLEAIR_LON_PARAM not in keys:
+                raise SystemExit(f"{API2DatabaseReshaperPurpleair.__name__}: missing purpleair geolocation parameters.")
+            geom = PostGISGeomBuilder.build_geometry_type(geo_param = {GEOMBUILDER_LONGITUDE: packet[PURPLEAIR_LON_PARAM],
+                                                                       GEOMBUILDER_LATITUDE: packet[PURPLEAIR_LAT_PARAM]},
+                                                          geo_type = GEO_TYPE_ST_POINT_2D)
+
+            # CHECK IF SENSOR NAME PARAMETERS ARE MISSING OR NOT
+            if PURPLEAIR_NAME_PARAM not in keys or PURPLEAIR_SENSOR_IDX_PARAM not in keys:
+                raise SystemExit(f"{API2DatabaseReshaperPurpleair.__name__}: missing purpleair name parameters.")
+            sensor_name = f"{packet[PURPLEAIR_NAME_PARAM]} ({packet[PURPLEAIR_SENSOR_IDX_PARAM]})"
+
+            # USE THE RESHAPER MAPPING TO RESHAPE THE PACKETS
+            if sensor_name in reshape_mapping.keys():
+                reshaped_packets.append({reshape_mapping[sensor_name]: geom})
+
         return reshaped_packets
 
 
@@ -67,6 +104,8 @@ class API2DatabaseReshaperFactory(builtins.object):
 
         if bot_personality == "atmotube":
             return API2DatabaseReshaperAtmotube()
+        elif bot_personality == "purpleair":
+            return API2DatabaseReshaperPurpleair()
         else:
             raise SystemExit(f"{API2DatabaseReshaperFactory.__name__}: cannot instantiate {API2DatabaseReshaper.__name__} "
                              f"instance for personality='{bot_personality}'.")

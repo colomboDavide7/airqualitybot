@@ -19,6 +19,7 @@ from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
 from airquality.reshaper.db2api_reshaper import Database2APIReshaperFactory
+from airquality.picker.api_packet_picker import APIPacketPickerFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.keeper.packets_keeper import APIPacketKeeperFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
@@ -66,6 +67,23 @@ class GeoBotPurpleair(GeoBot):
 
         ################################ SQL QUERY BUILDER ################################
         query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
+
+        ################ SELECT SENSOR IDS FROM IDENTIFIER (same method used for selecting sensor names) ###############
+        query = query_builder.select_sensor_ids_from_identifier(identifier = sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query = query)
+        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
+            for id_ in sensor_ids:
+                print(f"{DEBUG_HEADER} {id_}")
+
+        ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
+        if sensor_ids == EMPTY_LIST:
+            if sc.DEBUG_MODE:
+                print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
+            dbconn.close_conn()
+            return
 
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
         # The 'sensor_names' variable is used to check if a given sensor taken from the API is already present
@@ -126,36 +144,52 @@ class GeoBotPurpleair(GeoBot):
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
-        
+        ########## CREATE API PACKET PICKER FOR PICKING ONLY SELECTED FIELDS FROM ALL THOSE IN THE API PACKETS #########
+        picker = APIPacketPickerFactory().create_api_packet_picker(bot_personality = sc.PERSONALITY)
+
+        ###################### PICK ONLY GEO PARAMETERS FROM ALL PARAMETERS IN THE PACKETS #########################
+        geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality = sc.PERSONALITY)
+        new_geo_packets = picker.pick_packet_params(packets = filtered_packets, param2pick = geo_param2pick)
+
+        if sc.DEBUG_MODE:
+            if new_geo_packets != EMPTY_LIST:
+                print(20 * "=" + " NEW PACKETS " + 20 * '=')
+                for packet in new_geo_packets:
+                    print(30 * '*')
+                    for key, val in packet.items():
+                        print(f"{DEBUG_HEADER} {key} = {val}")
+
+        ########### QUERY SENSOR NAME 2 SENSOR ID MAPPING FOR ASSOCIATE AN API PACKET TO A DATABASE RECORD #############
+        query = query_builder.select_sensor_name_id_map_from_identifier(identifier = sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query = query)
+        sensorname2id_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+
+        ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR STATIONS ################################
+        query = query_builder.select_sensor_at_active_location_from_identifier(identifier = sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query = query)
+        sensorid2geom_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+
+        ################################ CREATE API 2 DATABASE RESHAPER ################################
+        api2db_reshaper  = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
+        reshaped_geo_packets = api2db_reshaper.reshape_packets(packets = new_geo_packets, reshape_mapping = sensorname2id_map)
+
+        if sc.DEBUG_MODE:
+            if reshaped_geo_packets != EMPTY_LIST:
+                print(20 * "=" + " RESHAPED GEO PACKETS " + 20 * '=')
+                for packet in reshaped_geo_packets:
+                    print(30 * '*')
+                    for key, val in packet.items():
+                        print(f"{DEBUG_HEADER} {key} = {val}")
 
 
 
 
-#         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
-#         query = query_builder.select_sensor_ids_from_identifier(identifier = sc.PERSONALITY)
-#         answer = dbconn.send(executable_sql_query = query)
-#         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
-#
-#         if sc.DEBUG_MODE:
-#             print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
-#             for id_ in sensor_ids:
-#                 print(f"{DEBUG_HEADER} {id_}")
-#
-#         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
-#         if sensor_ids == EMPTY_LIST:
-#             if sc.DEBUG_MODE:
-#                 print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
-#             dbconn.close_conn()
-#             return
-#
-# ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
-#
-#         for sensor_id in sensor_ids:
-#
-#             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
 
 
+        # ################################ INSERT THE RECORDS INTO THE DATABASE ################################
+        # query = query_builder.insert_sensor_at_location(packets = new_geo_packets, first_sensor_id = sensor_id)
+        # dbconn.send(executable_sql_query = query)
 
 
 

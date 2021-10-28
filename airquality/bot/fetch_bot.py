@@ -393,7 +393,7 @@ class FetchBotAtmotube(FetchBot):
                 ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
                 reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
                 reshaped_packets = reshaper.reshape_packets(packets = filtered_packets,
-                                                            measure_param_map = measure_param_map)
+                                                            reshape_mapping = measure_param_map)
 
                 if sc.DEBUG_MODE:
                     print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')

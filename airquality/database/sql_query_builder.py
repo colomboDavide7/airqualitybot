@@ -88,6 +88,24 @@ class SQLQueryBuilder(builtins.object):
         return self.__parsed[query_id].format(sens_id = station_id)
 
 
+    def select_sensor_at_active_location_from_identifier(self, identifier: str) -> str:
+        """This method returns a query that selects the (sensor_id, ST_AsText(geom)) tuple from the sensor_at_location
+        table by looking only at those sensors whose type contains the identifiers and whose 'valid_to' field is NULL."""
+
+        query_id = "select_sensor_at_location_from_identifier"
+        self._raise_exception_if_query_identifier_not_found(query_id = query_id)
+        return self.__parsed[query_id].format(identifier = identifier)
+
+
+    def select_sensor_name_id_map_from_identifier(self, identifier: str) -> str:
+        """This method returns a query that selects the (sensor_name, sensor_id) tuples that correspond to the
+         identifier argument."""
+
+        query_id = "sensor_name_id_map_from_identifier"
+        self._raise_exception_if_query_identifier_not_found(query_id)
+        return self.__parsed[query_id].format(identifier = identifier)
+
+
 ################################ METHODS THAT RETURN INSERT QUERY ################################
 
 
