@@ -9,10 +9,13 @@
 
 ################################ DEFINE VALID PERSONALITIES FOR 'SENSOR AT LOCATION' ################################
 
-PURPLEAIR_PERSONALITY = "purpleair"
-VALID_PERSONALITIES = (PURPLEAIR_PERSONALITY, 'atmotube', 'thingspeak')
-SENSOR_AT_LOCATION_PERSONALITIES = ('purpleair',)
-MOBILE_SENSOR_PERSONALITIES = ("atmotube", )
+PURPLEAIR_PERSONALITY  = "purpleair"
+THINGSPEAK_PERSONALITY = "thingspeak"
+ATMOTUBE_PERSONALITY   = "atmotube"
+
+VALID_PERSONALITIES = (PURPLEAIR_PERSONALITY, THINGSPEAK_PERSONALITY, ATMOTUBE_PERSONALITY)
+SENSOR_AT_LOCATION_PERSONALITIES = (PURPLEAIR_PERSONALITY, )
+MOBILE_SENSOR_PERSONALITIES = (ATMOTUBE_PERSONALITY, )
 
 ################################ PATH OF THE FILES USED IN THE PROJECT ################################
 
@@ -113,7 +116,6 @@ THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B = {"0.3um": "0.3_um_count_b", "0.5um":
 ################################ THINGSPEAK API PACKET RESHAPER CONSTANTS ################################
 
 THINGSPEAK_API_RESHAPER_TIME = "time"
-
 
 ################################ THINGSPEAK API DECODE CONSTANTS ################################
 

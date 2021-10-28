@@ -89,34 +89,32 @@ class InitializeBotPurpleair(InitializeBot):
             sensor_id = max_sensor_id[0] + 1
 
         ################################ READ API FILE ################################
-        raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
+        raw_api_data = IOManager.open_read_close_file(path = API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_api_packets = parser.parse(raw_string = raw_setup_data)
+        parsed_api_data = parser.parse(raw_string = raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address", sc.API_ADDRESS_N]
-        api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_packets, path2key = path2key)
+        api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
         if sc.DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
-
 
         ################################ API REQUEST ADAPTER ################################
         api_adapter = APIRequestAdapter(api_address = api_address)
 
         ################################ QUERYSTRING BUILDER ################################
         querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = sc.PERSONALITY)
-        querystring = querystring_builder.make_querystring(parameters = parsed_api_packets[sc.PERSONALITY])
+        querystring = querystring_builder.make_querystring(parameters = parsed_api_data[sc.PERSONALITY])
 
         ################################ FETCHING API DATA ################################
         raw_api_packets = api_adapter.fetch(querystring = querystring)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = 'json')
-        parsed_api_packets = parser.parse(raw_string = raw_api_packets)
+        parsed_api_data = parser.parse(raw_string = raw_api_packets)
 
         ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
-        reshaper_factory = APIPacketReshaperFactory()
-        reshaper = reshaper_factory.create_api_packet_reshaper(bot_personality = sc.PERSONALITY)
-        reshaped_packets = reshaper.reshape_packet(api_answer = parsed_api_packets)
+        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = sc.PERSONALITY)
+        reshaped_packets = reshaper.reshape_packet(api_answer = parsed_api_data)
         if sc.DEBUG_MODE:
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:

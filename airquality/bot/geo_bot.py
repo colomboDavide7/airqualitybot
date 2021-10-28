@@ -13,8 +13,8 @@ import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.reshaper.api2db_station_reshaper import API2DatabaseStationReshaperFactory
+from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
@@ -67,10 +67,24 @@ class GeoBotPurpleair(GeoBot):
         ################################ SQL QUERY BUILDER ################################
         query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
+        ################################ SELECT SENSOR NAME FROM DATABASE ################################
+        # The 'sensor_names' variable is used to check if a given sensor taken from the API is already present
+        # into the database.
+        query = query_builder.select_all_sensor_name_from_identifier(identifier = sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query = query)
+        sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+
+        if sc.DEBUG_MODE:
+            if sensor_names != EMPTY_LIST:
+                for name in sensor_names:
+                    print(f"{DEBUG_HEADER} name = '{name}' is already present.")
+            else:
+                print(f"{DEBUG_HEADER} not sensor found for personality '{sc.PERSONALITY}'.")
+
         ################################ READ API FILE ################################
-        raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
+        raw_api_data = IOManager.open_read_close_file(path = API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string = raw_setup_data)
+        parsed_api_data = parser.parse(raw_string = raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address", sc.API_ADDRESS_N]
@@ -79,18 +93,70 @@ class GeoBotPurpleair(GeoBot):
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
+        ################################ API REQUEST ADAPTER ################################
+        api_adapter = APIRequestAdapter(api_address = api_address)
+
         ################################ QUERYSTRING BUILDER ################################
-        querystring_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality = sc.PERSONALITY)
+        querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = sc.PERSONALITY)
+        querystring = querystring_builder.make_querystring(parameters = parsed_api_data[sc.PERSONALITY])
 
-        ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
-        query = query_builder.select_sensor_ids_from_identifier(identifier = sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
-        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+        ################################ FETCHING API DATA ################################
+        raw_api_packets = api_adapter.fetch(querystring = querystring)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension = 'json')
+        parsed_api_data = parser.parse(raw_string = raw_api_packets)
 
+        ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
+        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = sc.PERSONALITY)
+        reshaped_packets = reshaper.reshape_packet(api_answer = parsed_api_data)
         if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
-            for id_ in sensor_ids:
-                print(f"{DEBUG_HEADER} {id_}")
+            print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+            for packet in reshaped_packets:
+                print(30 * '*')
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key} = {val}")
+
+        ########################### CREATE IDENTIFIER FILTER FOR FILTERING API PACKETS ############################
+        filter_ = IdentifierPacketFilterFactory().create_identifier_filter(bot_personality = sc.PERSONALITY)
+
+        ################################ FILTER API PACKETS ################################
+        # Filter packets based on sensor names. This is done to avoid to insert sensors that are
+        # already present in the database.
+
+        filtered_packets = filter_.filter_packets(packets = reshaped_packets, identifiers = sensor_names)
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
+            for packet in filtered_packets:
+                print(30 * '*')
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key} = {val}")
+
+
+
+
+
+
+#         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
+#         query = query_builder.select_sensor_ids_from_identifier(identifier = sc.PERSONALITY)
+#         answer = dbconn.send(executable_sql_query = query)
+#         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+#
+#         if sc.DEBUG_MODE:
+#             print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
+#             for id_ in sensor_ids:
+#                 print(f"{DEBUG_HEADER} {id_}")
+#
+#         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
+#         if sensor_ids == EMPTY_LIST:
+#             if sc.DEBUG_MODE:
+#                 print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
+#             dbconn.close_conn()
+#             return
+#
+# ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
+#
+#         for sensor_id in sensor_ids:
+#
+#             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
 
 
