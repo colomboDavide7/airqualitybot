@@ -15,26 +15,26 @@ class APIPacketKeeper(ABC):
 
 
     @abstractmethod
-    def keep_packets(self, packets: List[Dict[str, Any]], identifier: List[str]) -> List[Dict[str, Any]]:
+    def keep_packets(self, packets: List[Dict[str, Any]], identifiers: List[str]) -> List[Dict[str, Any]]:
         pass
 
 
 class APIPacketKeeperPurpleair(APIPacketKeeper):
 
 
-    def keep_packets(self, packets: List[Dict[str, Any]], identifier: List[str]) -> List[Dict[str, Any]]:
+    def keep_packets(self, packets: List[Dict[str, Any]], identifiers: List[str]) -> List[Dict[str, Any]]:
 
         if packets == EMPTY_LIST:
             return []
 
-        if identifier == EMPTY_LIST:
+        if identifiers == EMPTY_LIST:
             return packets
 
 
         new_packets = []
         for packet in packets:
             sensor_name = f"{packet[PURPLEAIR_NAME_PARAM]} ({packet[PURPLEAIR_SENSOR_IDX_PARAM]})"
-            if sensor_name in identifier:
+            if sensor_name in identifiers:
                 new_packets.append(packet)
         return new_packets
 

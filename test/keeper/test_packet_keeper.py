@@ -23,7 +23,7 @@ class TestAPIPacketKeeper(unittest.TestCase):
         expected_output = [{"name": "n2", "sensor_index": "idx2"},
                            {"name": "n4", "sensor_index": "idx4"}]
         keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality = "purpleair")
-        actual_output = keeper.keep_packets(packets = test_packets, identifier = test_identifier)
+        actual_output = keeper.keep_packets(packets = test_packets, identifiers = test_identifier)
         self.assertEqual(actual_output, expected_output)
 
 
@@ -32,7 +32,7 @@ class TestAPIPacketKeeper(unittest.TestCase):
         test_identifier = ["n2 (idx2)", "n4 (idx4)"]
         expected_output = []
         keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality = "purpleair")
-        actual_output = keeper.keep_packets(packets = test_packets, identifier = test_identifier)
+        actual_output = keeper.keep_packets(packets = test_packets, identifiers = test_identifier)
         self.assertEqual(actual_output, expected_output)
 
 
@@ -47,7 +47,7 @@ class TestAPIPacketKeeper(unittest.TestCase):
                            {"name": "n3", "sensor_index": "idx3"},
                            {"name": "n4", "sensor_index": "idx4"}]
         keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality = "purpleair")
-        actual_output = keeper.keep_packets(packets = test_packets, identifier = test_identifier)
+        actual_output = keeper.keep_packets(packets = test_packets, identifiers = test_identifier)
         self.assertEqual(actual_output, expected_output)
 
 

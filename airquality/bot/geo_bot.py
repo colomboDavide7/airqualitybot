@@ -20,7 +20,7 @@ from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
 from airquality.reshaper.db2api_reshaper import Database2APIReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.parser.datetime_parser import DatetimeParser
+from airquality.keeper.packets_keeper import APIPacketKeeperFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
@@ -115,14 +115,10 @@ class GeoBotPurpleair(GeoBot):
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
-        ########################### CREATE IDENTIFIER FILTER FOR FILTERING API PACKETS ############################
-        filter_ = IdentifierPacketFilterFactory().create_identifier_filter(bot_personality = sc.PERSONALITY)
+        ####### CREATE PACKET KEEPER FOR KEEPING ONLY THOSE PACKETS FROM SENSORS ALREADY PRESENT INTO THE DATABASE ########
+        keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality = sc.PERSONALITY)
 
-        ################################ FILTER API PACKETS ################################
-        # Filter packets based on sensor names. This is done to avoid to insert sensors that are
-        # already present in the database.
-
-        filtered_packets = filter_.filter_packets(packets = reshaped_packets, identifiers = sensor_names)
+        filtered_packets = keeper.keep_packets(packets = reshaped_packets, identifiers = sensor_names)
         if sc.DEBUG_MODE:
             print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
             for packet in filtered_packets:
@@ -130,7 +126,7 @@ class GeoBotPurpleair(GeoBot):
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
-
+        
 
 
 
