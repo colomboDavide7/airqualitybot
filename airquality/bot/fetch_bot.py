@@ -5,7 +5,6 @@
 # @Description: this script defines the bot classes for the fetch module
 #
 #################################################
-import sys
 import builtins
 from abc import ABC, abstractmethod
 
@@ -102,8 +101,10 @@ class FetchBotThingspeak(FetchBot):
 
 ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
         if sensor_ids == EMPTY_LIST:
-            print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
-            sys.exit(0)
+            if sc.DEBUG_MODE:
+                print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
+            dbconn.close_conn()
+            return
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
         query = query_builder.select_measure_param_from_identifier(identifier = PURPLEAIR_PERSONALITY)
@@ -274,7 +275,8 @@ class FetchBotThingspeak(FetchBot):
                     #                 print(f"{DEBUG_HEADER} {key}={val}")
 
 
-
+        ################################ SAFELY CLOSE DATABASE CONNECTION ################################
+        dbconn.close_conn()
 
 
 
@@ -342,8 +344,10 @@ class FetchBotAtmotube(FetchBot):
 
         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
         if sensor_ids == EMPTY_LIST:
-            print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
-            sys.exit(0)
+            if sc.DEBUG_MODE:
+                print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
+            dbconn.close_conn()
+            return
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
         query = query_builder.select_measure_param_from_identifier(identifier = sc.PERSONALITY)
@@ -429,7 +433,8 @@ class FetchBotAtmotube(FetchBot):
                 dbconn.send(executable_sql_query = query)
 
 
-
+        ################################ SAFELY CLOSE DATABASE CONNECTION ################################
+        dbconn.close_conn()
 
 
 ################################ FACTORY ################################
