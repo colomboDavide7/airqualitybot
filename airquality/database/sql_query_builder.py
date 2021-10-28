@@ -218,6 +218,16 @@ class SQLQueryBuilder(builtins.object):
         return query.strip(',') + ';'
 
 
+    def insert_sensor_at_location_from_sensor_id(self, sensor_id: str, geom: str) -> str:
+
+        query_id = "insert_sensor_at_location"
+        self._raise_exception_if_query_identifier_not_found(query_id)
+        query = self.__parsed[query_id]
+        ts = DatetimeParser.current_sqltimestamp()
+        query += f"({sensor_id}, '{ts}', {geom});"
+        return query
+
+
 ################################ METHODS THAT RETURN UPDATE QUERY ################################
 
 
@@ -235,6 +245,14 @@ class SQLQueryBuilder(builtins.object):
         if last_timestamp != EMPTY_STRING:
             query = self.__parsed[f"{query_id}"].format(par_val = last_timestamp, sens_id = sensor_id, par_name = "date")
         return query
+
+
+    def update_valid_to_timestamp_location(self, sensor_id: str) -> str:
+
+        query_id = "update_valid_to_timestamp_location"
+        self._raise_exception_if_query_identifier_not_found(query_id)
+        ts = DatetimeParser.current_sqltimestamp()
+        return self.__parsed[query_id].format(ts = ts, sens_id = sensor_id)
 
 
 ################################ EXCEPTION METHOD ################################

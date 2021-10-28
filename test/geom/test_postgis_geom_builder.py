@@ -39,6 +39,19 @@ class TestPostGISGeomBuilder(unittest.TestCase):
             PostGISGeomBuilder.build_geometry_type(geo_param = test_param, geo_type = "bad geometry type")
 
 
+    def test_extract_geotype_from_geostring(self):
+        test_geostring = "ST_GeomFromText('POINT(X Y)')"
+        expected_output = "POINT(X Y)"
+        actual_output = PostGISGeomBuilder.extract_geotype_from_geostring(geo_string = test_geostring)
+        self.assertEqual(actual_output, expected_output)
+
+
+    # def test_geom1_equal_to_geom2(self):
+    #     test_geom1 = "POINT(45.1234 8.1234)"
+    #     test_geom2 = "POINT(45.1234 8.1234)"
+    #     self.assertTrue(PostGISGeomBuilder.geom1_equal_to_geom2(geom1 = test_geom1, geom2 = test_geom2))
+
+
 
 if __name__ == '__main__':
     unittest.main()

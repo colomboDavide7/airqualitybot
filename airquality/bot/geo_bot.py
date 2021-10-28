@@ -12,15 +12,13 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.reshaper.api2db_station_reshaper import API2DatabaseStationReshaperFactory
-from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
-from airquality.reshaper.db2api_reshaper import Database2APIReshaperFactory
 from airquality.picker.api_packet_picker import APIPacketPickerFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.keeper.packets_keeper import APIPacketKeeperFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter
@@ -169,6 +167,12 @@ class GeoBotPurpleair(GeoBot):
         answer = dbconn.send(executable_sql_query = query)
         sensorid2geom_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
+        if sc.DEBUG_MODE:
+            if sensorid2geom_map != EMPTY_LIST:
+                print(20 * "=" + " ACTIVE LOCATIONS " + 20 * '=')
+                for key, val in sensorid2geom_map.items():
+                    print(f"{DEBUG_HEADER} {key}={val}")
+
         ################################ CREATE API 2 DATABASE RESHAPER ################################
         api2db_reshaper  = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
         reshaped_geo_packets = api2db_reshaper.reshape_packets(packets = new_geo_packets, reshape_mapping = sensorname2id_map)
@@ -179,17 +183,36 @@ class GeoBotPurpleair(GeoBot):
                 for packet in reshaped_geo_packets:
                     print(30 * '*')
                     for key, val in packet.items():
-                        print(f"{DEBUG_HEADER} {key} = {val}")
+                        print(f"{DEBUG_HEADER} {key}={val}")
 
+        ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
 
+        # GET THE SENSOR IDS CORRESPONDING TO THE OLD (TAKEN FROM DATABASE) LOCATIONS
+        geo_map_keys = sensorid2geom_map.keys()
 
+        # CYCLE THROUGH THE RESHAPED API PACKETS (SENSOR_ID: GEOM)
+        for packet in reshaped_geo_packets:
 
+            # CYCLE THROUGH THE SENSOR IDS IN THE OLD (TAKEN FROM DATABASE) MAPPING
+            for sensor_id in geo_map_keys:
 
+                # CHECK IF THE CURRENT SENSOR_ID IS MATCHES A GIVEN SENSOR_ID IN THE RESHAPED API PACKETS
+                if sensor_id in packet.keys():
 
+                    # COMPARE THE OLD (FROM DATABASE) TO THE NEW (TAKEN FROM API) GEOLOCATIONS
+                    if sensorid2geom_map[sensor_id] != PostGISGeomBuilder.extract_geotype_from_geostring(packet[sensor_id]):
+                        # UPDATE THE OLD LOCATION 'VALID_TO' FIELD
+                        query = query_builder.update_valid_to_timestamp_location(sensor_id = sensor_id)
+                        if sc.DEBUG_MODE:
+                            print(f"{DEBUG_HEADER} {query}")
+                        dbconn.send(executable_sql_query = query)
 
-        # ################################ INSERT THE RECORDS INTO THE DATABASE ################################
-        # query = query_builder.insert_sensor_at_location(packets = new_geo_packets, first_sensor_id = sensor_id)
-        # dbconn.send(executable_sql_query = query)
+                        # INSERT THE NEW LOCATION FOR THE GIVEN SENSOR_ID
+                        query = query_builder.insert_sensor_at_location_from_sensor_id(sensor_id = sensor_id,
+                                                                                       geom = packet[sensor_id])
+                        if sc.DEBUG_MODE:
+                            print(f"{DEBUG_HEADER} {query}")
+                        dbconn.send(executable_sql_query = query)
 
 
 

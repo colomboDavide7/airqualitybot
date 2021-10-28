@@ -8,7 +8,7 @@
 import builtins
 from typing import Dict, Any
 from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_DICT, \
-    GEO_TYPE_ST_POINT_2D, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE
+    GEO_TYPE_ST_POINT_2D, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE, GEOTYPE_PATTERN
 
 
 class PostGISGeomBuilder(builtins.object):
@@ -33,3 +33,14 @@ class PostGISGeomBuilder(builtins.object):
                              f"don't recognize geometry type '{geo_type}'.")
 
         return f"ST_GeomFromText('{geo_string}')"
+
+
+    @classmethod
+    def extract_geotype_from_geostring(cls, geo_string: str) -> str:
+        substring = geo_string[geo_string.find("'")+1:]
+        return substring[:substring.find("'")]
+
+
+    # @classmethod
+    # def geom1_equal_to_geom2(cls, geom1: str, geom2: str) -> bool:
+    #     return geom1 == geom2
