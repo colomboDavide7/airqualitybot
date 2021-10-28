@@ -45,7 +45,13 @@ class FetchBot(ABC):
 
 
 
+################################################################################################
 
+
+#                                THINGSPEAK BOT FOR FETCHING DATA
+
+
+################################################################################################
 
 class FetchBotThingspeak(FetchBot):
 
@@ -231,22 +237,17 @@ class FetchBotThingspeak(FetchBot):
                                                                            measure_param_map = measure_param_map,
                                                                            sensor_id = sensor_id)
 
-                        # if sc.DEBUG_MODE:
-                        #     if db_ready_packets != EMPTY_LIST:
-                        #         print(20 * "=" + " DATABASE READY PACKETS " + 20 * '=')
-                        #         for i in range(3):
-                        #             packet = db_ready_packets[i]
-                        #             for key, val in packet.items():
-                        #                 print(f"{DEBUG_HEADER} {key}={val}")
+                        if sc.DEBUG_MODE:
+                            if db_ready_packets != EMPTY_LIST:
+                                print(20 * "=" + " DATABASE READY PACKETS " + 20 * '=')
+                                for i in range(3):
+                                    packet = db_ready_packets[i]
+                                    for key, val in packet.items():
+                                        print(f"{DEBUG_HEADER} {key}={val}")
 
                         ################# BUILD THE QUERY FOR INSERTING THE PACKETS INTO THE DATABASE ##################
                         query = query_builder.insert_station_measurements(packets = db_ready_packets)
                         dbconn.send(executable_sql_query = query)
-
-                        # if sc.DEBUG_MODE:
-                        #     print(20 * "=" + " INSERT INTO QUERY " + 20 * '=')
-                        #     print(f"{DEBUG_HEADER} {query}")
-
 
 
 ################################ INCREMENT THE PERIOD FOR DATA FETCHING ################################
@@ -257,26 +258,10 @@ class FetchBotThingspeak(FetchBot):
                         to_date = stop_date
 
 
-
-
-                    # ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
-                    # filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(
-                    #     api_param = api_param,
-                    #     personality = PERSONALITY)
-                    # filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = PERSONALITY)
-                    # filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
-                    #
-                    # if DEBUG_MODE:
-                    #     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
-                    #     if filtered_packets != EMPTY_LIST:
-                    #         for i in range(10):
-                    #             rpacket = filtered_packets[i]
-                    #             for key, val in rpacket.items():
-                    #                 print(f"{DEBUG_HEADER} {key}={val}")
-
-
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()
+
+
 
 
 
@@ -439,6 +424,7 @@ class FetchBotAtmotube(FetchBot):
 
 ################################ FACTORY ################################
 class FetchBotFactory(builtins.object):
+
 
     @classmethod
     def create_fetch_bot(cls, bot_personality: str) -> FetchBot:

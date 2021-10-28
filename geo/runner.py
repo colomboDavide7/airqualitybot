@@ -1,18 +1,18 @@
 #################################################
 #
 # @Author: davidecolombo
-# @Date: dom, 24-10-2021, 20:36
-# @Description: this script defines the main function for the 'initialize' module
-
-#               This module is used for loading for the first time the sensor's data to the
+# @Date: gio, 28-10-2021, 11:13
+# @Description: this script defines the main function for the geolocation bot that pulls the locations from the sensor
+#               API and checks if there any updates to do.
 #
 #################################################
 import sys
 import time
 from typing import List
 import airquality.constants.system_constants as sc
-from airquality.bot.initialize_bot import InitializeBotFactory
-from airquality.constants.shared_constants import VALID_PERSONALITIES, DEBUG_HEADER, INITIALIZE_USAGE
+from airquality.bot.geo_bot import GeoBotFactory
+from airquality.constants.shared_constants import GEO_USAGE, VALID_PERSONALITIES, DEBUG_HEADER
+
 
 
 def parse_sys_argv(args: List[str]):
@@ -33,21 +33,18 @@ def parse_sys_argv(args: List[str]):
             print(f"{parse_sys_argv.__name__}(): ignoring invalid option '{arg}'")
 
     if not is_personality_set:
-        raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{INITIALIZE_USAGE}")
+        raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{GEO_USAGE}")
 
     if not is_api_address_number_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing required api address number.")
 
 
-################################ MAIN FUNCTION INITIALIZE MODULE ################################
+################################ MAIN FUNCTION ################################
 def main():
-    """This function is the entry point for the 'initialize' module.
-
-    The module allows to set up all the information associated to the sensors and add them to the database."""
 
     args = sys.argv[1:]
     if not args:
-        raise SystemExit(f"{main.__name__}: missing required arguments. {INITIALIZE_USAGE}")
+        raise SystemExit(f"{main.__name__}: missing required arguments.\n {GEO_USAGE}")
 
     parse_sys_argv(args)
     print(f"{DEBUG_HEADER} personality = {sc.PERSONALITY}")
@@ -56,8 +53,8 @@ def main():
     try:
         start_time = time.perf_counter()
         print(20*'-' + " START THE PROGRAM " + 20*'-')
-        initialize_bot = InitializeBotFactory().create_initialize_bot(bot_personality = sc.PERSONALITY)
-        initialize_bot.run()
+        geo_bot = GeoBotFactory().create_geo_bot(bot_personality = sc.PERSONALITY)
+        geo_bot.run()
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
         print(f"{DEBUG_HEADER} total time = {end_time - start_time}")
