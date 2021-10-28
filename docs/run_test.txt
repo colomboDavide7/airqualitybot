@@ -1,6 +1,7 @@
 ###################### GENERAL TEST INFORMATION ######################
 
-The program is tested using 'unittest' framework implementation in python.
+The program is tested using 'unittest' framework implementation in python
+standard library.
 
 The sections below gives you the commands for running test on a single module
 or running all tests once.
@@ -11,10 +12,6 @@ or running all tests once.
 python -m test.api.test_api_request_adapter
 python -m test.api.test_url_querystring_builder
 
-###################### RUN TEST BOT ######################
-
-python -m test.bot.test_bot
-
 ###################### RUN TEST DATABASE ######################
 
 python -m test.database.test_db_conn_adapter
@@ -23,6 +20,10 @@ python -m test.database.test_sql_query_builder
 ###################### RUN TEST GEOM ######################
 
 python -m test.geom.test_postgis_geom_builder
+
+###################### RUN TEST KEEPER ######################
+
+python -m test.keeper.test_packet_keeper
 
 ###################### RUN TEST PARSER ######################
 
@@ -34,6 +35,17 @@ python -m test.parser.test_datetime_parser
 
 python -m test.picker.test_resource_picker
 python -m test.picker.test_api_packet_picker
+python -m test.picker.test_json_param_picker
+
+###################### RUN TEST RESHAPER ######################
+
+python -m test.reshaper.test_api2db_reshaper
+python -m test.reshaper.test_api2db_station_reshaper
+python -m test.reshaper.test_api_packet_reshaper
+python -m test.reshaper.test_db2api_reshaper
+
+
+
 
 
 
@@ -41,6 +53,11 @@ python -m test.picker.test_api_packet_picker
 ###################### RUN ALL TESTS ######################
 
 python -m unittest discover -s test -p 'test_*.py'
+
+
+
+
+
 
 
 
