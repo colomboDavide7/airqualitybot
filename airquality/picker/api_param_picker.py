@@ -26,7 +26,6 @@ class APIParamPicker(builtins.object):
         keys = api_param.keys()
         picked = {}
         for param in param2pick:
-            if param not in keys:
-                raise SystemExit(f"{APIParamPicker.__name__}: param = '{param}' is missing.")
-            picked[param] = api_param[param]
+            if param in keys:
+                picked[param] = api_param[param]
         return picked

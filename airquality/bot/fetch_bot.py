@@ -24,6 +24,7 @@ from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
+from airquality.picker.api_param_picker import APIParamPicker
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
@@ -94,23 +95,22 @@ class FetchBotThingspeak(FetchBot):
         ################################ QUERYSTRING BUILDER ################################
         querystring_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality = sc.PERSONALITY)
 
-
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
         query = query_builder.select_sensor_ids_from_identifier(identifier = PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
 
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
-            for id_ in sensor_ids:
-                print(f"{DEBUG_HEADER} {id_}")
-
-################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
+        ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
         if sensor_ids == EMPTY_LIST:
             if sc.DEBUG_MODE:
                 print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
             dbconn.close_conn()
             return
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
+            for sensor_id in sensor_ids:
+                print(f"{DEBUG_HEADER} {sensor_id}")
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
         query = query_builder.select_measure_param_from_identifier(identifier = PURPLEAIR_PERSONALITY)
@@ -119,8 +119,8 @@ class FetchBotThingspeak(FetchBot):
 
         if sc.DEBUG_MODE:
             print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
-            for code, id_ in measure_param_map.items():
-                print(f"{DEBUG_HEADER} {code}={id_}")
+            for param_code, param_id in measure_param_map.items():
+                print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
 ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
@@ -302,9 +302,9 @@ class FetchBotAtmotube(FetchBot):
         query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
         ################################ READ API FILE ################################
-        raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
+        raw_api_data = IOManager.open_read_close_file(path = API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string = raw_setup_data)
+        parsed_api_data = parser.parse(raw_string = raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address"]
@@ -316,23 +316,22 @@ class FetchBotAtmotube(FetchBot):
         ################################ API REQUEST ADAPTER ################################
         api_adapter = APIRequestAdapter(api_address = api_address)
 
-
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
         query = query_builder.select_sensor_ids_from_identifier(identifier = sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
 
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
-            for id_ in sensor_ids:
-                print(f"{DEBUG_HEADER} {id_}")
-
         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
         if sensor_ids == EMPTY_LIST:
             if sc.DEBUG_MODE:
-                print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
+                print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
             dbconn.close_conn()
             return
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
+            for sensor_id in sensor_ids:
+                print(f"{DEBUG_HEADER} {sensor_id}")
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
         query = query_builder.select_measure_param_from_identifier(identifier = sc.PERSONALITY)
@@ -357,6 +356,23 @@ class FetchBotAtmotube(FetchBot):
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " API PARAMETERS " + 20 * '=')
+                for name, value in api_param.items():
+                    print(f"{DEBUG_HEADER} {name}={value}")
+
+            ############### ADD OPTIONAL QUERYSTRING PARAMETER READ FROM API FILE ###################
+            api_param2pick = ResourcePicker.pick_optional_api_parameters_from_api_data(personality = sc.PERSONALITY)
+            optional_params = APIParamPicker.pick_param(api_param = parsed_api_data[sc.PERSONALITY],
+                                                        param2pick = api_param2pick)
+
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " OPTIONAL API PARAMETERS " + 20 * '=')
+                for key, val in optional_params.items():
+                    print(f"{DEBUG_HEADER} {key}={val}")
+
+            ################################ MERGE API PARAM WITH OPTIONAL API PARAM ################################
+            api_param.update(optional_params)
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " TOTAL API PARAMETERS " + 20 * '=')
                 for name, value in api_param.items():
                     print(f"{DEBUG_HEADER} {name}={value}")
 

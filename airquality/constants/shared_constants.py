@@ -127,3 +127,7 @@ THINGSPEAK_API_DECODE_NAME = "name"
 THINGSPEAK_API_DECODE_CREATED_AT = "created_at"
 THINGSPEAK_CHANNEL_DECODE = "_b"
 THINGSPEAK_COUNTERS_DECODE = "Counters"
+
+################################ OPTIONAL API PARAMETERS TO PICK FROM API DATA ################################
+
+ATMOTUBE_OPTIONAL_API_PARAM = ['order']

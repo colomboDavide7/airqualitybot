@@ -9,7 +9,7 @@ import builtins
 from typing import Dict, Any, List
 from airquality.constants.shared_constants import PURPLE_AIR_API_PARAM, PURPLE_AIR_GEO_PARAM, EMPTY_LIST, \
     MOBILE_SENSOR_PERSONALITIES, PURPLEAIR_SENSOR_IDX_PARAM, PURPLEAIR_NAME_PARAM, \
-    ATMOTUBE_DATE_PARAM
+    ATMOTUBE_DATE_PARAM, ATMOTUBE_PERSONALITY, PURPLEAIR_PERSONALITY, ATMOTUBE_OPTIONAL_API_PARAM
 
 
 LOGGER_SECTION = "logger"
@@ -103,7 +103,7 @@ class ResourcePicker(builtins.object):
                              f"cannot call this method with personality = '{personality}'.")
 
         sqltimestamp = ""
-        if personality == "atmotube":
+        if personality == ATMOTUBE_PERSONALITY:
             if api_param.get(ATMOTUBE_DATE_PARAM, None) is not None:
                 sqltimestamp = api_param[ATMOTUBE_DATE_PARAM]
 
@@ -113,8 +113,19 @@ class ResourcePicker(builtins.object):
     @classmethod
     def pick_sensor_name_from_identifier(cls, packet: Dict[str, Any], personality: str) -> str:
 
-        if personality == "purpleair":
+        if personality == PURPLEAIR_PERSONALITY:
             return f"{packet[PURPLEAIR_NAME_PARAM]} ({packet[PURPLEAIR_SENSOR_IDX_PARAM]})"
         else:
             raise SystemExit(f"{ResourcePicker.pick_sensor_name_from_identifier.__name__}: cannot pick name for "
                              f"personality = '{personality}'.")
+
+
+    @classmethod
+    def pick_optional_api_parameters_from_api_data(cls, personality: str) -> List[str]:
+
+        if personality == ATMOTUBE_PERSONALITY:
+            return ATMOTUBE_OPTIONAL_API_PARAM
+        else:
+            raise SystemExit(f"{ResourcePicker.pick_optional_api_parameters_from_api_data.__name__}: "
+                             f"cannot pick optional API parameters for personality = '{personality}'.")
+
