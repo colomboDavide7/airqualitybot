@@ -10,7 +10,7 @@ import builtins
 from typing import Dict, Any
 from abc import ABC, abstractmethod
 from airquality.constants.shared_constants import EMPTY_DICT, \
-    THINGSPEAK_CH_ID_2PICK, THINGSPEAK_KEY_2PICK
+    THINGSPEAK_CH_ID_2PICK, THINGSPEAK_KEY_2PICK, THINGSPEAK_TS_2PICK
 
 
 class Database2APIReshaper(ABC):
@@ -32,13 +32,20 @@ class Database2APIReshaperThingspeak(Database2APIReshaper):
         reshaped = {}
         keys = api_param.keys()
         for i in range(len(THINGSPEAK_KEY_2PICK)):
+
             channel_key = THINGSPEAK_KEY_2PICK[i]
             if channel_key not in keys:
                 raise SystemExit(f"{Database2APIReshaperThingspeak.__name__}: missing channel key = '{channel_key}'")
+
             channel_id = THINGSPEAK_CH_ID_2PICK[i]
             if channel_id not in keys:
                 raise SystemExit(f"{Database2APIReshaperThingspeak.__name__}: missing channel id = '{channel_id}'")
-            reshaped[api_param[channel_id]] = api_param[channel_key]
+
+            channel_ts = THINGSPEAK_TS_2PICK[i]
+            if channel_ts not in keys:
+                raise SystemExit(f"{Database2APIReshaperThingspeak.__name__}: missing channel id = '{channel_ts}'")
+
+            reshaped[api_param[channel_id]] = {'key': api_param[channel_key], 'ts': api_param[channel_ts], 'name': channel_ts}
         return reshaped
 
 

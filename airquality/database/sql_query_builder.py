@@ -191,7 +191,12 @@ class SQLQueryBuilder(builtins.object):
         query = self.__parsed[query_id]
         for packet in packets:
             for key, val in packet.items():
-                query += f"({first_sensor_id}, '{key}', '{val}'),"
+                query += f"({first_sensor_id}, '{key}', "
+                if val is None:
+                    query += f"null),"
+                else:
+                    query += f"'{val}'),"
+
             first_sensor_id += 1
         return query.strip(',') + ';'
 
@@ -253,6 +258,14 @@ class SQLQueryBuilder(builtins.object):
         self._raise_exception_if_query_identifier_not_found(query_id)
         ts = DatetimeParser.current_sqltimestamp()
         return self.__parsed[query_id].format(ts = ts, sens_id = sensor_id)
+
+
+    def update_last_channel_acquisition_timestamp(self, sensor_id: str, ts: str, param2update: str) -> str:
+
+        query_id = "update_last_channel_acquisition_timestamp"
+        self._raise_exception_if_query_identifier_not_found(query_id)
+        return self.__parsed[query_id].format(ts = ts, sens_id = sensor_id, par_name = param2update)
+
 
 
 ################################ EXCEPTION METHOD ################################

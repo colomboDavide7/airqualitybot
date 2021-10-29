@@ -128,17 +128,16 @@ class FetchBotThingspeak(FetchBot):
 
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
-            ###################### SELECT LAST SENSOR MEASUREMENT TIMESTAMP FROM DATABASE ##############################
-            query = query_builder.select_last_acquisition_timestamp_from_station_id(station_id = sensor_id)
-            answer = dbconn.send(executable_sql_query = query)
-            parsed_timestamp = DatabaseAnswerParser.parse_single_attribute_answer(answer)
-
-            if sc.DEBUG_MODE:
-                if parsed_timestamp == EMPTY_LIST:
-                    print(f"{DEBUG_HEADER} no measure present into the database for sensor_id = {sensor_id}.")
-                else:
-                    print(f"{DEBUG_HEADER} {parsed_timestamp[0]}")
-
+            # ###################### SELECT LAST SENSOR MEASUREMENT TIMESTAMP FROM DATABASE ##############################
+            # query = query_builder.select_last_acquisition_timestamp_from_station_id(station_id = sensor_id)
+            # answer = dbconn.send(executable_sql_query = query)
+            # parsed_timestamp = DatabaseAnswerParser.parse_single_attribute_answer(answer)
+            #
+            # if sc.DEBUG_MODE:
+            #     if parsed_timestamp == EMPTY_LIST:
+            #         print(f"{DEBUG_HEADER} no measure present into the database for sensor_id = {sensor_id}.")
+            #     else:
+            #         print(f"{DEBUG_HEADER} {parsed_timestamp[0]}")
 
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
             query = query_builder.select_sensor_api_param(sensor_id = sensor_id)
@@ -156,8 +155,10 @@ class FetchBotThingspeak(FetchBot):
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " RESHAPED API PARAM " + 20 * '=')
-                for ch_id, ch_key in reshaped_api_param.items():
-                    print(f"{DEBUG_HEADER} {ch_id}={ch_key}")
+                for ch_id in reshaped_api_param.keys():
+                    print(f"{DEBUG_HEADER} {ch_id}")
+                    for key, val in reshaped_api_param[ch_id].items():
+                        print(f"{DEBUG_HEADER} {key}={val}")
 
 
 ################################ FORMAT API ADDRESS AND BUILD QUERYSTRING FOR EACH CHANNEL ################################
@@ -178,9 +179,9 @@ class FetchBotThingspeak(FetchBot):
                 stop_datetime = DatetimeParser.today()
                 from_datetime = DatetimeParser.string2datetime(datetime_string = THINGSPEAK_START_FETCH_TIMESTAMP)
 
-                # CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN SENSOR_ID
-                if parsed_timestamp != EMPTY_LIST:
-                    from_datetime = parsed_timestamp[0]
+# CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN CHANNEL_ID ASSOCIATED TO THE SENSOR_ID
+                if reshaped_api_param[channel_id].get('ts', None) is not None:
+                    from_datetime = DatetimeParser.string2datetime(datetime_string = reshaped_api_param[channel_id]['ts'])
 
                 to_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 7)
                 if (to_datetime - stop_datetime).total_seconds() > 0:
@@ -190,7 +191,7 @@ class FetchBotThingspeak(FetchBot):
                 while (stop_datetime - from_datetime).total_seconds() >= 0:
 
                     # GET QUERYSTRING PARAMETERS
-                    querystring_param = {'api_key': reshaped_api_param[channel_id],
+                    querystring_param = {'api_key': reshaped_api_param[channel_id]['key'],
                                          'start': DatetimeParser.datetime2string(ts = from_datetime),
                                          'end': DatetimeParser.datetime2string(ts = to_datetime)}
 
@@ -248,6 +249,16 @@ class FetchBotThingspeak(FetchBot):
 
                         ################# BUILD THE QUERY FOR INSERTING THE PACKETS INTO THE DATABASE ##################
                         query = query_builder.insert_station_measurements(packets = db_ready_packets)
+                        dbconn.send(executable_sql_query = query)
+
+                        ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
+                        if sc.DEBUG_MODE:
+                            print(f"{DEBUG_HEADER} last {reshaped_api_param[channel_id]['name']} = {db_ready_packets[-1]['ts']}")
+
+                        query = query_builder.update_last_channel_acquisition_timestamp(
+                                sensor_id = sensor_id,
+                                ts = db_ready_packets[-1]["ts"],
+                                param2update = reshaped_api_param[channel_id]['name'])
                         dbconn.send(executable_sql_query = query)
 
 

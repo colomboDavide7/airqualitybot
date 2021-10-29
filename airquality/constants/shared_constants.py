@@ -94,12 +94,20 @@ THINGSPEAK_DATETIME_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
 
 DATETIME2SQLTIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+############# THINGSPEAK API PARAM FOR STORING LAST ACQUISITION TIMESTAMP FOR EACH CHANNEL ################
+
+THINGSPEAK_TIMESTAMP_1A = "primary_timestamp_a"
+THINGSPEAK_TIMESTAMP_1B = "primary_timestamp_b"
+THINGSPEAK_TIMESTAMP_2A = "secondary_timestamp_a"
+THINGSPEAK_TIMESTAMP_2B = "secondary_timestamp_b"
+
 ################################ THINGSPEAK API PARAM2PICK ################################
 """Pay attention to the order of this variable inside the list: remember to put channel id and channel key in the same
 list index: these are going to be used by the Database2APIReshaper."""
 
 THINGSPEAK_CH_ID_2PICK = ["primary_id_a", "primary_id_b", "secondary_id_a", "secondary_id_b"]
 THINGSPEAK_KEY_2PICK = ["primary_key_a", "primary_key_b", "secondary_key_a", "secondary_key_b"]
+THINGSPEAK_TS_2PICK = [THINGSPEAK_TIMESTAMP_1A, THINGSPEAK_TIMESTAMP_1B, THINGSPEAK_TIMESTAMP_2A, THINGSPEAK_TIMESTAMP_2B]
 
 ################################ THINGSPEAK 2 DATABASE PARAM NAME MAPPING ################################
 
@@ -127,13 +135,6 @@ THINGSPEAK_API_DECODE_NAME = "name"
 THINGSPEAK_API_DECODE_CREATED_AT = "created_at"
 THINGSPEAK_CHANNEL_DECODE = "_b"
 THINGSPEAK_COUNTERS_DECODE = "Counters"
-
-############# THINGSPEAK API PARAM FOR STORING LAST ACQUISITION TIMESTAMP FOR EACH CHANNEL ################
-
-THINGSPEAK_TIMESTAMP_1A = "primary_timestamp_a"
-THINGSPEAK_TIMESTAMP_1B = "primary_timestamp_b"
-THINGSPEAK_TIMESTAMP_2A = "secondary_timestamp_a"
-THINGSPEAK_TIMESTAMP_2B = "secondary_timestamp_b"
 
 ################################ OPTIONAL API PARAMETERS TO PICK FROM API DATA ################################
 
