@@ -31,7 +31,7 @@ from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, \
-    EMPTY_LIST, PURPLEAIR_PERSONALITY
+    EMPTY_LIST, PURPLEAIR_PERSONALITY, ATMOTUBE_START_FETCH_TIMESTAMP, THINGSPEAK_START_FETCH_TIMESTAMP
 
 
 ################################################################################################
@@ -175,26 +175,24 @@ class FetchBotThingspeak(FetchBot):
 
 ################################ DEFINE START DATE AND STOP DATE FOR FETCHING DATA FROM API ################################
 
-                stop_date = DatetimeParser.today()
-                from_date = DatetimeParser.string2date(date = '2018-01-01 00:00:00')
+                stop_datetime = DatetimeParser.today()
+                from_datetime = DatetimeParser.string2datetime(datetime_string = THINGSPEAK_START_FETCH_TIMESTAMP)
 
                 # CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN SENSOR_ID
                 if parsed_timestamp != EMPTY_LIST:
-                    # CHECK IF THERE ARE SOME MEASUREMENTS TO FETCH
-                    if (parsed_timestamp[0] - stop_date).total_seconds() < 0:
-                        from_date = parsed_timestamp[0]
+                    from_datetime = parsed_timestamp[0]
 
-                to_date   = DatetimeParser.add_days_to_date(date = from_date, days = 7)
-                if (to_date - stop_date).total_seconds() > 0:
-                    to_date = stop_date
+                to_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 7)
+                if (to_datetime - stop_datetime).total_seconds() > 0:
+                    to_datetime = stop_datetime
 
                 # CONTINUE UNTIL TODAY IS REACHED
-                while (stop_date - from_date).total_seconds() >= 0:
+                while (stop_datetime - from_datetime).total_seconds() >= 0:
 
                     # GET QUERYSTRING PARAMETERS
                     querystring_param = {'api_key': reshaped_api_param[channel_id],
-                                         'start': DatetimeParser.date2string(date = from_date),
-                                         'end': DatetimeParser.date2string(date = to_date)}
+                                         'start': DatetimeParser.datetime2string(ts = from_datetime),
+                                         'end': DatetimeParser.datetime2string(ts = to_datetime)}
 
                     # BUILD URL QUERYSTRING
                     querystring = querystring_builder.make_querystring(parameters = querystring_param)
@@ -240,8 +238,11 @@ class FetchBotThingspeak(FetchBot):
                         if sc.DEBUG_MODE:
                             if db_ready_packets != EMPTY_LIST:
                                 print(20 * "=" + " DATABASE READY PACKETS " + 20 * '=')
-                                for i in range(3):
-                                    packet = db_ready_packets[i]
+                                for packet in db_ready_packets[0:3]:
+                                    for key, val in packet.items():
+                                        print(f"{DEBUG_HEADER} {key}={val}")
+
+                                for packet in db_ready_packets[-4:-1]:
                                     for key, val in packet.items():
                                         print(f"{DEBUG_HEADER} {key}={val}")
 
@@ -251,11 +252,11 @@ class FetchBotThingspeak(FetchBot):
 
 
 ################################ INCREMENT THE PERIOD FOR DATA FETCHING ################################
-                    from_date = DatetimeParser.add_days_to_date(date = from_date, days = 7)
-                    to_date = DatetimeParser.add_days_to_date(date = from_date, days = 7)
+                    from_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 7)
+                    to_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 7)
 
-                    if (to_date - stop_date).total_seconds() >= 0:
-                        to_date = stop_date
+                    if (to_datetime - stop_datetime).total_seconds() >= 0:
+                        to_datetime = stop_datetime
 
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
@@ -376,66 +377,89 @@ class FetchBotAtmotube(FetchBot):
                 for name, value in api_param.items():
                     print(f"{DEBUG_HEADER} {name}={value}")
 
-            ################################ BUILD URL QUERYSTRING FROM API PARAM ################################
+            ################################ CREATE URL QUERYSTRING BUILDER ################################
             querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = sc.PERSONALITY)
-            querystring = querystring_builder.make_querystring(parameters = api_param)
 
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
-                print(f"{DEBUG_HEADER} {querystring}")
+            ################################ CYCLE THROUGH DATE UNTIL NOW ################################
+            stop_datetime = DatetimeParser.today()
+            from_datetime = DatetimeParser.string2datetime(datetime_string = ATMOTUBE_START_FETCH_TIMESTAMP)
 
-            ################################ FETCH DATA FROM API ################################
-            api_answer = api_adapter.fetch(querystring = querystring)
-            parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
-            api_answer = parser.parse(raw_string = api_answer)
+            # IF DATE IS PRESENT INTO THE DATABASE THEN START TO FETCH DATA FROM THAT DATE
+            filter_sqltimestamp = ""
+            if api_param.get('date', None) is not None:
+                from_datetime = DatetimeParser.string2datetime(datetime_string = api_param['date'])
+                filter_sqltimestamp = api_param['date']
 
-            ################################ FILTER PACKETS FROM LAST TIMESTAMP ON ################################
-            filter_sqltimestamp = ResourcePicker.pick_last_timestamp_from_api_param_by_personality(api_param = api_param,
-                                                                                                   personality = sc.PERSONALITY)
-            filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = sc.PERSONALITY)
-            filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
+            while (from_datetime - stop_datetime).total_seconds() < 0:
 
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
-                if filtered_packets != EMPTY_LIST:
-                    for i in range(10):
-                        rpacket = filtered_packets[i]
-                        for key, val in rpacket.items():
-                            print(f"{DEBUG_HEADER} {key}={val}")
+                # INSERT DATETIME INTO API PARAMETERS
+                api_param['date'] = DatetimeParser.datetime2string(ts = from_datetime)
 
-            ################################ INSERT MEASURE ONLY IF THERE ARE NEW MEASUREMENTS ################################
-            if filtered_packets != EMPTY_LIST:
-
-                ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
-                reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
-                reshaped_packets = reshaper.reshape_packets(packets = filtered_packets,
-                                                            reshape_mapping = measure_param_map)
+                # BUILD THE QUERYSTRING
+                querystring = querystring_builder.make_querystring(parameters = api_param)
 
                 if sc.DEBUG_MODE:
-                    print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
-                    if reshaped_packets != EMPTY_LIST:
-                        for i in range(10):
-                            rpacket = reshaped_packets[i]
+                    print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
+                    print(f"{DEBUG_HEADER} {querystring}")
+
+                ################################ FETCH DATA FROM API ################################
+                api_answer = api_adapter.fetch(querystring = querystring)
+                parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
+                api_answer = parser.parse(raw_string = api_answer)
+
+                ################# FILTER PACKETS ONLY IF IT IS NOT THE FIRST ACQUISITION FOR THE SENSOR ################
+                filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = sc.PERSONALITY)
+                filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
+
+                if sc.DEBUG_MODE:
+                    print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
+                    if filtered_packets != EMPTY_LIST:
+                        for rpacket in filtered_packets[0:3]:
                             for key, val in rpacket.items():
                                 print(f"{DEBUG_HEADER} {key}={val}")
 
+                        for rpacket in filtered_packets[-4:-1]:
+                            for key, val in rpacket.items():
+                                print(f"{DEBUG_HEADER} {key}={val}")
 
-                ################################ CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE #################
-                query = query_builder.insert_atmotube_measurements(reshaped_packets)
-                dbconn.send(executable_sql_query = query)
+                ################################ INSERT MEASURE ONLY IF THERE ARE NEW MEASUREMENTS ################################
+                if filtered_packets != EMPTY_LIST:
 
+                    ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
+                    reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
+                    reshaped_packets = reshaper.reshape_packets(packets = filtered_packets,
+                                                                reshape_mapping = measure_param_map)
 
-                ############### UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH ###############
-                if sc.DEBUG_MODE:
-                    print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1]['ts']}")
+                    if sc.DEBUG_MODE:
+                        print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
+                        if reshaped_packets != EMPTY_LIST:
+                            for rpacket in reshaped_packets[0:3]:
+                                for key, val in rpacket.items():
+                                    print(f"{DEBUG_HEADER} {key}={val}")
 
-                query = query_builder.update_last_packet_date_atmotube(last_timestamp = reshaped_packets[-1]["ts"],
-                                                                       sensor_id = sensor_id)
-                dbconn.send(executable_sql_query = query)
+                            for rpacket in reshaped_packets[-4:-1]:
+                                for key, val in rpacket.items():
+                                    print(f"{DEBUG_HEADER} {key}={val}")
 
+                    ################################ CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE #################
+                    query = query_builder.insert_atmotube_measurements(reshaped_packets)
+                    dbconn.send(executable_sql_query = query)
+
+                    ############### UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH ###############
+                    if sc.DEBUG_MODE:
+                        print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1]['ts']}")
+
+                    query = query_builder.update_last_packet_date_atmotube(last_timestamp = reshaped_packets[-1]["ts"],
+                                                                           sensor_id = sensor_id)
+                    dbconn.send(executable_sql_query = query)
+
+                ################# END OF THE LOOP: ADD ONE DAY TO THE CURRENT FROM DATE ########################
+                from_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 1)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()
+
+
 
 
 ################################ FACTORY ################################

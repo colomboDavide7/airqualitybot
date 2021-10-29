@@ -10,7 +10,7 @@ from typing import Dict, Any
 from abc import ABC, abstractmethod
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.constants.shared_constants import EMPTY_DICT, \
-    PURPLEAIR_FIELDS_PARAM
+    PURPLEAIR_FIELDS_PARAM, ATMOTUBE_START_FETCH_TIMESTAMP
 
 
 KEY_VAL_SEPARATOR = "="
@@ -54,9 +54,8 @@ class URLQuerystringBuilderAtmotube(URLQuerystringBuilder):
 
             querystring += 'api_key' + KEY_VAL_SEPARATOR + parameters['api_key'] + CONCAT_SEPARATOR
             querystring += 'mac' + KEY_VAL_SEPARATOR + parameters['mac'] + CONCAT_SEPARATOR
-            if parameters.get('date', None) is not None:
-                date = DatetimeParser.sqltimestamp_date(parameters['date'])
-                querystring += 'date' + KEY_VAL_SEPARATOR + date + CONCAT_SEPARATOR
+            date = DatetimeParser.sqltimestamp_date(parameters['date'])
+            querystring += 'date' + KEY_VAL_SEPARATOR + date + CONCAT_SEPARATOR
 
             for key in keys:
                 if key not in ('api_address', 'api_key', 'mac', 'date'):

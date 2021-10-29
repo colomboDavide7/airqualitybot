@@ -8,6 +8,7 @@
 
 import unittest
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
+from airquality.constants.shared_constants import ATMOTUBE_START_FETCH_TIMESTAMP
 
 
 class TestBuilder(unittest.TestCase):
@@ -20,17 +21,6 @@ class TestBuilder(unittest.TestCase):
         test_kwargs = {"api_key": "some_api_key", "mac": "some_mac_address",
                        "date": "2021-10-11 17:46:00", "order": "desc"}
         expected_querystring = "api_key=some_api_key&mac=some_mac_address&date=2021-10-11&order=desc"
-        atmotube_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality = "atmotube")
-        actual_querystring = atmotube_builder.make_querystring(parameters = test_kwargs)
-        self.assertEqual(actual_querystring, expected_querystring)
-
-
-    def test_skip_date_when_date_is_none_atmotube_querystring(self):
-        """Test valid querystring without 'date' when date is None."""
-
-        test_kwargs = {"api_key": "some_api_key", "mac": "some_mac_address", "date": None}
-        expected_querystring = "api_key=some_api_key&mac=some_mac_address"
-
         atmotube_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality = "atmotube")
         actual_querystring = atmotube_builder.make_querystring(parameters = test_kwargs)
         self.assertEqual(actual_querystring, expected_querystring)

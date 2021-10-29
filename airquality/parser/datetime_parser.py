@@ -22,21 +22,21 @@ class DatetimeParser(builtins.object):
 
 
     @classmethod
-    def date2string(cls, date: datetime.datetime) -> str:
-        date_string = date.strftime('%Y-%m-%d %H:%M:%S')
-        return date_string
+    def datetime2string(cls, ts: datetime.datetime) -> str:
+        ts_string = ts.strftime('%Y-%m-%d %H:%M:%S')
+        return ts_string
 
 
     @classmethod
-    def string2date(cls, date: str) -> datetime.datetime:
-        date = datetime.datetime.strptime(date, DATETIME2SQLTIMESTAMP_FORMAT)
-        return date
+    def string2datetime(cls, datetime_string: str) -> datetime.datetime:
+        ts = datetime.datetime.strptime(datetime_string, DATETIME2SQLTIMESTAMP_FORMAT)
+        return ts
 
 
     @classmethod
-    def add_days_to_date(cls, date: datetime.datetime, days: int) -> datetime.datetime:
-        new_date = date + datetime.timedelta(days = days)
-        return new_date
+    def add_days_to_datetime(cls, ts: datetime.datetime, days: int) -> datetime.datetime:
+        new_ts = ts + datetime.timedelta(days = days)
+        return new_ts
 
     ################################ ATMOTUBE TIMESTAMP FORMATTING METHOD ################################
 

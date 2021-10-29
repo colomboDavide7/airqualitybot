@@ -52,14 +52,14 @@ class TestDatetimeParser(unittest.TestCase):
 
         test_date = datetime.datetime(year = 2019, month = 1, day = 1)
         expected_output = "2019-01-01 00:00:00"
-        actual_output = DatetimeParser.date2string(date = test_date)
+        actual_output = DatetimeParser.datetime2string(ts = test_date)
         self.assertEqual(actual_output, expected_output)
 
 
     def test_from_string_to_date(self):
 
         test_date_string = "2019-01-01 00:00:00"
-        date_obj = DatetimeParser.string2date(date = test_date_string)
+        date_obj = DatetimeParser.string2datetime(datetime_string = test_date_string)
         self.assertIsInstance(date_obj, datetime.date)
 
 
@@ -67,7 +67,7 @@ class TestDatetimeParser(unittest.TestCase):
 
         test_starting_date = datetime.datetime(year = 2019, month = 1, day = 1)
         expected_output = datetime.datetime(year = 2019, month = 1, day = 11)
-        actual_output = DatetimeParser.add_days_to_date(date = test_starting_date, days = 10)
+        actual_output = DatetimeParser.add_days_to_datetime(ts = test_starting_date, days = 10)
         self.assertEqual(actual_output, expected_output)
         self.assertIsInstance(actual_output, datetime.date)
 

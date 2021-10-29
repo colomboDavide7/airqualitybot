@@ -34,11 +34,10 @@ class TestDatetimeFilter(unittest.TestCase):
         test_packets = {"data": {"items": [{ATMOTUBE_TIME_PARAM: "2021-10-11T09:44:00.000Z"},
                                            {ATMOTUBE_TIME_PARAM: "2021-10-11T09:45:00.000Z"},
                                            {ATMOTUBE_TIME_PARAM: "2021-10-11T09:46:00.000Z"}]}}
-
-        test_sqltimestamp = ""
         expected_output = [{ATMOTUBE_TIME_PARAM: "2021-10-11T09:44:00.000Z"},
                            {ATMOTUBE_TIME_PARAM: "2021-10-11T09:45:00.000Z"},
                            {ATMOTUBE_TIME_PARAM: "2021-10-11T09:46:00.000Z"}]
+        test_sqltimestamp = ""
         filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = "atmotube")
         actual_output = filter_.filter_packets(packets = test_packets, sqltimestamp = test_sqltimestamp)
         self.assertEqual(actual_output, expected_output)
