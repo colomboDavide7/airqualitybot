@@ -10,7 +10,7 @@ from typing import Dict, Any
 from abc import ABC, abstractmethod
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.constants.shared_constants import EMPTY_DICT, \
-    PURPLEAIR_FIELDS_PARAM, ATMOTUBE_START_FETCH_TIMESTAMP
+    PURPLEAIR_FIELDS_PARAM
 
 
 KEY_VAL_SEPARATOR = "="

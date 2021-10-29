@@ -8,7 +8,6 @@
 
 import unittest
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
-from airquality.constants.shared_constants import ATMOTUBE_START_FETCH_TIMESTAMP
 
 
 class TestBuilder(unittest.TestCase):
