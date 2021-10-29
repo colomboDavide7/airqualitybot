@@ -26,7 +26,8 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST, \
+    THINGSPEAK_TIMESTAMP_1A, THINGSPEAK_TIMESTAMP_1B, THINGSPEAK_TIMESTAMP_2B, THINGSPEAK_TIMESTAMP_2A
 
 
 class InitializeBot(ABC):
@@ -155,6 +156,21 @@ class InitializeBotPurpleair(InitializeBot):
         ################################ PICK ONLY API PARAMETERS FROM ALL PARAMETERS IN THE PACKETS ###################
         api_param2pick = ResourcePicker.pick_api_param_filter_list_from_personality(bot_personality = sc.PERSONALITY)
         new_api_packets = picker.pick_packet_params(packets = filtered_packets, param2pick = api_param2pick)
+
+        # ADD CHANNELS TIMESTAMP VARIABLES TO UNDERSTAND WHICH IS THE LAST MEASURE FOR A GIVEN CHANNEL
+        # WHEN FETCHING DATA IN FUTURE
+        for packet in new_api_packets:
+            packet[THINGSPEAK_TIMESTAMP_1A] = None
+            packet[THINGSPEAK_TIMESTAMP_1B] = None
+            packet[THINGSPEAK_TIMESTAMP_2A] = None
+            packet[THINGSPEAK_TIMESTAMP_2B] = None
+
+        if sc.DEBUG_MODE:
+            print(20*"=" + " API PARAM TABLE PACKETS " + 20*'=')
+            for packet in new_api_packets:
+                print(30*'*')
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key} = {val}")
 
         ################################ ASK THE SQL QUERY BUILDER TO BUILD THE QUERY ################################
         query = query_builder.insert_api_param(packets = new_api_packets, first_sensor_id = sensor_id)

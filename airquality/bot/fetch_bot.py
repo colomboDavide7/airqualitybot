@@ -81,9 +81,9 @@ class FetchBotThingspeak(FetchBot):
         query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
         ################################ READ API FILE ################################
-        raw_setup_data = IOManager.open_read_close_file(path = API_FILE)
+        raw_api_data = IOManager.open_read_close_file(path = API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string = raw_setup_data)
+        parsed_api_data = parser.parse(raw_string = raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address"]
@@ -325,7 +325,7 @@ class FetchBotAtmotube(FetchBot):
         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
         if sensor_ids == EMPTY_LIST:
             if sc.DEBUG_MODE:
-                print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
+                print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
             dbconn.close_conn()
             return
 

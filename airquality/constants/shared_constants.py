@@ -128,6 +128,13 @@ THINGSPEAK_API_DECODE_CREATED_AT = "created_at"
 THINGSPEAK_CHANNEL_DECODE = "_b"
 THINGSPEAK_COUNTERS_DECODE = "Counters"
 
+############# THINGSPEAK API PARAM FOR STORING LAST ACQUISITION TIMESTAMP FOR EACH CHANNEL ################
+
+THINGSPEAK_TIMESTAMP_1A = "primary_timestamp_a"
+THINGSPEAK_TIMESTAMP_1B = "primary_timestamp_b"
+THINGSPEAK_TIMESTAMP_2A = "secondary_timestamp_a"
+THINGSPEAK_TIMESTAMP_2B = "secondary_timestamp_b"
+
 ################################ OPTIONAL API PARAMETERS TO PICK FROM API DATA ################################
 
 ATMOTUBE_OPTIONAL_API_PARAM = ['order']
