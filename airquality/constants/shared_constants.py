@@ -41,7 +41,9 @@ EMPTY_DICT = {}
 ATMOTUBE_DATE_PARAM = "date"
 ATMOTUBE_TIME_PARAM = "time"
 ATMOTUBE_COORDS_PARAM = "coords"
-ATMOTUBE_API_PARAMETERS = ('api_key', 'mac', ATMOTUBE_DATE_PARAM, 'order')
+ATMOTUBE_API_KEY_PARAM = 'api_key'
+ATMOTUBE_MAC_PARAM = 'mac'
+ATMOTUBE_ORDER_PARAM = 'order'
 
 ################################ VALID PURPLE AIR API PARAM ################################
 
@@ -51,7 +53,7 @@ PURPLEAIR_FIELDS_PARAM = "fields"
 PURPLEAIR_DATA_PARAM = "data"
 PURPLEAIR_CH_ID_PARAM = "channel_id"
 
-################################ QUERYSTRING ARGUMENTS ################################
+################################ VALID ATMOTUBE API PARAM ################################
 
 
 ################################ PICKER-TO-QUERY_BUILDER CONSTANTS ################################

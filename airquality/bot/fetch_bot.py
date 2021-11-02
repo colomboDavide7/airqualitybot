@@ -380,8 +380,7 @@ class FetchBotAtmotube(FetchBot):
                     print(f"{DEBUG_HEADER} {name}={value}")
 
             ################################ CREATE URL QUERYSTRING BUILDER ################################
-            querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(
-                bot_personality=sc.PERSONALITY)
+            querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality=sc.PERSONALITY)
 
             ################################ CYCLE THROUGH DATE UNTIL NOW ################################
             stop_datetime = DatetimeParser.today()
@@ -396,7 +395,8 @@ class FetchBotAtmotube(FetchBot):
             while (from_datetime - stop_datetime).total_seconds() < 0:
 
                 # INSERT DATETIME INTO API PARAMETERS
-                api_param['date'] = DatetimeParser.datetime2string(ts=from_datetime)
+                from_ts_string = DatetimeParser.datetime2string(ts=from_datetime)
+                api_param['date'] = DatetimeParser.sqltimestamp_date(ts=from_ts_string)
 
                 # BUILD THE QUERYSTRING
                 querystring = querystring_builder.make_querystring(parameters=api_param)

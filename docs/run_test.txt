@@ -10,7 +10,7 @@ or running all tests once.
 ###################### RUN TEST API ######################
 
 python3.8 -m test.api.test_api_request_adapter
-python -m test.api.test_url_querystring_builder
+python3.8 -m test.api.test_url_querystring_builder
 
 ###################### RUN TEST DATABASE ######################
 

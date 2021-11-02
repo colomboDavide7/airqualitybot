@@ -16,7 +16,7 @@ class TestBuilder(unittest.TestCase):
 
     def test_successfully_build_atmotube_querystring(self):
         test_kwargs = {"api_key": "some_api_key", "mac": "some_mac_address",
-                       "date": "2021-10-11 17:46:00", "order": "desc"}
+                       "date": "2021-10-11", "order": "desc"}
         expected_querystring = "api_key=some_api_key&mac=some_mac_address&date=2021-10-11&order=desc"
         atmotube_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality="atmotube")
         actual_querystring = atmotube_builder.make_querystring(parameters=test_kwargs)
@@ -25,12 +25,16 @@ class TestBuilder(unittest.TestCase):
     def test_system_exit_when_building_atmotube_querystring(self):
         """Test SystemExit when missing required parameters for building atmotube querystring."""
 
-        test_kwargs = {"api_key": "some_api_key", "date": "2021-10-11 09:44:00"}
+        test_kwargs = {"api_key": "some_api_key", "date": "2021-10-11"}
         atmotube_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality="atmotube")
         with self.assertRaises(SystemExit):
             atmotube_builder.make_querystring(parameters=test_kwargs)
 
         test_kwargs = {"api_key": "some_api_key", "mac": "some_mac_address"}
+        with self.assertRaises(SystemExit):
+            atmotube_builder.make_querystring(parameters=test_kwargs)
+
+        test_kwargs = {}
         with self.assertRaises(SystemExit):
             atmotube_builder.make_querystring(parameters=test_kwargs)
 

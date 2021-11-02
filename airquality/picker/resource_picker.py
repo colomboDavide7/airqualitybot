@@ -11,15 +11,13 @@ from airquality.constants.shared_constants import PURPLE_AIR_API_PARAM, PURPLE_A
     MOBILE_SENSOR_PERSONALITIES, PURPLEAIR_SENSOR_IDX_PARAM, PURPLEAIR_NAME_PARAM, \
     ATMOTUBE_DATE_PARAM, ATMOTUBE_PERSONALITY, PURPLEAIR_PERSONALITY, ATMOTUBE_OPTIONAL_API_PARAM
 
-
 LOGGER_SECTION = "logger"
 SERVER_SECTION = "server"
-PERSONALITY_SECTION  = "personality"
+PERSONALITY_SECTION = "personality"
 API_ADDRESS_SECTION = "api_address"
 
 
 class ResourcePicker(builtins.object):
-
 
     @classmethod
     def pick_db_conn_properties(cls, parsed_resources: Dict[str, Any], bot_personality: str) -> Dict[str, Any]:
@@ -46,15 +44,14 @@ class ResourcePicker(builtins.object):
                              f"'{ResourcePicker.pick_db_conn_properties.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
-
         settings = parsed_resources[SERVER_SECTION].copy()
         settings["username"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["username"]
         settings["password"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["password"]
         return settings
 
-
     @classmethod
-    def pick_api_address_from_number(cls, parsed_resources: Dict[str, Any], bot_personality: str, api_address_number: str) -> str:
+    def pick_api_address_from_number(cls, parsed_resources: Dict[str, Any], bot_personality: str,
+                                     api_address_number: str) -> str:
 
         if parsed_resources.get(API_ADDRESS_SECTION, None) is None:
             raise SystemExit(f"{ResourcePicker.__name__}: "
@@ -74,9 +71,7 @@ class ResourcePicker(builtins.object):
                              f"'{ResourcePicker.pick_api_address_from_number.__name__}()'."
                              f"Check your 'properties/resources.json' file.")
 
-
         return parsed_resources[API_ADDRESS_SECTION][f"{bot_personality}"][f"{api_address_number}"]
-
 
     @classmethod
     def pick_api_param_filter_list_from_personality(cls, bot_personality: str) -> List[str]:
@@ -86,14 +81,12 @@ class ResourcePicker(builtins.object):
         else:
             return EMPTY_LIST
 
-
     @classmethod
     def pick_geo_param_filter_list_from_personality(cls, personality: str) -> List[str]:
         if personality == "purpleair":
             return PURPLE_AIR_GEO_PARAM
         else:
             return EMPTY_LIST
-
 
     @classmethod
     def pick_last_timestamp_from_api_param_by_personality(cls, api_param: Dict[str, Any], personality: str) -> str:
@@ -109,7 +102,6 @@ class ResourcePicker(builtins.object):
 
         return sqltimestamp
 
-
     @classmethod
     def pick_sensor_name_from_identifier(cls, packet: Dict[str, Any], personality: str) -> str:
 
@@ -119,7 +111,6 @@ class ResourcePicker(builtins.object):
             raise SystemExit(f"{ResourcePicker.pick_sensor_name_from_identifier.__name__}: cannot pick name for "
                              f"personality = '{personality}'.")
 
-
     @classmethod
     def pick_optional_api_parameters_from_api_data(cls, personality: str) -> List[str]:
 
@@ -128,4 +119,3 @@ class ResourcePicker(builtins.object):
         else:
             raise SystemExit(f"{ResourcePicker.pick_optional_api_parameters_from_api_data.__name__}: "
                              f"cannot pick optional API parameters for personality = '{personality}'.")
-
