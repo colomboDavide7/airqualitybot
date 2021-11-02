@@ -20,7 +20,6 @@ from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFac
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
-from airquality.picker.api_packet_picker import APIPacketPickerFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter

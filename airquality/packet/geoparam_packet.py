@@ -3,7 +3,9 @@
 # Owner: Davide Colombo
 # User: davidecolombo
 # Date: 02/11/21 17:35
-# Description: INSERT HERE THE DESCRIPTION
+# Description: this script defines the an Abstract Base Class called GeoParamPacket that extends also Packet class.
+#              This classes are used to decode a packet coming from API into a string that is used for building the
+#              sql query.
 #
 ######################################################
 

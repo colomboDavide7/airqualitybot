@@ -19,7 +19,7 @@ from airquality.reshaper.dict2mobilepacket_reshaper import Dict2MobilepacketResh
 from airquality.picker.api_packet_picker import APIPacketPickerFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
-from airquality.keeper.packets_keeper import APIPacketKeeperFactory
+from airquality.keeper.api_packet_keeper import APIPacketKeeperFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
@@ -64,7 +64,7 @@ class GeoBotPurpleair(GeoBot):
         ################################ SQL QUERY BUILDER ################################
         query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
 
-        ################ SELECT SENSOR IDS FROM IDENTIFIER (same method used for selecting sensor names) ###############
+        ################ SELECT SENSOR IDS FROM PERSONALITY (same method used for selecting sensor names) ###############
         query = query_builder.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
@@ -93,7 +93,7 @@ class GeoBotPurpleair(GeoBot):
                 for name in sensor_names:
                     print(f"{DEBUG_HEADER} name = '{name}' is already present.")
             else:
-                print(f"{DEBUG_HEADER} not sensor found for personality '{sc.PERSONALITY}'.")
+                print(f"{DEBUG_HEADER} no sensor found for personality '{sc.PERSONALITY}'.")
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
@@ -117,17 +117,16 @@ class GeoBotPurpleair(GeoBot):
         ################################ FETCHING API DATA ################################
         raw_api_packets = api_adapter.fetch(querystring=querystring)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension='json')
-        parsed_api_data = parser.parse(raw_string=raw_api_packets)
+        parsed_api_packets = parser.parse(raw_string=raw_api_packets)
 
         ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
         reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
-        reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_data)
+        reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_packets)
         if sc.DEBUG_MODE:
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:
                 print(30 * '*')
-                for key, val in packet.items():
-                    print(f"{DEBUG_HEADER} {key} = {val}")
+                print(f"{DEBUG_HEADER} {str(packet)}")
 
         ####### CREATE PACKET KEEPER FOR KEEPING ONLY THOSE PACKETS FROM SENSORS ALREADY PRESENT INTO THE DATABASE ########
         keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality=sc.PERSONALITY)

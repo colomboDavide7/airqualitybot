@@ -3,7 +3,9 @@
 # Owner: Davide Colombo
 # User: davidecolombo
 # Date: 02/11/21 16:13
-# Description: INSERT HERE THE DESCRIPTION
+# Description: this script defines an Abstract Base Class called APIParamPacket that extends the Packet class.
+#              The purpose of this class and its subclasses is to define the behavior for converting data fetched from
+#              API into a sql statement for inserting data into the database.
 #
 ######################################################
 from abc import ABC

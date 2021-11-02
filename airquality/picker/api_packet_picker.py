@@ -8,8 +8,6 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
-from airquality.bridge.bridge_object import BridgeObject
-from airquality.packet.apiparam_packet import APIParamPacketPurpleair
 from airquality.constants.shared_constants import EMPTY_LIST
 
 
