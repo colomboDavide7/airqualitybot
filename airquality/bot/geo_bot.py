@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.packet.geoparam_packet import GeoParamPacketPurpleair
+from airquality.packet.sql_wrapper_geo_packet import SQLWrapperGeoPacketPurpleair
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
@@ -152,7 +152,7 @@ class GeoBotPurpleair(GeoBot):
         geo_param_packets = []
         for packet in filtered_packets:
             sensor_id = sensorname2id_map[packet.purpleair_identifier]
-            geo_param_packets.append(GeoParamPacketPurpleair(packet=packet, sensor_id=sensor_id))
+            geo_param_packets.append(SQLWrapperGeoPacketPurpleair(packet=packet, sensor_id=sensor_id))
 
         if sc.DEBUG_MODE:
             if sensorid2geom_map != EMPTY_LIST:

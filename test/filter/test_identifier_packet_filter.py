@@ -8,7 +8,7 @@
 
 import unittest
 from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
-from airquality.packet.apiparam_single_packet import APIParamSinglePacketPurpleair
+from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
 from airquality.constants.shared_constants import EMPTY_LIST
 
 
@@ -17,13 +17,13 @@ class TestIdentifierPacketFilter(unittest.TestCase):
     def test_successfully_filter_purpleair_packets(self):
         """This method tests the correct behaviour of the purpleair filter class."""
 
-        test_packets = [APIParamSinglePacketPurpleair({"name": "n1", "sensor_index": "idx1"}),
-                        APIParamSinglePacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
-                        APIParamSinglePacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
+        test_packets = [PlainAPIPacketPurpleair({"name": "n1", "sensor_index": "idx1"}),
+                        PlainAPIPacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
+                        PlainAPIPacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
 
         test_filter_list = ["n1 (idx1)"]
-        expected_output = [APIParamSinglePacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
-                           APIParamSinglePacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
+        expected_output = [PlainAPIPacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
+                           PlainAPIPacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
         filter_ = IdentifierPacketFilterFactory.create_identifier_filter(bot_personality="purpleair")
         actual_output = filter_.filter_packets(packets=test_packets, identifiers=test_filter_list)
         self.assertEqual(actual_output, expected_output)
@@ -32,14 +32,14 @@ class TestIdentifierPacketFilter(unittest.TestCase):
         """This method tests the behaviour of the purpleair filter method with 'filter_list' argument equal to
         'EMPTY_LIST'."""
 
-        test_packets = [APIParamSinglePacketPurpleair({"name": "n1", "sensor_index": "idx1"}),
-                        APIParamSinglePacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
-                        APIParamSinglePacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
+        test_packets = [PlainAPIPacketPurpleair({"name": "n1", "sensor_index": "idx1"}),
+                        PlainAPIPacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
+                        PlainAPIPacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
 
         test_filter_list = []
-        expected_output = [APIParamSinglePacketPurpleair({"name": "n1", "sensor_index": "idx1"}),
-                           APIParamSinglePacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
-                           APIParamSinglePacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
+        expected_output = [PlainAPIPacketPurpleair({"name": "n1", "sensor_index": "idx1"}),
+                           PlainAPIPacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
+                           PlainAPIPacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
         filter_ = IdentifierPacketFilterFactory.create_identifier_filter(bot_personality="purpleair")
         actual_output = filter_.filter_packets(packets=test_packets, identifiers=test_filter_list)
         self.assertEqual(actual_output, expected_output)

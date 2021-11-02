@@ -13,9 +13,9 @@ import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.bridge.bridge_object import BridgeObject
-from airquality.packet.sensorparam_packet import SensorParamPacketPurpleair
-from airquality.packet.apiparam_packet import APIParamPacketPurpleair
-from airquality.packet.geoparam_packet import GeoParamPacketPurpleair
+from airquality.packet.sql_wrapper_sensor_packet import SQLWrapperSensorPacketPurpleair
+from airquality.packet.sql_wrapper_api_packet import SQLWrapperAPIPacketPurpleair
+from airquality.packet.sql_wrapper_geo_packet import SQLWrapperGeoPacketPurpleair
 from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
@@ -145,7 +145,7 @@ class InitializeBotPurpleair(InitializeBot):
         ################################ TRANSFORM SINGLE PACKET INTO SENSOR PARAM PACKET ##############################
         sensor_param_packets = []
         for packet in filtered_packets:
-            sensor_param_packets.append(SensorParamPacketPurpleair(packet=packet))
+            sensor_param_packets.append(SQLWrapperSensorPacketPurpleair(packet=packet))
 
         if sc.DEBUG_MODE:
             print(20 * "=" + " SENSOR PARAM PACKETS " + 20 * '=')
@@ -162,7 +162,7 @@ class InitializeBotPurpleair(InitializeBot):
         api_param_packets = []
         temp_sensor_id = sensor_id
         for packet in filtered_packets:
-            api_param_packets.append(APIParamPacketPurpleair(packet=packet, sensor_id=temp_sensor_id))
+            api_param_packets.append(SQLWrapperAPIPacketPurpleair(packet=packet, sensor_id=temp_sensor_id))
             temp_sensor_id += 1
 
         if sc.DEBUG_MODE:
@@ -180,7 +180,7 @@ class InitializeBotPurpleair(InitializeBot):
         geo_param_packets = []
         temp_sensor_id = sensor_id
         for packet in filtered_packets:
-            geo_param_packets.append(GeoParamPacketPurpleair(packet=packet, sensor_id=temp_sensor_id))
+            geo_param_packets.append(SQLWrapperGeoPacketPurpleair(packet=packet, sensor_id=temp_sensor_id))
             temp_sensor_id += 1
 
         if sc.DEBUG_MODE:

@@ -12,11 +12,11 @@ from typing import Dict, Any
 DEFAULT_VALUE = 'null'
 
 
-class APIParamSinglePacket(ABC):
+class PlainAPIPacket(ABC):
     pass
 
 
-class APIParamSinglePacketPurpleair(APIParamSinglePacket):
+class PlainAPIPacketPurpleair(PlainAPIPacket):
 
     def __init__(self, api_param: Dict[str, Any]):
         self.name = api_param.get('name', DEFAULT_VALUE)
@@ -42,6 +42,6 @@ class APIParamSinglePacketPurpleair(APIParamSinglePacket):
                f"secondary_id_b={self.secondary_id_b}, secondary_key_b={self.secondary_key_b}"
 
     def __eq__(self, other):
-        if not isinstance(other, APIParamSinglePacketPurpleair):
-            raise SystemExit(f"{APIParamSinglePacketPurpleair.__name__}: cannot compare objects of different type.")
+        if not isinstance(other, PlainAPIPacketPurpleair):
+            raise SystemExit(f"{PlainAPIPacketPurpleair.__name__}: cannot compare objects of different type.")
         return other.purpleair_identifier == self.purpleair_identifier

@@ -9,13 +9,13 @@
 ######################################################
 import builtins
 from typing import List
-from airquality.packet.packet import Packet
+from airquality.packet.sql_wrapper_packet import SQLWrapperPacket
 from airquality.constants.shared_constants import EMPTY_LIST
 
 
 class BridgeObject(builtins.object):
 
-    def __init__(self, packets: List[Packet]):
+    def __init__(self, packets: List[SQLWrapperPacket]):
         self.packets = packets
 
     def packets2query(self) -> str:

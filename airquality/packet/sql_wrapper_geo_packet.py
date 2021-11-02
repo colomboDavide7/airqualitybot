@@ -10,21 +10,21 @@
 ######################################################
 
 from abc import ABC
-from airquality.packet.packet import Packet
-from airquality.packet.apiparam_single_packet import APIParamSinglePacketPurpleair
+from airquality.packet.sql_wrapper_packet import SQLWrapperPacket
+from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geometry import PostGISPointFactory
 
 
-class GeoParamPacket(Packet, ABC):
+class SQLWrapperGeoPacket(SQLWrapperPacket, ABC):
 
     def __init__(self, sensor_id: int):
         self.sensor_id = sensor_id
 
 
-class GeoParamPacketPurpleair(GeoParamPacket):
+class SQLWrapperGeoPacketPurpleair(SQLWrapperGeoPacket):
 
-    def __init__(self, packet: APIParamSinglePacketPurpleair, sensor_id: int):
+    def __init__(self, packet: PlainAPIPacketPurpleair, sensor_id: int):
         super().__init__(sensor_id)
         self.packet = packet
         self.ts = DatetimeParser.current_sqltimestamp()

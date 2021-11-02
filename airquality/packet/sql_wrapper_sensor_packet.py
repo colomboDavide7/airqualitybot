@@ -7,17 +7,17 @@
 #
 ######################################################
 from abc import ABC
-from airquality.packet.packet import Packet
-from airquality.packet.apiparam_single_packet import APIParamSinglePacketPurpleair
+from airquality.packet.sql_wrapper_packet import SQLWrapperPacket
+from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
 
 
-class SensorParamPacket(Packet, ABC):
+class SQLWrapperSensorPacket(SQLWrapperPacket, ABC):
     pass
 
 
-class SensorParamPacketPurpleair(SensorParamPacket):
+class SQLWrapperSensorPacketPurpleair(SQLWrapperSensorPacket):
 
-    def __init__(self, packet: APIParamSinglePacketPurpleair):
+    def __init__(self, packet: PlainAPIPacketPurpleair):
         self.packet = packet
 
     def sql(self) -> str:

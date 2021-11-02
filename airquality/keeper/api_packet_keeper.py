@@ -8,21 +8,21 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import List
-from airquality.packet.apiparam_single_packet import APIParamSinglePacketPurpleair, APIParamSinglePacket
+from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair, PlainAPIPacket
 from airquality.constants.shared_constants import EMPTY_LIST
 
 
 class APIPacketKeeper(ABC):
 
     @abstractmethod
-    def keep_packets(self, packets: List[APIParamSinglePacket], identifiers: List[str]) -> List[APIParamSinglePacket]:
+    def keep_packets(self, packets: List[PlainAPIPacket], identifiers: List[str]) -> List[PlainAPIPacket]:
         pass
 
 
 class APIPacketKeeperPurpleair(APIPacketKeeper):
 
-    def keep_packets(self, packets: List[APIParamSinglePacketPurpleair], identifiers: List[str]
-                     ) -> List[APIParamSinglePacketPurpleair]:
+    def keep_packets(self, packets: List[PlainAPIPacketPurpleair], identifiers: List[str]
+                     ) -> List[PlainAPIPacketPurpleair]:
 
         if packets == EMPTY_LIST:
             return []

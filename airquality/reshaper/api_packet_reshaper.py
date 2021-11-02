@@ -9,7 +9,7 @@ import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.packet.apiparam_single_packet import APIParamSinglePacket, APIParamSinglePacketPurpleair
+from airquality.packet.plain_api_packet import PlainAPIPacket, PlainAPIPacketPurpleair
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
     PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
@@ -26,13 +26,13 @@ from airquality.constants.shared_constants import THINGSPEAK_API_DECODE_FEEDS, T
 class APIPacketReshaper(ABC):
 
     @abstractmethod
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[APIParamSinglePacket]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[PlainAPIPacket]:
         pass
 
 
 class APIPacketReshaperPurpleair(APIPacketReshaper):
 
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[APIParamSinglePacketPurpleair]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[PlainAPIPacketPurpleair]:
         """This method takes a purpleair API answer and reshape it by creating a dictionary association between the
         'fields' parameter and the 'data' parameter for each item in the 'data' list."""
 
@@ -47,7 +47,7 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
                     key = fields[i]
                     val = data[i]
                     rpacket[key] = val
-                reshaped_packets.append(APIParamSinglePacketPurpleair(api_param=rpacket))
+                reshaped_packets.append(PlainAPIPacketPurpleair(api_param=rpacket))
         return reshaped_packets
 
 

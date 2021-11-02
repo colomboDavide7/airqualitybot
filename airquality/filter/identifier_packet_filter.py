@@ -8,7 +8,7 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import List
-from airquality.packet.apiparam_single_packet import APIParamSinglePacketPurpleair, APIParamSinglePacket
+from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair, PlainAPIPacket
 from airquality.constants.shared_constants import EMPTY_LIST
 
 
@@ -18,14 +18,14 @@ class IdentifierPacketFilter(ABC):
     This can be useful to check whether a given sensor is already present in the database or not."""
 
     @abstractmethod
-    def filter_packets(self, packets: List[APIParamSinglePacket], identifiers: List[str]) -> List[APIParamSinglePacket]:
+    def filter_packets(self, packets: List[PlainAPIPacket], identifiers: List[str]) -> List[PlainAPIPacket]:
         pass
 
 
 class IdentifierPacketFilterPurpleair(IdentifierPacketFilter):
 
-    def filter_packets(self, packets: List[APIParamSinglePacketPurpleair], identifiers: List[str]
-                       ) -> List[APIParamSinglePacketPurpleair]:
+    def filter_packets(self, packets: List[PlainAPIPacketPurpleair], identifiers: List[str]
+                       ) -> List[PlainAPIPacketPurpleair]:
         """This method filters the purpleair packets based on 'sensor_name' that is computed dynamically inside the method.
 
         The 'identifiers' argument is a list of purpleair 'sensor_name'(s)."""

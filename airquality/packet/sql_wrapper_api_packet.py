@@ -9,19 +9,19 @@
 #
 ######################################################
 from abc import ABC
-from airquality.packet.packet import Packet
-from airquality.packet.apiparam_single_packet import APIParamSinglePacketPurpleair
+from airquality.packet.sql_wrapper_packet import SQLWrapperPacket
+from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
 
 
-class APIParamPacket(Packet, ABC):
+class SQLWrapperAPIPacket(SQLWrapperPacket, ABC):
 
     def __init__(self, sensor_id: int):
         self.sensor_id = sensor_id
 
 
-class APIParamPacketPurpleair(APIParamPacket):
+class SQLWrapperAPIPacketPurpleair(SQLWrapperAPIPacket):
 
-    def __init__(self, sensor_id: int, packet: APIParamSinglePacketPurpleair):
+    def __init__(self, sensor_id: int, packet: PlainAPIPacketPurpleair):
         super().__init__(sensor_id)
         self.packet = packet
 
