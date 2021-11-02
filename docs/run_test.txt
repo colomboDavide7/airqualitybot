@@ -19,7 +19,7 @@ python3.8 -m test.database.test_sql_query_builder
 
 ###################### RUN TEST GEOM ######################
 
-python -m test.geom.test_postgis_geom_builder
+python3.8 -m test.geom.test_postgis_geometry
 
 ###################### RUN TEST KEEPER ######################
 
