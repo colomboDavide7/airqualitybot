@@ -93,7 +93,7 @@ class FetchBotThingspeak(FetchBot):
         querystring_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality=sc.PERSONALITY)
 
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
-        query = query_builder.select_sensor_ids_from_identifier(identifier=PURPLEAIR_PERSONALITY)
+        query = query_builder.select_sensor_ids_from_personality(personality=PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
@@ -110,7 +110,7 @@ class FetchBotThingspeak(FetchBot):
                 print(f"{DEBUG_HEADER} {sensor_id}")
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
-        query = query_builder.select_measure_param_from_identifier(identifier=PURPLEAIR_PERSONALITY)
+        query = query_builder.select_measure_param_from_personality(personality=PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
@@ -137,7 +137,7 @@ class FetchBotThingspeak(FetchBot):
             #         print(f"{DEBUG_HEADER} {parsed_timestamp[0]}")
 
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
-            query = query_builder.select_sensor_api_param(sensor_id=sensor_id)
+            query = query_builder.select_api_param_from_sensor_id(sensor_id=sensor_id)
             answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
@@ -320,7 +320,7 @@ class FetchBotAtmotube(FetchBot):
         api_adapter = APIRequestAdapter(api_address=api_address)
 
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
-        query = query_builder.select_sensor_ids_from_identifier(identifier=sc.PERSONALITY)
+        query = query_builder.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
@@ -337,7 +337,7 @@ class FetchBotAtmotube(FetchBot):
                 print(f"{DEBUG_HEADER} {sensor_id}")
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
-        query = query_builder.select_measure_param_from_identifier(identifier=sc.PERSONALITY)
+        query = query_builder.select_measure_param_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
@@ -353,7 +353,7 @@ class FetchBotAtmotube(FetchBot):
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
-            query = query_builder.select_sensor_api_param(sensor_id=sensor_id)
+            query = query_builder.select_api_param_from_sensor_id(sensor_id=sensor_id)
             answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
@@ -429,24 +429,20 @@ class FetchBotAtmotube(FetchBot):
                 if filtered_packets != EMPTY_LIST:
 
                     ############################## RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE ###################
-                    reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(
-                        bot_personality=sc.PERSONALITY)
-                    reshaped_packets = reshaper.reshape_packets(packets=filtered_packets,
-                                                                reshape_mapping=measure_param_map)
+                    reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality=sc.PERSONALITY)
+                    reshaped_packets = reshaper.reshape_packets(packets=filtered_packets, reshape_mapping=measure_param_map)
 
                     if sc.DEBUG_MODE:
                         print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
                         if reshaped_packets != EMPTY_LIST:
                             for rpacket in reshaped_packets[0:3]:
-                                for key, val in rpacket.items():
-                                    print(f"{DEBUG_HEADER} {key}={val}")
+                                print(f"{DEBUG_HEADER} {str(rpacket)}")
 
                             for rpacket in reshaped_packets[-4:-1]:
-                                for key, val in rpacket.items():
-                                    print(f"{DEBUG_HEADER} {key}={val}")
+                                print(f"{DEBUG_HEADER} {str(rpacket)}")
 
                     ############################## CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE ###############
-                    query = query_builder.insert_atmotube_measurements(reshaped_packets)
+                    query = query_builder.insert_into_mobile_measurements(reshaped_packets)
                     dbconn.send(executable_sql_query=query)
 
                     ############# UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH #############

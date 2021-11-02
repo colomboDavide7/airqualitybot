@@ -61,7 +61,7 @@ class InitializeBotPurpleair(InitializeBot):
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
         # The 'sensor_names' variable is used to check if a given sensor taken from the API is already present
         # into the database.
-        query = query_builder.select_all_sensor_name_from_identifier(identifier=sc.PERSONALITY)
+        query = query_builder.select_sensor_name_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 

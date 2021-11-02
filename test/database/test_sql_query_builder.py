@@ -32,7 +32,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
         expected_output = "INSERT INTO level0_raw.mobile_measurement (param_id, param_value, timestamp, geom) VALUES "
         expected_output += "(1, '55.0', '2021-09-12 08:34:00', null);"
 
-        actual_output = self.sql_builder.insert_atmotube_measurements(packets=test_packets)
+        actual_output = self.sql_builder.insert_into_mobile_measurements(packets=test_packets)
         self.assertEqual(actual_output, expected_output)
 
     def test_empty_query_when_empty_packet_list_insert_atmotube_measurement(self):
@@ -40,7 +40,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
 
         test_packets = EMPTY_LIST
         expected_output = EMPTY_STRING
-        actual_output = self.sql_builder.insert_atmotube_measurements(packets=test_packets)
+        actual_output = self.sql_builder.insert_into_mobile_measurements(packets=test_packets)
         self.assertEqual(actual_output, expected_output)
 
     def test_empty_query_when_empty_timestamp_update_last_date_atmotube(self):

@@ -67,7 +67,7 @@ class GeoBotPurpleair(GeoBot):
         query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
 
         ################ SELECT SENSOR IDS FROM IDENTIFIER (same method used for selecting sensor names) ###############
-        query = query_builder.select_sensor_ids_from_identifier(identifier = sc.PERSONALITY)
+        query = query_builder.select_sensor_ids_from_personality(personality= sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
 
@@ -86,7 +86,7 @@ class GeoBotPurpleair(GeoBot):
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
         # The 'sensor_names' variable is used to check if a given sensor taken from the API is already present
         # into the database.
-        query = query_builder.select_all_sensor_name_from_identifier(identifier = sc.PERSONALITY)
+        query = query_builder.select_sensor_name_from_personality(personality= sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
 
@@ -158,12 +158,12 @@ class GeoBotPurpleair(GeoBot):
                         print(f"{DEBUG_HEADER} {key} = {val}")
 
         ########### QUERY SENSOR NAME 2 SENSOR ID MAPPING FOR ASSOCIATE AN API PACKET TO A DATABASE RECORD #############
-        query = query_builder.select_sensor_name_id_map_from_identifier(identifier = sc.PERSONALITY)
+        query = query_builder.select_sensor_name_id_map_from_personality(personality= sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensorname2id_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
         ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR STATIONS ################################
-        query = query_builder.select_sensor_at_active_location_from_identifier(identifier = sc.PERSONALITY)
+        query = query_builder.select_sensor_valid_geo_map_from_personality(personality= sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query = query)
         sensorid2geom_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 

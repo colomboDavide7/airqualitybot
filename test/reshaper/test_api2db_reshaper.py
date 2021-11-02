@@ -8,6 +8,7 @@
 
 import unittest
 from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
+from airquality.api2database.measurement_packet import MobileMeasurementPacket
 from airquality.constants.shared_constants import ATMOTUBE_COORDS_PARAM, ATMOTUBE_TIME_PARAM, \
     RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, RESHAPER2SQLBUILDER_TIMESTAMP, \
     RESHAPER2SQLBUILDER_GEOMETRY
@@ -23,12 +24,11 @@ class TestAPI2DatabaseReshaper(unittest.TestCase):
                          ATMOTUBE_COORDS_PARAM: {"lat": 45.232098, "lon": 9.7663}}]
 
         test_code2id_map = {"par1": 8, "par2": 9}
-        expected_output = [{RESHAPER2SQLBUILDER_PARAM_ID: 8, RESHAPER2SQLBUILDER_PARAM_VAL: "'val1'",
-                            RESHAPER2SQLBUILDER_TIMESTAMP: "'2021-10-11 09:44:00'",
-                            RESHAPER2SQLBUILDER_GEOMETRY: "ST_GeomFromText('POINT(9.7663 45.232098)')"},
-                           {RESHAPER2SQLBUILDER_PARAM_ID: 9, RESHAPER2SQLBUILDER_PARAM_VAL: "'val2'",
-                            RESHAPER2SQLBUILDER_TIMESTAMP: "'2021-10-11 09:44:00'",
-                            RESHAPER2SQLBUILDER_GEOMETRY: "ST_GeomFromText('POINT(9.7663 45.232098)')"}]
+        expected_output = [MobileMeasurementPacket(param_id=8, param_val="val1", timestamp="2021-10-11 09:44:00",
+                                                   geom="ST_GeomFromText('POINT(9.7663 45.232098)')"),
+                           MobileMeasurementPacket(param_id=9, param_val="val2", timestamp="2021-10-11 09:44:00",
+                                                   geom="ST_GeomFromText('POINT(9.7663 45.232098)')")]
+
         reshaper = self.factory.create_api2database_reshaper(bot_personality = "atmotube")
         actual_output = reshaper.reshape_packets(packets = test_packets, reshape_mapping = test_code2id_map)
         self.assertEqual(actual_output, expected_output)
