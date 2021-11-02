@@ -50,8 +50,10 @@ ATMOTUBE_ORDER_PARAM = 'order'
 PURPLEAIR_NAME_PARAM = "name"
 PURPLEAIR_SENSOR_IDX_PARAM = "sensor_index"
 PURPLEAIR_FIELDS_PARAM = "fields"
+PURPLEAIR_API_KEY_PARAM = "api_key"
 PURPLEAIR_DATA_PARAM = "data"
 PURPLEAIR_CH_ID_PARAM = "channel_id"
+PURPLEAIR_OPTIONAL_API_PARAM = ["nwlng", "nwlat", "selng", "selat"]
 
 ################################ VALID ATMOTUBE API PARAM ################################
 
@@ -138,6 +140,12 @@ THINGSPEAK_API_DECODE_NAME = "name"
 THINGSPEAK_API_DECODE_CREATED_AT = "created_at"
 THINGSPEAK_CHANNEL_DECODE = "_b"
 THINGSPEAK_COUNTERS_DECODE = "Counters"
+
+################################ THINGSPEAK API PARAM CONSTANTS ################################
+
+THINGSPEAK_API_KEY_PARAM = 'api_key'
+THINGSPEAK_START_PARAM = 'start'
+THINGSPEAK_END_PARAM = 'end'
 
 ################################ OPTIONAL API PARAMETERS TO PICK FROM API DATA ################################
 

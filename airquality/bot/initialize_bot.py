@@ -32,41 +32,38 @@ from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_F
 
 class InitializeBot(ABC):
 
-
     @abstractmethod
     def run(self):
         pass
 
 
-
 class InitializeBotPurpleair(InitializeBot):
-
 
     def run(self):
 
         ################################ READ SERVER FILE ################################
-        raw_server_data = IOManager.open_read_close_file(path = SERVER_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = SERVER_FILE.split('.')[-1])
-        parsed_server_data = parser.parse(raw_string = raw_server_data)
+        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
+        parsed_server_data = parser.parse(raw_string=raw_server_data)
 
         ################################ PICK DATABASE CONNECTION PROPERTIES ################################
-        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources = parsed_server_data,
-                                                             bot_personality = sc.PERSONALITY)
+        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources=parsed_server_data,
+                                                             bot_personality=sc.PERSONALITY)
 
         ################################ DATABASE CONNECTION ADAPTER ################################
         db_conn_factory = Psycopg2ConnectionAdapterFactory()
-        dbconn = db_conn_factory.create_database_connection_adapter(settings = db_settings)
+        dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
         dbconn.open_conn()
 
         ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
+        query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
 
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
         # The 'sensor_names' variable is used to check if a given sensor taken from the API is already present
         # into the database.
-        query = query_builder.select_all_sensor_name_from_identifier(identifier = sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
-        sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+        query = query_builder.select_all_sensor_name_from_identifier(identifier=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
+        sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
         if sc.DEBUG_MODE:
             if sensor_names != EMPTY_LIST:
@@ -82,7 +79,7 @@ class InitializeBotPurpleair(InitializeBot):
 
         sensor_id = 1
         query = query_builder.select_max_sensor_id()
-        answer = dbconn.send(executable_sql_query = query)
+        answer = dbconn.send(executable_sql_query=query)
         max_sensor_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
         if max_sensor_id[0] is not None:
             if sc.DEBUG_MODE:
@@ -90,52 +87,52 @@ class InitializeBotPurpleair(InitializeBot):
             sensor_id = max_sensor_id[0] + 1
 
         ################################ READ API FILE ################################
-        raw_api_data = IOManager.open_read_close_file(path = API_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string = raw_api_data)
+        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
+        parsed_api_data = parser.parse(raw_string=raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address"]
-        api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
+        api_address = JSONParamPicker.pick_parameter(parsed_json=parsed_api_data, path2key=path2key)
         if sc.DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
         ################################ API REQUEST ADAPTER ################################
-        api_adapter = APIRequestAdapter(api_address = api_address)
+        api_adapter = APIRequestAdapter(api_address=api_address)
 
         ################################ QUERYSTRING BUILDER ################################
-        querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = sc.PERSONALITY)
-        querystring = querystring_builder.make_querystring(parameters = parsed_api_data[sc.PERSONALITY])
+        querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality=sc.PERSONALITY)
+        querystring = querystring_builder.make_querystring(parameters=parsed_api_data[sc.PERSONALITY])
 
         ################################ FETCHING API DATA ################################
-        raw_api_packets = api_adapter.fetch(querystring = querystring)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = 'json')
-        parsed_api_data = parser.parse(raw_string = raw_api_packets)
+        raw_api_packets = api_adapter.fetch(querystring=querystring)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension='json')
+        parsed_api_data = parser.parse(raw_string=raw_api_packets)
 
         ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
-        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = sc.PERSONALITY)
-        reshaped_packets = reshaper.reshape_packet(api_answer = parsed_api_data)
+        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
+        reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_data)
         if sc.DEBUG_MODE:
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:
-                print(30*'*')
+                print(30 * '*')
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
         ########################### CREATE IDENTIFIER FILTER FOR FILTERING API PACKETS ############################
         filter_factory = IdentifierPacketFilterFactory()
-        filter_ = filter_factory.create_identifier_filter(bot_personality = sc.PERSONALITY)
+        filter_ = filter_factory.create_identifier_filter(bot_personality=sc.PERSONALITY)
 
         ################################ FILTER API PACKETS ################################
         # Filter packets based on sensor names. This is done to avoid to insert sensors that are
         # already present in the database.
 
-        filtered_packets = filter_.filter_packets(packets = reshaped_packets, identifiers = sensor_names)
+        filtered_packets = filter_.filter_packets(packets=reshaped_packets, identifiers=sensor_names)
         if sc.DEBUG_MODE:
-            print(20*"=" + " FILTERED PACKETS " + 20*'=')
+            print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
             for packet in filtered_packets:
-                print(30*'*')
+                print(30 * '*')
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
@@ -147,15 +144,15 @@ class InitializeBotPurpleair(InitializeBot):
             return
 
         ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
-        query = query_builder.insert_sensors_from_identifier(packets = filtered_packets, identifier = sc.PERSONALITY)
-        dbconn.send(executable_sql_query = query)
+        query = query_builder.insert_sensors_from_identifier(packets=filtered_packets, identifier=sc.PERSONALITY)
+        dbconn.send(executable_sql_query=query)
 
         ########## CREATE API PACKET PICKER FOR PICKING ONLY SELECTED FIELDS FROM ALL THOSE IN THE API PACKETS #########
-        picker = APIPacketPickerFactory().create_api_packet_picker(bot_personality = sc.PERSONALITY)
+        picker = APIPacketPickerFactory().create_api_packet_picker(bot_personality=sc.PERSONALITY)
 
         ################################ PICK ONLY API PARAMETERS FROM ALL PARAMETERS IN THE PACKETS ###################
-        api_param2pick = ResourcePicker.pick_api_param_filter_list_from_personality(bot_personality = sc.PERSONALITY)
-        new_api_packets = picker.pick_packet_params(packets = filtered_packets, param2pick = api_param2pick)
+        api_param2pick = ResourcePicker.pick_api_param_filter_list_from_personality(bot_personality=sc.PERSONALITY)
+        new_api_packets = picker.pick_packet_params(packets=filtered_packets, param2pick=api_param2pick)
 
         # ADD CHANNELS TIMESTAMP VARIABLES TO UNDERSTAND WHICH IS THE LAST MEASURE FOR A GIVEN CHANNEL
         # WHEN FETCHING DATA IN FUTURE
@@ -166,29 +163,26 @@ class InitializeBotPurpleair(InitializeBot):
             packet[THINGSPEAK_TIMESTAMP_2B] = None
 
         if sc.DEBUG_MODE:
-            print(20*"=" + " API PARAM TABLE PACKETS " + 20*'=')
+            print(20 * "=" + " API PARAM TABLE PACKETS " + 20 * '=')
             for packet in new_api_packets:
-                print(30*'*')
+                print(30 * '*')
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
         ################################ ASK THE SQL QUERY BUILDER TO BUILD THE QUERY ################################
-        query = query_builder.insert_api_param(packets = new_api_packets, first_sensor_id = sensor_id)
-        dbconn.send(executable_sql_query = query)
+        query = query_builder.insert_api_param(packets=new_api_packets, first_sensor_id=sensor_id)
+        dbconn.send(executable_sql_query=query)
 
         ###################### PICK ONLY GEO PARAMETERS FROM ALL PARAMETERS IN THE PACKETS #########################
-        geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality = sc.PERSONALITY)
-        new_geo_packets = picker.pick_packet_params(packets = filtered_packets, param2pick = geo_param2pick)
+        geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality=sc.PERSONALITY)
+        new_geo_packets = picker.pick_packet_params(packets=filtered_packets, param2pick=geo_param2pick)
 
         ################################ INSERT THE RECORDS INTO THE DATABASE ################################
-        query = query_builder.insert_sensor_at_location(packets = new_geo_packets, first_sensor_id = sensor_id)
-        dbconn.send(executable_sql_query = query)
+        query = query_builder.insert_sensor_at_location(packets=new_geo_packets, first_sensor_id=sensor_id)
+        dbconn.send(executable_sql_query=query)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()
-
-
-
 
 
 ################################ FACTORY ################################
