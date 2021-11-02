@@ -41,7 +41,7 @@ python -m test.picker.test_json_param_picker
 
 python -m test.reshaper.test_api2db_reshaper
 python -m test.reshaper.test_api2db_station_reshaper
-python -m test.reshaper.test_api_packet_reshaper
+python3.8 -m test.reshaper.test_api_packet_reshaper
 python -m test.reshaper.test_db2api_reshaper
 
 

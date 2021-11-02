@@ -8,6 +8,7 @@
 
 import unittest
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
+from airquality.packet.apiparam_single_packet import APIParamSinglePacketPurpleair
 from airquality.constants.shared_constants import PURPLEAIR_FIELDS_PARAM, PURPLEAIR_DATA_PARAM
 
 
@@ -19,16 +20,16 @@ class TestAPIPacketReshaper(unittest.TestCase):
     def test_reshape_purpleair_packets(self):
         purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality = "purpleair")
         test_api_answer = {
-            PURPLEAIR_FIELDS_PARAM: ["f1", "f2"],
+            PURPLEAIR_FIELDS_PARAM: ["name", "sensor_index"],
             PURPLEAIR_DATA_PARAM: [
-                ["v1", "v2"],
-                ["v3", "v4"]
+                ["n1", "idx1"],
+                ["n2", "idx2"]
             ]
         }
 
         expected_answer = [
-            {"f1": "v1", "f2": "v2"},
-            {"f1": "v3", "f2": "v4"}
+            APIParamSinglePacketPurpleair({"name": "n1", "sensor_index": "idx1"}),
+            APIParamSinglePacketPurpleair({"name": "n2", "sensor_index": "idx2"})
         ]
         actual_answer = purpleair_reshaper.reshape_packet(api_answer = test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
