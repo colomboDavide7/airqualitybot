@@ -47,14 +47,3 @@ class StationMeasurementPacket(builtins.object):
 
     def __str__(self):
         return f"param_id={self.param_id}, param_va={self.param_val}, timestamp={self.timestamp}, sensor_id={self.sensor_id}"
-
-
-class GeoPacket(builtins.object):
-
-    def __init__(self, sensor_id: str, geom: str):
-        super().__init__()
-        self.sensor_id = sensor_id
-        self.geom = geom
-
-    def __str__(self):
-        return f"sensor_name={self.sensor_id}, geom={self.geom}"

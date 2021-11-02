@@ -16,7 +16,7 @@ class PostGISGeometry(ABC):
         pass
 
     @abstractmethod
-    def get_geomtype_string(self, geostring: str) -> str:
+    def get_geomtype_string(self) -> str:
         pass
 
 
@@ -29,7 +29,7 @@ class PostGISPoint(PostGISGeometry):
     def get_database_string(self) -> str:
         return f"ST_GeomFromText('POINT({self.lng} {self.lat})')"
 
-    def get_geomtype_string(self, geostring: str) -> str:
+    def get_geomtype_string(self) -> str:
         return f"POINT({self.lng} {self.lat})"
 
 

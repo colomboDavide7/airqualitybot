@@ -12,13 +12,11 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.packet.geoparam_packet import GeoParamPacketPurpleair
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
-from airquality.reshaper.dict2mobilepacket_reshaper import Dict2MobilepacketReshaperFactory
-from airquality.picker.api_packet_picker import APIPacketPickerFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.keeper.api_packet_keeper import APIPacketKeeperFactory
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.api_request_adapter import APIRequestAdapter
@@ -68,11 +66,6 @@ class GeoBotPurpleair(GeoBot):
         query = query_builder.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
-            for id_ in sensor_ids:
-                print(f"{DEBUG_HEADER} {id_}")
 
         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
         if sensor_ids == EMPTY_LIST:
@@ -130,29 +123,13 @@ class GeoBotPurpleair(GeoBot):
 
         ####### CREATE PACKET KEEPER FOR KEEPING ONLY THOSE PACKETS FROM SENSORS ALREADY PRESENT INTO THE DATABASE ########
         keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality=sc.PERSONALITY)
-
         filtered_packets = keeper.keep_packets(packets=reshaped_packets, identifiers=sensor_names)
+
         if sc.DEBUG_MODE:
             print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
             for packet in filtered_packets:
                 print(30 * '*')
-                for key, val in packet.items():
-                    print(f"{DEBUG_HEADER} {key} = {val}")
-
-        ########## CREATE API PACKET PICKER FOR PICKING ONLY SELECTED FIELDS FROM ALL THOSE IN THE API PACKETS #########
-        picker = APIPacketPickerFactory().create_api_packet_picker(bot_personality=sc.PERSONALITY)
-
-        ###################### PICK ONLY GEO PARAMETERS FROM ALL PARAMETERS IN THE PACKETS #########################
-        geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality=sc.PERSONALITY)
-        new_geo_packets = picker.pick_packet_params(packets=filtered_packets, param2pick=geo_param2pick)
-
-        if sc.DEBUG_MODE:
-            if new_geo_packets != EMPTY_LIST:
-                print(20 * "=" + " NEW PACKETS " + 20 * '=')
-                for packet in new_geo_packets:
-                    print(30 * '*')
-                    for key, val in packet.items():
-                        print(f"{DEBUG_HEADER} {key} = {val}")
+                print(f"{DEBUG_HEADER} {str(packet)}")
 
         ########### QUERY SENSOR NAME 2 SENSOR ID MAPPING FOR ASSOCIATE AN API PACKET TO A DATABASE RECORD #############
         query = query_builder.select_sensor_name_id_map_from_personality(personality=sc.PERSONALITY)
@@ -170,47 +147,37 @@ class GeoBotPurpleair(GeoBot):
                 for key, val in sensorid2geom_map.items():
                     print(f"{DEBUG_HEADER} {key}={val}")
 
-        ################################ CREATE API 2 DATABASE RESHAPER ################################
-        api2db_reshaper = Dict2MobilepacketReshaperFactory().create_api2database_reshaper(bot_personality=sc.PERSONALITY)
-        reshaped_geo_packets = api2db_reshaper.reshape_packets(packets=new_geo_packets,
-                                                               reshape_mapping=sensorname2id_map)
+        ############## CREATE GEO PARAM PACKETS BY ASSOCIATING THE ID TO THE SENSOR_IDENTIFIER ########################
+        # These packets are used ONLY in case of insertion (new position detected) !!!
+        geo_param_packets = []
+        for packet in filtered_packets:
+            sensor_id = sensorname2id_map[packet.purpleair_identifier]
+            geo_param_packets.append(GeoParamPacketPurpleair(packet=packet, sensor_id=sensor_id))
 
         if sc.DEBUG_MODE:
-            if reshaped_geo_packets != EMPTY_LIST:
-                print(20 * "=" + " RESHAPED GEO PACKETS " + 20 * '=')
-                for packet in reshaped_geo_packets:
+            if sensorid2geom_map != EMPTY_LIST:
+                print(20 * "=" + " GEO PARAM PACKETS " + 20 * '=')
+                for packet in geo_param_packets:
                     print(30 * '*')
                     print(f"{DEBUG_HEADER} {str(packet)}")
 
         ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
 
-        # GET THE SENSOR IDS CORRESPONDING TO THE OLD (TAKEN FROM DATABASE) LOCATIONS
-        geo_map_keys = sensorid2geom_map.keys()
-
         # CYCLE THROUGH THE RESHAPED API PACKETS (SENSOR_ID: GEOM)
-        for packet in reshaped_geo_packets:
+        for packet in geo_param_packets:
 
-            # CYCLE THROUGH THE SENSOR IDS IN THE OLD (TAKEN FROM DATABASE) MAPPING
-            for sensor_id in geo_map_keys:
+            old_location = sensorid2geom_map.get(packet.sensor_id)
+            new_location = packet.point.get_geomtype_string()
 
-                # CHECK IF THE CURRENT SENSOR_ID IS MATCHES A GIVEN SENSOR_ID IN THE RESHAPED API PACKETS
-                if sensor_id == packet.sensor_id:
+            if new_location != old_location:
 
-                    # COMPARE THE OLD (FROM DATABASE) TO THE NEW (TAKEN FROM API) GEOLOCATIONS
-                    if sensorid2geom_map[sensor_id] != PostGISGeomBuilder.extract_geotype_from_geostring(
-                            packet.geom):
-                        # UPDATE THE OLD LOCATION 'VALID_TO' FIELD
-                        query = query_builder.update_valid_to_timestamp_location(sensor_id=sensor_id)
-                        if sc.DEBUG_MODE:
-                            print(f"{DEBUG_HEADER} {query}")
-                        dbconn.send(executable_sql_query=query)
+                # update the old location 'valid_to' timestamp
+                query = query_builder.update_valid_to_timestamp_location(sensor_id=packet.sensor_id)
+                dbconn.send(executable_sql_query=query)
 
-                        # INSERT THE NEW LOCATION FOR THE GIVEN SENSOR_ID
-                        query = query_builder.insert_sensor_at_location_from_sensor_id(sensor_id=sensor_id,
-                                                                                       geom=packet.sensor_id)
-                        if sc.DEBUG_MODE:
-                            print(f"{DEBUG_HEADER} {query}")
-                        dbconn.send(executable_sql_query=query)
+                # insert new record corresponding to the geo param packet
+                query = query_builder.insert_single_sensor_at_location(packet=packet)
+                dbconn.send(executable_sql_query=query)
 
 
 ################################ FACTORY ################################

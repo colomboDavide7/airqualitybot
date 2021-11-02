@@ -11,6 +11,7 @@ import builtins
 from typing import List
 from airquality.io.io import IOManager
 from airquality.bridge.bridge_object import BridgeObject
+from airquality.packet.geoparam_packet import GeoParamPacket
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.api2database.measurement_packet import MobileMeasurementPacket, StationMeasurementPacket
@@ -149,13 +150,13 @@ class SQLQueryBuilder(builtins.object):
         query += bridge.packets2query()
         return query
 
-    def insert_sensor_at_location_from_sensor_id(self, sensor_id: str, geom: str) -> str:
+    def insert_single_sensor_at_location(self, packet: GeoParamPacket) -> str:
 
         query_id = "insert_sensor_at_location"
         self._raise_exception_if_query_identifier_not_found(query_id)
+
         query = self.__parsed[query_id]
-        ts = DatetimeParser.current_sqltimestamp()
-        query += f"({sensor_id}, '{ts}', {geom});"
+        query += packet.sql()
         return query
 
     ################################ METHODS THAT RETURN UPDATE QUERY ################################
@@ -175,7 +176,7 @@ class SQLQueryBuilder(builtins.object):
             query = self.__parsed[f"{query_id}"].format(par_val=last_timestamp, sens_id=sensor_id, par_name="date")
         return query
 
-    def update_valid_to_timestamp_location(self, sensor_id: str) -> str:
+    def update_valid_to_timestamp_location(self, sensor_id: int) -> str:
 
         query_id = "update_valid_to_timestamp_location"
         self._raise_exception_if_query_identifier_not_found(query_id)

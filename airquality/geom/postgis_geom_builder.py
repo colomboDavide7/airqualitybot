@@ -6,7 +6,7 @@
 #
 #################################################
 import builtins
-from geom.postgis_geometry import PostGISPoint
+from airquality.geom.postgis_geometry import PostGISPoint
 from airquality.constants.shared_constants import GEO_TYPE_ST_POINT_2D
 
 
