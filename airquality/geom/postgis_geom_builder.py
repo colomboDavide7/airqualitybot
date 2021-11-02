@@ -6,37 +6,19 @@
 #
 #################################################
 import builtins
-from typing import Dict, Any
-
-from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_DICT, \
-    GEO_TYPE_ST_POINT_2D, GEOMBUILDER_LATITUDE, GEOMBUILDER_LONGITUDE
+from geom.postgis_geometry import PostGISPoint
+from airquality.constants.shared_constants import GEO_TYPE_ST_POINT_2D
 
 
 class PostGISGeomBuilder(builtins.object):
 
     @classmethod
-    def build_geometry_type(cls, geo_param: Dict[str, Any], geo_type: str) -> str:
-        """Class method that takes a set of geometry parameters (latitude, longitude) and a geometry type string
-        and returns a string for building the respective PostGIS geometry type."""
+    def postgisgeom2geostring(cls, postgis_geom: PostGISPoint) -> str:
 
-        geo_string = EMPTY_STRING
-        if geo_param == EMPTY_DICT:
-            return geo_string
-
-        if GEOMBUILDER_LATITUDE not in geo_param.keys() or GEOMBUILDER_LONGITUDE not in geo_param.keys():
-            raise SystemExit(f"{PostGISGeomBuilder.build_geometry_type.__name__}: "
-                             f"missing required parameters (GEOMBUILDER_LATITUDE | GEOMBUILDER_LONGITUDE).")
-
-        if geo_type == GEO_TYPE_ST_POINT_2D:
-            geo_string = geo_type.format(lat = geo_param[GEOMBUILDER_LATITUDE], lon = geo_param[GEOMBUILDER_LONGITUDE])
-        else:
-            raise SystemExit(f"{PostGISGeomBuilder.build_geometry_type.__name__}: "
-                             f"don't recognize geometry type '{geo_type}'.")
-
+        geo_string = GEO_TYPE_ST_POINT_2D.format(lat=postgis_geom.lat, lon=postgis_geom.lng)
         return f"ST_GeomFromText('{geo_string}')"
-
 
     @classmethod
     def extract_geotype_from_geostring(cls, geo_string: str) -> str:
-        substring = geo_string[geo_string.find("'")+1:]
+        substring = geo_string[geo_string.find("'") + 1:]
         return substring[:substring.find("'")]

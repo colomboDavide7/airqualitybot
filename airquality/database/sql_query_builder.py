@@ -8,14 +8,13 @@
 #################################################
 import builtins
 
-from typing import Dict, Any, List
+from typing import List
 from airquality.io.io import IOManager
+from airquality.bridge.bridge_object import BridgeObject
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.picker.resource_picker import ResourcePicker
-from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
 from airquality.api2database.measurement_packet import MobileMeasurementPacket, StationMeasurementPacket
-from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, GEO_TYPE_ST_POINT_2D
+from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST
 
 
 class SQLQueryBuilder(builtins.object):
@@ -124,68 +123,31 @@ class SQLQueryBuilder(builtins.object):
         query = query.strip(',') + ';'
         return query
 
-    def insert_sensors_from_identifier(self, packets: List[Dict[str, Any]], identifier: str) -> str:
-        """This method returns a query for inserting the 'sensor_type, sensor_name' tuples into the sensor table.
-
-        The role of the 'identifier' argument is to both assemble the correct name and defining the 'sensor_type'."""
+    def insert_sensors_from_bridge(self, bridge: BridgeObject) -> str:
 
         query_id = "insert_sensors"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        query = ""
-        if packets == EMPTY_LIST:
-            return query
-
         query = self.__parsed[query_id]
-        for packet in packets:
-            sensor_name = ResourcePicker.pick_sensor_name_from_identifier(packet=packet, personality=identifier)
-            query += f"('{identifier}', '{sensor_name}'),"
-        return query.strip(',') + ';'
+        query += bridge.packets2query()
+        return query
 
-    def insert_api_param(self, packets: List[Dict[str, Any]], first_sensor_id: int) -> str:
-        """This method returns a query for inserting the 'sensor_id, param_name, param_value' tuples in the api param
-        table. If 'packets' argument is empty, 'EMPTY_STRING' values is returned.
-
-        The argument 'first_sensor_id' is used as foreign key for the api param table. The value is increased by one
-        every packet."""
+    def insert_api_param(self, bridge: BridgeObject) -> str:
 
         query_id = "insert_api_param"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        query = ""
-        if packets == EMPTY_LIST:
-            return query
 
         query = self.__parsed[query_id]
-        for packet in packets:
-            for key, val in packet.items():
-                query += f"({first_sensor_id}, '{key}', "
-                if val is None:
-                    query += f"null),"
-                else:
-                    query += f"'{val}'),"
+        query += bridge.packets2query()
+        return query
 
-            first_sensor_id += 1
-        return query.strip(',') + ';'
-
-    def insert_sensor_at_location(self, packets: List[Dict[str, Any]], first_sensor_id: int) -> str:
-        """This method returns a query for inserting the 'sensor_id, valid_from, geom' tuples into the sensor at location
-        table. If 'packets' argument is empty, 'EMPTY_STRING' values is returned.
-
-        The argument 'first_sensor_id' is used as foreign key for the api param table. The value is increased by one
-        every packet."""
+    def insert_sensor_at_location(self, bridge: BridgeObject) -> str:
 
         query_id = "insert_sensor_at_location"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        query = ""
-        if packets == EMPTY_LIST:
-            return query
 
         query = self.__parsed[query_id]
-        for packet in packets:
-            geom = PostGISGeomBuilder.build_geometry_type(geo_param=packet, geo_type=GEO_TYPE_ST_POINT_2D)
-            timestamp = DatetimeParser.current_sqltimestamp()
-            query += f"({first_sensor_id}, '{timestamp}', {geom}),"
-            first_sensor_id += 1
-        return query.strip(',') + ';'
+        query += bridge.packets2query()
+        return query
 
     def insert_sensor_at_location_from_sensor_id(self, sensor_id: str, geom: str) -> str:
 

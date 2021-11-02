@@ -7,9 +7,9 @@
 #################################################
 import builtins
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List
-from airquality.constants.shared_constants import EMPTY_LIST, \
-    PURPLEAIR_NAME_PARAM, PURPLEAIR_SENSOR_IDX_PARAM
+from typing import List
+from airquality.packet.apiparam_single_packet import APIParamSinglePacketPurpleair, APIParamSinglePacket
+from airquality.constants.shared_constants import EMPTY_LIST
 
 
 class IdentifierPacketFilter(ABC):
@@ -17,16 +17,15 @@ class IdentifierPacketFilter(ABC):
 
     This can be useful to check whether a given sensor is already present in the database or not."""
 
-
     @abstractmethod
-    def filter_packets(self, packets: List[Dict[str, Any]], identifiers: List[str]) -> List[Dict[str, Any]]:
+    def filter_packets(self, packets: List[APIParamSinglePacket], identifiers: List[str]) -> List[APIParamSinglePacket]:
         pass
 
 
 class IdentifierPacketFilterPurpleair(IdentifierPacketFilter):
 
-
-    def filter_packets(self, packets: List[Dict[str, Any]], identifiers: List[str]) -> List[Dict[str, Any]]:
+    def filter_packets(self, packets: List[APIParamSinglePacketPurpleair], identifiers: List[str]
+                       ) -> List[APIParamSinglePacketPurpleair]:
         """This method filters the purpleair packets based on 'sensor_name' that is computed dynamically inside the method.
 
         The 'identifiers' argument is a list of purpleair 'sensor_name'(s)."""
@@ -37,8 +36,7 @@ class IdentifierPacketFilterPurpleair(IdentifierPacketFilter):
         filtered_packets = []
         if packets != EMPTY_LIST:
             for packet in packets:
-                sensor_name = f"{packet[PURPLEAIR_NAME_PARAM]} ({packet[PURPLEAIR_SENSOR_IDX_PARAM]})"
-                if sensor_name not in identifiers:
+                if packet.purpleair_identifier not in identifiers:
                     filtered_packets.append(packet)
         return filtered_packets
 
@@ -46,12 +44,12 @@ class IdentifierPacketFilterPurpleair(IdentifierPacketFilter):
 ################################ FACTORY ################################
 class IdentifierPacketFilterFactory(builtins.object):
 
-
     @classmethod
     def create_identifier_filter(cls, bot_personality: str) -> IdentifierPacketFilter:
 
         if bot_personality == "purpleair":
             return IdentifierPacketFilterPurpleair()
         else:
-            raise SystemExit(f"{IdentifierPacketFilterFactory.__name__}: cannot instantiate {IdentifierPacketFilter.__name__} "
-                             f"instance for personality='{bot_personality}'.")
+            raise SystemExit(
+                f"{IdentifierPacketFilterFactory.__name__}: cannot instantiate {IdentifierPacketFilter.__name__} "
+                f"instance for personality='{bot_personality}'.")

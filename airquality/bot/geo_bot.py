@@ -15,7 +15,7 @@ import airquality.constants.system_constants as sc
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
-from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
+from airquality.reshaper.dict2mobilepacket_reshaper import Dict2MobilepacketReshaperFactory
 from airquality.picker.api_packet_picker import APIPacketPickerFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
@@ -34,7 +34,6 @@ from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_F
 ################################ GEO BOT ABSTRACT BASE CLASS ################################
 class GeoBot(ABC):
 
-
     @abstractmethod
     def run(self):
         pass
@@ -42,17 +41,16 @@ class GeoBot(ABC):
 
 class GeoBotPurpleair(GeoBot):
 
-
     def run(self):
 
         ################################ READ SERVER FILE ################################
-        raw_server_data = IOManager.open_read_close_file(path = SERVER_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = SERVER_FILE.split('.')[-1])
-        parsed_server_data = parser.parse(raw_string = raw_server_data)
+        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
+        parsed_server_data = parser.parse(raw_string=raw_server_data)
 
         ################################ PICK DATABASE CONNECTION PROPERTIES ################################
-        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources = parsed_server_data,
-                                                             bot_personality = sc.PERSONALITY)
+        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources=parsed_server_data,
+                                                             bot_personality=sc.PERSONALITY)
         if sc.DEBUG_MODE:
             print(20 * "=" + " DATABASE SETTINGS " + 20 * '=')
             for key, val in db_settings.items():
@@ -60,16 +58,16 @@ class GeoBotPurpleair(GeoBot):
 
         ################################ DATABASE CONNECTION ADAPTER ################################
         db_conn_factory = Psycopg2ConnectionAdapterFactory()
-        dbconn = db_conn_factory.create_database_connection_adapter(settings = db_settings)
+        dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
         dbconn.open_conn()
 
         ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
+        query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
 
         ################ SELECT SENSOR IDS FROM IDENTIFIER (same method used for selecting sensor names) ###############
-        query = query_builder.select_sensor_ids_from_personality(personality= sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
-        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+        query = query_builder.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
+        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
         if sc.DEBUG_MODE:
             print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
@@ -86,9 +84,9 @@ class GeoBotPurpleair(GeoBot):
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
         # The 'sensor_names' variable is used to check if a given sensor taken from the API is already present
         # into the database.
-        query = query_builder.select_sensor_name_from_personality(personality= sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
-        sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+        query = query_builder.select_sensor_name_from_personality(personality=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
+        sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
         if sc.DEBUG_MODE:
             if sensor_names != EMPTY_LIST:
@@ -98,32 +96,32 @@ class GeoBotPurpleair(GeoBot):
                 print(f"{DEBUG_HEADER} not sensor found for personality '{sc.PERSONALITY}'.")
 
         ################################ READ API FILE ################################
-        raw_api_data = IOManager.open_read_close_file(path = API_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string = raw_api_data)
+        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
+        parsed_api_data = parser.parse(raw_string=raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address"]
-        api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
+        api_address = JSONParamPicker.pick_parameter(parsed_json=parsed_api_data, path2key=path2key)
         if sc.DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
         ################################ API REQUEST ADAPTER ################################
-        api_adapter = APIRequestAdapter(api_address = api_address)
+        api_adapter = APIRequestAdapter(api_address=api_address)
 
         ################################ QUERYSTRING BUILDER ################################
-        querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = sc.PERSONALITY)
-        querystring = querystring_builder.make_querystring(parameters = parsed_api_data[sc.PERSONALITY])
+        querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality=sc.PERSONALITY)
+        querystring = querystring_builder.make_querystring(parameters=parsed_api_data[sc.PERSONALITY])
 
         ################################ FETCHING API DATA ################################
-        raw_api_packets = api_adapter.fetch(querystring = querystring)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = 'json')
-        parsed_api_data = parser.parse(raw_string = raw_api_packets)
+        raw_api_packets = api_adapter.fetch(querystring=querystring)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension='json')
+        parsed_api_data = parser.parse(raw_string=raw_api_packets)
 
         ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
-        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = sc.PERSONALITY)
-        reshaped_packets = reshaper.reshape_packet(api_answer = parsed_api_data)
+        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
+        reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_data)
         if sc.DEBUG_MODE:
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:
@@ -132,9 +130,9 @@ class GeoBotPurpleair(GeoBot):
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
         ####### CREATE PACKET KEEPER FOR KEEPING ONLY THOSE PACKETS FROM SENSORS ALREADY PRESENT INTO THE DATABASE ########
-        keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality = sc.PERSONALITY)
+        keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality=sc.PERSONALITY)
 
-        filtered_packets = keeper.keep_packets(packets = reshaped_packets, identifiers = sensor_names)
+        filtered_packets = keeper.keep_packets(packets=reshaped_packets, identifiers=sensor_names)
         if sc.DEBUG_MODE:
             print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
             for packet in filtered_packets:
@@ -143,11 +141,11 @@ class GeoBotPurpleair(GeoBot):
                     print(f"{DEBUG_HEADER} {key} = {val}")
 
         ########## CREATE API PACKET PICKER FOR PICKING ONLY SELECTED FIELDS FROM ALL THOSE IN THE API PACKETS #########
-        picker = APIPacketPickerFactory().create_api_packet_picker(bot_personality = sc.PERSONALITY)
+        picker = APIPacketPickerFactory().create_api_packet_picker(bot_personality=sc.PERSONALITY)
 
         ###################### PICK ONLY GEO PARAMETERS FROM ALL PARAMETERS IN THE PACKETS #########################
-        geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality = sc.PERSONALITY)
-        new_geo_packets = picker.pick_packet_params(packets = filtered_packets, param2pick = geo_param2pick)
+        geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality=sc.PERSONALITY)
+        new_geo_packets = picker.pick_packet_params(packets=filtered_packets, param2pick=geo_param2pick)
 
         if sc.DEBUG_MODE:
             if new_geo_packets != EMPTY_LIST:
@@ -158,13 +156,13 @@ class GeoBotPurpleair(GeoBot):
                         print(f"{DEBUG_HEADER} {key} = {val}")
 
         ########### QUERY SENSOR NAME 2 SENSOR ID MAPPING FOR ASSOCIATE AN API PACKET TO A DATABASE RECORD #############
-        query = query_builder.select_sensor_name_id_map_from_personality(personality= sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
+        query = query_builder.select_sensor_name_id_map_from_personality(personality=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
         sensorname2id_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
         ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR STATIONS ################################
-        query = query_builder.select_sensor_valid_geo_map_from_personality(personality= sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
+        query = query_builder.select_sensor_valid_geo_map_from_personality(personality=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
         sensorid2geom_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
         if sc.DEBUG_MODE:
@@ -174,16 +172,16 @@ class GeoBotPurpleair(GeoBot):
                     print(f"{DEBUG_HEADER} {key}={val}")
 
         ################################ CREATE API 2 DATABASE RESHAPER ################################
-        api2db_reshaper  = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
-        reshaped_geo_packets = api2db_reshaper.reshape_packets(packets = new_geo_packets, reshape_mapping = sensorname2id_map)
+        api2db_reshaper = Dict2MobilepacketReshaperFactory().create_api2database_reshaper(bot_personality=sc.PERSONALITY)
+        reshaped_geo_packets = api2db_reshaper.reshape_packets(packets=new_geo_packets,
+                                                               reshape_mapping=sensorname2id_map)
 
         if sc.DEBUG_MODE:
             if reshaped_geo_packets != EMPTY_LIST:
                 print(20 * "=" + " RESHAPED GEO PACKETS " + 20 * '=')
                 for packet in reshaped_geo_packets:
                     print(30 * '*')
-                    for key, val in packet.items():
-                        print(f"{DEBUG_HEADER} {key}={val}")
+                    print(f"{DEBUG_HEADER} {str(packet)}")
 
         ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
 
@@ -197,31 +195,27 @@ class GeoBotPurpleair(GeoBot):
             for sensor_id in geo_map_keys:
 
                 # CHECK IF THE CURRENT SENSOR_ID IS MATCHES A GIVEN SENSOR_ID IN THE RESHAPED API PACKETS
-                if sensor_id in packet.keys():
+                if sensor_id == packet.sensor_id:
 
                     # COMPARE THE OLD (FROM DATABASE) TO THE NEW (TAKEN FROM API) GEOLOCATIONS
-                    if sensorid2geom_map[sensor_id] != PostGISGeomBuilder.extract_geotype_from_geostring(packet[sensor_id]):
+                    if sensorid2geom_map[sensor_id] != PostGISGeomBuilder.extract_geotype_from_geostring(
+                            packet.geom):
                         # UPDATE THE OLD LOCATION 'VALID_TO' FIELD
-                        query = query_builder.update_valid_to_timestamp_location(sensor_id = sensor_id)
+                        query = query_builder.update_valid_to_timestamp_location(sensor_id=sensor_id)
                         if sc.DEBUG_MODE:
                             print(f"{DEBUG_HEADER} {query}")
-                        dbconn.send(executable_sql_query = query)
+                        dbconn.send(executable_sql_query=query)
 
                         # INSERT THE NEW LOCATION FOR THE GIVEN SENSOR_ID
-                        query = query_builder.insert_sensor_at_location_from_sensor_id(sensor_id = sensor_id,
-                                                                                       geom = packet[sensor_id])
+                        query = query_builder.insert_sensor_at_location_from_sensor_id(sensor_id=sensor_id,
+                                                                                       geom=packet.sensor_id)
                         if sc.DEBUG_MODE:
                             print(f"{DEBUG_HEADER} {query}")
-                        dbconn.send(executable_sql_query = query)
-
-
-
-
+                        dbconn.send(executable_sql_query=query)
 
 
 ################################ FACTORY ################################
 class GeoBotFactory(builtins.object):
-
 
     @classmethod
     def create_geo_bot(cls, bot_personality: str) -> GeoBot:

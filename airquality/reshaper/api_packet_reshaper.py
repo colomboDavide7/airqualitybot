@@ -9,6 +9,7 @@ import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 from airquality.parser.datetime_parser import DatetimeParser
+from airquality.packet.apiparam_single_packet import APIParamSinglePacket, APIParamSinglePacketPurpleair
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
     PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
@@ -22,26 +23,23 @@ from airquality.constants.shared_constants import THINGSPEAK_API_DECODE_FEEDS, T
     THINGSPEAK_API_DECODE_NAME, THINGSPEAK_API_DECODE_CREATED_AT, THINGSPEAK_CHANNEL_DECODE, THINGSPEAK_COUNTERS_DECODE
 
 
-
 class APIPacketReshaper(ABC):
 
-
     @abstractmethod
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[APIParamSinglePacket]:
         pass
 
 
 class APIPacketReshaperPurpleair(APIPacketReshaper):
 
-
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[APIParamSinglePacketPurpleair]:
         """This method takes a purpleair API answer and reshape it by creating a dictionary association between the
         'fields' parameter and the 'data' parameter for each item in the 'data' list."""
 
-        reshaped_packets = []
         fields = api_answer[PURPLEAIR_FIELDS_PARAM]
         n_fields = len(fields)
 
+        reshaped_packets = []
         if api_answer[PURPLEAIR_DATA_PARAM] != EMPTY_LIST:
             for data in api_answer[PURPLEAIR_DATA_PARAM]:
                 rpacket = {}
@@ -49,14 +47,13 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
                     key = fields[i]
                     val = data[i]
                     rpacket[key] = val
-                reshaped_packets.append(rpacket)
+                reshaped_packets.append(APIParamSinglePacketPurpleair(api_param=rpacket))
         return reshaped_packets
 
 
 ################################ THINGSPEAK API PACKET RESHAPER ################################
 
 class APIPacketReshaperThingspeak(APIPacketReshaper):
-
 
     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
 
@@ -83,12 +80,11 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
             if channel[param] in field_to_use.keys():
                 selected_fields[param] = field_to_use[channel[param]]
 
-
         reshaped_packets = []
         feeds = api_answer[THINGSPEAK_API_DECODE_FEEDS]
         for feed in feeds:
             reshaped_packet = {}
-            timestamp = DatetimeParser.thingspeak_to_sqltimestamp(ts = feed[THINGSPEAK_API_DECODE_CREATED_AT])
+            timestamp = DatetimeParser.thingspeak_to_sqltimestamp(ts=feed[THINGSPEAK_API_DECODE_CREATED_AT])
             reshaped_packet[THINGSPEAK_API_RESHAPER_TIME] = timestamp
             for field in feed.keys():
                 if field in selected_fields.keys():
@@ -97,11 +93,8 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
         return reshaped_packets
 
 
-
-
 ################################ FACTORY ################################
 class APIPacketReshaperFactory(builtins.object):
-
 
     @classmethod
     def create_api_packet_reshaper(cls, bot_personality: str) -> APIPacketReshaper:

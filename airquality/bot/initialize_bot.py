@@ -12,6 +12,10 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.bridge.bridge_object import BridgeObject
+from airquality.packet.sensorparam_packet import SensorParamPacketPurpleair
+from airquality.packet.apiparam_packet import APIParamPacketPurpleair
+from airquality.packet.geoparam_packet import GeoParamPacketPurpleair
 from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
@@ -26,8 +30,7 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST, \
-    THINGSPEAK_TIMESTAMP_1A, THINGSPEAK_TIMESTAMP_1B, THINGSPEAK_TIMESTAMP_2B, THINGSPEAK_TIMESTAMP_2A
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST
 
 
 class InitializeBot(ABC):
@@ -108,33 +111,30 @@ class InitializeBotPurpleair(InitializeBot):
         ################################ FETCHING API DATA ################################
         raw_api_packets = api_adapter.fetch(querystring=querystring)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension='json')
-        parsed_api_data = parser.parse(raw_string=raw_api_packets)
+        parsed_api_packets = parser.parse(raw_string=raw_api_packets)
 
         ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
         reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
-        reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_data)
+        reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_packets)
         if sc.DEBUG_MODE:
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:
                 print(30 * '*')
-                for key, val in packet.items():
-                    print(f"{DEBUG_HEADER} {key} = {val}")
+                print(f"{DEBUG_HEADER} {str(packet)}")
 
         ########################### CREATE IDENTIFIER FILTER FOR FILTERING API PACKETS ############################
-        filter_factory = IdentifierPacketFilterFactory()
-        filter_ = filter_factory.create_identifier_filter(bot_personality=sc.PERSONALITY)
+        packet_filter = IdentifierPacketFilterFactory().create_identifier_filter(bot_personality=sc.PERSONALITY)
 
         ################################ FILTER API PACKETS ################################
         # Filter packets based on sensor names. This is done to avoid to insert sensors that are
         # already present in the database.
+        filtered_packets = packet_filter.filter_packets(packets=reshaped_packets, identifiers=sensor_names)
 
-        filtered_packets = filter_.filter_packets(packets=reshaped_packets, identifiers=sensor_names)
         if sc.DEBUG_MODE:
             print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
             for packet in filtered_packets:
                 print(30 * '*')
-                for key, val in packet.items():
-                    print(f"{DEBUG_HEADER} {key} = {val}")
+                print(f"{DEBUG_HEADER} {str(packet)}")
 
         ####################### IF THERE ARE NO NEW SENSORS TO ADD, RETURN FROM THE METHOD ########################
         if filtered_packets == EMPTY_LIST:
@@ -143,42 +143,56 @@ class InitializeBotPurpleair(InitializeBot):
             dbconn.close_conn()
             return
 
-        ################################ INSERT NEW SENSORS INTO THE DATABASE ################################
-        query = query_builder.insert_sensors_from_identifier(packets=filtered_packets, identifier=sc.PERSONALITY)
-        dbconn.send(executable_sql_query=query)
-
-        ########## CREATE API PACKET PICKER FOR PICKING ONLY SELECTED FIELDS FROM ALL THOSE IN THE API PACKETS #########
-        picker = APIPacketPickerFactory().create_api_packet_picker(bot_personality=sc.PERSONALITY)
-
-        ################################ PICK ONLY API PARAMETERS FROM ALL PARAMETERS IN THE PACKETS ###################
-        api_param2pick = ResourcePicker.pick_api_param_filter_list_from_personality(bot_personality=sc.PERSONALITY)
-        new_api_packets = picker.pick_packet_params(packets=filtered_packets, param2pick=api_param2pick)
-
-        # ADD CHANNELS TIMESTAMP VARIABLES TO UNDERSTAND WHICH IS THE LAST MEASURE FOR A GIVEN CHANNEL
-        # WHEN FETCHING DATA IN FUTURE
-        for packet in new_api_packets:
-            packet[THINGSPEAK_TIMESTAMP_1A] = None
-            packet[THINGSPEAK_TIMESTAMP_1B] = None
-            packet[THINGSPEAK_TIMESTAMP_2A] = None
-            packet[THINGSPEAK_TIMESTAMP_2B] = None
+        ################################ TRANSFORM SINGLE PACKET INTO SENSOR PARAM PACKET ##############################
+        sensor_param_packets = []
+        for packet in filtered_packets:
+            sensor_param_packets.append(SensorParamPacketPurpleair(packet=packet))
 
         if sc.DEBUG_MODE:
-            print(20 * "=" + " API PARAM TABLE PACKETS " + 20 * '=')
-            for packet in new_api_packets:
+            print(20 * "=" + " SENSOR PARAM PACKETS " + 20 * '=')
+            for packet in sensor_param_packets:
                 print(30 * '*')
-                for key, val in packet.items():
-                    print(f"{DEBUG_HEADER} {key} = {val}")
+                print(f"{DEBUG_HEADER} {str(packet)}")
 
-        ################################ ASK THE SQL QUERY BUILDER TO BUILD THE QUERY ################################
-        query = query_builder.insert_api_param(packets=new_api_packets, first_sensor_id=sensor_id)
+        ################### CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS #############################
+        bridge = BridgeObject(packets=sensor_param_packets)
+        query = query_builder.insert_sensors_from_bridge(bridge=bridge)
         dbconn.send(executable_sql_query=query)
 
-        ###################### PICK ONLY GEO PARAMETERS FROM ALL PARAMETERS IN THE PACKETS #########################
-        geo_param2pick = ResourcePicker.pick_geo_param_filter_list_from_personality(personality=sc.PERSONALITY)
-        new_geo_packets = picker.pick_packet_params(packets=filtered_packets, param2pick=geo_param2pick)
+        ################################ TRANSFORM SINGLE PACKET INTO API PARAM PACKET ################################
+        api_param_packets = []
+        temp_sensor_id = sensor_id
+        for packet in filtered_packets:
+            api_param_packets.append(APIParamPacketPurpleair(packet=packet, sensor_id=temp_sensor_id))
+            temp_sensor_id += 1
 
-        ################################ INSERT THE RECORDS INTO THE DATABASE ################################
-        query = query_builder.insert_sensor_at_location(packets=new_geo_packets, first_sensor_id=sensor_id)
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " API PARAM PACKETS " + 20 * '=')
+            for packet in api_param_packets:
+                print(30 * '*')
+                print(f"{DEBUG_HEADER} {str(packet)}")
+
+        ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
+        bridge = BridgeObject(packets=api_param_packets)
+        query = query_builder.insert_api_param(bridge=bridge)
+        dbconn.send(executable_sql_query=query)
+
+        ############################### TRANSFORM SINGLE PACKET INTO GEOMETRY PARAM PACKET #############################
+        geo_param_packets = []
+        temp_sensor_id = sensor_id
+        for packet in filtered_packets:
+            geo_param_packets.append(GeoParamPacketPurpleair(packet=packet, sensor_id=temp_sensor_id))
+            temp_sensor_id += 1
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " GEO PARAM PACKETS " + 20 * '=')
+            for packet in geo_param_packets:
+                print(30 * '*')
+                print(f"{DEBUG_HEADER} {str(packet)}")
+
+        ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
+        bridge = BridgeObject(packets=geo_param_packets)
+        query = query_builder.insert_sensor_at_location(bridge=bridge)
         dbconn.send(executable_sql_query=query)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################

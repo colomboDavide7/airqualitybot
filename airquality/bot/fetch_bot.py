@@ -12,12 +12,12 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.reshaper.api2db_station_reshaper import API2DatabaseStationReshaperFactory
+from airquality.reshaper.dict2stationpacket_reshaper import Dict2StationpacketReshaperFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
-from airquality.reshaper.api2db_reshaper import API2DatabaseReshaperFactory
+from airquality.reshaper.dict2mobilepacket_reshaper import Dict2MobilepacketReshaperFactory
 from airquality.reshaper.db2api_reshaper import Database2APIReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
@@ -228,7 +228,7 @@ class FetchBotThingspeak(FetchBot):
                         #                 print(f"{DEBUG_HEADER} {key}={val}")
 
                         ############### API 2 DATABASE RESHAPER FOR BUILDING THE QUERY LATER ###########################
-                        api2db_reshaper = API2DatabaseStationReshaperFactory().create_reshaper(bot_personality=sc.PERSONALITY)
+                        api2db_reshaper = Dict2StationpacketReshaperFactory().create_reshaper(bot_personality=sc.PERSONALITY)
                         db_ready_packets = api2db_reshaper.reshape_packets(packets=reshaped_api_packets,
                                                                            measure_param_map=measure_param_map,
                                                                            sensor_id=sensor_id)
@@ -426,7 +426,7 @@ class FetchBotAtmotube(FetchBot):
                 if filtered_packets != EMPTY_LIST:
 
                     ############################## RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE ###################
-                    reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality=sc.PERSONALITY)
+                    reshaper = Dict2MobilepacketReshaperFactory().create_api2database_reshaper(bot_personality=sc.PERSONALITY)
                     reshaped_packets = reshaper.reshape_packets(packets=filtered_packets, reshape_mapping=measure_param_map)
 
                     if sc.DEBUG_MODE:

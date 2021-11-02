@@ -10,9 +10,7 @@ from typing import Dict, Any, List
 from airquality.constants.shared_constants import EMPTY_DICT, EMPTY_LIST
 
 
-
 class APIParamPicker(builtins.object):
-
 
     @classmethod
     def pick_param(cls, api_param: Dict[str, Any], param2pick: List[str]) -> Dict[str, Any]:

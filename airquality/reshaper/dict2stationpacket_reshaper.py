@@ -15,7 +15,7 @@ from airquality.api2database.measurement_packet import StationMeasurementPacket
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, THINGSPEAK_API_RESHAPER_TIME
 
 
-class API2DatabaseStationReshaper(ABC):
+class Dict2StationpacketReshaper(ABC):
 
     @abstractmethod
     def reshape_packets(self, packets: List[Dict[str, Any]], sensor_id: int, measure_param_map: Dict[str, Any]
@@ -23,7 +23,7 @@ class API2DatabaseStationReshaper(ABC):
         pass
 
 
-class API2DatabaseStationReshaperThingspeak(API2DatabaseStationReshaper):
+class Dict2StationpacketReshaperThingspeak(Dict2StationpacketReshaper):
 
     def reshape_packets(self, packets: List[Dict[str, Any]], sensor_id: int, measure_param_map: Dict[str, Any]
                         ) -> List[StationMeasurementPacket]:
@@ -32,7 +32,7 @@ class API2DatabaseStationReshaperThingspeak(API2DatabaseStationReshaper):
             return []
 
         if measure_param_map == EMPTY_DICT:
-            raise SystemExit(f"{API2DatabaseStationReshaperThingspeak.__name__}: cannot reshape packets when reshape "
+            raise SystemExit(f"{Dict2StationpacketReshaperThingspeak.__name__}: cannot reshape packets when reshape "
                              f"mapping is empty.")
 
         reshaped_packets = []
@@ -48,13 +48,13 @@ class API2DatabaseStationReshaperThingspeak(API2DatabaseStationReshaper):
 
 
 ################################ FACTORY ################################
-class API2DatabaseStationReshaperFactory(builtins.object):
+class Dict2StationpacketReshaperFactory(builtins.object):
 
     @classmethod
-    def create_reshaper(cls, bot_personality: str) -> API2DatabaseStationReshaper:
+    def create_reshaper(cls, bot_personality: str) -> Dict2StationpacketReshaper:
 
         if bot_personality == "thingspeak":
-            return API2DatabaseStationReshaperThingspeak()
+            return Dict2StationpacketReshaperThingspeak()
         else:
-            raise SystemExit(f"{API2DatabaseStationReshaperFactory.__name__}: cannot instantiate "
-                             f"{API2DatabaseStationReshaper.__name__} instance for personality='{bot_personality}'.")
+            raise SystemExit(f"{Dict2StationpacketReshaperFactory.__name__}: cannot instantiate "
+                             f"{Dict2StationpacketReshaper.__name__} instance for personality='{bot_personality}'.")

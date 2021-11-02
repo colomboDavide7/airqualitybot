@@ -7,11 +7,11 @@
 #################################################
 
 import unittest
-from airquality.reshaper.api2db_station_reshaper import API2DatabaseStationReshaperFactory
+from airquality.reshaper.dict2stationpacket_reshaper import Dict2StationpacketReshaperFactory
 from airquality.api2database.measurement_packet import StationMeasurementPacket
 
 
-class TestAPI2DatabaseStationReshaper(unittest.TestCase):
+class TestDict2StationpacketReshaper(unittest.TestCase):
 
     def test_successfully_reshape_thingspeak_packets(self):
         test_api_answer = [{"par1": "val1", "par2": "val2", "time": "ts1"},
@@ -24,7 +24,7 @@ class TestAPI2DatabaseStationReshaper(unittest.TestCase):
                            StationMeasurementPacket(param_id=1, param_val="val3", timestamp="ts2", sensor_id=1),
                            StationMeasurementPacket(param_id=2, param_val="val4", timestamp="ts2", sensor_id=1)]
 
-        reshaper = API2DatabaseStationReshaperFactory().create_reshaper(bot_personality="thingspeak")
+        reshaper = Dict2StationpacketReshaperFactory().create_reshaper(bot_personality="thingspeak")
         actual_output = reshaper.reshape_packets(packets=test_api_answer, sensor_id=1, measure_param_map=test_mapping)
         self.assertEqual(actual_output, expected_output)
 
@@ -34,7 +34,7 @@ class TestAPI2DatabaseStationReshaper(unittest.TestCase):
 
         test_mapping = {}
 
-        reshaper = API2DatabaseStationReshaperFactory().create_reshaper(bot_personality="thingspeak")
+        reshaper = Dict2StationpacketReshaperFactory().create_reshaper(bot_personality="thingspeak")
         with self.assertRaises(SystemExit):
             reshaper.reshape_packets(packets=test_api_answer, sensor_id=1, measure_param_map=test_mapping)
 
@@ -43,7 +43,7 @@ class TestAPI2DatabaseStationReshaper(unittest.TestCase):
 
         test_mapping = {"par1": 1, "par2": 2}
 
-        reshaper = API2DatabaseStationReshaperFactory().create_reshaper(bot_personality="thingspeak")
+        reshaper = Dict2StationpacketReshaperFactory().create_reshaper(bot_personality="thingspeak")
         actual_output = reshaper.reshape_packets(packets=test_api_answer, sensor_id=1,
                                                  measure_param_map=test_mapping)
         self.assertEqual(actual_output, [])

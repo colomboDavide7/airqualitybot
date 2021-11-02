@@ -19,7 +19,7 @@ class TestPostGISGeomBuilder(unittest.TestCase):
     def test_empty_string_when_passing_empty_geo_param(self):
         """Test 'EMPTY_STRING' output value when 'EMPTY_DICT' is passed."""
 
-        actual_output = PostGISGeomBuilder.build_geometry_type(geo_param = EMPTY_DICT, geo_type = GEO_TYPE_ST_POINT_2D)
+        actual_output = PostGISGeomBuilder.postgisgeom2geostring(geo_param = EMPTY_DICT, geo_type = GEO_TYPE_ST_POINT_2D)
         self.assertEqual(actual_output, EMPTY_STRING)
 
 
@@ -28,7 +28,7 @@ class TestPostGISGeomBuilder(unittest.TestCase):
 
         test_param = {GEOMBUILDER_LATITUDE: "45.676289"}
         with self.assertRaises(SystemExit):
-            PostGISGeomBuilder.build_geometry_type(geo_param = test_param, geo_type = GEO_TYPE_ST_POINT_2D)
+            PostGISGeomBuilder.postgisgeom2geostring(geo_param = test_param, geo_type = GEO_TYPE_ST_POINT_2D)
 
 
     def test_system_exit_when_bad_geotype_is_requested(self):
@@ -36,7 +36,7 @@ class TestPostGISGeomBuilder(unittest.TestCase):
 
         test_param = {GEOMBUILDER_LATITUDE: "45.676289", GEOMBUILDER_LONGITUDE: "9.6473648"}
         with self.assertRaises(SystemExit):
-            PostGISGeomBuilder.build_geometry_type(geo_param = test_param, geo_type = "bad geometry type")
+            PostGISGeomBuilder.postgisgeom2geostring(geo_param = test_param, geo_type ="bad geometry type")
 
 
     def test_extract_geotype_from_geostring(self):

@@ -52,14 +52,14 @@ class TestSQLQueryBuilder(unittest.TestCase):
         expected_output = "INSERT INTO level0_raw.sensor (sensor_type, sensor_name) VALUES "
         expected_output += "('purpleair', 'n1 (idx1)');"
 
-        actual_output = self.sql_builder.insert_sensors_from_identifier(packets=test_packets, identifier="purpleair")
+        actual_output = self.sql_builder.insert_sensors_from_bridge(packets=test_packets, identifier="purpleair")
         self.assertEqual(actual_output, expected_output)
 
     def test_empty_query_if_empty_packet_list_when_insert_sensor(self):
         """This method test the return value of 'EMPTY_STRING' when an EMPTY_LIST is passed as argument."""
 
         expected_output = EMPTY_STRING
-        actual_output = self.sql_builder.insert_sensors_from_identifier(packets=EMPTY_LIST, identifier="purpleair")
+        actual_output = self.sql_builder.insert_sensors_from_bridge(packets=EMPTY_LIST, identifier="purpleair")
         self.assertEqual(actual_output, expected_output)
 
     def test_successfully_insert_api_param(self):

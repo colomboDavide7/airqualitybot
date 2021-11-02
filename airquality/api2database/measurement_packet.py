@@ -12,6 +12,7 @@ import builtins
 class MobileMeasurementPacket(builtins.object):
 
     def __init__(self, param_id: int, param_val: str, timestamp: str, geom: str):
+        super().__init__()
         self.param_id = param_id
         self.param_val = param_val
         self.timestamp = timestamp
@@ -21,10 +22,8 @@ class MobileMeasurementPacket(builtins.object):
         if not isinstance(other, MobileMeasurementPacket):
             raise SystemExit(f"{MobileMeasurementPacket.__name__}: 'other' argument is not instance of the same class.")
 
-        return other.param_id == self.param_id and \
-               other.param_val == self.param_val and \
-               other.geom == self.geom and \
-               other.timestamp == self.timestamp
+        return other.param_id == self.param_id and other.param_val == self.param_val and \
+            other.geom == self.geom and other.timestamp == self.timestamp
 
     def __str__(self):
         return f"param_id={self.param_id}, param_va={self.param_val}, timestamp={self.timestamp}, geom={self.geom}"
@@ -33,6 +32,7 @@ class MobileMeasurementPacket(builtins.object):
 class StationMeasurementPacket(builtins.object):
 
     def __init__(self, param_id: int, sensor_id: int, param_val: str, timestamp: str):
+        super().__init__()
         self.param_id = param_id
         self.sensor_id = sensor_id
         self.param_val = param_val
@@ -42,10 +42,19 @@ class StationMeasurementPacket(builtins.object):
         if not isinstance(other, StationMeasurementPacket):
             raise SystemExit(f"{StationMeasurementPacket.__name__}: 'other' argument is not instance of the same class.")
 
-        return other.param_id == self.param_id and \
-               other.param_val == self.param_val and \
-               other.sensor_id == self.sensor_id and \
-               other.timestamp == self.timestamp
+        return other.param_id == self.param_id and other.param_val == self.param_val and \
+            other.sensor_id == self.sensor_id and other.timestamp == self.timestamp
 
     def __str__(self):
         return f"param_id={self.param_id}, param_va={self.param_val}, timestamp={self.timestamp}, sensor_id={self.sensor_id}"
+
+
+class GeoPacket(builtins.object):
+
+    def __init__(self, sensor_id: str, geom: str):
+        super().__init__()
+        self.sensor_id = sensor_id
+        self.geom = geom
+
+    def __str__(self):
+        return f"sensor_name={self.sensor_id}, geom={self.geom}"
