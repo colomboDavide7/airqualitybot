@@ -26,9 +26,9 @@ QUERY_FILE = "properties/sql_query.json"
 ################################ OUTPUT FORMAT CONSTANTS ################################
 
 DEBUG_HEADER = "[DEBUG]:"
-INITIALIZE_USAGE = "USAGE: python -m initialize [--help or -h] [--debug  or -d] personality api_address_number"
-FETCH_USAGE = "USAGE: python -m fetch [--help or -h] [--debug  or -d] personality api_address_number"
-GEO_USAGE = "USAGE: python -m geo [--help or -h] [--debug  or -d] personality api_address_number"
+INITIALIZE_USAGE = "USAGE: python -m initialize [--help or -h] [--debug  or -d] personality"
+FETCH_USAGE = "USAGE: python -m fetch [--help or -h] [--debug  or -d] personality"
+GEO_USAGE = "USAGE: python -m geo [--help or -h] [--debug  or -d] personality"
 
 ################################ EMPTY CONSTANTS ################################
 
@@ -43,50 +43,12 @@ ATMOTUBE_TIME_PARAM = "time"
 ATMOTUBE_COORDS_PARAM = "coords"
 ATMOTUBE_API_KEY_PARAM = 'api_key'
 ATMOTUBE_MAC_PARAM = 'mac'
-ATMOTUBE_ORDER_PARAM = 'order'
 
 ################################ VALID PURPLE AIR API PARAM ################################
 
-PURPLEAIR_NAME_PARAM = "name"
-PURPLEAIR_SENSOR_IDX_PARAM = "sensor_index"
 PURPLEAIR_FIELDS_PARAM = "fields"
 PURPLEAIR_API_KEY_PARAM = "api_key"
 PURPLEAIR_DATA_PARAM = "data"
-PURPLEAIR_CH_ID_PARAM = "channel_id"
-PURPLEAIR_OPTIONAL_API_PARAM = ["nwlng", "nwlat", "selng", "selat"]
-
-################################ VALID ATMOTUBE API PARAM ################################
-
-
-################################ PICKER-TO-QUERY_BUILDER CONSTANTS ################################
-
-RESHAPER2SQLBUILDER_PARAM_ID = "par_id"
-RESHAPER2SQLBUILDER_SENSOR_ID = "sens_id"
-RESHAPER2SQLBUILDER_PARAM_VAL = "par_val"
-RESHAPER2SQLBUILDER_TIMESTAMP = "ts"
-RESHAPER2SQLBUILDER_GEOMETRY = "geom"
-
-################################ MESSAGE ################################
-
-SENSOR_NAME = "name"
-PURPLE_AIR_API_PARAM = ["primary_id_a", "primary_key_a", "primary_id_b", "primary_key_b",
-                        "secondary_id_a", "secondary_key_a", "secondary_id_b", "secondary_key_b"]
-PURPLEAIR_LAT_PARAM = "latitude"
-PURPLEAIR_LON_PARAM = "longitude"
-PURPLE_AIR_GEO_PARAM = ["name", "sensor_index", PURPLEAIR_LAT_PARAM, PURPLEAIR_LON_PARAM]
-
-################################ GEOMETRY BUILDER CONSTANTS ################################
-
-GEOMBUILDER_LATITUDE = "latitude"
-GEOMBUILDER_LONGITUDE = "longitude"
-
-################################ POSTGIS GEOMETRY TYPE ################################
-
-GEO_TYPE_ST_POINT_2D = "POINT({lon} {lat})"
-
-################################ POSTGIS SRID CONSTANTS ################################
-
-EPSG_SRID = 26918
 
 ################################ DATETIME REGULAR EXPRESSION PATTERN ################################
 
