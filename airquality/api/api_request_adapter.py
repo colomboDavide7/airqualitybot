@@ -11,7 +11,6 @@ import urllib.request as req
 
 class APIRequestAdapter(builtins.object):
 
-
     def __init__(self, api_address):
         self.__api_address = api_address
 

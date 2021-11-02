@@ -9,7 +9,7 @@ or running all tests once.
 
 ###################### RUN TEST API ######################
 
-python -m test.api.test_api_request_adapter
+python3.8 -m test.api.test_api_request_adapter
 python -m test.api.test_url_querystring_builder
 
 ###################### RUN TEST DATABASE ######################
@@ -52,7 +52,7 @@ python -m test.reshaper.test_db2api_reshaper
 
 ###################### RUN ALL TESTS ######################
 
-python -m unittest discover -s test -p 'test_*.py'
+python3.8 -m unittest discover -s test -p 'test_*.py'
 
 
 

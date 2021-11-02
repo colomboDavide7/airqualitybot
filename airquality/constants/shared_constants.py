@@ -9,19 +9,19 @@
 
 ################################ DEFINE VALID PERSONALITIES FOR 'SENSOR AT LOCATION' ################################
 
-PURPLEAIR_PERSONALITY  = "purpleair"
+PURPLEAIR_PERSONALITY = "purpleair"
 THINGSPEAK_PERSONALITY = "thingspeak"
-ATMOTUBE_PERSONALITY   = "atmotube"
+ATMOTUBE_PERSONALITY = "atmotube"
 
 VALID_PERSONALITIES = (PURPLEAIR_PERSONALITY, THINGSPEAK_PERSONALITY, ATMOTUBE_PERSONALITY)
-SENSOR_AT_LOCATION_PERSONALITIES = (PURPLEAIR_PERSONALITY, )
-MOBILE_SENSOR_PERSONALITIES = (ATMOTUBE_PERSONALITY, )
+SENSOR_AT_LOCATION_PERSONALITIES = (PURPLEAIR_PERSONALITY,)
+MOBILE_SENSOR_PERSONALITIES = (ATMOTUBE_PERSONALITY,)
 
 ################################ PATH OF THE FILES USED IN THE PROJECT ################################
 
-API_FILE    = "properties/api.json"
+API_FILE = "properties/api.json"
 SERVER_FILE = "properties/server.json"
-QUERY_FILE  = "properties/sql_query.json"
+QUERY_FILE = "properties/sql_query.json"
 
 ################################ OUTPUT FORMAT CONSTANTS ################################
 
@@ -33,8 +33,8 @@ GEO_USAGE = "USAGE: python -m geo [--help or -h] [--debug  or -d] personality ap
 ################################ EMPTY CONSTANTS ################################
 
 EMPTY_STRING = ""
-EMPTY_LIST   = []
-EMPTY_DICT   = {}
+EMPTY_LIST = []
+EMPTY_DICT = {}
 
 ################################ VALID ATMOTUBE API PARAMETERS ################################
 
@@ -48,7 +48,7 @@ ATMOTUBE_API_PARAMETERS = ('api_key', 'mac', ATMOTUBE_DATE_PARAM, 'order')
 PURPLEAIR_NAME_PARAM = "name"
 PURPLEAIR_SENSOR_IDX_PARAM = "sensor_index"
 PURPLEAIR_FIELDS_PARAM = "fields"
-PURPLEAIR_DATA_PARAM   = "data"
+PURPLEAIR_DATA_PARAM = "data"
 PURPLEAIR_CH_ID_PARAM = "channel_id"
 
 ################################ QUERYSTRING ARGUMENTS ################################
@@ -56,11 +56,11 @@ PURPLEAIR_CH_ID_PARAM = "channel_id"
 
 ################################ PICKER-TO-QUERY_BUILDER CONSTANTS ################################
 
-RESHAPER2SQLBUILDER_PARAM_ID  = "par_id"
+RESHAPER2SQLBUILDER_PARAM_ID = "par_id"
 RESHAPER2SQLBUILDER_SENSOR_ID = "sens_id"
 RESHAPER2SQLBUILDER_PARAM_VAL = "par_val"
 RESHAPER2SQLBUILDER_TIMESTAMP = "ts"
-RESHAPER2SQLBUILDER_GEOMETRY  = "geom"
+RESHAPER2SQLBUILDER_GEOMETRY = "geom"
 
 ################################ MESSAGE ################################
 
@@ -73,7 +73,7 @@ PURPLE_AIR_GEO_PARAM = ["name", "sensor_index", PURPLEAIR_LAT_PARAM, PURPLEAIR_L
 
 ################################ GEOMETRY BUILDER CONSTANTS ################################
 
-GEOMBUILDER_LATITUDE  = "latitude"
+GEOMBUILDER_LATITUDE = "latitude"
 GEOMBUILDER_LONGITUDE = "longitude"
 
 ################################ POSTGIS GEOMETRY TYPE ################################
@@ -87,7 +87,7 @@ EPSG_SRID = 26918
 ################################ DATETIME REGULAR EXPRESSION PATTERN ################################
 
 ATMOTUBE_DATETIME_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z'
-SQL_TIMESTAMP_REGEX_PATTERN     = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
+SQL_TIMESTAMP_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
 THINGSPEAK_DATETIME_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
 
 ################################ DATETIME FORMAT FOR DATETIME2STR CONVERSION ################################
@@ -107,7 +107,8 @@ list index: these are going to be used by the Database2APIReshaper."""
 
 THINGSPEAK_CH_ID_2PICK = ["primary_id_a", "primary_id_b", "secondary_id_a", "secondary_id_b"]
 THINGSPEAK_KEY_2PICK = ["primary_key_a", "primary_key_b", "secondary_key_a", "secondary_key_b"]
-THINGSPEAK_TS_2PICK = [THINGSPEAK_TIMESTAMP_1A, THINGSPEAK_TIMESTAMP_1B, THINGSPEAK_TIMESTAMP_2A, THINGSPEAK_TIMESTAMP_2B]
+THINGSPEAK_TS_2PICK = [THINGSPEAK_TIMESTAMP_1A, THINGSPEAK_TIMESTAMP_1B, THINGSPEAK_TIMESTAMP_2A,
+                       THINGSPEAK_TIMESTAMP_2B]
 
 ################################ THINGSPEAK 2 DATABASE PARAM NAME MAPPING ################################
 

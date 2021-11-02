@@ -15,7 +15,6 @@ from airquality.constants.shared_constants import EMPTY_DICT, \
 
 class Database2APIReshaper(ABC):
 
-
     @abstractmethod
     def reshape_data(self, api_param: Dict[str, Any]) -> Dict[str, Any]:
         pass
@@ -23,11 +22,11 @@ class Database2APIReshaper(ABC):
 
 class Database2APIReshaperThingspeak(Database2APIReshaper):
 
-
     def reshape_data(self, api_param: Dict[str, Any]) -> Dict[str, Any]:
 
         if api_param == EMPTY_DICT:
-            raise SystemExit(f"{Database2APIReshaperThingspeak.__name__}: cannot reshape data when 'api_param' are missing.")
+            raise SystemExit(
+                f"{Database2APIReshaperThingspeak.__name__}: cannot reshape data when 'api_param' are missing.")
 
         reshaped = {}
         keys = api_param.keys()
@@ -45,14 +44,14 @@ class Database2APIReshaperThingspeak(Database2APIReshaper):
             if channel_ts not in keys:
                 raise SystemExit(f"{Database2APIReshaperThingspeak.__name__}: missing channel id = '{channel_ts}'")
 
-            reshaped[api_param[channel_id]] = {'key': api_param[channel_key], 'ts': api_param[channel_ts], 'name': channel_ts}
+            reshaped[api_param[channel_id]] = {'key': api_param[channel_key],
+                                               'ts': api_param[channel_ts],
+                                               'name': channel_ts}
         return reshaped
-
 
 
 ################################ FACTORY ################################
 class Database2APIReshaperFactory(builtins.object):
-
 
     @classmethod
     def create_reshaper(cls, bot_personality: str) -> Database2APIReshaper:
@@ -60,5 +59,6 @@ class Database2APIReshaperFactory(builtins.object):
         if bot_personality == "thingspeak":
             return Database2APIReshaperThingspeak()
         else:
-            raise SystemExit(f"{Database2APIReshaperFactory.__name__}: cannot instantiate {Database2APIReshaper.__name__} "
-                             f"instance for personality='{bot_personality}'.")
+            raise SystemExit(
+                f"{Database2APIReshaperFactory.__name__}: cannot instantiate {Database2APIReshaper.__name__} "
+                f"instance for personality='{bot_personality}'.")

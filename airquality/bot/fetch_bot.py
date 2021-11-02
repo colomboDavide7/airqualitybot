@@ -39,11 +39,9 @@ from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_F
 
 class FetchBot(ABC):
 
-
     @abstractmethod
     def run(self):
         pass
-
 
 
 ################################################################################################
@@ -56,17 +54,16 @@ class FetchBot(ABC):
 
 class FetchBotThingspeak(FetchBot):
 
-
     def run(self):
 
         ################################ READ SERVER FILE ################################
-        raw_server_data = IOManager.open_read_close_file(path = SERVER_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = SERVER_FILE.split('.')[-1])
-        parsed_server_data = parser.parse(raw_string = raw_server_data)
+        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
+        parsed_server_data = parser.parse(raw_string=raw_server_data)
 
         ################################ PICK DATABASE CONNECTION PROPERTIES ################################
-        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources = parsed_server_data,
-                                                             bot_personality = sc.PERSONALITY)
+        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources=parsed_server_data,
+                                                             bot_personality=sc.PERSONALITY)
         if sc.DEBUG_MODE:
             print(20 * "=" + " DATABASE SETTINGS " + 20 * '=')
             for key, val in db_settings.items():
@@ -74,33 +71,33 @@ class FetchBotThingspeak(FetchBot):
 
         ################################ DATABASE CONNECTION ADAPTER ################################
         db_conn_factory = Psycopg2ConnectionAdapterFactory()
-        dbconn = db_conn_factory.create_database_connection_adapter(settings = db_settings)
+        dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
         dbconn.open_conn()
 
         ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
+        query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
 
         ################################ READ API FILE ################################
-        raw_api_data = IOManager.open_read_close_file(path = API_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string = raw_api_data)
+        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
+        parsed_api_data = parser.parse(raw_string=raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address"]
-        api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
+        api_address = JSONParamPicker.pick_parameter(parsed_json=parsed_api_data, path2key=path2key)
         if sc.DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
         ################################ QUERYSTRING BUILDER ################################
-        querystring_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality = sc.PERSONALITY)
+        querystring_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality=sc.PERSONALITY)
 
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
-        query = query_builder.select_sensor_ids_from_identifier(identifier = PURPLEAIR_PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
-        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+        query = query_builder.select_sensor_ids_from_identifier(identifier=PURPLEAIR_PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
+        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
-        ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
+        ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
         if sensor_ids == EMPTY_LIST:
             if sc.DEBUG_MODE:
                 print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
@@ -113,8 +110,8 @@ class FetchBotThingspeak(FetchBot):
                 print(f"{DEBUG_HEADER} {sensor_id}")
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
-        query = query_builder.select_measure_param_from_identifier(identifier = PURPLEAIR_PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
+        query = query_builder.select_measure_param_from_identifier(identifier=PURPLEAIR_PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
         if sc.DEBUG_MODE:
@@ -122,13 +119,13 @@ class FetchBotThingspeak(FetchBot):
             for param_code, param_id in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
-################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
+        ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
         for sensor_id in sensor_ids:
 
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
-            # ###################### SELECT LAST SENSOR MEASUREMENT TIMESTAMP FROM DATABASE ##############################
+            # ###################### SELECT LAST SENSOR MEASUREMENT TIMESTAMP FROM DATABASE ############################
             # query = query_builder.select_last_acquisition_timestamp_from_station_id(station_id = sensor_id)
             # answer = dbconn.send(executable_sql_query = query)
             # parsed_timestamp = DatabaseAnswerParser.parse_single_attribute_answer(answer)
@@ -140,8 +137,8 @@ class FetchBotThingspeak(FetchBot):
             #         print(f"{DEBUG_HEADER} {parsed_timestamp[0]}")
 
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
-            query = query_builder.select_sensor_api_param(sensor_id = sensor_id)
-            answer = dbconn.send(executable_sql_query = query)
+            query = query_builder.select_sensor_api_param(sensor_id=sensor_id)
+            answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
             if sc.DEBUG_MODE:
@@ -150,8 +147,8 @@ class FetchBotThingspeak(FetchBot):
                     print(f"{DEBUG_HEADER} {name}={value}")
 
             ################### RESHAPE API DATA FOR GETTING THE COUPLE CHANNEL_ID: CHANNEL_KEY ########################
-            db2api_reshaper = Database2APIReshaperFactory().create_reshaper(bot_personality = sc.PERSONALITY)
-            reshaped_api_param = db2api_reshaper.reshape_data(api_param = api_param)
+            db2api_reshaper = Database2APIReshaperFactory().create_reshaper(bot_personality=sc.PERSONALITY)
+            reshaped_api_param = db2api_reshaper.reshape_data(api_param=api_param)
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " RESHAPED API PARAM " + 20 * '=')
@@ -160,30 +157,30 @@ class FetchBotThingspeak(FetchBot):
                     for key, val in reshaped_api_param[ch_id].items():
                         print(f"{DEBUG_HEADER} {key}={val}")
 
-
-################################ FORMAT API ADDRESS AND BUILD QUERYSTRING FOR EACH CHANNEL ################################
+            ######################## FORMAT API ADDRESS AND BUILD QUERYSTRING FOR EACH CHANNEL #########################
 
             for channel_id in reshaped_api_param.keys():
 
                 # FORMAT API ADDRESS WITH CHANNEL ID
-                formatted_api_address = api_address.format(channel_id = channel_id)
+                formatted_api_address = api_address.format(channel_id=channel_id)
 
                 # CREATE API REQUEST ADAPTER
-                api_adapter = APIRequestAdapter(api_address = formatted_api_address)
+                api_adapter = APIRequestAdapter(api_address=formatted_api_address)
                 if sc.DEBUG_MODE:
                     print(20 * "=" + " API ADDRESS " + 20 * '=')
                     print(f"{DEBUG_HEADER} {formatted_api_address}")
 
-################################ DEFINE START DATE AND STOP DATE FOR FETCHING DATA FROM API ################################
+                ####################### DEFINE START DATE AND STOP DATE FOR FETCHING DATA FROM API #####################
 
                 stop_datetime = DatetimeParser.today()
-                from_datetime = DatetimeParser.string2datetime(datetime_string = THINGSPEAK_START_FETCH_TIMESTAMP)
+                from_datetime = DatetimeParser.string2datetime(datetime_string=THINGSPEAK_START_FETCH_TIMESTAMP)
 
-# CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN CHANNEL_ID ASSOCIATED TO THE SENSOR_ID
+                # CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN CHANNEL_ID
+                # ASSOCIATED TO THE SENSOR_ID
                 if reshaped_api_param[channel_id].get('ts', None) is not None:
-                    from_datetime = DatetimeParser.string2datetime(datetime_string = reshaped_api_param[channel_id]['ts'])
+                    from_datetime = DatetimeParser.string2datetime(datetime_string=reshaped_api_param[channel_id]['ts'])
 
-                to_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 7)
+                to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
                 if (to_datetime - stop_datetime).total_seconds() > 0:
                     to_datetime = stop_datetime
 
@@ -192,20 +189,19 @@ class FetchBotThingspeak(FetchBot):
 
                     # GET QUERYSTRING PARAMETERS
                     querystring_param = {'api_key': reshaped_api_param[channel_id]['key'],
-                                         'start': DatetimeParser.datetime2string(ts = from_datetime),
-                                         'end': DatetimeParser.datetime2string(ts = to_datetime)}
+                                         'start': DatetimeParser.datetime2string(ts=from_datetime),
+                                         'end': DatetimeParser.datetime2string(ts=to_datetime)}
 
                     # BUILD URL QUERYSTRING
-                    querystring = querystring_builder.make_querystring(parameters = querystring_param)
+                    querystring = querystring_builder.make_querystring(parameters=querystring_param)
                     if sc.DEBUG_MODE:
                         print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
                         print(f"{DEBUG_HEADER} {querystring}")
 
-
                     # FETCH DATA FROM API
                     api_packets = api_adapter.fetch(querystring)
-                    parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
-                    parsed_api_packets = parser.parse(raw_string = api_packets)
+                    parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
+                    parsed_api_packets = parser.parse(raw_string=api_packets)
 
                     # if sc.DEBUG_MODE:
                     #     print(20 * "=" + " API PACKETS " + 20 * '=')
@@ -215,12 +211,13 @@ class FetchBotThingspeak(FetchBot):
                     #             for key, val in packet.items():
                     #                 print(f"{DEBUG_HEADER} {key}={val}")
 
-################################ CONTINUE ONLY IF THERE ARE VALID PACKETS FROM APIS ################################
+                    ####################### CONTINUE ONLY IF THERE ARE VALID PACKETS FROM APIS #########################
                     if parsed_api_packets["feeds"] != EMPTY_LIST:
 
                         ######### API PACKET RESHAPER FOR GETTING THE RIGHT MAPPING FOR NEXT INSERTION #################
-                        api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = sc.PERSONALITY)
-                        reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer = parsed_api_packets)
+                        api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(
+                            bot_personality=sc.PERSONALITY)
+                        reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
 
                         # if sc.DEBUG_MODE:
                         #     if reshaped_api_packets != EMPTY_LIST:
@@ -231,10 +228,11 @@ class FetchBotThingspeak(FetchBot):
                         #                 print(f"{DEBUG_HEADER} {key}={val}")
 
                         ############### API 2 DATABASE RESHAPER FOR BUILDING THE QUERY LATER ###########################
-                        api2db_reshaper = API2DatabaseStationReshaperFactory().create_reshaper(bot_personality = sc.PERSONALITY)
-                        db_ready_packets = api2db_reshaper.reshape_packets(packets = reshaped_api_packets,
-                                                                           measure_param_map = measure_param_map,
-                                                                           sensor_id = sensor_id)
+                        api2db_reshaper = API2DatabaseStationReshaperFactory().create_reshaper(
+                            bot_personality=sc.PERSONALITY)
+                        db_ready_packets = api2db_reshaper.reshape_packets(packets=reshaped_api_packets,
+                                                                           measure_param_map=measure_param_map,
+                                                                           sensor_id=sensor_id)
 
                         if sc.DEBUG_MODE:
                             if db_ready_packets != EMPTY_LIST:
@@ -248,34 +246,29 @@ class FetchBotThingspeak(FetchBot):
                                         print(f"{DEBUG_HEADER} {key}={val}")
 
                         ################# BUILD THE QUERY FOR INSERTING THE PACKETS INTO THE DATABASE ##################
-                        query = query_builder.insert_station_measurements(packets = db_ready_packets)
-                        dbconn.send(executable_sql_query = query)
+                        query = query_builder.insert_station_measurements(packets=db_ready_packets)
+                        dbconn.send(executable_sql_query=query)
 
                         ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
                         if sc.DEBUG_MODE:
-                            print(f"{DEBUG_HEADER} last {reshaped_api_param[channel_id]['name']} = {db_ready_packets[-1]['ts']}")
+                            print(f"{DEBUG_HEADER} last {reshaped_api_param[channel_id]['name']} = "
+                                  f"{db_ready_packets[-1]['ts']}")
 
                         query = query_builder.update_last_channel_acquisition_timestamp(
-                                sensor_id = sensor_id,
-                                ts = db_ready_packets[-1]["ts"],
-                                param2update = reshaped_api_param[channel_id]['name'])
-                        dbconn.send(executable_sql_query = query)
+                            sensor_id=sensor_id,
+                            ts=db_ready_packets[-1]["ts"],
+                            param2update=reshaped_api_param[channel_id]['name'])
+                        dbconn.send(executable_sql_query=query)
 
-
-################################ INCREMENT THE PERIOD FOR DATA FETCHING ################################
-                    from_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 7)
-                    to_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 7)
+                    ############################## INCREMENT THE PERIOD FOR DATA FETCHING ##############################
+                    from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
+                    to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
 
                     if (to_datetime - stop_datetime).total_seconds() >= 0:
                         to_datetime = stop_datetime
 
-
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()
-
-
-
-
 
 
 ################################################################################################
@@ -288,18 +281,16 @@ class FetchBotThingspeak(FetchBot):
 
 class FetchBotAtmotube(FetchBot):
 
-
-
     def run(self):
 
         ################################ READ SERVER FILE ################################
-        raw_server_data = IOManager.open_read_close_file(path = SERVER_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = SERVER_FILE.split('.')[-1])
-        parsed_server_data = parser.parse(raw_string = raw_server_data)
+        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
+        parsed_server_data = parser.parse(raw_string=raw_server_data)
 
         ################################ PICK DATABASE CONNECTION PROPERTIES ################################
-        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources = parsed_server_data,
-                                                             bot_personality = sc.PERSONALITY)
+        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources=parsed_server_data,
+                                                             bot_personality=sc.PERSONALITY)
         if sc.DEBUG_MODE:
             print(20 * "=" + " DATABASE SETTINGS " + 20 * '=')
             for key, val in db_settings.items():
@@ -307,33 +298,33 @@ class FetchBotAtmotube(FetchBot):
 
         ################################ DATABASE CONNECTION ADAPTER ################################
         db_conn_factory = Psycopg2ConnectionAdapterFactory()
-        dbconn = db_conn_factory.create_database_connection_adapter(settings = db_settings)
+        dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
         dbconn.open_conn()
 
         ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path = QUERY_FILE)
+        query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
 
         ################################ READ API FILE ################################
-        raw_api_data = IOManager.open_read_close_file(path = API_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension = API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string = raw_api_data)
+        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
+        parsed_api_data = parser.parse(raw_string=raw_api_data)
 
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address"]
-        api_address = JSONParamPicker.pick_parameter(parsed_json = parsed_api_data, path2key = path2key)
+        api_address = JSONParamPicker.pick_parameter(parsed_json=parsed_api_data, path2key=path2key)
         if sc.DEBUG_MODE:
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
         ################################ API REQUEST ADAPTER ################################
-        api_adapter = APIRequestAdapter(api_address = api_address)
+        api_adapter = APIRequestAdapter(api_address=api_address)
 
         ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
-        query = query_builder.select_sensor_ids_from_identifier(identifier = sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
-        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response = answer)
+        query = query_builder.select_sensor_ids_from_identifier(identifier=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
+        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
-        ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ################################
+        ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
         if sensor_ids == EMPTY_LIST:
             if sc.DEBUG_MODE:
                 print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
@@ -346,8 +337,8 @@ class FetchBotAtmotube(FetchBot):
                 print(f"{DEBUG_HEADER} {sensor_id}")
 
         ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
-        query = query_builder.select_measure_param_from_identifier(identifier = sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query = query)
+        query = query_builder.select_measure_param_from_identifier(identifier=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
         if sc.DEBUG_MODE:
@@ -362,8 +353,8 @@ class FetchBotAtmotube(FetchBot):
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
-            query = query_builder.select_sensor_api_param(sensor_id = sensor_id)
-            answer = dbconn.send(executable_sql_query = query)
+            query = query_builder.select_sensor_api_param(sensor_id=sensor_id)
+            answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
             if sc.DEBUG_MODE:
@@ -372,9 +363,9 @@ class FetchBotAtmotube(FetchBot):
                     print(f"{DEBUG_HEADER} {name}={value}")
 
             ############### ADD OPTIONAL QUERYSTRING PARAMETER READ FROM API FILE ###################
-            api_param2pick = ResourcePicker.pick_optional_api_parameters_from_api_data(personality = sc.PERSONALITY)
-            optional_params = APIParamPicker.pick_param(api_param = parsed_api_data[sc.PERSONALITY],
-                                                        param2pick = api_param2pick)
+            api_param2pick = ResourcePicker.pick_optional_api_parameters_from_api_data(personality=sc.PERSONALITY)
+            optional_params = APIParamPicker.pick_param(api_param=parsed_api_data[sc.PERSONALITY],
+                                                        param2pick=api_param2pick)
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " OPTIONAL API PARAMETERS " + 20 * '=')
@@ -389,38 +380,39 @@ class FetchBotAtmotube(FetchBot):
                     print(f"{DEBUG_HEADER} {name}={value}")
 
             ################################ CREATE URL QUERYSTRING BUILDER ################################
-            querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality = sc.PERSONALITY)
+            querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(
+                bot_personality=sc.PERSONALITY)
 
             ################################ CYCLE THROUGH DATE UNTIL NOW ################################
             stop_datetime = DatetimeParser.today()
-            from_datetime = DatetimeParser.string2datetime(datetime_string = ATMOTUBE_START_FETCH_TIMESTAMP)
+            from_datetime = DatetimeParser.string2datetime(datetime_string=ATMOTUBE_START_FETCH_TIMESTAMP)
 
             # IF DATE IS PRESENT INTO THE DATABASE THEN START TO FETCH DATA FROM THAT DATE
             filter_sqltimestamp = ""
             if api_param.get('date', None) is not None:
-                from_datetime = DatetimeParser.string2datetime(datetime_string = api_param['date'])
+                from_datetime = DatetimeParser.string2datetime(datetime_string=api_param['date'])
                 filter_sqltimestamp = api_param['date']
 
             while (from_datetime - stop_datetime).total_seconds() < 0:
 
                 # INSERT DATETIME INTO API PARAMETERS
-                api_param['date'] = DatetimeParser.datetime2string(ts = from_datetime)
+                api_param['date'] = DatetimeParser.datetime2string(ts=from_datetime)
 
                 # BUILD THE QUERYSTRING
-                querystring = querystring_builder.make_querystring(parameters = api_param)
+                querystring = querystring_builder.make_querystring(parameters=api_param)
 
                 if sc.DEBUG_MODE:
                     print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
                     print(f"{DEBUG_HEADER} {querystring}")
 
                 ################################ FETCH DATA FROM API ################################
-                api_answer = api_adapter.fetch(querystring = querystring)
-                parser = FileParserFactory.file_parser_from_file_extension(file_extension = "json")
-                api_answer = parser.parse(raw_string = api_answer)
+                api_answer = api_adapter.fetch(querystring=querystring)
+                parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
+                api_answer = parser.parse(raw_string=api_answer)
 
                 ################# FILTER PACKETS ONLY IF IT IS NOT THE FIRST ACQUISITION FOR THE SENSOR ################
-                filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality = sc.PERSONALITY)
-                filtered_packets = filter_.filter_packets(packets = api_answer, sqltimestamp = filter_sqltimestamp)
+                filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality=sc.PERSONALITY)
+                filtered_packets = filter_.filter_packets(packets=api_answer, sqltimestamp=filter_sqltimestamp)
 
                 if sc.DEBUG_MODE:
                     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
@@ -433,13 +425,14 @@ class FetchBotAtmotube(FetchBot):
                             for key, val in rpacket.items():
                                 print(f"{DEBUG_HEADER} {key}={val}")
 
-                ################################ INSERT MEASURE ONLY IF THERE ARE NEW MEASUREMENTS ################################
+                ########################### INSERT MEASURE ONLY IF THERE ARE NEW MEASUREMENTS ##########################
                 if filtered_packets != EMPTY_LIST:
 
-                    ################################ RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE #####################
-                    reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(bot_personality = sc.PERSONALITY)
-                    reshaped_packets = reshaper.reshape_packets(packets = filtered_packets,
-                                                                reshape_mapping = measure_param_map)
+                    ############################## RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE ###################
+                    reshaper = API2DatabaseReshaperFactory().create_api2database_reshaper(
+                        bot_personality=sc.PERSONALITY)
+                    reshaped_packets = reshaper.reshape_packets(packets=filtered_packets,
+                                                                reshape_mapping=measure_param_map)
 
                     if sc.DEBUG_MODE:
                         print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
@@ -452,30 +445,27 @@ class FetchBotAtmotube(FetchBot):
                                 for key, val in rpacket.items():
                                     print(f"{DEBUG_HEADER} {key}={val}")
 
-                    ################################ CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE #################
+                    ############################## CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE ###############
                     query = query_builder.insert_atmotube_measurements(reshaped_packets)
-                    dbconn.send(executable_sql_query = query)
+                    dbconn.send(executable_sql_query=query)
 
-                    ############### UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH ###############
+                    ############# UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH #############
                     if sc.DEBUG_MODE:
                         print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1]['ts']}")
 
-                    query = query_builder.update_last_packet_date_atmotube(last_timestamp = reshaped_packets[-1]["ts"],
-                                                                           sensor_id = sensor_id)
-                    dbconn.send(executable_sql_query = query)
+                    query = query_builder.update_last_packet_date_atmotube(last_timestamp=reshaped_packets[-1]["ts"],
+                                                                           sensor_id=sensor_id)
+                    dbconn.send(executable_sql_query=query)
 
                 ################# END OF THE LOOP: ADD ONE DAY TO THE CURRENT FROM DATE ########################
-                from_datetime = DatetimeParser.add_days_to_datetime(ts = from_datetime, days = 1)
+                from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=1)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()
 
 
-
-
 ################################ FACTORY ################################
 class FetchBotFactory(builtins.object):
-
 
     @classmethod
     def create_fetch_bot(cls, bot_personality: str) -> FetchBot:
