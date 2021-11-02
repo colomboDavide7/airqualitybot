@@ -228,8 +228,7 @@ class FetchBotThingspeak(FetchBot):
                         #                 print(f"{DEBUG_HEADER} {key}={val}")
 
                         ############### API 2 DATABASE RESHAPER FOR BUILDING THE QUERY LATER ###########################
-                        api2db_reshaper = API2DatabaseStationReshaperFactory().create_reshaper(
-                            bot_personality=sc.PERSONALITY)
+                        api2db_reshaper = API2DatabaseStationReshaperFactory().create_reshaper(bot_personality=sc.PERSONALITY)
                         db_ready_packets = api2db_reshaper.reshape_packets(packets=reshaped_api_packets,
                                                                            measure_param_map=measure_param_map,
                                                                            sensor_id=sensor_id)
@@ -238,25 +237,23 @@ class FetchBotThingspeak(FetchBot):
                             if db_ready_packets != EMPTY_LIST:
                                 print(20 * "=" + " DATABASE READY PACKETS " + 20 * '=')
                                 for packet in db_ready_packets[0:3]:
-                                    for key, val in packet.items():
-                                        print(f"{DEBUG_HEADER} {key}={val}")
+                                    print(f"{DEBUG_HEADER} {str(packet)}")
 
                                 for packet in db_ready_packets[-4:-1]:
-                                    for key, val in packet.items():
-                                        print(f"{DEBUG_HEADER} {key}={val}")
+                                    print(f"{DEBUG_HEADER} {str(packet)}")
 
                         ################# BUILD THE QUERY FOR INSERTING THE PACKETS INTO THE DATABASE ##################
-                        query = query_builder.insert_station_measurements(packets=db_ready_packets)
+                        query = query_builder.insert_into_station_measurements(packets=db_ready_packets)
                         dbconn.send(executable_sql_query=query)
 
                         ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
                         if sc.DEBUG_MODE:
                             print(f"{DEBUG_HEADER} last {reshaped_api_param[channel_id]['name']} = "
-                                  f"{db_ready_packets[-1]['ts']}")
+                                  f"{db_ready_packets[-1].timestamp}")
 
                         query = query_builder.update_last_channel_acquisition_timestamp(
                             sensor_id=sensor_id,
-                            ts=db_ready_packets[-1]["ts"],
+                            ts=db_ready_packets[-1].timestamp,
                             param2update=reshaped_api_param[channel_id]['name'])
                         dbconn.send(executable_sql_query=query)
 
@@ -447,10 +444,11 @@ class FetchBotAtmotube(FetchBot):
 
                     ############# UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH #############
                     if sc.DEBUG_MODE:
-                        print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1]['ts']}")
+                        print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1].timestamp}")
 
-                    query = query_builder.update_last_packet_date_atmotube(last_timestamp=reshaped_packets[-1]["ts"],
-                                                                           sensor_id=sensor_id)
+                    query = query_builder.update_last_packet_date_atmotube(
+                        last_timestamp=reshaped_packets[-1].timestamp,
+                        sensor_id=sensor_id)
                     dbconn.send(executable_sql_query=query)
 
                 ################# END OF THE LOOP: ADD ONE DAY TO THE CURRENT FROM DATE ########################

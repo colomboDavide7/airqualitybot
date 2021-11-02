@@ -21,7 +21,7 @@ from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
 class API2DatabaseReshaper(ABC):
 
     @abstractmethod
-    def reshape_packets(self, packets: List[Dict[str, Any]], reshape_mapping: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packets(self, packets: List[Dict[str, Any]], reshape_mapping: Dict[str, Any]) -> List[MobileMeasurementPacket]:
         pass
 
 
@@ -52,12 +52,6 @@ class API2DatabaseReshaperAtmotube(API2DatabaseReshaper):
                                                                     param_val=val,
                                                                     timestamp=timestamp,
                                                                     geom=geom))
-
-                    # reshaped_packets.append({RESHAPER2SQLBUILDER_PARAM_ID: reshape_mapping[name],
-                    #                          RESHAPER2SQLBUILDER_PARAM_VAL: f"'{val}'",
-                    #                          RESHAPER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'",
-                    #                          RESHAPER2SQLBUILDER_GEOMETRY: geom})
-
         return reshaped_packets
 
 

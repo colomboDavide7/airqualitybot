@@ -14,10 +14,8 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.geom.postgis_geom_builder import PostGISGeomBuilder
-from airquality.api2database.measurement_packet import MobileMeasurementPacket
-from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, \
-    RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, RESHAPER2SQLBUILDER_TIMESTAMP, \
-    RESHAPER2SQLBUILDER_GEOMETRY, RESHAPER2SQLBUILDER_SENSOR_ID, GEO_TYPE_ST_POINT_2D
+from airquality.api2database.measurement_packet import MobileMeasurementPacket, StationMeasurementPacket
+from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, GEO_TYPE_ST_POINT_2D
 
 
 class SQLQueryBuilder(builtins.object):
@@ -92,11 +90,7 @@ class SQLQueryBuilder(builtins.object):
 
     def insert_into_mobile_measurements(self, packets: List[MobileMeasurementPacket]) -> str:
         """This method returns an executable SQL query statement for inserting all the measurements passed in the
-        'packets' list into the database. Each packet must be compliant to the 'interface' described below:
-            - param_id:     id of the measure param taken from the database
-            - param_val:    value of the measure param taken from the packet downloaded from the API
-            - timestamp:    packet timestamp taken from the API
-            - geom:         string for building geometry object or null if 'coords' is missing
+        'packets' list into the database.
 
         If the packet list is empty, an 'EMPTY_STRING' value is returned."""
 
@@ -114,9 +108,9 @@ class SQLQueryBuilder(builtins.object):
         query = query.strip(',') + ';'
         return query
 
-    def insert_station_measurements(self, packets: List[Dict[str, Any]]) -> str:
+    def insert_into_station_measurements(self, packets: List[StationMeasurementPacket]) -> str:
 
-        query_id = "insert_station_measurements"
+        query_id = "insert_into_station_measurements"
         self._raise_exception_if_query_identifier_not_found(query_id)
 
         query = ""
@@ -125,10 +119,7 @@ class SQLQueryBuilder(builtins.object):
 
         query = self.__parsed[query_id]
         for packet in packets:
-            query += f"({packet[RESHAPER2SQLBUILDER_PARAM_ID]}, " \
-                     f"{packet[RESHAPER2SQLBUILDER_SENSOR_ID]}, " \
-                     f"{packet[RESHAPER2SQLBUILDER_PARAM_VAL]}," \
-                     f"{packet[RESHAPER2SQLBUILDER_TIMESTAMP]}),"
+            query += f"({packet.param_id}, {packet.sensor_id}, '{packet.param_val}', '{packet.timestamp}'),"
 
         query = query.strip(',') + ';'
         return query

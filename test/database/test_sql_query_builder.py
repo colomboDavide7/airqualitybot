@@ -7,9 +7,8 @@
 #################################################
 import unittest
 from airquality.database.sql_query_builder import SQLQueryBuilder
-from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST, \
-    RESHAPER2SQLBUILDER_PARAM_ID, RESHAPER2SQLBUILDER_PARAM_VAL, RESHAPER2SQLBUILDER_TIMESTAMP, \
-    RESHAPER2SQLBUILDER_GEOMETRY
+from airquality.api2database.measurement_packet import MobileMeasurementPacket
+from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST
 
 
 class TestSQLQueryBuilder(unittest.TestCase):
@@ -24,11 +23,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
             self.sql_builder._raise_exception_if_query_identifier_not_found(query_id=test_query_id)
 
     def test_successfully_insert_atmotube_measurements(self):
-        test_packets = [{RESHAPER2SQLBUILDER_PARAM_ID: "1",
-                         RESHAPER2SQLBUILDER_PARAM_VAL: "'55.0'",
-                         RESHAPER2SQLBUILDER_TIMESTAMP: "'2021-09-12 08:34:00'",
-                         RESHAPER2SQLBUILDER_GEOMETRY: "null"}]
-
+        test_packets = [MobileMeasurementPacket(param_id=1, param_val="55.0", timestamp="2021-09-12 08:34:00", geom="null")]
         expected_output = "INSERT INTO level0_raw.mobile_measurement (param_id, param_value, timestamp, geom) VALUES "
         expected_output += "(1, '55.0', '2021-09-12 08:34:00', null);"
 

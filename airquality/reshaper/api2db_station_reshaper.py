@@ -11,26 +11,22 @@
 import builtins
 from typing import Dict, Any, List
 from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
-    RESHAPER2SQLBUILDER_TIMESTAMP, RESHAPER2SQLBUILDER_SENSOR_ID, RESHAPER2SQLBUILDER_PARAM_VAL, RESHAPER2SQLBUILDER_PARAM_ID, \
-    THINGSPEAK_API_RESHAPER_TIME
+from airquality.api2database.measurement_packet import StationMeasurementPacket
+from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, THINGSPEAK_API_RESHAPER_TIME
 
 
 class API2DatabaseStationReshaper(ABC):
 
-
     @abstractmethod
     def reshape_packets(self, packets: List[Dict[str, Any]], sensor_id: int, measure_param_map: Dict[str, Any]
-                        ) -> List[Dict[str, Any]]:
+                        ) -> List[StationMeasurementPacket]:
         pass
-
 
 
 class API2DatabaseStationReshaperThingspeak(API2DatabaseStationReshaper):
 
-
     def reshape_packets(self, packets: List[Dict[str, Any]], sensor_id: int, measure_param_map: Dict[str, Any]
-                        ) -> List[Dict[str, Any]]:
+                        ) -> List[StationMeasurementPacket]:
 
         if packets == EMPTY_LIST:
             return []
@@ -44,16 +40,15 @@ class API2DatabaseStationReshaperThingspeak(API2DatabaseStationReshaper):
             timestamp = packet[THINGSPEAK_API_RESHAPER_TIME]
             for name, val in packet.items():
                 if name in measure_param_map.keys():
-                    reshaped_packets.append({RESHAPER2SQLBUILDER_PARAM_ID: measure_param_map[name],
-                                             RESHAPER2SQLBUILDER_SENSOR_ID: sensor_id,
-                                             RESHAPER2SQLBUILDER_PARAM_VAL: f"'{val}'",
-                                             RESHAPER2SQLBUILDER_TIMESTAMP: f"'{timestamp}'"})
+                    reshaped_packets.append(StationMeasurementPacket(param_id=measure_param_map[name],
+                                                                     sensor_id=sensor_id,
+                                                                     param_val=val,
+                                                                     timestamp=timestamp))
         return reshaped_packets
 
 
 ################################ FACTORY ################################
 class API2DatabaseStationReshaperFactory(builtins.object):
-
 
     @classmethod
     def create_reshaper(cls, bot_personality: str) -> API2DatabaseStationReshaper:
