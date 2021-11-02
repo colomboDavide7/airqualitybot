@@ -2,7 +2,8 @@
 #
 # @Author: davidecolombo
 # @Date: mar, 19-10-2021, 12:37
-# @Description: this script defines the adapter classes for database connection.
+# @Description: this script defines an Abstract Base Class adapter that wraps the 'psycopg2' module for connecting to
+#               the database and execute SQL query.
 #
 #################################################
 import psycopg2
@@ -25,14 +26,12 @@ class ConnectionAdapter(ABC):
 
     @abstractmethod
     def send(self, msg_str: str):
-        """Abstract method for sending things through this connection."""
+        """Abstract method for executing SQL statement through this connection."""
         pass
 
     @abstractmethod
     def is_open(self) -> bool:
-        """
-        Abstract method that defines the condition for a connection to be
-        closed or opened."""
+        """Abstract method that defines the condition for a connection to be closed or opened."""
         pass
 
 
@@ -76,9 +75,9 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
                     print(f"{Psycopg2ConnectionAdapter.__name__}: invalid key setting '{key}' is ignored.")
 
         if self.__set_ok != 0b11111:
-            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot instantiate a DatabaseConnection object without "
-                             f"all settings arguments in method '{Psycopg2ConnectionAdapter.__init__.__name__}()'.")
-
+            raise SystemExit(
+                f"{Psycopg2ConnectionAdapter.__name__}: cannot instantiate a DatabaseConnection object without "
+                f"all settings arguments in method '{Psycopg2ConnectionAdapter.__init__.__name__}()'.")
 
     def open_conn(self) -> bool:
         """This method create a new psycopg2 connection object.
@@ -90,32 +89,29 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
 
         try:
             self.__psycopg2_conn = psycopg2.connect(
-                    database = self.__dbname,
-                    port = self.__port,
-                    host = self.__hostname,
-                    user = self.__username,
-                    password = self.__password
+                database=self.__dbname,
+                port=self.__port,
+                host=self.__hostname,
+                user=self.__username,
+                password=self.__password
             )
         except Exception as err:
             raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: {str(err)}")
         return True
 
-
     def send(self, executable_sql_query: str):
-        """This takes an executable SQL query string as argument and asks the
-        psycopg2 cursor to execute it.
+        """This method takes an executable SQL statement string as argument and asks the psycopg2 cursor to execute it.
 
-        If connection is closed, SystemExit exception is raised.
-
-        If the argument string is not a valid SQL query, SystemExit exception is raised."""
+        If connection is close, SystemExit exception is raised.
+        If the argument string is not a valid SQL statement, SystemExit exception is raised."""
 
         if not self.is_open():
             raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot send message when connection is closed.")
 
-        answer = EMPTY_STRING
+        answer = ""
         if executable_sql_query == EMPTY_STRING:
             return answer
-        
+
         try:
             cursor = self.__psycopg2_conn.cursor()
             cursor.execute(executable_sql_query)
@@ -128,24 +124,20 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
         return answer
 
     def close_conn(self) -> bool:
-        """This method closes the connection to the database.
+        """This method closes the psycopg2 database connection.
 
         If connection is not open, SystemExit exception is raised."""
 
         if not self.is_open():
-            raise SystemExit(
-                f"{Psycopg2ConnectionAdapter.__name__}: cannot close connection that is not opened.")
+            raise SystemExit(f"{Psycopg2ConnectionAdapter.__name__}: cannot close connection that is not open.")
 
         self.__psycopg2_conn.close()
         self.__psycopg2_conn = None
         return True
 
-
     def is_open(self) -> bool:
-        """
-        Method that returns True if the psycopg2 connection object is
-        not None, otherwise False.
-        """
+        """Method that returns True if the psycopg2 connection object is not None, otherwise False."""
+
         return self.__psycopg2_conn is not None
 
 
@@ -154,9 +146,7 @@ class ConnectionAdapterFactory(ABC):
 
     @abstractmethod
     def create_database_connection_adapter(self, settings: Dict[str, Any]) -> ConnectionAdapter:
-        """
-        Abstract method for creating the right Connection subclass instance.
-        """
+        """Abstract method for creating the right Connection subclass instance."""
         pass
 
 
