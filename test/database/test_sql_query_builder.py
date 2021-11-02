@@ -47,35 +47,6 @@ class TestSQLQueryBuilder(unittest.TestCase):
                                                                           sensor_id=1)
         self.assertEqual(actual_output, expected_output)
 
-    def test_successfully_insert_sensors(self):
-        test_packets = [{"name": "n1", "sensor_index": "idx1"}]
-        expected_output = "INSERT INTO level0_raw.sensor (sensor_type, sensor_name) VALUES "
-        expected_output += "('purpleair', 'n1 (idx1)');"
-
-        actual_output = self.sql_builder.insert_sensors_from_bridge(packets=test_packets, identifier="purpleair")
-        self.assertEqual(actual_output, expected_output)
-
-    def test_empty_query_if_empty_packet_list_when_insert_sensor(self):
-        """This method test the return value of 'EMPTY_STRING' when an EMPTY_LIST is passed as argument."""
-
-        expected_output = EMPTY_STRING
-        actual_output = self.sql_builder.insert_sensors_from_bridge(packets=EMPTY_LIST, identifier="purpleair")
-        self.assertEqual(actual_output, expected_output)
-
-    def test_successfully_insert_api_param(self):
-        test_packets = [{"par1": "val1", "par2": "val2"},
-                        {"par1": "val3", "par2": "val4"}]
-        test_first_sensor_id = 14
-
-        expected_output = "INSERT INTO level0_raw.api_param (sensor_id, param_name, param_value) VALUES "
-        expected_output += "(14, 'par1', 'val1'),"
-        expected_output += "(14, 'par2', 'val2'),"
-        expected_output += "(15, 'par1', 'val3'),"
-        expected_output += "(15, 'par2', 'val4');"
-
-        actual_output = self.sql_builder.insert_api_param(packets=test_packets, first_sensor_id=test_first_sensor_id)
-        self.assertEqual(actual_output, expected_output)
-
 
 if __name__ == '__main__':
     unittest.main()
