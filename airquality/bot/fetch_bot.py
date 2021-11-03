@@ -437,7 +437,7 @@ class FetchBotAtmotube(FetchBot):
                             print(f"{DEBUG_HEADER} {packet}")
 
                 ########################### INSERT MEASURE ONLY IF THERE ARE NEW MEASUREMENTS ##########################
-                if filtered_packets != EMPTY_LIST:
+                if filtered_packets:
 
                     ############################## RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE ###################
                     reshaper = Dict2MobilepacketReshaperFactory().create_api2database_reshaper(bot_personality=sc.PERSONALITY)

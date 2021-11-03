@@ -9,7 +9,7 @@ import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 from airquality.parser.datetime_parser import DatetimeParser
-from plain.plain_api_packet import PlainAPIPacket, PlainAPIPacketPurpleair, PlainAPIPacketAtmotube
+from airquality.plain.plain_api_packet import PlainAPIPacket, PlainAPIPacketPurpleair, PlainAPIPacketAtmotube
 
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
     PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \

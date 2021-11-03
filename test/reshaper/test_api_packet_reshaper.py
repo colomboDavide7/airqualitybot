@@ -8,7 +8,7 @@
 
 import unittest
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
-from plain.plain_api_packet import PlainAPIPacketPurpleair
+from airquality.plain.plain_api_packet import PlainAPIPacketPurpleair, PlainAPIPacketAtmotube
 from airquality.constants.shared_constants import PURPLEAIR_FIELDS_PARAM, PURPLEAIR_DATA_PARAM
 
 
@@ -18,7 +18,7 @@ class TestAPIPacketReshaper(unittest.TestCase):
         self.factory = APIPacketReshaperFactory()
 
     def test_reshape_purpleair_packets(self):
-        purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality = "purpleair")
+        purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality="purpleair")
         test_api_answer = {
             PURPLEAIR_FIELDS_PARAM: ["name", "sensor_index"],
             PURPLEAIR_DATA_PARAM: [
@@ -31,17 +31,17 @@ class TestAPIPacketReshaper(unittest.TestCase):
             PlainAPIPacketPurpleair({"name": "n1", "sensor_index": "idx1"}),
             PlainAPIPacketPurpleair({"name": "n2", "sensor_index": "idx2"})
         ]
-        actual_answer = purpleair_reshaper.reshape_packet(api_answer = test_api_answer)
+        actual_answer = purpleair_reshaper.reshape_packet(api_answer=test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
     def test_empty_list_value_when_empty_data_reshape_purpleair_packets(self):
-        purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality = "purpleair")
+        purpleair_reshaper = self.factory.create_api_packet_reshaper(bot_personality="purpleair")
         test_api_answer = {
             PURPLEAIR_FIELDS_PARAM: ["f1", "f2"],
             PURPLEAIR_DATA_PARAM: []
         }
         expected_answer = []
-        actual_answer = purpleair_reshaper.reshape_packet(api_answer = test_api_answer)
+        actual_answer = purpleair_reshaper.reshape_packet(api_answer=test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
     ################################ TEST RESHAPE THINGSPEAK API PACKET ################################
@@ -96,9 +96,32 @@ class TestAPIPacketReshaper(unittest.TestCase):
              "temperature_a": '50',
              "humidity_a": '60'}]
 
-        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality = "thingspeak")
-        actual_output = reshaper.reshape_packet(api_answer = test_api_answer)
+        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality="thingspeak")
+        actual_output = reshaper.reshape_packet(api_answer=test_api_answer)
         self.assertEqual(actual_output, expected_answer)
+
+    ################################ TEST RESHAPE ATMOTUBE API PACKET ################################
+
+    def test_successfully_reshaper_atmotube_packets(self):
+        test_api_answer = {"data": {"items":
+                                    [{'time': "2021-10-02T00:00:00.000Z"},
+                                     {'time': "2021-10-02T00:01:00.000Z"}]
+                                    }
+                           }
+
+        expected_output = [PlainAPIPacketAtmotube({'time': "2021-10-02T00:00:00.000Z"}),
+                           PlainAPIPacketAtmotube({'time': "2021-10-02T00:01:00.000Z"})]
+        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality='atmotube')
+        actual_output = reshaper.reshape_packet(api_answer=test_api_answer)
+        self.assertEqual(actual_output, expected_output)
+
+    def test_empty_list_when_items_is_empty(self):
+        test_api_answer = {"data": {"items": []}}
+
+        expected_output = []
+        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality='atmotube')
+        actual_output = reshaper.reshape_packet(api_answer=test_api_answer)
+        self.assertEqual(actual_output, expected_output)
 
 
 if __name__ == '__main__':
