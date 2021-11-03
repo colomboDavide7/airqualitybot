@@ -14,7 +14,7 @@ from airquality.bridge.bridge_object import BridgeObject
 from airquality.sqlwrapper.sql_wrapper_geo_packet import SQLWrapperGeoPacket
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.api2database.measurement_packet import MobileMeasurementPacket, StationMeasurementPacket
+from airquality.api2database.measurement_packet import StationMeasurementPacket
 from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST
 
 

@@ -17,7 +17,7 @@ class TestPostgisGeometry(unittest.TestCase):
         test_lat = "45.1234"
         test_lng = "9.8765"
         point = PostGISPointFactory(lat=test_lat, lng=test_lng).create_geometry()
-        expected_output = f"ST_GeomFromText('POINT(9.8765 45.1234)')"
+        expected_output = f"ST_GeomFromText('POINT(9.8765 45.1234)', 26918)"
         actual_output = point.get_database_string()
         self.assertEqual(actual_output, expected_output)
 
