@@ -12,12 +12,13 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.bridge.bridge_object import BridgeObject
+from airquality.sqlwrapper.sql_wrapper_mobile_packet import SQLWrapperMobilePacketAtmotube
 from airquality.reshaper.dict2stationpacket_reshaper import Dict2StationpacketReshaperFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
-from airquality.reshaper.dict2mobilepacket_reshaper import Dict2MobilepacketReshaperFactory
 from airquality.reshaper.db2api_reshaper import Database2APIReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
@@ -439,29 +440,20 @@ class FetchBotAtmotube(FetchBot):
                 ########################### INSERT MEASURE ONLY IF THERE ARE NEW MEASUREMENTS ##########################
                 if filtered_packets:
 
-                    ############################## RESHAPE API PACKET FOR INSERT MEASURE IN DATABASE ###################
-                    reshaper = Dict2MobilepacketReshaperFactory().create_api2database_reshaper(bot_personality=sc.PERSONALITY)
-                    reshaped_packets = reshaper.reshape_packets(packets=filtered_packets, reshape_mapping=measure_param_map)
+                    mobile_packets = []
+                    for packet in filtered_packets:
+                        mobile_packets.append(SQLWrapperMobilePacketAtmotube(mapping=measure_param_map, packet=packet))
 
-                    if sc.DEBUG_MODE:
-                        print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
-                        if reshaped_packets != EMPTY_LIST:
-                            for rpacket in reshaped_packets[0:3]:
-                                print(f"{DEBUG_HEADER} {str(rpacket)}")
-
-                            for rpacket in reshaped_packets[-4:-1]:
-                                print(f"{DEBUG_HEADER} {str(rpacket)}")
-
-                    ############################## CREATE QUERY FOR INSERTING SENSOR MEASURE TO DATABASE ###############
-                    query = query_builder.insert_into_mobile_measurements(reshaped_packets)
+                    bridge = BridgeObject(packets=mobile_packets)
+                    query = query_builder.insert_into_mobile_measurements(bridge)
                     dbconn.send(executable_sql_query=query)
 
                     ############# UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH #############
                     if sc.DEBUG_MODE:
-                        print(f"{DEBUG_HEADER} last timestamp = {reshaped_packets[-1].timestamp}")
+                        print(f"{DEBUG_HEADER} last timestamp = {filtered_packets[-1].time}")
 
                     query = query_builder.update_last_packet_date_atmotube(
-                        last_timestamp=reshaped_packets[-1].timestamp,
+                        last_timestamp=filtered_packets[-1].time,
                         sensor_id=sensor_id)
                     dbconn.send(executable_sql_query=query)
 

@@ -88,24 +88,12 @@ class SQLQueryBuilder(builtins.object):
 
     ################################ METHODS THAT RETURN INSERT QUERY ################################
 
-    def insert_into_mobile_measurements(self, packets: List[MobileMeasurementPacket]) -> str:
-        """This method returns an executable SQL query statement for inserting all the measurements passed in the
-        'packets' list into the database.
-
-        If the sqlwrapper list is empty, an 'EMPTY_STRING' value is returned."""
+    def insert_into_mobile_measurements(self, bridge: BridgeObject) -> str:
 
         query_id = "insert_into_mobile_measurements"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-
-        query = ""
-        if packets == EMPTY_LIST:
-            return query
-
         query = self.__parsed[query_id]
-        for packet in packets:
-            query += f"({packet.param_id}, '{packet.param_val}', '{packet.timestamp}', {packet.geom}),"
-
-        query = query.strip(',') + ';'
+        query += bridge.packets2query()
         return query
 
     def insert_into_station_measurements(self, packets: List[StationMeasurementPacket]) -> str:
