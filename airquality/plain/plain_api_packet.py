@@ -8,6 +8,8 @@
 ######################################################
 from abc import ABC
 from typing import Dict, Any
+from airquality.parser.datetime_parser import DatetimeParser
+
 
 DEFAULT_VALUE = 'null'
 
@@ -53,6 +55,8 @@ class PlainAPIPacketAtmotube(PlainAPIPacket):
 
     def __init__(self, api_param: Dict[str, Any]):
         self.time = api_param.get('time', DEFAULT_VALUE)
+        if self.time != DEFAULT_VALUE:
+            self.time = DatetimeParser.atmotube_to_sqltimestamp(ts=self.time)
         self.voc = api_param.get('voc', DEFAULT_VALUE)
         self.pm1 = api_param.get('pm1', DEFAULT_VALUE)
         self.pm25 = api_param.get('pm25', DEFAULT_VALUE)

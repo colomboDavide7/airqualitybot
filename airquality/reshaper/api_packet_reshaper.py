@@ -104,6 +104,11 @@ class APIPacketReshaperAtmotube(APIPacketReshaper):
         if not items:
             return []
 
+        reshaped_items = []
+        for item in items:
+            reshaped_items.append(PlainAPIPacketAtmotube(api_param=item))
+        return reshaped_items
+
 
 ################################ FACTORY ################################
 class APIPacketReshaperFactory(builtins.object):
@@ -114,6 +119,8 @@ class APIPacketReshaperFactory(builtins.object):
             return APIPacketReshaperPurpleair()
         elif bot_personality == "thingspeak":
             return APIPacketReshaperThingspeak()
+        elif bot_personality == 'atmotube':
+            return APIPacketReshaperAtmotube()
         else:
             raise SystemExit(f"{APIPacketReshaperFactory.__name__}: cannot instantiate {APIPacketReshaper.__name__} "
                              f"instance for personality='{bot_personality}'.")

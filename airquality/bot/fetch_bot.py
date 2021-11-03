@@ -412,19 +412,29 @@ class FetchBotAtmotube(FetchBot):
                 parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
                 api_answer = parser.parse(raw_string=api_answer)
 
+                ################################ RESHAPE THE API ANSWER INTO PLAIN API PACKET ################################
+                plain_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
+                plain_packets = plain_reshaper.reshape_packet(api_answer=api_answer)
+
+                if sc.DEBUG_MODE:
+                    print(20 * "=" + " PLAIN PACKETS " + 20 * '=')
+                    for packet in plain_packets[0:3]:
+                        print(f"{DEBUG_HEADER} {str(packet)}")
+
+                    for packet in plain_packets[-4:-1]:
+                        print(f"{DEBUG_HEADER} {str(packet)}")
+
                 ################# FILTER PACKETS ONLY IF IT IS NOT THE FIRST ACQUISITION FOR THE SENSOR ################
-                filtered_packets = datetime_filter.filter_packets(packets=api_answer, sqltimestamp=filter_sqltimestamp)
+                filtered_packets = datetime_filter.filter_packets(packets=plain_packets, sqltimestamp=filter_sqltimestamp)
 
                 if sc.DEBUG_MODE:
                     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
                     if filtered_packets != EMPTY_LIST:
-                        for rpacket in filtered_packets[0:3]:
-                            for key, val in rpacket.items():
-                                print(f"{DEBUG_HEADER} {key}={val}")
+                        for packet in filtered_packets[0:3]:
+                            print(f"{DEBUG_HEADER} {str(packet)}")
 
-                        for rpacket in filtered_packets[-4:-1]:
-                            for key, val in rpacket.items():
-                                print(f"{DEBUG_HEADER} {key}={val}")
+                        for packet in filtered_packets[-4:-1]:
+                            print(f"{DEBUG_HEADER} {packet}")
 
                 ########################### INSERT MEASURE ONLY IF THERE ARE NEW MEASUREMENTS ##########################
                 if filtered_packets != EMPTY_LIST:
