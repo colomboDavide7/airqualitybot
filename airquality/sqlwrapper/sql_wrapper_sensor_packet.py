@@ -7,8 +7,8 @@
 #
 ######################################################
 from abc import ABC
-from airquality.packet.sql_wrapper_packet import SQLWrapperPacket
-from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
+from airquality.sqlwrapper.sql_wrapper_packet import SQLWrapperPacket
+from airquality.plain.plain_api_packet import PlainAPIPacketPurpleair
 
 
 class SQLWrapperSensorPacket(SQLWrapperPacket, ABC):

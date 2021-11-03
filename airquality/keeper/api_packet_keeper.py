@@ -8,7 +8,7 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import List
-from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair, PlainAPIPacket
+from plain.plain_api_packet import PlainAPIPacketPurpleair, PlainAPIPacket
 from airquality.constants.shared_constants import EMPTY_LIST
 
 

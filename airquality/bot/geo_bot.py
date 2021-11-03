@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.packet.sql_wrapper_geo_packet import SQLWrapperGeoPacketPurpleair
+from airquality.sqlwrapper.sql_wrapper_geo_packet import SQLWrapperGeoPacketPurpleair
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
@@ -175,7 +175,7 @@ class GeoBotPurpleair(GeoBot):
                 query = query_builder.update_valid_to_timestamp_location(sensor_id=packet.sensor_id)
                 dbconn.send(executable_sql_query=query)
 
-                # insert new record corresponding to the geo param packet
+                # insert new record corresponding to the geo param sqlwrapper
                 query = query_builder.insert_single_sensor_at_location(packet=packet)
                 dbconn.send(executable_sql_query=query)
 

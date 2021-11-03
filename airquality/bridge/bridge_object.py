@@ -3,13 +3,13 @@
 # Owner: Davide Colombo
 # User: davidecolombo
 # Date: 02/11/21 15:31
-# Description: this script defines a set of classes that encapsulate the logic of transforming an API packet into
+# Description: this script defines a set of classes that encapsulate the logic of transforming an API sqlwrapper into
 #              a valid query.
 #
 ######################################################
 import builtins
 from typing import List
-from airquality.packet.sql_wrapper_packet import SQLWrapperPacket
+from airquality.sqlwrapper.sql_wrapper_packet import SQLWrapperPacket
 from airquality.constants.shared_constants import EMPTY_LIST
 
 

@@ -9,7 +9,7 @@
 
 import unittest
 from airquality.keeper.api_packet_keeper import APIPacketKeeperFactory
-from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
+from plain.plain_api_packet import PlainAPIPacketPurpleair
 
 
 class TestAPIPacketKeeper(unittest.TestCase):

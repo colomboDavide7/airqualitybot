@@ -4,14 +4,14 @@
 # User: davidecolombo
 # Date: 02/11/21 17:35
 # Description: this script defines the an Abstract Base Class called GeoParamPacket that extends also Packet class.
-#              This classes are used to decode a packet coming from API into a string that is used for building the
+#              This classes are used to decode a sqlwrapper coming from API into a string that is used for building the
 #              sql query.
 #
 ######################################################
 
 from abc import ABC
-from airquality.packet.sql_wrapper_packet import SQLWrapperPacket
-from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
+from airquality.sqlwrapper.sql_wrapper_packet import SQLWrapperPacket
+from airquality.plain.plain_api_packet import PlainAPIPacketPurpleair
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geometry import PostGISPointFactory
 

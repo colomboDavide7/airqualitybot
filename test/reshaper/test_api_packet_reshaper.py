@@ -8,7 +8,7 @@
 
 import unittest
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
-from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
+from plain.plain_api_packet import PlainAPIPacketPurpleair
 from airquality.constants.shared_constants import PURPLEAIR_FIELDS_PARAM, PURPLEAIR_DATA_PARAM
 
 

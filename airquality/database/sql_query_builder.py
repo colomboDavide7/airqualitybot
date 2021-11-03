@@ -11,7 +11,7 @@ import builtins
 from typing import List
 from airquality.io.io import IOManager
 from airquality.bridge.bridge_object import BridgeObject
-from airquality.packet.sql_wrapper_geo_packet import SQLWrapperGeoPacket
+from airquality.sqlwrapper.sql_wrapper_geo_packet import SQLWrapperGeoPacket
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.api2database.measurement_packet import MobileMeasurementPacket, StationMeasurementPacket
@@ -92,7 +92,7 @@ class SQLQueryBuilder(builtins.object):
         """This method returns an executable SQL query statement for inserting all the measurements passed in the
         'packets' list into the database.
 
-        If the packet list is empty, an 'EMPTY_STRING' value is returned."""
+        If the sqlwrapper list is empty, an 'EMPTY_STRING' value is returned."""
 
         query_id = "insert_into_mobile_measurements"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)

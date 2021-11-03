@@ -8,7 +8,7 @@
 
 import unittest
 from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
-from airquality.packet.plain_api_packet import PlainAPIPacketPurpleair
+from plain.plain_api_packet import PlainAPIPacketPurpleair
 from airquality.constants.shared_constants import EMPTY_LIST
 
 

@@ -13,9 +13,9 @@ import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.bridge.bridge_object import BridgeObject
-from airquality.packet.sql_wrapper_sensor_packet import SQLWrapperSensorPacketPurpleair
-from airquality.packet.sql_wrapper_api_packet import SQLWrapperAPIPacketPurpleair
-from airquality.packet.sql_wrapper_geo_packet import SQLWrapperGeoPacketPurpleair
+from airquality.sqlwrapper.sql_wrapper_sensor_packet import SQLWrapperSensorPacketPurpleair
+from airquality.sqlwrapper.sql_wrapper_api_packet import SQLWrapperAPIPacketPurpleair
+from airquality.sqlwrapper.sql_wrapper_geo_packet import SQLWrapperGeoPacketPurpleair
 from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory

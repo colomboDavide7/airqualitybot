@@ -45,3 +45,29 @@ class PlainAPIPacketPurpleair(PlainAPIPacket):
         if not isinstance(other, PlainAPIPacketPurpleair):
             raise SystemExit(f"{PlainAPIPacketPurpleair.__name__}: cannot compare objects of different type.")
         return other.purpleair_identifier == self.purpleair_identifier
+
+
+################################ ATMOTUBE PLAIN API PACKET ################################
+
+class PlainAPIPacketAtmotube(PlainAPIPacket):
+
+    def __init__(self, api_param: Dict[str, Any]):
+        self.time = api_param.get('time', DEFAULT_VALUE)
+        self.voc = api_param.get('voc', DEFAULT_VALUE)
+        self.pm1 = api_param.get('pm1', DEFAULT_VALUE)
+        self.pm25 = api_param.get('pm25', DEFAULT_VALUE)
+        self.pm10 = api_param.get('pm10', DEFAULT_VALUE)
+        self.temperature = api_param.get('t', DEFAULT_VALUE)
+        self.humidity = api_param.get('h', DEFAULT_VALUE)
+        self.pressure = api_param.get('p', DEFAULT_VALUE)
+
+    def __str__(self):
+        return f"time={self.time}, voc={self.voc}, pm1.0={self.pm1}, pm2.5={self.pm25}, pm10.0={self.pm10}, " \
+               f"temperature={self.temperature}, humidity={self.humidity}, pressure={self.pressure}"
+
+    def __eq__(self, other):
+        if not isinstance(other, PlainAPIPacketAtmotube):
+            raise SystemExit(f"{PlainAPIPacketAtmotube.__name__}: cannot compare objects of different type.")
+        return other.time == self.time and other.voc == self.voc and other.pm1 == self.pm1 and \
+            other.pm25 == self.pm25 and other.pm10 == self.pm10 and other.temperature == self.temperature and \
+            other.humidity == self.humidity and other.pressure == self.pressure

@@ -207,8 +207,8 @@ class FetchBotThingspeak(FetchBot):
                     #     print(20 * "=" + " API PACKETS " + 20 * '=')
                     #     if parsed_api_packets["feeds"] != EMPTY_LIST:
                     #         for i in range(3):
-                    #             packet = parsed_api_packets["feeds"][i]
-                    #             for key, val in packet.items():
+                    #             sqlwrapper = parsed_api_packets["feeds"][i]
+                    #             for key, val in sqlwrapper.items():
                     #                 print(f"{DEBUG_HEADER} {key}={val}")
 
                     ####################### CONTINUE ONLY IF THERE ARE VALID PACKETS FROM APIS #########################
@@ -223,8 +223,8 @@ class FetchBotThingspeak(FetchBot):
                         #     if reshaped_api_packets != EMPTY_LIST:
                         #         print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
                         #         for i in range(3):
-                        #             packet = reshaped_api_packets[i]
-                        #             for key, val in packet.items():
+                        #             sqlwrapper = reshaped_api_packets[i]
+                        #             for key, val in sqlwrapper.items():
                         #                 print(f"{DEBUG_HEADER} {key}={val}")
 
                         ############### API 2 DATABASE RESHAPER FOR BUILDING THE QUERY LATER ###########################
@@ -316,7 +316,7 @@ class FetchBotAtmotube(FetchBot):
         ################################ API REQUEST ADAPTER ################################
         api_adapter = APIRequestAdapter(api_address=api_address)
 
-        ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
+        ##################### SELECT SENSOR IDS ASSOCIATED TO CURRENT PERSONALITY (ATMOTUBE) ###########################
         query = query_builder.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
@@ -343,13 +343,17 @@ class FetchBotAtmotube(FetchBot):
             for code, id_ in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {code}={id_}")
 
+        # CREATE A DATETIME FILTER THAT WILL BE USED BELOW FOR FILTERING OUT PACKETS WHICH TIMESTAMP IS BEFORE
+        # THE FILTER TIMESTAMP
+        datetime_filter = DatetimePacketFilterFactory().create_datetime_filter(bot_personality=sc.PERSONALITY)
+
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
         for sensor_id in sensor_ids:
 
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
-            ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
+            ################################ SELECT SENSOR's API PARAM FROM DATABASE ################################
             query = query_builder.select_api_param_from_sensor_id(sensor_id=sensor_id)
             answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
@@ -383,7 +387,8 @@ class FetchBotAtmotube(FetchBot):
             stop_datetime = DatetimeParser.today()
             from_datetime = DatetimeParser.string2datetime(datetime_string=ATMOTUBE_START_FETCH_TIMESTAMP)
 
-            # IF DATE IS PRESENT INTO THE DATABASE THEN START TO FETCH DATA FROM THAT DATE
+            # If api_param['date'] IS NOT NULL, use that value for filtering out packets in the same 'from_datetime'
+            # but previous in time.
             filter_sqltimestamp = ""
             if api_param.get('date', None) is not None:
                 from_datetime = DatetimeParser.string2datetime(datetime_string=api_param['date'])
@@ -392,8 +397,8 @@ class FetchBotAtmotube(FetchBot):
             while (from_datetime - stop_datetime).total_seconds() < 0:
 
                 # INSERT DATETIME INTO API PARAMETERS
-                from_ts_string = DatetimeParser.datetime2string(ts=from_datetime)
-                api_param['date'] = DatetimeParser.sqltimestamp_date(ts=from_ts_string)
+                from_datetime_string = DatetimeParser.datetime2string(ts=from_datetime)
+                api_param['date'] = DatetimeParser.sqltimestamp_date(ts=from_datetime_string)
 
                 # BUILD THE QUERYSTRING
                 querystring = querystring_builder.make_querystring(parameters=api_param)
@@ -408,8 +413,7 @@ class FetchBotAtmotube(FetchBot):
                 api_answer = parser.parse(raw_string=api_answer)
 
                 ################# FILTER PACKETS ONLY IF IT IS NOT THE FIRST ACQUISITION FOR THE SENSOR ################
-                filter_ = DatetimePacketFilterFactory().create_datetime_filter(bot_personality=sc.PERSONALITY)
-                filtered_packets = filter_.filter_packets(packets=api_answer, sqltimestamp=filter_sqltimestamp)
+                filtered_packets = datetime_filter.filter_packets(packets=api_answer, sqltimestamp=filter_sqltimestamp)
 
                 if sc.DEBUG_MODE:
                     print(20 * "=" + " FILTERED PACKETS " + 20 * '=')

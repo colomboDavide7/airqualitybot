@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mar, 26-10-2021, 12:00
-# @Description: this script defines the classes for reshaping a packet before passing it to the SQLQueryBuilder and
+# @Description: this script defines the classes for reshaping a sqlwrapper before passing it to the SQLQueryBuilder and
 #               insert data into the database
 #
 #################################################

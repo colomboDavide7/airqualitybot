@@ -9,7 +9,8 @@ import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.packet.plain_api_packet import PlainAPIPacket, PlainAPIPacketPurpleair
+from plain.plain_api_packet import PlainAPIPacket, PlainAPIPacketPurpleair, PlainAPIPacketAtmotube
+
 from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
     PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
@@ -18,7 +19,7 @@ from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
 # ThingSpeak APIPacketReshaper constants for reshaping API packets
 from airquality.constants.shared_constants import THINGSPEAK_API_RESHAPER_TIME
 
-# ThingSpeak API packet decoding constants for decoding an API packet
+# ThingSpeak API sqlwrapper decoding constants for decoding an API sqlwrapper
 from airquality.constants.shared_constants import THINGSPEAK_API_DECODE_FEEDS, THINGSPEAK_API_DECODE_CHANNEL, \
     THINGSPEAK_API_DECODE_NAME, THINGSPEAK_API_DECODE_CREATED_AT, THINGSPEAK_CHANNEL_DECODE, THINGSPEAK_COUNTERS_DECODE
 
@@ -91,6 +92,17 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
                     reshaped_packet[selected_fields[field]] = feed[field]
             reshaped_packets.append(reshaped_packet)
         return reshaped_packets
+
+
+################################ ATMOTUBE API PACKET RESHAPER ################################
+
+class APIPacketReshaperAtmotube(APIPacketReshaper):
+
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[PlainAPIPacketAtmotube]:
+
+        items = api_answer['data']['items']
+        if not items:
+            return []
 
 
 ################################ FACTORY ################################
