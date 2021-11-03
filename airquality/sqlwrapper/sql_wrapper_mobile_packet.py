@@ -27,10 +27,10 @@ class SQLWrapperMobilePacketAtmotube(SQLWrapperMobilePacket):
     def __init__(self, mapping: Dict[str, Any], packet: PlainAPIPacketAtmotube):
         super().__init__(mapping)
         self.packet = packet
-        self.voc_param_id = self.mapping.get(self.packet.voc, DEFAULT_VALUE)
-        self.pm1_param_id = self.mapping.get(self.packet.pm1, DEFAULT_VALUE)
-        self.pm25_param_id = self.mapping.get(self.packet.pm25, DEFAULT_VALUE)
-        self.pm10_param_id = self.mapping.get(self.packet.pm10, DEFAULT_VALUE)
+        self.voc_param_id = self.mapping.get('voc', DEFAULT_VALUE)
+        self.pm1_param_id = self.mapping.get('pm1', DEFAULT_VALUE)
+        self.pm25_param_id = self.mapping.get('pm25', DEFAULT_VALUE)
+        self.pm10_param_id = self.mapping.get('pm10', DEFAULT_VALUE)
 
         # transform geolocation into valid postGIS data type (if any)
         self.geom = DEFAULT_VALUE

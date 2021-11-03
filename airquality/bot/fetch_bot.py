@@ -444,6 +444,14 @@ class FetchBotAtmotube(FetchBot):
                     for packet in filtered_packets:
                         mobile_packets.append(SQLWrapperMobilePacketAtmotube(mapping=measure_param_map, packet=packet))
 
+                    if sc.DEBUG_MODE:
+                        print(20 * "=" + " SQL WRAPPER MOBILE PACKETS " + 20 * '=')
+                        for packet in mobile_packets[0:3]:
+                            print(f"{DEBUG_HEADER} {str(packet)}")
+
+                        for packet in mobile_packets[-4:-1]:
+                            print(f"{DEBUG_HEADER} {packet}")
+
                     bridge = BridgeObject(packets=mobile_packets)
                     query = query_builder.insert_into_mobile_measurements(bridge)
                     dbconn.send(executable_sql_query=query)
