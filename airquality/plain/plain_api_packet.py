@@ -54,9 +54,18 @@ class PlainAPIPacketPurpleair(PlainAPIPacket):
 class PlainAPIPacketAtmotube(PlainAPIPacket):
 
     def __init__(self, api_param: Dict[str, Any]):
+        # handle timestamp
         self.time = api_param.get('time', DEFAULT_VALUE)
         if self.time != DEFAULT_VALUE:
             self.time = DatetimeParser.atmotube_to_sqltimestamp(ts=self.time)
+
+        # handle geolocation (if any)
+        self.latitude = DEFAULT_VALUE
+        self.longitude = DEFAULT_VALUE
+        if api_param.get('coords', DEFAULT_VALUE) != DEFAULT_VALUE:
+            self.latitude = api_param['coords']['lat']
+            self.longitude = api_param['coords']['lon']
+
         self.voc = api_param.get('voc', DEFAULT_VALUE)
         self.pm1 = api_param.get('pm1', DEFAULT_VALUE)
         self.pm25 = api_param.get('pm25', DEFAULT_VALUE)
@@ -67,7 +76,8 @@ class PlainAPIPacketAtmotube(PlainAPIPacket):
 
     def __str__(self):
         return f"time={self.time}, voc={self.voc}, pm1.0={self.pm1}, pm2.5={self.pm25}, pm10.0={self.pm10}, " \
-               f"temperature={self.temperature}, humidity={self.humidity}, pressure={self.pressure}"
+               f"temperature={self.temperature}, humidity={self.humidity}, pressure={self.pressure}, " \
+               f"latitude={self.latitude}, longitude={self.longitude}"
 
     def __eq__(self, other):
         if not isinstance(other, PlainAPIPacketAtmotube):
