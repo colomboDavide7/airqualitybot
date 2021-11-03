@@ -27,7 +27,7 @@ class PostGISPoint(PostGISGeometry):
         self.lng = lng
 
     def get_database_string(self) -> str:
-        return f"ST_GeomFromText('POINT({self.lng} {self.lat})')"
+        return f"ST_GeomFromText('POINT({self.lng} {self.lat})', 26918)"
 
     def get_geomtype_string(self) -> str:
         return f"POINT({self.lng} {self.lat})"
