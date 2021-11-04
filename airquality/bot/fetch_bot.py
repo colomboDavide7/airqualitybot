@@ -192,59 +192,45 @@ class FetchBotThingspeak(FetchBot):
                     parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
                     parsed_api_packets = parser.parse(raw_string=api_packets)
 
-                    # if sc.DEBUG_MODE:
-                    #     print(20 * "=" + " API PACKETS " + 20 * '=')
-                    #     if parsed_api_packets["feeds"] != EMPTY_LIST:
-                    #         for i in range(3):
-                    #             sqlwrapper = parsed_api_packets["feeds"][i]
-                    #             for key, val in sqlwrapper.items():
-                    #                 print(f"{DEBUG_HEADER} {key}={val}")
+                    ######### API PACKET RESHAPER FOR GETTING THE RIGHT MAPPING FOR NEXT INSERTION #################
+                    api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
+                    reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
 
-                    ####################### CONTINUE ONLY IF THERE ARE VALID PACKETS FROM APIS #########################
-                    if parsed_api_packets["feeds"] != EMPTY_LIST:
+                    if sc.DEBUG_MODE:
+                        if reshaped_api_packets != EMPTY_LIST:
+                            print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+                            for packet in reshaped_api_packets[0:3]:
+                                print(f"{DEBUG_HEADER} {str(packet)}")
 
-                        ######### API PACKET RESHAPER FOR GETTING THE RIGHT MAPPING FOR NEXT INSERTION #################
-                        api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(
-                            bot_personality=sc.PERSONALITY)
-                        reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
+                    ############### API 2 DATABASE RESHAPER FOR BUILDING THE QUERY LATER ###########################
+                    api2db_reshaper = Dict2StationpacketReshaperFactory().create_reshaper(bot_personality=sc.PERSONALITY)
+                    db_ready_packets = api2db_reshaper.reshape_packets(packets=reshaped_api_packets,
+                                                                       measure_param_map=measure_param_map,
+                                                                       sensor_id=sensor_id)
 
-                        # if sc.DEBUG_MODE:
-                        #     if reshaped_api_packets != EMPTY_LIST:
-                        #         print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
-                        #         for i in range(3):
-                        #             sqlwrapper = reshaped_api_packets[i]
-                        #             for key, val in sqlwrapper.items():
-                        #                 print(f"{DEBUG_HEADER} {key}={val}")
+                    if sc.DEBUG_MODE:
+                        if db_ready_packets != EMPTY_LIST:
+                            print(20 * "=" + " DATABASE READY PACKETS " + 20 * '=')
+                            for packet in db_ready_packets[0:3]:
+                                print(f"{DEBUG_HEADER} {str(packet)}")
 
-                        ############### API 2 DATABASE RESHAPER FOR BUILDING THE QUERY LATER ###########################
-                        api2db_reshaper = Dict2StationpacketReshaperFactory().create_reshaper(bot_personality=sc.PERSONALITY)
-                        db_ready_packets = api2db_reshaper.reshape_packets(packets=reshaped_api_packets,
-                                                                           measure_param_map=measure_param_map,
-                                                                           sensor_id=sensor_id)
+                            for packet in db_ready_packets[-4:-1]:
+                                print(f"{DEBUG_HEADER} {str(packet)}")
 
-                        if sc.DEBUG_MODE:
-                            if db_ready_packets != EMPTY_LIST:
-                                print(20 * "=" + " DATABASE READY PACKETS " + 20 * '=')
-                                for packet in db_ready_packets[0:3]:
-                                    print(f"{DEBUG_HEADER} {str(packet)}")
+                    ################# BUILD THE QUERY FOR INSERTING THE PACKETS INTO THE DATABASE ##################
+                    query = query_builder.insert_into_station_measurements(packets=db_ready_packets)
+                    dbconn.send(executable_sql_query=query)
 
-                                for packet in db_ready_packets[-4:-1]:
-                                    print(f"{DEBUG_HEADER} {str(packet)}")
+                    ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
+                    if sc.DEBUG_MODE:
+                        print(f"{DEBUG_HEADER} last {reshaped_api_param[channel_id]['name']} = "
+                              f"{db_ready_packets[-1].timestamp}")
 
-                        ################# BUILD THE QUERY FOR INSERTING THE PACKETS INTO THE DATABASE ##################
-                        query = query_builder.insert_into_station_measurements(packets=db_ready_packets)
-                        dbconn.send(executable_sql_query=query)
-
-                        ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
-                        if sc.DEBUG_MODE:
-                            print(f"{DEBUG_HEADER} last {reshaped_api_param[channel_id]['name']} = "
-                                  f"{db_ready_packets[-1].timestamp}")
-
-                        query = query_builder.update_last_channel_acquisition_timestamp(
-                            sensor_id=sensor_id,
-                            ts=db_ready_packets[-1].timestamp,
-                            param2update=reshaped_api_param[channel_id]['name'])
-                        dbconn.send(executable_sql_query=query)
+                    query = query_builder.update_last_channel_acquisition_timestamp(
+                        sensor_id=sensor_id,
+                        ts=db_ready_packets[-1].timestamp,
+                        param2update=reshaped_api_param[channel_id]['name'])
+                    dbconn.send(executable_sql_query=query)
 
                     ############################## INCREMENT THE PERIOD FOR DATA FETCHING ##############################
                     from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)

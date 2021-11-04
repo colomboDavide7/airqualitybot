@@ -9,9 +9,12 @@ import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.plain.plain_api_packet import PlainAPIPacket, PlainAPIPacketPurpleair, PlainAPIPacketAtmotube
+from airquality.plain.plain_api_packet import PlainAPIPacketPurpleair, PlainAPIPacketAtmotube
+from airquality.plain.plain_api_packet_thingspeak import PlainAPIPacketThingspeakPrimaryChannelAFactory, \
+    PlainAPIPacketThingspeakPrimaryChannelBFactory, PlainAPIPacketThingspeakSecondaryChannelAFactory, \
+    PlainAPIPacketThingspeakSecondaryChannelBFactory
 
-from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT, \
+from airquality.constants.shared_constants import EMPTY_LIST, \
     PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
@@ -21,13 +24,13 @@ from airquality.constants.shared_constants import THINGSPEAK_API_RESHAPER_TIME
 
 # ThingSpeak API sqlwrapper decoding constants for decoding an API sqlwrapper
 from airquality.constants.shared_constants import THINGSPEAK_API_DECODE_FEEDS, THINGSPEAK_API_DECODE_CHANNEL, \
-    THINGSPEAK_API_DECODE_NAME, THINGSPEAK_API_DECODE_CREATED_AT, THINGSPEAK_CHANNEL_DECODE, THINGSPEAK_COUNTERS_DECODE
+    THINGSPEAK_API_DECODE_NAME, THINGSPEAK_API_DECODE_CREATED_AT, THINGSPEAK_CHANNEL_DECODE_SYMBOL, THINGSPEAK_COUNTERS_DECODE_SYMBOL
 
 
 class APIPacketReshaper(ABC):
 
     @abstractmethod
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[PlainAPIPacket]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[builtins.object]:
         pass
 
 
@@ -48,7 +51,7 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
                     key = fields[i]
                     val = data[i]
                     rpacket[key] = val
-                reshaped_packets.append(PlainAPIPacketPurpleair(api_param=rpacket))
+                reshaped_packets.append(PlainAPIPacketPurpleair(api_answer=rpacket))
         return reshaped_packets
 
 
@@ -56,24 +59,30 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
 
 class APIPacketReshaperThingspeak(APIPacketReshaper):
 
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[builtins.object]:
 
-        if api_answer == EMPTY_DICT:
-            raise SystemExit(f"{APIPacketReshaperThingspeak.__name__}: cannot reshaper api answer when is empty.")
+        feeds = api_answer[THINGSPEAK_API_DECODE_FEEDS]
+        if not feeds:
+            return []
 
         channel = api_answer[THINGSPEAK_API_DECODE_CHANNEL]
-        field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
         sensor_name = channel[THINGSPEAK_API_DECODE_NAME]
 
+        field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
+        factory = PlainAPIPacketThingspeakPrimaryChannelAFactory()
+
         # SELECT THE RESHAPE MAPPING BASED ON PRIMARY/SECONDARY DATA AND CHANNEL A/B
-        if THINGSPEAK_CHANNEL_DECODE in sensor_name:
-            if THINGSPEAK_COUNTERS_DECODE in sensor_name:
+        if THINGSPEAK_CHANNEL_DECODE_SYMBOL in sensor_name:
+            if THINGSPEAK_COUNTERS_DECODE_SYMBOL in sensor_name:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
+                factory = PlainAPIPacketThingspeakSecondaryChannelBFactory()
             else:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B
+                factory = PlainAPIPacketThingspeakPrimaryChannelBFactory()
         else:
-            if THINGSPEAK_COUNTERS_DECODE in sensor_name:
+            if THINGSPEAK_COUNTERS_DECODE_SYMBOL in sensor_name:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
+                factory = PlainAPIPacketThingspeakSecondaryChannelAFactory()
 
         # Decode the "fieldN" value in the 'api_answer' header with the chosen mapping (field_to_use)
         selected_fields = {}
@@ -82,7 +91,6 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
                 selected_fields[param] = field_to_use[channel[param]]
 
         reshaped_packets = []
-        feeds = api_answer[THINGSPEAK_API_DECODE_FEEDS]
         for feed in feeds:
             reshaped_packet = {}
             timestamp = DatetimeParser.thingspeak_to_sqltimestamp(ts=feed[THINGSPEAK_API_DECODE_CREATED_AT])
@@ -90,7 +98,7 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
             for field in feed.keys():
                 if field in selected_fields.keys():
                     reshaped_packet[selected_fields[field]] = feed[field]
-            reshaped_packets.append(reshaped_packet)
+            reshaped_packets.append(factory.make_plain_object(reshaped_packet))
         return reshaped_packets
 
 
@@ -106,7 +114,7 @@ class APIPacketReshaperAtmotube(APIPacketReshaper):
 
         reshaped_items = []
         for item in items:
-            reshaped_items.append(PlainAPIPacketAtmotube(api_param=item))
+            reshaped_items.append(PlainAPIPacketAtmotube(api_answer=item))
         return reshaped_items
 
 
