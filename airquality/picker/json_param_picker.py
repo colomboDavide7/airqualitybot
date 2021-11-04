@@ -20,7 +20,6 @@ from airquality.constants.shared_constants import EMPTY_DICT, EMPTY_LIST
 
 class JSONParamPicker(builtins.object):
 
-
     @classmethod
     def pick_parameter(cls, parsed_json: Dict[str, Any], path2key: List[str]) -> Any:
 

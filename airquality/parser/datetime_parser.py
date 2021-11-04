@@ -15,61 +15,55 @@ from airquality.constants.shared_constants import EMPTY_STRING, \
 
 class DatetimeParser(builtins.object):
 
-
     @classmethod
     def today(cls) -> datetime.datetime:
         return datetime.datetime.today()
-
 
     @classmethod
     def datetime2string(cls, ts: datetime.datetime) -> str:
         ts_string = ts.strftime('%Y-%m-%d %H:%M:%S')
         return ts_string
 
-
     @classmethod
     def string2datetime(cls, datetime_string: str) -> datetime.datetime:
         ts = datetime.datetime.strptime(datetime_string, DATETIME2SQLTIMESTAMP_FORMAT)
         return ts
 
-
     @classmethod
     def add_days_to_datetime(cls, ts: datetime.datetime, days: int) -> datetime.datetime:
-        new_ts = ts + datetime.timedelta(days = days)
+        new_ts = ts + datetime.timedelta(days=days)
         return new_ts
 
     ################################ ATMOTUBE TIMESTAMP FORMATTING METHOD ################################
-
 
     @classmethod
     def atmotube_to_sqltimestamp(cls, ts: str) -> str:
         """Class method that takes atmotube timestamp and convert it into a valid SQL timestamp."""
 
-        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = ATMOTUBE_DATETIME_REGEX_PATTERN)
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts=ts,
+                                                                              pattern=ATMOTUBE_DATETIME_REGEX_PATTERN)
         ts = ts.strip('Z')
         ts, zone = ts.split('.')
         return ts.replace("T", " ")
 
-
     @classmethod
     def thingspeak_to_sqltimestamp(cls, ts: str) -> str:
 
-        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = THINGSPEAK_DATETIME_REGEX_PATTERN)
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts=ts,
+                                                                              pattern=THINGSPEAK_DATETIME_REGEX_PATTERN)
         ts = ts.strip('Z')
         return ts.replace("T", " ")
 
-
-################################ SQLTIMESTAMP FORMATTING METHODS ################################
-
+    ################################ SQLTIMESTAMP FORMATTING METHODS ################################
 
     @classmethod
     def sqltimestamp_date(cls, ts: str):
         """Class method that takes a SQL timestamp and returns the date part."""
 
-        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts, pattern = SQL_TIMESTAMP_REGEX_PATTERN)
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts=ts,
+                                                                              pattern=SQL_TIMESTAMP_REGEX_PATTERN)
         date, time = ts.split(" ")
         return date
-
 
     @classmethod
     def current_sqltimestamp(cls) -> str:
@@ -78,9 +72,7 @@ class DatetimeParser(builtins.object):
         ts = datetime.datetime.now().strftime(DATETIME2SQLTIMESTAMP_FORMAT)
         return ts
 
-
-################################ SQLTIMESTAMP COMPARISON METHOD ################################
-
+    ################################ SQLTIMESTAMP COMPARISON METHOD ################################
 
     @classmethod
     def is_ts2_after_ts1(cls, ts1: str, ts2: str) -> bool:
@@ -92,8 +84,10 @@ class DatetimeParser(builtins.object):
         if ts1 == EMPTY_STRING or ts2 == EMPTY_STRING:
             return False
 
-        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts1, pattern = SQL_TIMESTAMP_REGEX_PATTERN)
-        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts = ts2, pattern = SQL_TIMESTAMP_REGEX_PATTERN)
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts=ts1,
+                                                                              pattern=SQL_TIMESTAMP_REGEX_PATTERN)
+        DatetimeParser._raise_system_exit_if_timestamp_does_not_match_pattern(ts=ts2,
+                                                                              pattern=SQL_TIMESTAMP_REGEX_PATTERN)
 
         ts1_datetime = datetime.datetime.strptime(ts1, DATETIME2SQLTIMESTAMP_FORMAT)
         ts2_datetime = datetime.datetime.strptime(ts2, DATETIME2SQLTIMESTAMP_FORMAT)
@@ -102,9 +96,7 @@ class DatetimeParser(builtins.object):
             return True
         return False
 
-
-################################ EXCEPTION METHOD ################################
-
+    ################################ EXCEPTION METHOD ################################
 
     @classmethod
     def _raise_system_exit_if_timestamp_does_not_match_pattern(cls, ts: str, pattern: str) -> None:

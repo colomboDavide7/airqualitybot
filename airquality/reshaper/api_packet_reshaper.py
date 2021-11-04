@@ -108,7 +108,7 @@ class APIPacketReshaperAtmotube(APIPacketReshaper):
         for item in items:
             reshaped_items.append(PlainAPIPacketAtmotube(api_param=item))
         return reshaped_items
-g
+
 
 ################################ FACTORY ################################
 class APIPacketReshaperFactory(builtins.object):

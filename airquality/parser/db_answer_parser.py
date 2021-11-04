@@ -11,8 +11,7 @@ from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT
 
 
 class DatabaseAnswerParser(builtins.object):
-    """Class that defines @classmethods for parsing psycopg2 database answers."""
-
+    """Class that defines class methods for parsing psycopg2 database answers."""
 
     @classmethod
     def parse_key_val_answer(cls, response: List[Tuple[str, Any]]) -> Dict[str, Any]:
@@ -32,7 +31,6 @@ class DatabaseAnswerParser(builtins.object):
         for t in response:
             parsed[t[0]] = t[1]
         return parsed
-
 
     @classmethod
     def parse_single_attribute_answer(cls, response: List[Tuple[Any]]) -> List[Any]:

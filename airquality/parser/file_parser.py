@@ -24,7 +24,6 @@ class FileParser(ABC):
 class JSONFileParser(FileParser):
     """JSONFileParser class defines the business rules for parsing JSON file format."""
 
-
     def parse(self, raw_string: str) -> Dict[str, Any]:
         """Core method of this every FileParser instance that takes a raw string and parses it.
 
@@ -44,7 +43,6 @@ class JSONFileParser(FileParser):
 
 class FileParserFactory(builtins.object):
     """This class defines a @staticmethod for creating a FileParser object given the file extension."""
-
 
     @classmethod
     def file_parser_from_file_extension(cls, file_extension: str) -> FileParser:

@@ -14,9 +14,7 @@ from airquality.bot.geo_bot import GeoBotFactory
 from airquality.constants.shared_constants import GEO_USAGE, VALID_PERSONALITIES, DEBUG_HEADER
 
 
-
 def parse_sys_argv(args: List[str]):
-
     if args[0] in ("--help", "-h"):
         print(GEO_USAGE)
         sys.exit(0)
@@ -38,7 +36,6 @@ def parse_sys_argv(args: List[str]):
 
 ################################ MAIN FUNCTION ################################
 def main():
-
     args = sys.argv[1:]
     if not args:
         raise SystemExit(f"{main.__name__}: missing required arguments.\n {GEO_USAGE}")
@@ -49,8 +46,8 @@ def main():
 
     try:
         start_time = time.perf_counter()
-        print(20*'-' + " START THE PROGRAM " + 20*'-')
-        geo_bot = GeoBotFactory().create_geo_bot(bot_personality = sc.PERSONALITY)
+        print(20 * '-' + " START THE PROGRAM " + 20 * '-')
+        geo_bot = GeoBotFactory().create_geo_bot(bot_personality=sc.PERSONALITY)
         geo_bot.run()
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
