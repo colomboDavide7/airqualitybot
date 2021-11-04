@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.plain.plain_api_param import PlainAPIParamThingspeak
 from airquality.bridge.bridge_object import BridgeObject
 from airquality.sqlwrapper.sql_wrapper_mobile_packet import SQLWrapperMobilePacketAtmotube
 from airquality.reshaper.dict2stationpacket_reshaper import Dict2StationpacketReshaperFactory
@@ -93,13 +94,13 @@ class FetchBotThingspeak(FetchBot):
         ################################ QUERYSTRING BUILDER ################################
         querystring_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality=sc.PERSONALITY)
 
-        ################################ SELECT SENSOR IDS FROM IDENTIFIER ################################
+        ################################ SELECT SENSOR IDS FROM PERSONALITY ################################
         query = query_builder.select_sensor_ids_from_personality(personality=PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
-        if sensor_ids == EMPTY_LIST:
+        if not sensor_ids:
             if sc.DEBUG_MODE:
                 print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
             dbconn.close_conn()
@@ -110,7 +111,7 @@ class FetchBotThingspeak(FetchBot):
             for sensor_id in sensor_ids:
                 print(f"{DEBUG_HEADER} {sensor_id}")
 
-        ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
+        ################################ SELECT MEASURE PARAM FROM PERSONALITY ################################
         query = query_builder.select_measure_param_from_personality(personality=PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
@@ -126,26 +127,16 @@ class FetchBotThingspeak(FetchBot):
 
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
-            # ###################### SELECT LAST SENSOR MEASUREMENT TIMESTAMP FROM DATABASE ############################
-            # query = query_builder.select_last_acquisition_timestamp_from_station_id(station_id = sensor_id)
-            # answer = dbconn.send(executable_sql_query = query)
-            # parsed_timestamp = DatabaseAnswerParser.parse_single_attribute_answer(answer)
-            #
-            # if sc.DEBUG_MODE:
-            #     if parsed_timestamp == EMPTY_LIST:
-            #         print(f"{DEBUG_HEADER} no measure present into the database for sensor_id = {sensor_id}.")
-            #     else:
-            #         print(f"{DEBUG_HEADER} {parsed_timestamp[0]}")
-
             ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
             query = query_builder.select_api_param_from_sensor_id(sensor_id=sensor_id)
             answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
+            ################### CONVERT INTO PLAIN API PARAM ########################
+            plain_param = PlainAPIParamThingspeak(api_param=api_param)
             if sc.DEBUG_MODE:
-                print(20 * "=" + " API PARAMETERS " + 20 * '=')
-                for name, value in api_param.items():
-                    print(f"{DEBUG_HEADER} {name}={value}")
+                print(20 * "=" + " PLAIN API PARAM " + 20 * '=')
+                print(f"{DEBUG_HEADER} {str(plain_param)}")
 
             ################### RESHAPE API DATA FOR GETTING THE COUPLE CHANNEL_ID: CHANNEL_KEY ########################
             db2api_reshaper = Database2APIReshaperFactory().create_reshaper(bot_personality=sc.PERSONALITY)
