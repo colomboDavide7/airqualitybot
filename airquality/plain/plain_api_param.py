@@ -22,10 +22,10 @@ class PlainAPIParamThingspeak(builtins.object):
         self.secondary_key_a = api_param.get('secondary_key_a', PARAM_DEFAULT_VALUE)
         self.secondary_id_b = api_param.get('secondary_id_b', PARAM_DEFAULT_VALUE)
         self.secondary_key_b = api_param.get('secondary_key_b', PARAM_DEFAULT_VALUE)
-        self.primary_timestamp_a = api_param.get('primary_timestamp_a', PARAM_DEFAULT_VALUE)
-        self.primary_timestamp_b = api_param.get('primary_timestamp_b', PARAM_DEFAULT_VALUE)
-        self.secondary_timestamp_a = api_param.get('secondary_timestamp_a', PARAM_DEFAULT_VALUE)
-        self.secondary_timestamp_b = api_param.get('secondary_timestamp_b', PARAM_DEFAULT_VALUE)
+        self.primary_timestamp_a = api_param.get('primary_timestamp_a', None)
+        self.primary_timestamp_b = api_param.get('primary_timestamp_b', None)
+        self.secondary_timestamp_a = api_param.get('secondary_timestamp_a', None)
+        self.secondary_timestamp_b = api_param.get('secondary_timestamp_b', None)
 
     def __str__(self):
         return f"primary_id_a={self.primary_id_a}, primary_key_a={self.primary_key_a}, " \

@@ -29,7 +29,7 @@ python -m test.keeper.test_packet_keeper
 
 python -m test.parser.test_file_parser
 python -m test.parser.test_db_answer_parser
-python -m test.parser.test_datetime_parser
+python3.8 -m test.parser.test_datetime_parser
 
 ###################### RUN TEST PICKER ######################
 

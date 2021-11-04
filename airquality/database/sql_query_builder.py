@@ -96,20 +96,12 @@ class SQLQueryBuilder(builtins.object):
         query += bridge.packets2query()
         return query
 
-    def insert_into_station_measurements(self, packets: List[StationMeasurementPacket]) -> str:
+    def insert_into_station_measurements(self, bridge: BridgeObject) -> str:
 
         query_id = "insert_into_station_measurements"
         self._raise_exception_if_query_identifier_not_found(query_id)
-
-        query = ""
-        if packets == EMPTY_LIST:
-            return query
-
         query = self.__parsed[query_id]
-        for packet in packets:
-            query += f"({packet.param_id}, {packet.sensor_id}, '{packet.param_val}', '{packet.timestamp}'),"
-
-        query = query.strip(',') + ';'
+        query += bridge.packets2query()
         return query
 
     def insert_sensors_from_bridge(self, bridge: BridgeObject) -> str:

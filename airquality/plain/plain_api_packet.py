@@ -7,13 +7,12 @@
 #
 ######################################################
 import builtins
-from abc import ABC
 from typing import Dict, Any
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.constants.shared_constants import PARAM_DEFAULT_VALUE
 
 
-class PlainAPIPacket(ABC):
+class PlainAPIPacket:
     pass
 
 
@@ -84,3 +83,46 @@ class PlainAPIPacketAtmotube(builtins.object):
         return other.time == self.time and other.voc == self.voc and other.pm1 == self.pm1 and \
             other.pm25 == self.pm25 and other.pm10 == self.pm10 and other.temperature == self.temperature and \
             other.humidity == self.humidity and other.pressure == self.pressure
+
+
+################################ THINGSPEAK PLAIN API PACKET ################################
+
+class PlainAPIPacketThingspeak(builtins.object):
+
+    def __init__(self, api_answer: Dict[str, Any]):
+        # handling timestamp
+        self.time = api_answer.get('created_at', PARAM_DEFAULT_VALUE)
+        if self.time != PARAM_DEFAULT_VALUE:
+            self.time = DatetimeParser.thingspeak_to_sqltimestamp(ts=self.time)
+
+        self.pm1a = api_answer.get('pm1.0_atm_a', PARAM_DEFAULT_VALUE)
+        self.pm25a = api_answer.get('pm2.5_atm_a', PARAM_DEFAULT_VALUE)
+        self.pm10a = api_answer.get('pm10.0_atm_a', PARAM_DEFAULT_VALUE)
+        self.temperature = api_answer.get('temperature_a', PARAM_DEFAULT_VALUE)
+        self.humidity = api_answer.get('humidity_a', PARAM_DEFAULT_VALUE)
+        self.pm1b = api_answer.get('pm1.0_atm_b', PARAM_DEFAULT_VALUE)
+        self.pm25b = api_answer.get('pm2.5_atm_b', PARAM_DEFAULT_VALUE)
+        self.pm10b = api_answer.get('pm10.0_atm_b', PARAM_DEFAULT_VALUE)
+        self.pressure = api_answer.get('pressure_b', PARAM_DEFAULT_VALUE)
+        self.count_03a = api_answer.get('0.3_um_count_a', PARAM_DEFAULT_VALUE)
+        self.count_05a = api_answer.get('0.5_um_count_a', PARAM_DEFAULT_VALUE)
+        self.count_1a = api_answer.get('1.0_um_count_a', PARAM_DEFAULT_VALUE)
+        self.count_25a = api_answer.get('2.5_um_count_a', PARAM_DEFAULT_VALUE)
+        self.count_5a = api_answer.get('5.0_um_count_a', PARAM_DEFAULT_VALUE)
+        self.count_10a = api_answer.get('10.0_um_count_a', PARAM_DEFAULT_VALUE)
+        self.count_03b = api_answer.get('0.3_um_count_b', PARAM_DEFAULT_VALUE)
+        self.count_05b = api_answer.get('0.5_um_count_b', PARAM_DEFAULT_VALUE)
+        self.count_1b = api_answer.get('1.0_um_count_b', PARAM_DEFAULT_VALUE)
+        self.count_25b = api_answer.get('2.5_um_count_b', PARAM_DEFAULT_VALUE)
+        self.count_5b = api_answer.get('5.0_um_count_b', PARAM_DEFAULT_VALUE)
+        self.count_10b = api_answer.get('10.0_um_count_b', PARAM_DEFAULT_VALUE)
+
+    def __str__(self):
+        return f"pm1.0_atm_a={self.pm1a}, pm2.5_atm_a={self.pm25a}, pm10.0_atm_a={self.pm10a}, " \
+               f"temperature_a={self.temperature}, humidity_a={self.humidity}, " \
+               f"pm1.0_atm_b={self.pm1b}, pm2.5_atm_b={self.pm25b}, pm10.0_atm_b={self.pm10b}, " \
+               f"pressure_b={self.pressure}, " \
+               f"0.3_um_count_a={self.count_03a}, 0.5_um_count_a={self.count_05a}, 1.0_um_count_a={self.count_1a}, " \
+               f"2.5_um_count_a={self.count_25a}, 5.0_um_count_a={self.count_5a}, 10.0_um_count_a={self.count_10a}, " \
+               f"0.3_um_count_b={self.count_03b}, 0.5_um_count_b={self.count_05b}, 1.0_um_count_b={self.count_1b}, " \
+               f"2.5_um_count_b={self.count_25b}, 5.0_um_count_b={self.count_5b}, 10.0_um_count_b={self.count_10b}"

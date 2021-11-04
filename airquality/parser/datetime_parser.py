@@ -34,6 +34,11 @@ class DatetimeParser(builtins.object):
         new_ts = ts + datetime.timedelta(days=days)
         return new_ts
 
+    @classmethod
+    def add_seconds_to_datetime(cls, ts: datetime.datetime, seconds: int) -> datetime.datetime:
+        new_ts = ts + datetime.timedelta(seconds=seconds)
+        return new_ts
+
     ################################ ATMOTUBE TIMESTAMP FORMATTING METHOD ################################
 
     @classmethod

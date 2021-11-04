@@ -16,14 +16,14 @@ from airquality.plain.plain_channel_param import PlainChannelParamThingspeak
 class Database2APIReshaper(ABC):
 
     @abstractmethod
-    def reshape_data(self, plain_api_param: builtins.object) -> List[builtins.object]:
+    def reshape_data(self, plain_api_param):
+        """See subclass method implementation for arguments type."""
         pass
 
 
 class Database2APIReshaperThingspeak(Database2APIReshaper):
 
     def reshape_data(self, plain_api_param: PlainAPIParamThingspeak) -> List[PlainChannelParamThingspeak]:
-
         channel_list = [PlainChannelParamThingspeak(channel_id=plain_api_param.primary_id_a,
                                                     channel_key=plain_api_param.primary_key_a,
                                                     channel_ts=plain_api_param.primary_timestamp_a,

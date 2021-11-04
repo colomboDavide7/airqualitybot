@@ -18,5 +18,5 @@ class PlainChannelParamThingspeak(builtins.object):
         self.ts_name = ts_name
 
     def __str__(self):
-        return f"channel_id={self.channel_id}, channel_key={self.channel_key}, channel_ts={self.channel_ts}, " \
-               f"ts_name={self.ts_name}"
+        return f"channel_id={self.channel_id}, channel_key={self.channel_key}, " \
+               f"channel_ts={self.channel_ts}, ts_name={self.ts_name}"
