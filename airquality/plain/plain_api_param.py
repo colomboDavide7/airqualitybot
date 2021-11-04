@@ -3,7 +3,7 @@
 # Owner: Davide Colombo
 # User: davidecolombo
 # Date: 04/11/21 08:28
-# Description: INSERT HERE THE DESCRIPTION
+# Description: Plain object that represents the API parameters corresponding to a sensor selected from the database
 #
 ######################################################
 import builtins

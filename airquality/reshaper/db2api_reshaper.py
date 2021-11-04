@@ -7,47 +7,40 @@
 #
 #################################################
 import builtins
-from typing import Dict, Any
+from typing import List
 from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EMPTY_DICT, \
-    THINGSPEAK_CH_ID_2PICK, THINGSPEAK_KEY_2PICK, THINGSPEAK_TS_2PICK
+from airquality.plain.plain_api_param import PlainAPIParamThingspeak
+from airquality.plain.plain_channel_param import PlainChannelParamThingspeak
 
 
 class Database2APIReshaper(ABC):
 
     @abstractmethod
-    def reshape_data(self, api_param: Dict[str, Any]) -> Dict[str, Any]:
+    def reshape_data(self, plain_api_param: builtins.object) -> List[builtins.object]:
         pass
 
 
 class Database2APIReshaperThingspeak(Database2APIReshaper):
 
-    def reshape_data(self, api_param: Dict[str, Any]) -> Dict[str, Any]:
+    def reshape_data(self, plain_api_param: PlainAPIParamThingspeak) -> List[PlainChannelParamThingspeak]:
 
-        if api_param == EMPTY_DICT:
-            raise SystemExit(
-                f"{Database2APIReshaperThingspeak.__name__}: cannot reshape data when 'api_param' are missing.")
-
-        reshaped = {}
-        keys = api_param.keys()
-        for i in range(len(THINGSPEAK_KEY_2PICK)):
-
-            channel_key = THINGSPEAK_KEY_2PICK[i]
-            if channel_key not in keys:
-                raise SystemExit(f"{Database2APIReshaperThingspeak.__name__}: missing channel key = '{channel_key}'")
-
-            channel_id = THINGSPEAK_CH_ID_2PICK[i]
-            if channel_id not in keys:
-                raise SystemExit(f"{Database2APIReshaperThingspeak.__name__}: missing channel id = '{channel_id}'")
-
-            channel_ts = THINGSPEAK_TS_2PICK[i]
-            if channel_ts not in keys:
-                raise SystemExit(f"{Database2APIReshaperThingspeak.__name__}: missing channel id = '{channel_ts}'")
-
-            reshaped[api_param[channel_id]] = {'key': api_param[channel_key],
-                                               'ts': api_param[channel_ts],
-                                               'name': channel_ts}
-        return reshaped
+        channel_list = [PlainChannelParamThingspeak(channel_id=plain_api_param.primary_id_a,
+                                                    channel_key=plain_api_param.primary_key_a,
+                                                    channel_ts=plain_api_param.primary_timestamp_a,
+                                                    ts_name='primary_timestamp_a'),
+                        PlainChannelParamThingspeak(channel_id=plain_api_param.primary_id_b,
+                                                    channel_key=plain_api_param.primary_key_b,
+                                                    channel_ts=plain_api_param.primary_timestamp_b,
+                                                    ts_name='primary_timestamp_b'),
+                        PlainChannelParamThingspeak(channel_id=plain_api_param.secondary_id_a,
+                                                    channel_key=plain_api_param.secondary_key_a,
+                                                    channel_ts=plain_api_param.secondary_timestamp_a,
+                                                    ts_name='secondary_timestamp_a'),
+                        PlainChannelParamThingspeak(channel_id=plain_api_param.secondary_id_b,
+                                                    channel_key=plain_api_param.secondary_key_b,
+                                                    channel_ts=plain_api_param.secondary_timestamp_b,
+                                                    ts_name='secondary_timestamp_b')]
+        return channel_list
 
 
 ################################ FACTORY ################################
