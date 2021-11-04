@@ -138,23 +138,21 @@ class FetchBotThingspeak(FetchBot):
                 print(20 * "=" + " PLAIN API PARAM " + 20 * '=')
                 print(f"{DEBUG_HEADER} {str(plain_param)}")
 
-            ################### RESHAPE API DATA FOR GETTING THE COUPLE CHANNEL_ID: CHANNEL_KEY ########################
+            ################### RESHAPE API PARAMETERS INTO A LIST OF PLAIN CHANNEL PARAM ########################
             db2api_reshaper = Database2APIReshaperFactory().create_reshaper(bot_personality=sc.PERSONALITY)
-            reshaped_api_param = db2api_reshaper.reshape_data(api_param=api_param)
+            reshaped_channels = db2api_reshaper.reshape_data(plain_api_param=plain_param)
 
             if sc.DEBUG_MODE:
-                print(20 * "=" + " RESHAPED API PARAM " + 20 * '=')
-                for ch_id in reshaped_api_param.keys():
-                    print(f"{DEBUG_HEADER} {ch_id}")
-                    for key, val in reshaped_api_param[ch_id].items():
-                        print(f"{DEBUG_HEADER} {key}={val}")
+                print(20 * "=" + " RESHAPED CHANNELS " + 20 * '=')
+                for channel in reshaped_channels:
+                    print(f"{DEBUG_HEADER} {str(channel)}")
 
             ######################## FORMAT API ADDRESS AND BUILD QUERYSTRING FOR EACH CHANNEL #########################
 
-            for channel_id in reshaped_api_param.keys():
+            for channel in reshaped_channels:
 
                 # FORMAT API ADDRESS WITH CHANNEL ID
-                formatted_api_address = api_address.format(channel_id=channel_id)
+                formatted_api_address = api_address.format(channel_id=channel.channel_id)
 
                 # CREATE API REQUEST ADAPTER
                 api_adapter = APIRequestAdapter(api_address=formatted_api_address)
@@ -168,9 +166,8 @@ class FetchBotThingspeak(FetchBot):
                 from_datetime = DatetimeParser.string2datetime(datetime_string=THINGSPEAK_START_FETCH_TIMESTAMP)
 
                 # CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN CHANNEL_ID
-                # ASSOCIATED TO THE SENSOR_ID
-                if reshaped_api_param[channel_id].get('ts', None) is not None:
-                    from_datetime = DatetimeParser.string2datetime(datetime_string=reshaped_api_param[channel_id]['ts'])
+                if channel.channel_ts is not None:
+                    from_datetime = DatetimeParser.string2datetime(datetime_string=channel.channel_ts)
 
                 to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
                 if (to_datetime - stop_datetime).total_seconds() > 0:
@@ -180,7 +177,7 @@ class FetchBotThingspeak(FetchBot):
                 while (stop_datetime - from_datetime).total_seconds() >= 0:
 
                     # GET QUERYSTRING PARAMETERS
-                    querystring_param = {'api_key': reshaped_api_param[channel_id]['key'],
+                    querystring_param = {'api_key': channel.channel_key,
                                          'start': DatetimeParser.datetime2string(ts=from_datetime),
                                          'end': DatetimeParser.datetime2string(ts=to_datetime)}
 
