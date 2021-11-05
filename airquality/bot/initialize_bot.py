@@ -12,11 +12,11 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.container.initialize_container import InitializeContainerFactory
 from airquality.bridge.bridge_object import BridgeObject
-from airquality.sqlwrapper.sql_wrapper_sensor_packet import SQLWrapperSensorPacketPurpleair
 from airquality.sqlwrapper.sql_wrapper_api_packet import SQLWrapperAPIPacketPurpleair
 from airquality.sqlwrapper.sql_wrapper_geo_packet import SQLWrapperGeoPacketPurpleair
-from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
+from airquality.filter.identifier_packet_filter import ContainerIdentifierFilter
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
@@ -119,24 +119,35 @@ class InitializeBotPurpleair(InitializeBot):
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:
                 print(30 * '*')
-                print(f"{DEBUG_HEADER} {str(packet)}")
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key}={val}")
 
-        ########################### CREATE IDENTIFIER FILTER FOR FILTERING API PACKETS ############################
-        packet_filter = IdentifierPacketFilterFactory().create_identifier_filter(bot_personality=sc.PERSONALITY)
-
-        ################################ FILTER API PACKETS ################################
-        # Filter packets based on sensor names. This is done to avoid to insert sensors that are
-        # already present in the database.
-        filtered_packets = packet_filter.filter_packets(packets=reshaped_packets, identifiers=sensor_names)
+        ########################### CONVERT RESHAPED PACKETS (dict) INTO CONTAINER OBJECT ############################
+        containers = []
+        for packet in reshaped_packets:
+            containers.append(InitializeContainerFactory.make_container(bot_personality=sc.PERSONALITY, parameters=packet))
 
         if sc.DEBUG_MODE:
-            print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
-            for packet in filtered_packets:
+            print(20 * "=" + " INITIALIZE CONTAINERS " + 20 * '=')
+            for container in containers:
                 print(30 * '*')
-                print(f"{DEBUG_HEADER} {str(packet)}")
+                print(f"{DEBUG_HEADER} {container!s}")
+
+        ########################### CREATE IDENTIFIER FILTER FOR FILTERING API PACKETS ############################
+        # packet_filter = IdentifierPacketFilterFactory().create_identifier_filter(bot_personality=sc.PERSONALITY)
+
+        ################################ FILTER API PACKETS ################################
+
+        filtered_containers = ContainerIdentifierFilter.filter_packets(containers=containers, identifiers=sensor_names)
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " INITIALIZE CONTAINERS " + 20 * '=')
+            for container in filtered_containers:
+                print(30 * '*')
+                print(f"{DEBUG_HEADER} {container!s}")
 
         ####################### IF THERE ARE NO NEW SENSORS TO ADD, RETURN FROM THE METHOD ########################
-        if filtered_packets == EMPTY_LIST:
+        if not filtered_containers:
             if sc.DEBUG_MODE:
                 print(f"{DEBUG_HEADER} all the sensors found are already present into the database.")
             dbconn.close_conn()

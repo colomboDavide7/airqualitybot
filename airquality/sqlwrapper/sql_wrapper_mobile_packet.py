@@ -34,7 +34,7 @@ class SQLWrapperMobilePacketAtmotube(SQLWrapperMobilePacket):
 
         # transform geolocation into valid postGIS data type (if any)
         self.geom = DEFAULT_VALUE
-        if self.packet.latitude != DEFAULT_VALUE:
+        if self.packet.latitude != DEFAULT_VALUE and self.packet.longitude != DEFAULT_VALUE:
             tmp = PostGISPointFactory(lat=self.packet.latitude, lng=self.packet.longitude).create_geometry()
             self.geom = tmp.get_database_string()
 

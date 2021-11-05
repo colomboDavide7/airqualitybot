@@ -6,22 +6,14 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from abc import ABC
+from dataclasses import dataclass
 from airquality.sqlwrapper.sql_wrapper_packet import SQLWrapperPacket
-from airquality.plain.plain_api_packet import PlainAPIPacketPurpleair
 
 
-class SQLWrapperSensorPacket(SQLWrapperPacket, ABC):
-    pass
-
-
-class SQLWrapperSensorPacketPurpleair(SQLWrapperSensorPacket):
-
-    def __init__(self, packet: PlainAPIPacketPurpleair):
-        self.packet = packet
+@dataclass
+class PurpleairSensorSQLWrapper(SQLWrapperPacket):
+    database_sensor_name: str
+    sensor_type: str
 
     def sql(self) -> str:
-        return f"('purpleair', '{self.packet.purpleair_identifier}')"
-
-    def __str__(self):
-        return f"sensor_name={self.packet.purpleair_identifier}"
+        return f"({self.sensor_type}', '{self.database_sensor_name}')"

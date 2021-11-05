@@ -10,46 +10,42 @@ from abc import ABC, abstractmethod
 from typing import List
 from airquality.plain.plain_api_packet import PlainAPIPacketPurpleair, PlainAPIPacket
 from airquality.constants.shared_constants import EMPTY_LIST
+from airquality.container.initialize_container import InitializeContainer
+
+# class IdentifierPacketFilter(ABC):
+#     """Abstract Base Class that defines an abstract method for filtering API answer packets based on a sensor identifier.
+#
+#     This can be useful to check whether a given sensor is already present in the database or not."""
+#
+#     @abstractmethod
+#     def filter_packets(self, packets: List[PlainAPIPacket], identifiers: List[str]) -> List[PlainAPIPacket]:
+#         pass
 
 
-class IdentifierPacketFilter(ABC):
-    """Abstract Base Class that defines an abstract method for filtering API answer packets based on a sensor identifier.
+class ContainerIdentifierFilter:
 
-    This can be useful to check whether a given sensor is already present in the database or not."""
-
-    @abstractmethod
-    def filter_packets(self, packets: List[PlainAPIPacket], identifiers: List[str]) -> List[PlainAPIPacket]:
-        pass
-
-
-class IdentifierPacketFilterPurpleair(IdentifierPacketFilter):
-
-    def filter_packets(self, packets: List[PlainAPIPacketPurpleair], identifiers: List[str]
-                       ) -> List[PlainAPIPacketPurpleair]:
-        """This method filters the purpleair packets based on 'sensor_name' that is computed dynamically inside the method.
-
-        The 'identifiers' argument is a list of purpleair 'sensor_name'(s)."""
+    @staticmethod
+    def filter_packets(containers: List[InitializeContainer], identifiers: List[str]) -> List[InitializeContainer]:
 
         if identifiers == EMPTY_LIST:
-            return packets
+            return containers
 
-        filtered_packets = []
-        if packets != EMPTY_LIST:
-            for packet in packets:
-                if packet.purpleair_identifier not in identifiers:
-                    filtered_packets.append(packet)
-        return filtered_packets
+        filtered_containers = []
+        for container in containers:
+            if container.database_sensor_name not in identifiers:
+                filtered_containers.append(container)
+        return filtered_containers
 
 
 ################################ FACTORY ################################
-class IdentifierPacketFilterFactory(builtins.object):
-
-    @classmethod
-    def create_identifier_filter(cls, bot_personality: str) -> IdentifierPacketFilter:
-
-        if bot_personality == "purpleair":
-            return IdentifierPacketFilterPurpleair()
-        else:
-            raise SystemExit(
-                f"{IdentifierPacketFilterFactory.__name__}: cannot instantiate {IdentifierPacketFilter.__name__} "
-                f"instance for personality='{bot_personality}'.")
+# class IdentifierPacketFilterFactory(builtins.object):
+#
+#     @classmethod
+#     def create_identifier_filter(cls, bot_personality: str) -> IdentifierPacketFilter:
+#
+#         if bot_personality == "purpleair":
+#             return IdentifierPacketFilterPurpleair()
+#         else:
+#             raise SystemExit(
+#                 f"{IdentifierPacketFilterFactory.__name__}: cannot instantiate {IdentifierPacketFilter.__name__} "
+#                 f"instance for personality='{bot_personality}'.")

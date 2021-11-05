@@ -6,8 +6,8 @@
 #
 #################################################
 import builtins
-from abc import ABC, abstractmethod
 from typing import List
+from abc import ABC, abstractmethod
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.plain.plain_api_packet import PlainAPIPacket, PlainAPIPacketAtmotube
 from airquality.constants.shared_constants import EMPTY_STRING

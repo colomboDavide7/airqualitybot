@@ -25,7 +25,7 @@ class TestIdentifierPacketFilter(unittest.TestCase):
         expected_output = [PlainAPIPacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
                            PlainAPIPacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
         filter_ = IdentifierPacketFilterFactory.create_identifier_filter(bot_personality="purpleair")
-        actual_output = filter_.filter_packets(packets=test_packets, identifiers=test_filter_list)
+        actual_output = filter_.filter_packets(containers=test_packets, identifiers=test_filter_list)
         self.assertEqual(actual_output, expected_output)
 
     def test_purpleair_filter_with_empty_filter_list(self):
@@ -41,7 +41,7 @@ class TestIdentifierPacketFilter(unittest.TestCase):
                            PlainAPIPacketPurpleair({"name": "n2", "sensor_index": "idx2"}),
                            PlainAPIPacketPurpleair({"name": "n3", "sensor_index": "idx3"})]
         filter_ = IdentifierPacketFilterFactory.create_identifier_filter(bot_personality="purpleair")
-        actual_output = filter_.filter_packets(packets=test_packets, identifiers=test_filter_list)
+        actual_output = filter_.filter_packets(containers=test_packets, identifiers=test_filter_list)
         self.assertEqual(actual_output, expected_output)
 
     def test_purpleair_filter_with_empty_packets(self):
@@ -51,7 +51,7 @@ class TestIdentifierPacketFilter(unittest.TestCase):
         test_filter_list = ["something1", "something2"]
         expected_output = EMPTY_LIST
         filter_ = IdentifierPacketFilterFactory.create_identifier_filter(bot_personality="purpleair")
-        actual_output = filter_.filter_packets(packets=test_packets, identifiers=test_filter_list)
+        actual_output = filter_.filter_packets(containers=test_packets, identifiers=test_filter_list)
         self.assertEqual(actual_output, expected_output)
 
 
