@@ -8,12 +8,12 @@
 ######################################################
 from dataclasses import dataclass
 from airquality.sqlwrapper.sql_wrapper_packet import SQLWrapperPacket
+from airquality.container.initialize_container import InitializeContainer
 
 
 @dataclass
-class PurpleairSensorSQLWrapper(SQLWrapperPacket):
-    database_sensor_name: str
-    sensor_type: str
+class SensorSQLWrapper(SQLWrapperPacket):
+    container: InitializeContainer
 
     def sql(self) -> str:
-        return f"({self.sensor_type}', '{self.database_sensor_name}')"
+        return f"('{self.container.sensor_type}', '{self.container.database_sensor_name}')"
