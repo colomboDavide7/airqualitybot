@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.filter.identifier_packet_filter import IdentifierPacketFilterFactory
+from airquality.filter.container_filter import IdentifierPacketFilterFactory
 from airquality.plain.plain_api_packet import PlainAPIPacketPurpleair
 from airquality.constants.shared_constants import EMPTY_LIST
 

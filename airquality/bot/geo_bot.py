@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.sqlwrapper.sql_wrapper_geo_packet import SQLWrapperGeoPacketPurpleair
+from sqlwrapper.initialize.geo_sql_wrapper import SQLWrapperGeoPacketPurpleair
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
