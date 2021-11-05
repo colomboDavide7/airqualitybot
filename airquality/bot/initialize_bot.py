@@ -12,11 +12,8 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.sqlwrapper.initialize.sensor_sql_wrapper import SensorSQLWrapper
+from airquality.container.sql_container import SensorSQLContainer, GeoSQLContainer, APIParamSQLContainer
 from airquality.container.initialize_container_factory import InitializeContainerFactory
-from airquality.bridge.bridge_object import BridgeObject
-from airquality.sqlwrapper.initialize.api_param_sql_wrapper import APIParamSQLWrapper
-from airquality.sqlwrapper.initialize.geo_sql_wrapper import GeolocationSQLWrapper
 from airquality.filter.container_filter import ContainerIdentifierFilter
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
@@ -120,32 +117,24 @@ class InitializeBotPurpleair(InitializeBot):
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:
                 print(30 * '*')
-                for key, val in packet.items():
+                for key, val in packet.items():cl
                     print(f"{DEBUG_HEADER} {key}={val}")
 
-        ########################### CONVERT RESHAPED PACKETS (dict) INTO CONTAINER OBJECT ############################
-        containers = []
-        for packet in reshaped_packets:
-            containers.append(InitializeContainerFactory.make_container(bot_personality=sc.PERSONALITY,
-                                                                        packet=packet,
-                                                                        sensor_id=sensor_id))
+        # Convert the packets into SensorSQLContainer objects
+        container_factory = InitializeContainerFactory(container_class=SensorSQLContainer)
+        sensor_containers = container_factory.make_container(packets=reshaped_packets, sensor_id=sensor_id)
 
         # Create a container filter with the filter list it needs for filtering the packets
         container_filter = ContainerIdentifierFilter(filter_list=sensor_names)
 
+        # Filter containers
+        filtered_containers = sensor_containers.apply_filter(container_filter)
 
-        filtered_containers = []
-        for container in containers:
-
-
-        # if sc.DEBUG_MODE:
-        #     print(20 * "=" + " INITIALIZE SQL DISPATCHER " + 20 * '=')
-        #     for container in containers:
-        #         print(30 * '*')
-        #         print(f"{DEBUG_HEADER} {container!s}")
-
-        ################################ FILTER INITIALIZE CONTAINERS ################################
-        # filtered_containers = ContainerIdentifierFilter.filter_packets(containers=containers, identifiers=sensor_names)
+        #
+        #
+        # TODO: PAY ATTENTION TO FILTER THE SAME PACKETS
+        #
+        #
 
         ####################### IF THERE ARE NO NEW SENSORS TO ADD, RETURN FROM THE METHOD ########################
         if not filtered_containers:
@@ -155,62 +144,62 @@ class InitializeBotPurpleair(InitializeBot):
             return
 
         if sc.DEBUG_MODE:
-            print(20 * "=" + " FILTERED CONTAINERS " + 20 * '=')
+            print(20 * "=" + " SENSOR FILTERED CONTAINERS " + 20 * '=')
             for container in filtered_containers:
                 print(30 * '*')
                 print(f"{DEBUG_HEADER} {container!s}")
 
-        ################################ TRANSFORM SINGLE PACKET INTO SENSOR PARAM PACKET ##############################
-        sensor_wrapped_containers = []
-        for container in filtered_containers:
-            sensor_wrapped_containers.append(SensorSQLWrapper(container=container))
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " SENSOR WRAPPED CONTAINERS " + 20 * '=')
-            for sensor in sensor_wrapped_containers:
-                print(30 * '*')
-                print(f"{DEBUG_HEADER} {sensor!s}")
-
-        ################### CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS #############################
-        bridge = BridgeObject(packets=sensor_wrapped_containers)
-        query = query_builder.insert_into_sensor(bridge=bridge)
-        dbconn.send(executable_sql_query=query)
-
-        ################################ TRANSFORM SINGLE PACKET INTO API PARAM PACKET ################################
-        api_param_wrapped_containers = []
-        temp_sensor_id = sensor_id
-        for container in filtered_containers:
-            api_param_wrapped_containers.append(APIParamSQLWrapper(container=container, sensor_id=temp_sensor_id))
-            temp_sensor_id += 1
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " API PARAM WRAPPED CONTAINERS " + 20 * '=')
-            for container in api_param_wrapped_containers:
-                print(30 * '*')
-                print(f"{DEBUG_HEADER} {container!s}")
-
-        ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
-        bridge = BridgeObject(packets=api_param_wrapped_containers)
-        query = query_builder.insert_into_api_param(bridge=bridge)
-        dbconn.send(executable_sql_query=query)
-
-        ############################## TRANSFORM SINGLE PACKET INTO GEOMETRY PARAM PACKET #############################
-        geo_wrapped_containers = []
-        temp_sensor_id = sensor_id
-        for container in filtered_containers:
-            geo_wrapped_containers.append(GeolocationSQLWrapper(container=container, sensor_id=temp_sensor_id))
-            temp_sensor_id += 1
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " GEOLOCATION WRAPPED CONTAINERS " + 20 * '=')
-            for container in geo_wrapped_containers:
-                print(30 * '*')
-                print(f"{DEBUG_HEADER} {container!s}")
-
-        ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
-        bridge = BridgeObject(packets=geo_wrapped_containers)
-        query = query_builder.insert_into_sensor_at_location(bridge=bridge)
-        dbconn.send(executable_sql_query=query)
+        # ################################ TRANSFORM SINGLE PACKET INTO SENSOR PARAM PACKET ##############################
+        # sensor_wrapped_containers = []
+        # for container in filtered_containers:
+        #     sensor_wrapped_containers.append(SensorSQLWrapper(container=container))
+        #
+        # if sc.DEBUG_MODE:
+        #     print(20 * "=" + " SENSOR WRAPPED CONTAINERS " + 20 * '=')
+        #     for sensor in sensor_wrapped_containers:
+        #         print(30 * '*')
+        #         print(f"{DEBUG_HEADER} {sensor!s}")
+        #
+        # ################### CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS #############################
+        # bridge = BridgeObject(packets=sensor_wrapped_containers)
+        # query = query_builder.insert_into_sensor(bridge=bridge)
+        # dbconn.send(executable_sql_query=query)
+        #
+        # ################################ TRANSFORM SINGLE PACKET INTO API PARAM PACKET ################################
+        # api_param_wrapped_containers = []
+        # temp_sensor_id = sensor_id
+        # for container in filtered_containers:
+        #     api_param_wrapped_containers.append(APIParamSQLWrapper(container=container, sensor_id=temp_sensor_id))
+        #     temp_sensor_id += 1
+        #
+        # if sc.DEBUG_MODE:
+        #     print(20 * "=" + " API PARAM WRAPPED CONTAINERS " + 20 * '=')
+        #     for container in api_param_wrapped_containers:
+        #         print(30 * '*')
+        #         print(f"{DEBUG_HEADER} {container!s}")
+        #
+        # ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
+        # bridge = BridgeObject(packets=api_param_wrapped_containers)
+        # query = query_builder.insert_into_api_param(bridge=bridge)
+        # dbconn.send(executable_sql_query=query)
+        #
+        # ############################## TRANSFORM SINGLE PACKET INTO GEOMETRY PARAM PACKET #############################
+        # geo_wrapped_containers = []
+        # temp_sensor_id = sensor_id
+        # for container in filtered_containers:
+        #     geo_wrapped_containers.append(GeolocationSQLWrapper(container=container, sensor_id=temp_sensor_id))
+        #     temp_sensor_id += 1
+        #
+        # if sc.DEBUG_MODE:
+        #     print(20 * "=" + " GEOLOCATION WRAPPED CONTAINERS " + 20 * '=')
+        #     for container in geo_wrapped_containers:
+        #         print(30 * '*')
+        #         print(f"{DEBUG_HEADER} {container!s}")
+        #
+        # ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
+        # bridge = BridgeObject(packets=geo_wrapped_containers)
+        # query = query_builder.insert_into_sensor_at_location(bridge=bridge)
+        # dbconn.send(executable_sql_query=query)p
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()

@@ -7,14 +7,16 @@
 #
 ######################################################
 from typing import List
-from airquality.container.sql_container import SQLContainer, APIParamSQLContainer
+from airquality.container.sql_container import SQLContainer
 
 
-class APIParamSQLContainerComposition(SQLContainer):
-    """SQL container class that is a composition of APIParamSQLContainer object."""
+# class SQLContainerComposition(SQLContainer):
+#
+#     def __init__(self, containers: List[SQLContainer]):
+#         self.containers = containers
+#
+#     def sql(self, query: str) -> str:
+#         for c in self.containers:
+#             query += c.sql(query="") + ','
+#         return query.strip(',') + ';'
 
-    def __init__(self, children: List[APIParamSQLContainer]):
-        self.children = children
-
-    def sql(self) -> str:
-        return ','.join(c.sql() for c in self.children)

@@ -12,7 +12,7 @@ from airquality.io.io import IOManager
 from airquality.bridge.bridge_object import BridgeObject
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.sqlwrapper.initialize.geo_sql_wrapper import GeolocationSQLWrapper
+# from airquality.sqlwrapper.initialize.geo_sql_wrapper import GeolocationSQLWrapper
 
 
 class SQLQueryBuilder(builtins.object):
@@ -126,13 +126,13 @@ class SQLQueryBuilder(builtins.object):
         query += bridge.packets2query()
         return query
 
-    def insert_single_sensor_at_location(self, packet: GeolocationSQLWrapper) -> str:
-
-        query_id = "insert_sensor_at_location"
-        self._raise_exception_if_query_identifier_not_found(query_id)
-        query = self.__parsed[query_id]
-        query += packet.sql()
-        return query
+    # def insert_single_sensor_at_location(self, packet: GeolocationSQLWrapper) -> str:
+    #
+    #     query_id = "insert_sensor_at_location"
+    #     self._raise_exception_if_query_identifier_not_found(query_id)
+    #     query = self.__parsed[query_id]
+    #     query += packet.sql()
+    #     return query
 
     ################################ METHODS THAT RETURN UPDATE QUERY ################################
 

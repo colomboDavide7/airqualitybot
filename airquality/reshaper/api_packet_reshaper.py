@@ -8,6 +8,8 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
+from airquality.parser.datetime_parser import DatetimeParser
+from airquality.geom.postgis_geometry import PostGISPointFactory
 from airquality.plain.plain_api_packet import PlainAPIPacketAtmotube
 from airquality.plain.plain_api_packet_mergeable import PlainAPIPacketThingspeakPrimaryChannelAFactory, \
     PlainAPIPacketThingspeakPrimaryChannelBFactory, PlainAPIPacketThingspeakSecondaryChannelAFactory, \
@@ -47,7 +49,29 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
                     key = fields[i]
                     val = data[i]
                     rpacket[key] = val
-                reshaped_packets.append(rpacket)
+
+                #
+                #
+                # TODO: MOVE THIS TO AN ADAPTER CLASS !!!!
+                #
+                #
+
+                # new packet compliant with sql container interface
+                point = PostGISPointFactory(lat=rpacket['latitude'], lng=rpacket['longitude']).create_geometry()
+                new_packet = {"name": f"{rpacket['name']} ({rpacket['sensor_index']})",
+                              'type': 'purpleair',
+                              'timestamp': DatetimeParser.current_sqltimestamp(),
+                              'geometry': point.get_database_string(),
+                              'param_name': ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
+                                             'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b',
+                                             'primary_timestamp_a', 'primary_timestamp_b', 'secondary_timestamp_a',
+                                             'secondary_timestamp_b'],
+                              'param_value': [rpacket['primary_id_a'], rpacket['primary_id_b'], rpacket['primary_key_a'],
+                                              rpacket['primary_key_b'], rpacket['secondary_id_a'], rpacket['secondary_id_b'],
+                                              rpacket['secondary_key_a'], rpacket['secondary_key_b'],
+                                              'null', 'null', 'null', 'null']}
+
+                reshaped_packets.append(new_packet)
         return reshaped_packets
 
 

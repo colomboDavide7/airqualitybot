@@ -15,7 +15,7 @@ class ContainerFilter(ABC):
         self.filter_list = filter_list
 
     @abstractmethod
-    def filter_container(self) -> bool:
+    def filter_container(self, to_filter: Any) -> bool:
         pass
 
 
@@ -24,5 +24,5 @@ class ContainerIdentifierFilter(ContainerFilter):
     def __init__(self, filter_list: List[Any]):
         super().__init__(filter_list)
 
-    def filter_container(self) -> bool:
-        pass
+    def filter_container(self, to_filter: Any) -> bool:
+        return to_filter not in self.filter_list
