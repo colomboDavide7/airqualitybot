@@ -77,7 +77,7 @@ class TestDatetimeParser(unittest.TestCase):
         expected_output = datetime.datetime(year=2019, month=7, day=9, second=7)
         actual_output = DatetimeParser.add_seconds_to_datetime(ts=test_starting_datetime, seconds=3)
         self.assertEqual(actual_output, expected_output)
-        
+
 
 if __name__ == '__main__':
     unittest.main()

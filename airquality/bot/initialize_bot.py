@@ -155,7 +155,7 @@ class InitializeBotPurpleair(InitializeBot):
 
         ################### CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS #############################
         bridge = BridgeObject(packets=sensor_param_packets)
-        query = query_builder.insert_sensors_from_bridge(bridge=bridge)
+        query = query_builder.insert_into_sensor(bridge=bridge)
         dbconn.send(executable_sql_query=query)
 
         ################################ TRANSFORM SINGLE PACKET INTO API PARAM PACKET ################################
@@ -173,7 +173,7 @@ class InitializeBotPurpleair(InitializeBot):
 
         ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
         bridge = BridgeObject(packets=api_param_packets)
-        query = query_builder.insert_api_param(bridge=bridge)
+        query = query_builder.insert_into_api_param(bridge=bridge)
         dbconn.send(executable_sql_query=query)
 
         ############################### TRANSFORM SINGLE PACKET INTO GEOMETRY PARAM PACKET #############################
@@ -191,7 +191,7 @@ class InitializeBotPurpleair(InitializeBot):
 
         ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
         bridge = BridgeObject(packets=geo_param_packets)
-        query = query_builder.insert_sensor_at_location(bridge=bridge)
+        query = query_builder.insert_into_sensor_at_location(bridge=bridge)
         dbconn.send(executable_sql_query=query)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################

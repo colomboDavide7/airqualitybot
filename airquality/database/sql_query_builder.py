@@ -8,14 +8,11 @@
 #################################################
 import builtins
 
-from typing import List
 from airquality.io.io import IOManager
 from airquality.bridge.bridge_object import BridgeObject
 from airquality.sqlwrapper.sql_wrapper_geo_packet import SQLWrapperGeoPacket
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.api2database.measurement_packet import StationMeasurementPacket
-from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_LIST
 
 
 class SQLQueryBuilder(builtins.object):
@@ -104,7 +101,7 @@ class SQLQueryBuilder(builtins.object):
         query += bridge.packets2query()
         return query
 
-    def insert_sensors_from_bridge(self, bridge: BridgeObject) -> str:
+    def insert_into_sensor(self, bridge: BridgeObject) -> str:
 
         query_id = "insert_sensors"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
@@ -112,7 +109,7 @@ class SQLQueryBuilder(builtins.object):
         query += bridge.packets2query()
         return query
 
-    def insert_api_param(self, bridge: BridgeObject) -> str:
+    def insert_into_api_param(self, bridge: BridgeObject) -> str:
 
         query_id = "insert_api_param"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
@@ -121,11 +118,10 @@ class SQLQueryBuilder(builtins.object):
         query += bridge.packets2query()
         return query
 
-    def insert_sensor_at_location(self, bridge: BridgeObject) -> str:
+    def insert_into_sensor_at_location(self, bridge: BridgeObject) -> str:
 
         query_id = "insert_sensor_at_location"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-
         query = self.__parsed[query_id]
         query += bridge.packets2query()
         return query
@@ -134,7 +130,6 @@ class SQLQueryBuilder(builtins.object):
 
         query_id = "insert_sensor_at_location"
         self._raise_exception_if_query_identifier_not_found(query_id)
-
         query = self.__parsed[query_id]
         query += packet.sql()
         return query
@@ -150,10 +145,7 @@ class SQLQueryBuilder(builtins.object):
 
         query_id = "update_last_packet_date_atmotube"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-
-        query = EMPTY_STRING
-        if last_timestamp != EMPTY_STRING:
-            query = self.__parsed[f"{query_id}"].format(par_val=last_timestamp, sens_id=sensor_id, par_name="date")
+        query = self.__parsed[f"{query_id}"].format(par_val=last_timestamp, sens_id=sensor_id, par_name="date")
         return query
 
     def update_valid_to_timestamp_location(self, sensor_id: int) -> str:

@@ -21,15 +21,6 @@ class TestSQLQueryBuilder(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.sql_builder._raise_exception_if_query_identifier_not_found(query_id=test_query_id)
 
-    def test_empty_query_when_empty_timestamp_update_last_date_atmotube(self):
-        """This method test the return value of 'EMPTY_STRING' when an EMPTY_STRING is passed as argument."""
-
-        test_timestamp = EMPTY_STRING
-        expected_output = EMPTY_STRING
-        actual_output = self.sql_builder.update_last_packet_date_atmotube(last_timestamp=test_timestamp,
-                                                                          sensor_id=1)
-        self.assertEqual(actual_output, expected_output)
-
 
 if __name__ == '__main__':
     unittest.main()
