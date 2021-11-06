@@ -91,15 +91,17 @@ class SQLContainerComposition(SQLContainer):
             query += c.sql(query="") + ','
         return query.strip(',') + ';'
 
-    def apply_filter(self, container_filter: ContainerFilter):
+    def apply_filter(self, container_filter: ContainerFilter) -> SQLContainer:
         filtered_containers = []
         for c in self.containers:
             if c.apply_filter(container_filter=container_filter):
                 filtered_containers.append(c)
-        return filtered_containers
+        return SQLContainerComposition(containers=filtered_containers)
+
+    # TODO: return a SQLContainerComposition instead of a list in the 'apply_filter' method
 
     def identifier(self) -> str:
         return ', '.join(f'{c.identifier()}' for c in self.containers)
 
     def __str__(self):
-        return ', '.join(f'{c!s}' for c in self.containers)
+        return '\n'.join(f'{c!s}' for c in self.containers)

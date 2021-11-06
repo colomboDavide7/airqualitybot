@@ -156,20 +156,18 @@ class InitializeBotPurpleair(InitializeBot):
         # Create a container filter with the filter list it needs for filtering the packets
         container_filter = ContainerIdentifierFilter(filter_list=sensor_names)
 
-        # Filter containers
+        # Filter containers (!!! this return a SQLContainerComposition !!!)
         filtered_containers = sensor_containers.apply_filter(container_filter)
 
         ####################### IF THERE ARE NO NEW SENSORS TO ADD, RETURN FROM THE METHOD ########################
-        if not filtered_containers:
+        if not filtered_containers.containers:
             print(f"{INFO_HEADER} all the sensors found are already present into the database.")
             dbconn.close_conn()
             return
 
         if sc.DEBUG_MODE:
             print(20 * "=" + " SENSOR FILTERED CONTAINERS " + 20 * '=')
-            for container in filtered_containers:
-                print(30 * '*')
-                print(f"{DEBUG_HEADER} {container!s}")
+            print(f"{DEBUG_HEADER} {filtered_containers!s}")
 
         query_statement = query_builder.insert_into_sensor()
         query = sensor_containers.sql(query=query_statement)
@@ -179,14 +177,12 @@ class InitializeBotPurpleair(InitializeBot):
         container_factory = SQLContainerFactory(container_class=APIParamSQLContainer)
         apiparam_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
-        # Filtered API param containers
+        # Filter containers (!!! this return a SQLContainerComposition !!!)
         filtered_containers = apiparam_containers.apply_filter(container_filter)
 
         if sc.DEBUG_MODE:
             print(20 * "=" + " API PARAM FILTERED CONTAINERS " + 20 * '=')
-            for container in filtered_containers:
-                print(30 * '*')
-                print(f"{DEBUG_HEADER} {container!s}")
+            print(f"{DEBUG_HEADER} {filtered_containers!s}")
 
         query_statement = query_builder.insert_into_api_param()
         query = apiparam_containers.sql(query=query_statement)
@@ -196,14 +192,12 @@ class InitializeBotPurpleair(InitializeBot):
         container_factory = SQLContainerFactory(container_class=GeoSQLContainer)
         geo_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
-        # Filtered Geo containers
+        # Filter containers (!!! this return a SQLContainerComposition !!!)
         filtered_containers = geo_containers.apply_filter(container_filter)
 
         if sc.DEBUG_MODE:
             print(20 * "=" + " GEO FILTERED CONTAINERS " + 20 * '=')
-            for container in filtered_containers:
-                print(30 * '*')
-                print(f"{DEBUG_HEADER} {container!s}")
+            print(f"{DEBUG_HEADER} {filtered_containers!s}")
 
         query_statement = query_builder.insert_into_sensor_at_location()
         query = geo_containers.sql(query=query_statement)

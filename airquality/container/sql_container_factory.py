@@ -24,3 +24,15 @@ class SQLContainerFactory(object):
             containers.append(self.container_class(sensor_id=temp_sensor_id, packet=packet))
             temp_sensor_id += 1
         return SQLContainerComposition(containers=containers)
+
+    def make_container_by_mapping_sensor_id(self, packets: List[Dict[str, Any]], sensorname2id_map: Dict[str, Any]
+                                            ) -> SQLContainer:
+        # In this method, we are also doing a filter operation on the packets !!!
+        sensor_names = sensorname2id_map.keys()
+        containers = []
+        for packet in packets:
+            sensor_name = packet['name']
+            if sensor_name in sensor_names:
+                sensor_id = sensorname2id_map[sensor_name]
+                containers.append(self.container_class(sensor_id=sensor_id, packet=packet))
+        return SQLContainerComposition(containers=containers)
