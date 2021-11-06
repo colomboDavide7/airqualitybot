@@ -78,7 +78,7 @@ class FetchBotThingspeak(FetchBot):
         dbconn.open_conn()
 
         ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
+        query_builder = SQLQueryBuilder(parsed_query_data=QUERY_FILE)
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
@@ -285,7 +285,7 @@ class FetchBotAtmotube(FetchBot):
         dbconn.open_conn()
 
         ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
+        query_builder = SQLQueryBuilder(parsed_query_data=QUERY_FILE)
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)

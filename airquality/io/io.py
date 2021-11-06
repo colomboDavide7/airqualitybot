@@ -9,7 +9,7 @@ import builtins
 
 
 class IOManager(builtins.object):
-    """Class that defines @staticmethods for Input/Output common operations."""
+    """Class that defines for Input/Output common operations."""
 
     @staticmethod
     def open_read_close_file(path: str) -> str:

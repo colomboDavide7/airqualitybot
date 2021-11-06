@@ -31,7 +31,7 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST, INFO_HEADER
 
 
 class InitializeBot(ABC):
@@ -59,8 +59,11 @@ class InitializeBotPurpleair(InitializeBot):
         dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
         dbconn.open_conn()
 
-        ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
+        ################################ SQL QUERY BUILDER ###############################
+        raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
+        parsed_query_data = parser.parse(raw_string=raw_query_data)
+        query_builder = SQLQueryBuilder(parsed_query_data)
 
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
         # The 'sensor_names' variable is used to check if a given sensor taken from the API is already present
@@ -158,8 +161,7 @@ class InitializeBotPurpleair(InitializeBot):
 
         ####################### IF THERE ARE NO NEW SENSORS TO ADD, RETURN FROM THE METHOD ########################
         if not filtered_containers:
-            if sc.DEBUG_MODE:
-                print(f"{DEBUG_HEADER} all the sensors found are already present into the database.")
+            print(f"{INFO_HEADER} all the sensors found are already present into the database.")
             dbconn.close_conn()
             return
 

@@ -7,11 +7,9 @@
 #
 #################################################
 import builtins
-
-from airquality.io.io import IOManager
-from airquality.parser.file_parser import FileParserFactory
+from typing import Dict, Any
 from airquality.parser.datetime_parser import DatetimeParser
-# from airquality.sqlwrapper.initialize.geo_sql_wrapper import GeolocationSQLWrapper
+from airquality.constants.shared_constants import EXCEPTION_HEADER
 
 
 class SQLQueryBuilder(builtins.object):
@@ -20,102 +18,93 @@ class SQLQueryBuilder(builtins.object):
     The __init__() method takes the path to the query file, then opens, reads and closes the file.
     Next, the parsed content is stored in an instance variable."""
 
-    def __init__(self, query_file_path: str):
-        self.__path = query_file_path
-        self.__raw = IOManager.open_read_close_file(self.__path)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=query_file_path.split('.')[-1])
-        self.__parsed = parser.parse(self.__raw)
+    def __init__(self, parsed_query_data: Dict[str, Any]):
+        if not parsed_query_data:
+            raise SystemExit(f"{EXCEPTION_HEADER} cannot instantiate '{SQLQueryBuilder.__name__}' with empty dictionary.")
+        self.parsed_query_data = parsed_query_data
 
     ################################ METHODS THAT RETURN SELECT QUERY ################################
+
+    def select_max_sensor_id(self) -> str:
+        """This method returns a query for selecting the MAX 'sensor_id' from sensor table."""
+
+        query_id = "s1"
+        self._raise_exception_if_query_identifier_not_found(query_id=query_id)
+        return self.parsed_query_data[query_id]
+
+    def select_api_param_from_sensor_id(self, sensor_id: int) -> str:
+        """This method return a query for selecting 'param_name, param_value' tuples associated to a given "sensor_id"."""
+
+        query_id = "s2"
+        self._raise_exception_if_query_identifier_not_found(query_id=query_id)
+        return self.parsed_query_data[query_id].format(id=sensor_id)
 
     def select_sensor_ids_from_personality(self, personality: str) -> str:
         """This method returns a SQL query that selects all the "sensor_id"(s) from the database, which "sensor_type"
         contains the identifier argument."""
 
-        query_id = "select_sensor_ids_where_sensor_type_ilike_personality"
+        query_id = "s3"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id].format(personality=personality)
-
-    def select_api_param_from_sensor_id(self, sensor_id: int) -> str:
-        """This method return a query for selecting 'param_name, param_value' tuples associated to a given "sensor_id"."""
-
-        query_id = "select_api_param_where_sensor_id"
-        self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id].format(id=sensor_id)
-
-    def select_measure_param_from_personality(self, personality: str) -> str:
-        """This method returns a query for selecting 'param_code, id' tuples which 'param_name' contains the identifier
-        argument."""
-
-        query_id = "select_measure_param_where_name_ilike_personality"
-        self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id].format(personality=personality)
-
-    def select_max_sensor_id(self) -> str:
-        """This method returns a query for selecting the MAX 'sensor_id' from sensor table."""
-
-        query_id = "select_max_sensor_id"
-        self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id]
+        return self.parsed_query_data[query_id].format(personality=personality)
 
     def select_sensor_name_from_personality(self, personality: str) -> str:
         """This method returns a query for selecting all the records which 'sensor_name' field contains the 'identifier'
         argument."""
 
-        query_id = "select_sensor_name_where_sensor_type_ilike_personality"
+        query_id = "s4"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id].format(personality=personality)
-
-    def select_sensor_valid_geo_map_from_personality(self, personality: str) -> str:
-        """This method returns a query that selects the (sensor_id, ST_AsText(geom)) tuple from the sensor_at_location
-        table by looking only at those sensors whose type contains the identifiers and whose 'valid_to' field is NULL."""
-
-        query_id = "select_sensor_valid_geo_map_where_sensor_type_ilike_personality"
-        self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id].format(personality=personality)
+        return self.parsed_query_data[query_id].format(personality=personality)
 
     def select_sensor_name_id_map_from_personality(self, personality: str) -> str:
         """This method returns a query that selects the (sensor_name, sensor_id) tuples that correspond to the
          identifier argument."""
 
-        query_id = "select_sensor_name_id_where_sensor_type_ilike_personality"
+        query_id = "s5"
         self._raise_exception_if_query_identifier_not_found(query_id)
-        return self.__parsed[query_id].format(personality=personality)
+        return self.parsed_query_data[query_id].format(personality=personality)
+
+    def select_measure_param_from_personality(self, personality: str) -> str:
+        """This method returns a query for selecting 'param_code, id' tuples which 'param_name' contains the identifier
+        argument."""
+
+        query_id = "s6"
+        self._raise_exception_if_query_identifier_not_found(query_id=query_id)
+        return self.parsed_query_data[query_id].format(personality=personality)
+
+    def select_sensor_valid_geo_map_from_personality(self, personality: str) -> str:
+        """This method returns a query that selects the (sensor_id, ST_AsText(geom)) tuple from the sensor_at_location
+        table by looking only at those sensors whose type contains the identifiers and whose 'valid_to' field is NULL."""
+
+        query_id = "s7"
+        self._raise_exception_if_query_identifier_not_found(query_id=query_id)
+        return self.parsed_query_data[query_id].format(personality=personality)
 
     ################################ METHODS THAT RETURN INSERT QUERY ################################
 
     def insert_into_mobile_measurements(self) -> str:
-        query_id = "insert_into_mobile_measurements"
+        query_id = "i1"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id]
+        return self.parsed_query_data[query_id]
 
     def insert_into_station_measurements(self) -> str:
-        query_id = "insert_into_station_measurements"
+        query_id = "i2"
         self._raise_exception_if_query_identifier_not_found(query_id)
-        return self.__parsed[query_id]
+        return self.parsed_query_data[query_id]
 
     def insert_into_sensor(self) -> str:
-        query_id = "insert_sensors"
+        query_id = "i3"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id]
+        return self.parsed_query_data[query_id]
 
     def insert_into_api_param(self) -> str:
-        query_id = "insert_api_param"
+        query_id = "i4"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id]
+        return self.parsed_query_data[query_id]
 
     def insert_into_sensor_at_location(self) -> str:
-        query_id = "insert_sensor_at_location"
+        query_id = "i5"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.__parsed[query_id]
-
-    # def insert_single_sensor_at_location(self, packet: GeolocationSQLWrapper) -> str:
-    #
-    #     query_id = "insert_sensor_at_location"
-    #     self._raise_exception_if_query_identifier_not_found(query_id)
-    #     query = self.__parsed[query_id]
-    #     query += packet.sql()
-    #     return query
+        return self.parsed_query_data[query_id]
 
     ################################ METHODS THAT RETURN UPDATE QUERY ################################
 
@@ -126,23 +115,23 @@ class SQLQueryBuilder(builtins.object):
 
         If an EMPTY_STRING timestamp is passed as argument, an EMPTY_STRING query is returned."""
 
-        query_id = "update_last_packet_date_atmotube"
+        query_id = "u1"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        query = self.__parsed[f"{query_id}"].format(par_val=last_timestamp, sens_id=sensor_id, par_name="date")
+        query = self.parsed_query_data[f"{query_id}"].format(par_val=last_timestamp, sens_id=sensor_id, par_name="date")
         return query
 
     def update_valid_to_timestamp_location(self, sensor_id: int) -> str:
 
-        query_id = "update_valid_to_timestamp_location"
+        query_id = "u2"
         self._raise_exception_if_query_identifier_not_found(query_id)
         ts = DatetimeParser.current_sqltimestamp()
-        return self.__parsed[query_id].format(ts=ts, sens_id=sensor_id)
+        return self.parsed_query_data[query_id].format(ts=ts, sens_id=sensor_id)
 
     def update_last_channel_acquisition_timestamp(self, sensor_id: str, ts: str, param2update: str) -> str:
 
-        query_id = "update_last_channel_acquisition_timestamp"
+        query_id = "u3"
         self._raise_exception_if_query_identifier_not_found(query_id)
-        return self.__parsed[query_id].format(ts=ts, sens_id=sensor_id, par_name=param2update)
+        return self.parsed_query_data[query_id].format(ts=ts, sens_id=sensor_id, par_name=param2update)
 
     ################################ EXCEPTION METHOD ################################
 
@@ -150,6 +139,5 @@ class SQLQueryBuilder(builtins.object):
         """This method raises SystemExit exception is the 'query_id' argument is not present within the query
         identifiers read from the SQL FILE passed to '__init__()' method."""
 
-        if query_id not in self.__parsed.keys():
-            raise SystemExit(f"{SQLQueryBuilder.__name__}: query id '{query_id}' not found. "
-                             f"Please check your 'properties/sql_query.json' file.")
+        if query_id not in self.parsed_query_data.keys():
+            raise SystemExit(f"{EXCEPTION_HEADER} {SQLQueryBuilder.__name__} is missing query_id='{query_id}'.")

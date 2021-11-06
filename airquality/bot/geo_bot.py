@@ -60,7 +60,7 @@ class GeoBotPurpleair(GeoBot):
         dbconn.open_conn()
 
         ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(query_file_path=QUERY_FILE)
+        query_builder = SQLQueryBuilder(parsed_query_data=QUERY_FILE)
 
         ################ SELECT SENSOR IDS FROM PERSONALITY (same method used for selecting sensor names) ###############
         query = query_builder.select_sensor_ids_from_personality(personality=sc.PERSONALITY)

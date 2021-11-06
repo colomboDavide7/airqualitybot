@@ -11,14 +11,15 @@ from airquality.database.sql_query_builder import SQLQueryBuilder
 
 class TestSQLQueryBuilder(unittest.TestCase):
 
-    def setUp(self) -> None:
-        """This method is run every time before a test is run."""
-        self.sql_builder = SQLQueryBuilder(query_file_path="properties/sql_query.json")
-
     def test_system_exit_when_query_identifier_not_found(self):
         test_query_id = "bad query identifier"
+        sqlbuilder = SQLQueryBuilder(parsed_query_data={'q1': 'v1'})
         with self.assertRaises(SystemExit):
-            self.sql_builder._raise_exception_if_query_identifier_not_found(query_id=test_query_id)
+            sqlbuilder._raise_exception_if_query_identifier_not_found(query_id=test_query_id)
+
+    def test_system_exit_when_parsed_query_data_is_empty(self):
+        with self.assertRaises(SystemExit):
+            SQLQueryBuilder(parsed_query_data={})
 
 
 if __name__ == '__main__':
