@@ -165,25 +165,24 @@ class GeoBotPurpleair(GeoBot):
         answer = dbconn.send(executable_sql_query=query)
         sensorid2geom_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
-        if sc.DEBUG_MODE:
-            if sensorid2geom_map != EMPTY_LIST:
-                print(20 * "=" + " ACTIVE LOCATIONS " + 20 * '=')
-                for key, val in sensorid2geom_map.items():
-                    print(f"{DEBUG_HEADER} {key}={val}")
-
-        ############## CREATE GEO PARAM PACKETS BY ASSOCIATING THE ID TO THE SENSOR_IDENTIFIER ########################
-        # These packets are used ONLY in case of insertion (new position detected) !!!
-        # geo_param_packets = []
-        # for packet in filtered_packets:
-        #     sensor_id = sensorname2id_map[packet.purpleair_identifier]
-        #     geo_param_packets.append(SQLWrapperGeoPacketPurpleair(packet=packet, sensor_id=sensor_id))
-
         # if sc.DEBUG_MODE:
-        #     if sensorid2geom_map != EMPTY_LIST:
-        #         print(20 * "=" + " GEO PARAM PACKETS " + 20 * '=')
-        #         for packet in geo_param_packets:
-        #             print(30 * '*')
-        #             print(f"{DEBUG_HEADER} {str(packet)}")
+        #     if sensorid2geom_map:
+        #         print(20 * "=" + " ACTIVE LOCATIONS " + 20 * '=')
+        #         for key, val in sensorid2geom_map.items():
+        #             print(f"{DEBUG_HEADER} {key}={val}")
+
+        ############## ASSOCIATE NAME TO THE CURRENT LOCATION BY USING THE MAPPING ###################
+        sensorname2geom_map = {}
+        for name in sensorname2id_map.keys():
+            sensor_id = sensorname2id_map[name]
+            if sensor_id in sensorid2geom_map.keys():
+                sensorname2geom_map[name] = sensorid2geom_map[sensor_id]
+
+        if sc.DEBUG_MODE:
+            if sensorid2geom_map:
+                print(20 * "=" + " ACTIVE LOCATIONS " + 20 * '=')
+                for key, val in sensorname2geom_map.items():
+                    print(f"{DEBUG_HEADER} {key}={val}")
 
         ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
 
