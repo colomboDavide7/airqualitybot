@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.adapter.container_adapter import ContainerAdapterFactory, ContainerAdapterPurpleair
 from airquality.container.sql_container import SensorSQLContainer, GeoSQLContainer, APIParamSQLContainer
 from airquality.container.initialize_container_factory import InitializeContainerFactory
 from airquality.filter.container_filter import ContainerIdentifierFilter
@@ -110,19 +111,26 @@ class InitializeBotPurpleair(InitializeBot):
         parser = FileParserFactory.file_parser_from_file_extension(file_extension='json')
         parsed_api_packets = parser.parse(raw_string=raw_api_packets)
 
-        ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
+        ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR CREATING A CONTAINER ####################
         reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
         reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_packets)
         if sc.DEBUG_MODE:
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:
                 print(30 * '*')
-                for key, val in packet.items():cl
+                for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key}={val}")
+
+        # Create a ContainerAdapter object for adapting the packets to the general container interface (dict keys)
+        container_adapter_fact = ContainerAdapterFactory(container_adapter_class=ContainerAdapterPurpleair)
+        container_adapter = container_adapter_fact.make_container_adapter(packets=reshaped_packets)
+
+        # Get adapted packets for building containers
+        adapted_packets = container_adapter.adapt_packets()
 
         # Convert the packets into SensorSQLContainer objects
         container_factory = InitializeContainerFactory(container_class=SensorSQLContainer)
-        sensor_containers = container_factory.make_container(packets=reshaped_packets, sensor_id=sensor_id)
+        sensor_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
         # Create a container filter with the filter list it needs for filtering the packets
         container_filter = ContainerIdentifierFilter(filter_list=sensor_names)
