@@ -14,7 +14,7 @@ import airquality.constants.system_constants as sc
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.adapter.container_adapter import ContainerAdapterFactory, ContainerAdapterPurpleair
 from airquality.container.sql_container import SensorSQLContainer, GeoSQLContainer, APIParamSQLContainer
-from airquality.container.initialize_container_factory import InitializeContainerFactory
+from airquality.container.sql_container_factory import SQLContainerFactory
 from airquality.filter.container_filter import ContainerIdentifierFilter
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
@@ -130,7 +130,7 @@ class InitializeBotPurpleair(InitializeBot):
         adapted_packets = container_adapter.adapt_packets()
 
         ############################## SENSOR CONTAINERS #############################
-        container_factory = InitializeContainerFactory(container_class=SensorSQLContainer)
+        container_factory = SQLContainerFactory(container_class=SensorSQLContainer)
         sensor_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
         # Create a container filter with the filter list it needs for filtering the packets
@@ -157,7 +157,7 @@ class InitializeBotPurpleair(InitializeBot):
         # dbconn.send(executable_sql_query=query)
 
         ############################## API PARAM CONTAINERS #############################
-        container_factory = InitializeContainerFactory(container_class=APIParamSQLContainer)
+        container_factory = SQLContainerFactory(container_class=APIParamSQLContainer)
         apiparam_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
         # Filtered API param containers
@@ -174,7 +174,7 @@ class InitializeBotPurpleair(InitializeBot):
         # dbconn.send(executable_sql_query=query)
 
         ############################## SENSOR AT LOCATION CONTAINERS #############################
-        container_factory = InitializeContainerFactory(container_class=GeoSQLContainer)
+        container_factory = SQLContainerFactory(container_class=GeoSQLContainer)
         geo_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
         # Filtered Geo containers

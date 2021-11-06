@@ -6,10 +6,14 @@
 # Description: this script defines a class for building geometry type string based on API parameters
 #
 ######################################################
+from typing import Dict, Any
 from abc import ABC, abstractmethod
 
 
 class PostGISGeometry(ABC):
+
+    def __init__(self, param: Dict[str, Any]):
+        self.param = param
 
     @abstractmethod
     def get_database_string(self) -> str:
@@ -22,9 +26,10 @@ class PostGISGeometry(ABC):
 
 class PostGISPoint(PostGISGeometry):
 
-    def __init__(self, lat: str, lng: str):
-        self.lat = lat
-        self.lng = lng
+    def __init__(self, param: Dict[str, Any]):
+        super().__init__(param)
+        self.lat = param['lat']
+        self.lng = param['lng']
 
     def get_database_string(self) -> str:
         return f"ST_GeomFromText('POINT({self.lng} {self.lat})', 26918)"
@@ -34,18 +39,10 @@ class PostGISPoint(PostGISGeometry):
 
 
 ################################ FACTORY ################################
-class PostGISGeometryFactory(ABC):
+class PostGISGeometryFactory:
 
-    @abstractmethod
-    def create_geometry(self) -> PostGISGeometry:
-        pass
+    def __init__(self, geom_class=PostGISGeometry):
+        self.geom_class = geom_class
 
-
-class PostGISPointFactory(PostGISGeometryFactory):
-
-    def __init__(self, lat: str, lng: str):
-        self.lat = lat
-        self.lng = lng
-
-    def create_geometry(self) -> PostGISGeometry:
-        return PostGISPoint(lat=self.lat, lng=self.lng)
+    def create_geometry(self, param: Dict[str, Any]) -> PostGISGeometry:
+        return self.geom_class(param)

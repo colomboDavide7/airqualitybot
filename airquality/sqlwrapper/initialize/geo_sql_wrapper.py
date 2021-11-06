@@ -9,7 +9,7 @@
 #
 ######################################################
 from dataclasses import dataclass
-from airquality.container.initialize_container_factory import InitializeContainer
+from airquality.container.sql_container_factory import InitializeContainer
 from airquality.sqlwrapper.sql_wrapper_packet import SQLWrapperPacket
 
 

@@ -10,7 +10,7 @@
 ######################################################
 from dataclasses import dataclass
 from airquality.sqlwrapper.sql_wrapper_packet import SQLWrapperPacket
-from airquality.container.initialize_container_factory import InitializeContainer
+from airquality.container.sql_container_factory import InitializeContainer
 
 # USE A FOR CYCLE FOR ADDING ALL THE PARAMETERS BECAUSE THEY CAN VARY BASED ON FIELDS DEFINED IN THE 'api.json' FILE BY THE USER!!!
 

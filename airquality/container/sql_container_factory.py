@@ -11,7 +11,7 @@ from airquality.container.sql_container import SQLContainer, SQLContainerComposi
 
 
 ################################ CONTAINER FACTORY ################################
-class InitializeContainerFactory(object):
+class SQLContainerFactory(object):
 
     def __init__(self, container_class=None):
         self.container_class = container_class
