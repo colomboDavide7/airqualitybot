@@ -12,6 +12,9 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.parser.datetime_parser import DatetimeParser
+from airquality.geom.postgis_geometry import PostGISPoint, PostGISGeometryFactory
+from airquality.adapter.geom_adapter import GeometryAdapterPurpleair, GeometryAdapterFactory
 from airquality.adapter.container_adapter import ContainerAdapterFactory, ContainerAdapterPurpleair
 from airquality.container.sql_container import SensorSQLContainer, GeoSQLContainer, APIParamSQLContainer
 from airquality.container.sql_container_factory import SQLContainerFactory
@@ -124,10 +127,24 @@ class InitializeBotPurpleair(InitializeBot):
         ############################## ADAPTED PACKETS #############################
         # Create a ContainerAdapter object for adapting the packets to the general container interface (dict keys)
         container_adapter_fact = ContainerAdapterFactory(container_adapter_class=ContainerAdapterPurpleair)
-        container_adapter = container_adapter_fact.make_container_adapter(packets=reshaped_packets)
+        container_adapter = container_adapter_fact.make_container_adapter()
 
-        # Get adapted packets for building containers
-        adapted_packets = container_adapter.adapt_packets()
+        # Create GeometryContainerAdapter for properly transforming geometry
+        geom_adapter_fact = GeometryAdapterFactory(geom_adapter_class=GeometryAdapterPurpleair)
+        geom_adapter = geom_adapter_fact.make_geometry_adapter()
+
+        # Create the postgis geometry factory for adapting geometry into
+        postgis_geom_fact = PostGISGeometryFactory(geom_class=PostGISPoint)
+
+        # Adapt packets for building container
+        adapted_packets = []
+        for packet in reshaped_packets:
+            geom_adapted_packet = geom_adapter.adapt_packet(packet)
+            geometry = postgis_geom_fact.create_geometry(geom_adapted_packet)
+            packet['geometry'] = geometry.get_database_string()
+            packet['timestamp'] = DatetimeParser.current_sqltimestamp()
+            adapted_packet = container_adapter.adapt_packet(packet=packet)
+            adapted_packets.append(adapted_packet)
 
         ############################## SENSOR CONTAINERS #############################
         container_factory = SQLContainerFactory(container_class=SensorSQLContainer)

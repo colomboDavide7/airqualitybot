@@ -24,5 +24,13 @@ class GeometryAdapterPurpleair(GeometryAdapter):
         if 'latitude' not in keys or 'longitude' not in keys:
             raise SystemExit(f"{GeometryAdapterPurpleair.__name__} missing required geometry "
                              f"fields=['latitude' | 'longitude']")
+        return {'lat': packet.pop('latitude'), 'lng': packet.pop('longitude')}
 
-        return {'lat': packet['latitude'], 'lng': packet['longitude']}
+
+class GeometryAdapterFactory:
+
+    def __init__(self, geom_adapter_class=GeometryAdapter):
+        self.geom_adapter_class = geom_adapter_class
+
+    def make_geometry_adapter(self) -> GeometryAdapter:
+        return self.geom_adapter_class()
