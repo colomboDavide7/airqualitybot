@@ -24,12 +24,22 @@ class TestContainerFilter(unittest.TestCase):
         container_filter = ContainerIdentifierFilter(filter_list=test_filter_list)
         actual_output = container_filter.filter_container(to_filter='n4')
         self.assertTrue(actual_output)
+        actual_output = container_filter.filter_container(to_filter='n1')
+        self.assertFalse(actual_output)
 
     def test_true_when_filter_list_is_empty(self):
         test_filter_list = []
         container_filter = ContainerIdentifierFilter(filter_list=test_filter_list)
         actual_output = container_filter.filter_container(to_filter='n4')
         self.assertTrue(actual_output)
+
+    def test_keep_packets(self):
+        test_filter_list = ['n1', 'n2', 'n3']
+        container_filter = ContainerIdentifierFilter(filter_list=test_filter_list, keep=True)
+        actual_output = container_filter.filter_container(to_filter='n1')
+        self.assertTrue(actual_output)
+        actual_output = container_filter.filter_container(to_filter='n4')
+        self.assertFalse(actual_output)
 
 
 if __name__ == '__main__':

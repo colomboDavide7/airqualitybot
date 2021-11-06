@@ -11,7 +11,7 @@ import time
 from typing import List
 import airquality.constants.system_constants as sc
 from airquality.bot.geo_bot import GeoBotFactory
-from airquality.constants.shared_constants import GEO_USAGE, VALID_PERSONALITIES, DEBUG_HEADER
+from airquality.constants.shared_constants import GEO_USAGE, VALID_PERSONALITIES, INFO_HEADER
 
 
 def parse_sys_argv(args: List[str]):
@@ -41,8 +41,8 @@ def main():
         raise SystemExit(f"{main.__name__}: missing required arguments.\n {GEO_USAGE}")
 
     parse_sys_argv(args)
-    print(f"{DEBUG_HEADER} personality = {sc.PERSONALITY}")
-    print(f"{DEBUG_HEADER} debug       = {sc.DEBUG_MODE}")
+    print(f"{INFO_HEADER} personality = {sc.PERSONALITY}")
+    print(f"{INFO_HEADER} debug       = {sc.DEBUG_MODE}")
 
     try:
         start_time = time.perf_counter()
@@ -51,7 +51,7 @@ def main():
         geo_bot.run()
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
-        print(f"{DEBUG_HEADER} total time = {end_time - start_time}")
+        print(f"{INFO_HEADER} total time = {end_time - start_time}")
 
     except Exception as ex:
         print(str(ex))

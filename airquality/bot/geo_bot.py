@@ -12,7 +12,6 @@ from abc import ABC, abstractmethod
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from sqlwrapper.initialize.geo_sql_wrapper import SQLWrapperGeoPacketPurpleair
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
@@ -26,7 +25,7 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST, INFO_HEADER
 
 
 ################################ GEO BOT ABSTRACT BASE CLASS ################################
@@ -68,9 +67,8 @@ class GeoBotPurpleair(GeoBot):
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
-        if sensor_ids == EMPTY_LIST:
-            if sc.DEBUG_MODE:
-                print(f"{DEBUG_HEADER} no sensor associated to personality = '{sc.PERSONALITY}'.")
+        if not sensor_ids:
+            print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'.")
             dbconn.close_conn()
             return
 
@@ -82,11 +80,9 @@ class GeoBotPurpleair(GeoBot):
         sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
         if sc.DEBUG_MODE:
-            if sensor_names != EMPTY_LIST:
-                for name in sensor_names:
-                    print(f"{DEBUG_HEADER} name = '{name}' is already present.")
-            else:
-                print(f"{DEBUG_HEADER} no sensor found for personality '{sc.PERSONALITY}'.")
+            print(20 * "=" + " SENSORS FOUND " + 20 * '=')
+            for name in sensor_names:
+                print(f"{DEBUG_HEADER} name='{name}'.")
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
@@ -119,7 +115,8 @@ class GeoBotPurpleair(GeoBot):
             print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
             for packet in reshaped_packets:
                 print(30 * '*')
-                print(f"{DEBUG_HEADER} {str(packet)}")
+                for key, val in packet.items():
+                    print(f"{DEBUG_HEADER} {key}={val}")
 
         ####### CREATE PACKET KEEPER FOR KEEPING ONLY THOSE PACKETS FROM SENSORS ALREADY PRESENT INTO THE DATABASE ########
         keeper = APIPacketKeeperFactory().create_packet_keeper(bot_personality=sc.PERSONALITY)
