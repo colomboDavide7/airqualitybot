@@ -101,30 +101,20 @@ class SQLQueryBuilder(builtins.object):
         query += bridge.packets2query()
         return query
 
-    def insert_into_sensor(self, bridge: BridgeObject) -> str:
-
+    def insert_into_sensor(self) -> str:
         query_id = "insert_sensors"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        query = self.__parsed[query_id]
-        query += bridge.packets2query()
-        return query
+        return self.__parsed[query_id]
 
-    def insert_into_api_param(self, bridge: BridgeObject) -> str:
-
+    def insert_into_api_param(self) -> str:
         query_id = "insert_api_param"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
+        return self.__parsed[query_id]
 
-        query = self.__parsed[query_id]
-        query += bridge.packets2query()
-        return query
-
-    def insert_into_sensor_at_location(self, bridge: BridgeObject) -> str:
-
+    def insert_into_sensor_at_location(self) -> str:
         query_id = "insert_sensor_at_location"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        query = self.__parsed[query_id]
-        query += bridge.packets2query()
-        return query
+        return self.__parsed[query_id]
 
     # def insert_single_sensor_at_location(self, packet: GeolocationSQLWrapper) -> str:
     #

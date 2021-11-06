@@ -121,6 +121,7 @@ class InitializeBotPurpleair(InitializeBot):
                 for key, val in packet.items():
                     print(f"{DEBUG_HEADER} {key}={val}")
 
+        ############################## ADAPTED PACKETS #############################
         # Create a ContainerAdapter object for adapting the packets to the general container interface (dict keys)
         container_adapter_fact = ContainerAdapterFactory(container_adapter_class=ContainerAdapterPurpleair)
         container_adapter = container_adapter_fact.make_container_adapter(packets=reshaped_packets)
@@ -128,7 +129,7 @@ class InitializeBotPurpleair(InitializeBot):
         # Get adapted packets for building containers
         adapted_packets = container_adapter.adapt_packets()
 
-        # Convert the packets into SensorSQLContainer objects
+        ############################## SENSOR CONTAINERS #############################
         container_factory = InitializeContainerFactory(container_class=SensorSQLContainer)
         sensor_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
@@ -151,57 +152,43 @@ class InitializeBotPurpleair(InitializeBot):
                 print(30 * '*')
                 print(f"{DEBUG_HEADER} {container!s}")
 
-        # ################################ TRANSFORM SINGLE PACKET INTO SENSOR PARAM PACKET ##############################
-        # sensor_wrapped_containers = []
-        # for container in filtered_containers:
-        #     sensor_wrapped_containers.append(SensorSQLWrapper(container=container))
-        #
-        # if sc.DEBUG_MODE:
-        #     print(20 * "=" + " SENSOR WRAPPED CONTAINERS " + 20 * '=')
-        #     for sensor in sensor_wrapped_containers:
-        #         print(30 * '*')
-        #         print(f"{DEBUG_HEADER} {sensor!s}")
-        #
-        # ################### CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS #############################
-        # bridge = BridgeObject(packets=sensor_wrapped_containers)
-        # query = query_builder.insert_into_sensor(bridge=bridge)
-        # dbconn.send(executable_sql_query=query)
-        #
-        # ################################ TRANSFORM SINGLE PACKET INTO API PARAM PACKET ################################
-        # api_param_wrapped_containers = []
-        # temp_sensor_id = sensor_id
-        # for container in filtered_containers:
-        #     api_param_wrapped_containers.append(APIParamSQLWrapper(container=container, sensor_id=temp_sensor_id))
-        #     temp_sensor_id += 1
-        #
-        # if sc.DEBUG_MODE:
-        #     print(20 * "=" + " API PARAM WRAPPED CONTAINERS " + 20 * '=')
-        #     for container in api_param_wrapped_containers:
-        #         print(30 * '*')
-        #         print(f"{DEBUG_HEADER} {container!s}")
-        #
-        # ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
-        # bridge = BridgeObject(packets=api_param_wrapped_containers)
-        # query = query_builder.insert_into_api_param(bridge=bridge)
-        # dbconn.send(executable_sql_query=query)
-        #
-        # ############################## TRANSFORM SINGLE PACKET INTO GEOMETRY PARAM PACKET #############################
-        # geo_wrapped_containers = []
-        # temp_sensor_id = sensor_id
-        # for container in filtered_containers:
-        #     geo_wrapped_containers.append(GeolocationSQLWrapper(container=container, sensor_id=temp_sensor_id))
-        #     temp_sensor_id += 1
-        #
-        # if sc.DEBUG_MODE:
-        #     print(20 * "=" + " GEOLOCATION WRAPPED CONTAINERS " + 20 * '=')
-        #     for container in geo_wrapped_containers:
-        #         print(30 * '*')
-        #         print(f"{DEBUG_HEADER} {container!s}")
-        #
-        # ################## CREATE A NEW BRIDGE OBJECT TO BUILD THE QUERY FROM THE PACKETS ##############################
-        # bridge = BridgeObject(packets=geo_wrapped_containers)
-        # query = query_builder.insert_into_sensor_at_location(bridge=bridge)
-        # dbconn.send(executable_sql_query=query)p
+        query_statement = query_builder.insert_into_sensor()
+        query = sensor_containers.sql(query=query_statement)
+        dbconn.send(executable_sql_query=query)
+
+        ############################## API PARAM CONTAINERS #############################
+        container_factory = InitializeContainerFactory(container_class=APIParamSQLContainer)
+        apiparam_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
+
+        # Filtered API param containers
+        filtered_containers = apiparam_containers.apply_filter(container_filter)
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " API PARAM FILTERED CONTAINERS " + 20 * '=')
+            for container in filtered_containers:
+                print(30 * '*')
+                print(f"{DEBUG_HEADER} {container!s}")
+
+        query_statement = query_builder.insert_into_api_param()
+        query = apiparam_containers.sql(query=query_statement)
+        dbconn.send(executable_sql_query=query)
+
+        ############################## SENSOR AT LOCATION CONTAINERS #############################
+        container_factory = InitializeContainerFactory(container_class=GeoSQLContainer)
+        geo_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
+
+        # Filtered Geo containers
+        filtered_containers = geo_containers.apply_filter(container_filter)
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " GEO FILTERED CONTAINERS " + 20 * '=')
+            for container in filtered_containers:
+                print(30 * '*')
+                print(f"{DEBUG_HEADER} {container!s}")
+
+        query_statement = query_builder.insert_into_sensor_at_location()
+        query = geo_containers.sql(query=query_statement)
+        dbconn.send(executable_sql_query=query)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()

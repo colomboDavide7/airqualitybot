@@ -61,7 +61,7 @@ class APIParamSQLContainer(SQLContainer):
 
     def __str__(self):
         s = f"sensor_id={self.sensor_id}, "
-        s += ', '.join(f'{name}={val}' for name in self.param_name for val in self.param_value)
+        s += ', '.join(f'{name}={val}' for name, val in zip(self.param_name, self.param_value))
         return s
 
 

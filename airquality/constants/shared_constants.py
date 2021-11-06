@@ -23,9 +23,17 @@ API_FILE = "properties/api.json"
 SERVER_FILE = "properties/server.json"
 QUERY_FILE = "properties/sql_query.json"
 
+################################ ANSI ESCAPE CODES FOR COLOR IN TERMINAL ################################
+
+GREEN = "\033[0;32m"
+YELLOW = "\033[1;33m"
+RED = "\033[0;31m"
+RESET = "\033[0m"
+
 ################################ OUTPUT FORMAT CONSTANTS ################################
 
-DEBUG_HEADER = "[DEBUG]:"
+DEBUG_HEADER = f"{GREEN}[DEBUG]:{RESET}"
+INFO_HEADER = f"{YELLOW}[INFO]:{RESET}"
 INITIALIZE_USAGE = "USAGE: python -m initialize [--help or -h] [--debug  or -d] personality"
 FETCH_USAGE = "USAGE: python -m fetch [--help or -h] [--debug  or -d] personality"
 GEO_USAGE = "USAGE: python -m geo [--help or -h] [--debug  or -d] personality"
