@@ -8,7 +8,6 @@
 #################################################
 import builtins
 from typing import Dict, Any
-from airquality.parser.datetime_parser import DatetimeParser
 from airquality.constants.shared_constants import EXCEPTION_HEADER
 
 
@@ -116,12 +115,11 @@ class SQLQueryBuilder(builtins.object):
         query = self.parsed_query_data[f"{query_id}"].format(par_val=last_timestamp, sens_id=sensor_id, par_name="date")
         return query
 
-    def update_valid_to_timestamp_location(self, sensor_id: int) -> str:
+    def update_valid_to_timestamp_location(self, timestamp: str, sensor_id: int) -> str:
 
         query_id = "u2"
         self._raise_exception_if_query_identifier_not_found(query_id)
-        ts = DatetimeParser.current_sqltimestamp()
-        return self.parsed_query_data[query_id].format(ts=ts, sens_id=sensor_id)
+        return self.parsed_query_data[query_id].format(ts=timestamp, sens_id=sensor_id)
 
     def update_last_channel_acquisition_timestamp(self, sensor_id: str, ts: str, param2update: str) -> str:
 
