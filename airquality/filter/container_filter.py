@@ -25,4 +25,6 @@ class ContainerIdentifierFilter(ContainerFilter):
         super().__init__(filter_list)
 
     def filter_container(self, to_filter: Any) -> bool:
+        if not self.filter_list:
+            return True
         return to_filter not in self.filter_list

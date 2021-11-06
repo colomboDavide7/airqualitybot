@@ -9,7 +9,6 @@
 import builtins
 
 from airquality.io.io import IOManager
-from airquality.bridge.bridge_object import BridgeObject
 from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
 # from airquality.sqlwrapper.initialize.geo_sql_wrapper import GeolocationSQLWrapper
@@ -85,21 +84,15 @@ class SQLQueryBuilder(builtins.object):
 
     ################################ METHODS THAT RETURN INSERT QUERY ################################
 
-    def insert_into_mobile_measurements(self, bridge: BridgeObject) -> str:
-
+    def insert_into_mobile_measurements(self) -> str:
         query_id = "insert_into_mobile_measurements"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        query = self.__parsed[query_id]
-        query += bridge.packets2query()
-        return query
+        return self.__parsed[query_id]
 
-    def insert_into_station_measurements(self, bridge: BridgeObject) -> str:
-
+    def insert_into_station_measurements(self) -> str:
         query_id = "insert_into_station_measurements"
         self._raise_exception_if_query_identifier_not_found(query_id)
-        query = self.__parsed[query_id]
-        query += bridge.packets2query()
-        return query
+        return self.__parsed[query_id]
 
     def insert_into_sensor(self) -> str:
         query_id = "insert_sensors"
