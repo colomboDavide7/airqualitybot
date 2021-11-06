@@ -171,7 +171,7 @@ class InitializeBotPurpleair(InitializeBot):
 
         query_statement = query_builder.insert_into_sensor()
         query = sensor_containers.sql(query=query_statement)
-        # dbconn.send(executable_sql_query=query)
+        dbconn.send(executable_sql_query=query)
 
         ############################## API PARAM CONTAINERS #############################
         container_factory = SQLContainerFactory(container_class=APIParamSQLContainer)
@@ -188,7 +188,7 @@ class InitializeBotPurpleair(InitializeBot):
 
         query_statement = query_builder.insert_into_api_param()
         query = apiparam_containers.sql(query=query_statement)
-        # dbconn.send(executable_sql_query=query)
+        dbconn.send(executable_sql_query=query)
 
         ############################## SENSOR AT LOCATION CONTAINERS #############################
         container_factory = SQLContainerFactory(container_class=GeoSQLContainer)
@@ -205,7 +205,7 @@ class InitializeBotPurpleair(InitializeBot):
 
         query_statement = query_builder.insert_into_sensor_at_location()
         query = geo_containers.sql(query=query_statement)
-        # dbconn.send(executable_sql_query=query)
+        dbconn.send(executable_sql_query=query)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()

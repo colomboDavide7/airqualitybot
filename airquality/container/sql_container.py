@@ -56,8 +56,8 @@ class APIParamSQLContainer(SQLContainer):
 
     def sql(self, query: str) -> str:
         for i in range(len(self.param_name)):
-            query += f"({self.sensor_id}, '{self.param_name[i]}', '{self.param_value[i]}')"
-        return query
+            query += f"({self.sensor_id}, '{self.param_name[i]}', '{self.param_value[i]}'),"
+        return query.strip(',')
 
     def __str__(self):
         s = f"sensor_id={self.sensor_id}, "
