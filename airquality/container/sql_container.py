@@ -17,6 +17,7 @@ class SQLContainer(FilterableContainer, IdentifiableContainer):
 
     def __init__(self, packet: Dict[str, Any]):
         self.identity = packet['name']
+        self.identity.replace("'", "")
 
     @abstractmethod
     def sql(self, query: str) -> str:

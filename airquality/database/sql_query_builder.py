@@ -13,10 +13,6 @@ from airquality.constants.shared_constants import EXCEPTION_HEADER
 
 
 class SQLQueryBuilder(builtins.object):
-    """Class that builds dynamically the sql query to be sent to the database.
-
-    The __init__() method takes the path to the query file, then opens, reads and closes the file.
-    Next, the parsed content is stored in an instance variable."""
 
     def __init__(self, parsed_query_data: Dict[str, Any]):
         if not parsed_query_data:

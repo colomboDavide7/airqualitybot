@@ -31,7 +31,7 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, EMPTY_LIST, INFO_HEADER
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, INFO_HEADER
 
 
 class InitializeBot(ABC):
@@ -72,12 +72,13 @@ class InitializeBotPurpleair(InitializeBot):
         answer = dbconn.send(executable_sql_query=query)
         sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
-        if sc.DEBUG_MODE:
-            if sensor_names != EMPTY_LIST:
+        if not sensor_names:
+            print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'")
+        else:
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " SENSORS FOUND " + 20 * '=')
                 for name in sensor_names:
-                    print(f"{DEBUG_HEADER} name = '{name}' is already present.")
-            else:
-                print(f"{DEBUG_HEADER} not sensor found for personality '{sc.PERSONALITY}'.")
+                    print(f"{DEBUG_HEADER} name='{name}'.")
 
         ################################ SELECT THE SENSOR ID FOR THE NEXT INSERTIONS ################################
         # Since we have to insert new sensors we need some information:
@@ -89,8 +90,7 @@ class InitializeBotPurpleair(InitializeBot):
         answer = dbconn.send(executable_sql_query=query)
         max_sensor_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
         if max_sensor_id[0] is not None:
-            if sc.DEBUG_MODE:
-                print(f"{DEBUG_HEADER} found sensor in the database with id = {str(max_sensor_id[0])}.")
+            print(f"{INFO_HEADER} max sensor_id found in the database is => {str(max_sensor_id[0])}.")
             sensor_id = max_sensor_id[0] + 1
 
         ################################ READ API FILE ################################
