@@ -35,6 +35,16 @@ class TestContainerAdapter(unittest.TestCase):
         actual_output = container_adapter.adapt_packet(packet=test_packet)
         self.assertEqual(actual_output, expected_output)
 
+    def test_system_exit_when_key_error_occur_purpleair_container_adapter(self):
+        test_packet = {'name': 'n1', 'sensor_index': 'idx1',
+                       'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
+                       'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A',
+                       'secondary_timestamp_a': 'null', 'secondary_timestamp_b': 'null'}
+
+        container_adapter = self.purpleair_fact.make_container_adapter()
+        with self.assertRaises(SystemExit):
+            container_adapter.adapt_packet(packet=test_packet)
+
 
 if __name__ == '__main__':
     unittest.main()

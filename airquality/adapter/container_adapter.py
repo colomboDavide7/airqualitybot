@@ -8,6 +8,7 @@
 ######################################################
 from typing import Dict, Any
 from abc import ABC, abstractmethod
+from airquality.constants.shared_constants import EXCEPTION_HEADER
 
 
 class ContainerAdapter(ABC):
@@ -20,20 +21,40 @@ class ContainerAdapter(ABC):
 class ContainerAdapterPurpleair(ContainerAdapter):
 
     def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
-
-        # new packet compliant with sql container interface
-        new_packet = {'name': f"{packet['name']} ({packet['sensor_index']})",
-                      'type': 'purpleair',
-                      'timestamp': packet['timestamp'],
-                      'geometry': packet['geometry'],
-                      'param_name': ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
-                                     'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b',
-                                     'primary_timestamp_a', 'primary_timestamp_b', 'secondary_timestamp_a',
-                                     'secondary_timestamp_b'],
-                      'param_value': [packet['primary_id_a'], packet['primary_id_b'], packet['primary_key_a'],
-                                      packet['primary_key_b'], packet['secondary_id_a'], packet['secondary_id_b'],
-                                      packet['secondary_key_a'], packet['secondary_key_b'],
-                                      'null', 'null', 'null', 'null']}
+        new_packet = {}
+        try:
+            new_packet['name'] = f"{packet['name']} ({packet['sensor_index']})"
+            new_packet['type'] = 'purpleair'
+            new_packet['timestamp'] = packet['timestamp']
+            new_packet['geometry'] = packet['geometry']
+            new_packet['param_name'] = ['primary_id_a',
+                                        'primary_id_b',
+                                        'primary_key_a',
+                                        'primary_key_b',
+                                        'secondary_id_a',
+                                        'secondary_id_b',
+                                        'secondary_key_a',
+                                        'secondary_key_b',
+                                        'primary_timestamp_a',
+                                        'primary_timestamp_b',
+                                        'secondary_timestamp_a',
+                                        'secondary_timestamp_b']
+            new_packet['param_value'] = [packet['primary_id_a'],
+                                         packet['primary_id_b'],
+                                         packet['primary_key_a'],
+                                         packet['primary_key_b'],
+                                         packet['secondary_id_a'],
+                                         packet['secondary_id_b'],
+                                         packet['secondary_key_a'],
+                                         packet['secondary_key_b'],
+                                         'null',
+                                         'null',
+                                         'null',
+                                         'null']
+        except KeyError as ke:
+            # Raise Exception if any key is missing from the 'packet' dictionary
+            msg = f"{EXCEPTION_HEADER} {ContainerAdapterPurpleair.__name__} is missing the key={ke!s}."
+            raise SystemExit(msg)
         return new_packet
 
 

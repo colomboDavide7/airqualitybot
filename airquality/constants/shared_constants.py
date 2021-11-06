@@ -34,6 +34,7 @@ RESET = "\033[0m"
 
 DEBUG_HEADER = f"{GREEN}[DEBUG]:{RESET}"
 INFO_HEADER = f"{YELLOW}[INFO]:{RESET}"
+EXCEPTION_HEADER = f"{RED}[EXCEPTION]:{RESET}"
 INITIALIZE_USAGE = "USAGE: python -m initialize [--help or -h] [--debug  or -d] personality"
 FETCH_USAGE = "USAGE: python -m fetch [--help or -h] [--debug  or -d] personality"
 GEO_USAGE = "USAGE: python -m geo [--help or -h] [--debug  or -d] personality"
