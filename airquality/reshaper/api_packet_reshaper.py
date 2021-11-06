@@ -8,8 +8,6 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
-from airquality.parser.datetime_parser import DatetimeParser
-from airquality.geom.postgis_geometry import PostGISPointFactory
 from airquality.plain.plain_api_packet import PlainAPIPacketAtmotube
 from airquality.plain.plain_api_packet_mergeable import PlainAPIPacketThingspeakPrimaryChannelAFactory, \
     PlainAPIPacketThingspeakPrimaryChannelBFactory, PlainAPIPacketThingspeakSecondaryChannelAFactory, \

@@ -138,12 +138,6 @@ class InitializeBotPurpleair(InitializeBot):
         # Filter containers
         filtered_containers = sensor_containers.apply_filter(container_filter)
 
-        #
-        #
-        # TODO: PAY ATTENTION TO FILTER THE SAME PACKETS
-        #
-        #
-
         ####################### IF THERE ARE NO NEW SENSORS TO ADD, RETURN FROM THE METHOD ########################
         if not filtered_containers:
             if sc.DEBUG_MODE:
