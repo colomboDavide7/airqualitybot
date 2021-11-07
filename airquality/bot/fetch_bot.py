@@ -22,7 +22,7 @@ from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
-from airquality.api.urllib_adapter import APIRequestAdapter
+from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.api_param_picker import APIParamPicker
 from airquality.picker.resource_picker import ResourcePicker
@@ -387,7 +387,7 @@ class FetchBotAtmotube(FetchBot):
             while (from_datetime - stop_datetime).total_seconds() < 0:
 
                 ################################ FETCH DATA FROM API ################################
-                api_answer = APIRequestAdapter.fetch(url=url)
+                api_answer = UrllibAdapter.fetch(url=url)
                 parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
                 api_answer = parser.parse(raw_string=api_answer)
 

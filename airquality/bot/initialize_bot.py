@@ -20,11 +20,11 @@ from airquality.container.sql_container import SensorSQLContainer, GeoSQLContain
 from airquality.container.sql_container_factory import SQLContainerFactory
 from airquality.filter.container_filter import ContainerIdentifierFilter
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
+from airquality.api.url_builder import URLBuilderFactory, URLBuilderPurpleair
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
-from airquality.api.urllib_adapter import APIRequestAdapter
+from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.file_parser import FileParserFactory
@@ -105,15 +105,13 @@ class InitializeBotPurpleair(InitializeBot):
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
-        ################################ API REQUEST ADAPTER ################################
-        api_adapter = APIRequestAdapter(api_address=api_address)
-
         ################################ QUERYSTRING BUILDER ################################
-        querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality=sc.PERSONALITY)
-        querystring = querystring_builder.make_querystring(parameters=parsed_api_data[sc.PERSONALITY])
+        url_builder_fact = URLBuilderFactory(url_builder_class=URLBuilderPurpleair)
+        url_builder = url_builder_fact.create_url_builder()
+        url = url_builder.build_url(parameters=parsed_api_data[sc.PERSONALITY])
 
         ################################ FETCHING API DATA ################################
-        raw_api_packets = api_adapter.fetch(querystring=querystring)
+        raw_api_packets = UrllibAdapter.fetch(url=url)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension='json')
         parsed_api_packets = parser.parse(raw_string=raw_api_packets)
 

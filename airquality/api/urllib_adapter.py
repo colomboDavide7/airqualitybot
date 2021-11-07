@@ -10,14 +10,14 @@ import builtins
 import urllib.request as req
 
 
-class APIRequestAdapter(builtins.object):
+class UrllibAdapter(builtins.object):
 
     @staticmethod
     def fetch(url: str) -> str:
         try:
             answer = req.urlopen(url).read()
         except Exception as err:
-            raise SystemExit(f"{APIRequestAdapter.__name__}: {str(err)}")
+            raise SystemExit(f"{UrllibAdapter.__name__}: {str(err)}")
         finally:
             req.urlcleanup()
         return answer
