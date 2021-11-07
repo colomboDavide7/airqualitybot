@@ -124,6 +124,16 @@ class FetchBotThingspeak(FetchBot):
         ####################### CREATE QUERYSTRING OPTIONAL PARAMETERS DICTIONARY #####################
         optional_param = {}  # no optional parameters for ThingSpeak bot
 
+        # Create fetch adapter
+        fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterThingspeak)
+        fetch_adapter = fetch_adapter_fact.make_adapter()
+
+        # Create FetchContainer factory
+        fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainerWithFormattableAddress)
+
+        ####################### DEFINE START DATE AND STOP DATE FOR FETCHING DATA FROM API #####################
+        stop_datetime = DatetimeParser.today()
+
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
         for sensor_id in sensor_ids:
@@ -143,10 +153,6 @@ class FetchBotThingspeak(FetchBot):
             # Now the packets are compliant to the interface => {'id', 'key', 'ts'}
             #
 
-            # Create fetch adapter
-            fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterThingspeak)
-            fetch_adapter = fetch_adapter_fact.make_adapter()
-
             # Adapt packets to a general interface that is decoupled by the sensor's API data structure
             channel_adapted_parameters = []
             for single_channel in single_channel_api_param:
@@ -162,75 +168,58 @@ class FetchBotThingspeak(FetchBot):
                     for api_key, api_val in param.items():
                         print(f"{DEBUG_HEADER} {api_key}={api_val}")
 
-            # Create FetchContainer
-            fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainerWithFormattableAddress)
-            channel_containers = []
+            # Create FetchContainers
             for channel_param in channel_adapted_parameters:
-                channel_containers.append(fetch_container_fact.make_container(parameters=channel_param))
 
-            # Make URL from container
-            for channel in channel_containers:
-                url = channel.url(api_address=api_address, optional_param=optional_param)
-                if sc.DEBUG_MODE:
-                    print(f"{DEBUG_HEADER} {url}")
+                # define from datetime
+                from_datetime = DatetimeParser.string2datetime(datetime_string=channel_param['channel_ts']['val'])
+                from_datetime = DatetimeParser.add_seconds_to_datetime(ts=from_datetime, seconds=3)
 
-            # # Cycle on channels
-            # for channel in reshaped_channels:
-            #
-            #     ####################### DEFINE START DATE AND STOP DATE FOR FETCHING DATA FROM API #####################
-            #     stop_datetime = DatetimeParser.today()
-            #     from_datetime = DatetimeParser.string2datetime(datetime_string=THINGSPEAK_START_FETCH_TIMESTAMP)
-            #
-            #     # CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN CHANNEL_ID
-            #     if channel.channel_ts != 'null':
-            #         from_datetime = DatetimeParser.string2datetime(datetime_string=channel.channel_ts)
-            #         from_datetime = DatetimeParser.add_seconds_to_datetime(ts=from_datetime, seconds=3)
-            #
-            #     to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
-            #     if (to_datetime - stop_datetime).total_seconds() > 0:
-            #         to_datetime = stop_datetime
-            #
-            #     # CONTINUE UNTIL TODAY IS REACHED
-            #     while (stop_datetime - from_datetime).total_seconds() >= 0:
-            #
-            #         # Format API address
-            #         formatted_api_address = api_address.format(channel_id=channel.channel_id)
-            #         if sc.DEBUG_MODE:
-            #             print(20 * "=" + " API ADDRESS " + 20 * '=')
-            #             print(f"{DEBUG_HEADER} {formatted_api_address}")
-            #
-            #         # api request adapter
-            #         api_adapter = APIRequestAdapter(api_address=formatted_api_address)
-            #
-            #         # GET QUERYSTRING PARAMETERS
-            #         querystring_param = {'api_key': channel.channel_key,
-            #                              'start': DatetimeParser.datetime2string(ts=from_datetime),
-            #                              'end': DatetimeParser.datetime2string(ts=to_datetime)}
-            #
-            #         # Build URL querystring
-            #         querystring = querystring_builder.make_querystring(parameters=querystring_param)
-            #         if sc.DEBUG_MODE:
-            #             print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
-            #             print(f"{DEBUG_HEADER} {querystring}")
-            #
-            #         # Fetch data from API (API packets)
-            #         api_packets = api_adapter.fetch(querystring)
-            #         parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
-            #         parsed_api_packets = parser.parse(raw_string=api_packets)
-            #
-            #         # Reshape API packets: merge all data coming from different channels into a single PlainAPIPacket object
-            #         api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
-            #         reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
-            #
-            #         if sc.DEBUG_MODE:
-            #             if reshaped_api_packets != EMPTY_LIST:
-            #                 print(20 * "=" + " RESHAPED SINGLE CHANNEL API PACKETS " + 20 * '=')
-            #                 for packet in reshaped_api_packets[0:3]:
-            #                     print(f"{DEBUG_HEADER} {str(packet)}")
-            #
-            #                 for packet in reshaped_api_packets[-4:-1]:
-            #                     print(f"{DEBUG_HEADER} {str(packet)}")
-            #
+                # define to datetime
+                to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
+
+                if (to_datetime - stop_datetime).total_seconds() > 0:
+                    to_datetime = stop_datetime
+
+                # CONTINUE UNTIL TODAY IS REACHED
+                while (stop_datetime - from_datetime).total_seconds() >= 0:
+
+                    # Create a ChannelContainer object for building the api URL
+                    channel_container = fetch_container_fact.make_container(parameters=channel_param)
+
+                    # build URL
+                    url = channel_container.url(api_address=api_address,
+                                                optional_param={'end': DatetimeParser.datetime2string(to_datetime)})
+                    if sc.DEBUG_MODE:
+                        print(f"{DEBUG_HEADER} {url}")
+
+                    # Fetch data from API (API packets)
+                    api_packets = UrllibAdapter.fetch(url=url)
+                    parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
+                    parsed_api_packets = parser.parse(raw_string=api_packets)
+
+                    # Reshape API packets: merge all data coming from different channels into a single PlainAPIPacket object
+                    api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(
+                        bot_personality=sc.PERSONALITY)
+                    reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
+
+                    if sc.DEBUG_MODE:
+                        if reshaped_api_packets:
+                            print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+                            for packet in reshaped_api_packets[0:3]:
+                                print(f"{DEBUG_HEADER} {packet!s}")
+
+                            for packet in reshaped_api_packets[-4:-1]:
+                                print(f"{DEBUG_HEADER} {packet!s}")
+
+                    ############################## INCREMENT THE PERIOD FOR DATA FETCHING ##############################
+                    from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
+                    channel_param['channel_ts']['val'] = DatetimeParser.datetime2string(from_datetime)
+                    to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
+
+                    if (to_datetime - stop_datetime).total_seconds() >= 0:
+                        to_datetime = stop_datetime
+
             #         ####################### DO THE INSERT AND UPDATE ONLY IF PACKETS ARE PRESENT #####################
             #         if reshaped_api_packets:
             #
@@ -266,12 +255,6 @@ class FetchBotThingspeak(FetchBot):
             #                 param2update=channel.ts_name)
             #             dbconn.send(executable_sql_query=query)
             #
-            #         ############################## INCREMENT THE PERIOD FOR DATA FETCHING ##############################
-            #         from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
-            #         to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
-            #
-            #         if (to_datetime - stop_datetime).total_seconds() >= 0:
-            #             to_datetime = stop_datetime
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()
@@ -395,15 +378,15 @@ class FetchBotAtmotube(FetchBot):
             answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
+            # Adapt packets to the general interface in order to decouple them from the sensor's specific API param name.
+            channel_adapted_param = fetch_adapter.adapt_packet(packet=api_param)
+
             ################################ CYCLE THROUGH DATE UNTIL NOW ################################
             stop_datetime = DatetimeParser.today()
-            from_datetime = DatetimeParser.string2datetime(datetime_string=api_param['date'])
-            filter_sqltimestamp = api_param['date']
+            from_datetime = DatetimeParser.string2datetime(datetime_string=channel_adapted_param['channel_ts']['val'])
+            filter_sqltimestamp = channel_adapted_param['channel_ts']['val']
 
             while (from_datetime - stop_datetime).total_seconds() < 0:
-
-                # Adapt packets to the general interface in order to decouple them from the sensor's specific API param name.
-                channel_adapted_param = fetch_adapter.adapt_packet(packet=api_param)
 
                 if sc.DEBUG_MODE:
                     print(20 * "=" + " CHANNEL ADAPTED PACKETS " + 20 * '=')
@@ -449,11 +432,9 @@ class FetchBotAtmotube(FetchBot):
                         for key, val in packet.items():
                             print(f"{DEBUG_HEADER} {key}={val}")
 
-
-
-
-
-
+                ################# END OF THE LOOP: ADD ONE DAY TO THE CURRENT FROM DATE ########################
+                from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=1)
+                channel_adapted_param['channel_ts']['val'] = DatetimeParser.datetime2string(from_datetime)
 
             #     ################# FILTER PACKETS ONLY IF IT IS NOT THE FIRST ACQUISITION FOR THE SENSOR ################
             #     filtered_packets = datetime_filter.filter_packets(packets=plain_packets, sqltimestamp=filter_sqltimestamp)
@@ -495,8 +476,6 @@ class FetchBotAtmotube(FetchBot):
             #             sensor_id=sensor_id)
             #         dbconn.send(executable_sql_query=query)
             #
-            #     ################# END OF THE LOOP: ADD ONE DAY TO THE CURRENT FROM DATE ########################
-            #     from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=1)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()

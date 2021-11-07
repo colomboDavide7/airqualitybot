@@ -18,7 +18,7 @@ class FetchContainer(ABC):
         self.key_name = parameters['channel_key']['name']
         self.key_val = parameters['channel_key']['val']
         self.ts_name = parameters['channel_ts']['name']
-        self.ts_val = parameters['channel_ts']['val'].replace(' ', '%20')
+        self.ts_val = parameters['channel_ts']['val']
 
     @abstractmethod
     def url(self, api_address: str, optional_param: Dict[str, Any]) -> str:
@@ -38,7 +38,7 @@ class ChannelContainer(FetchContainer):
         if optional_param:
             for key, val in optional_param.items():
                 querystring += key + '=' + val + '&'
-        return querystring.strip('&')
+        return querystring.strip('&').replace(' ', '%20')
 
 
 class ChannelContainerWithFormattableAddress(FetchContainer):
@@ -53,4 +53,4 @@ class ChannelContainerWithFormattableAddress(FetchContainer):
         if optional_param:
             for key, val in optional_param.items():
                 querystring += key + '=' + val + '&'
-        return querystring.strip('&')
+        return querystring.strip('&').replace(' ', '%20')
