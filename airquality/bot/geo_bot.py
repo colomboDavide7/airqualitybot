@@ -94,75 +94,77 @@ class GeoBotPurpleair(GeoBot):
         ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
         reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
         reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_packets)
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+
+        if reshaped_packets:
+
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+                for packet in reshaped_packets:
+                    print(30 * '*')
+                    for key, val in packet.items():
+                        print(f"{DEBUG_HEADER} {key}={val}")
+
+            # Create a GeometryAdapter
+            geom_adapter_factory = GeometryAdapterFactory(geom_adapter_class=GeometryAdapterPurpleair)
+            geom_adapter = geom_adapter_factory.make_geometry_adapter()
+
+            # Create a SensorAdapter
+            sensor_adapter_fact = SensorAdapterFactory(sensor_adapter_class=SensorAdapterPurpleair)
+            sensor_adapter = sensor_adapter_fact.make_adapter()
+
+            # Create a PostGISGeometryFactory for making the geometry object
+            postgis_geom_fact = PostGISGeometryFactory(geom_class=PostGISPoint)
+
+            # Make packets compliant to the interface {'name': 'geom'} to compare them with the old locations packet
+            # pulled from the database.
+            new_locations = {}
             for packet in reshaped_packets:
-                print(30 * '*')
-                for key, val in packet.items():
-                    print(f"{DEBUG_HEADER} {key}={val}")
+                sensor_adapted_packet = sensor_adapter.adapt_packet(packet)
+                geom_adapted_packet = geom_adapter.adapt_packet(packet)
+                geometry = postgis_geom_fact.create_geometry(geom_adapted_packet)
+                new_locations[sensor_adapted_packet['name']] = geometry.get_geomtype_string()
 
-        # Create a GeometryAdapter
-        geom_adapter_factory = GeometryAdapterFactory(geom_adapter_class=GeometryAdapterPurpleair)
-        geom_adapter = geom_adapter_factory.make_geometry_adapter()
+            # Now the packets are in the form {'name': 'geom'} like those pulled down from the database
 
-        # Create a SensorAdapter
-        sensor_adapter_fact = SensorAdapterFactory(sensor_adapter_class=SensorAdapterPurpleair)
-        sensor_adapter = sensor_adapter_fact.make_adapter()
+            ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR STATIONS ################################
+            query = query_builder.select_sensor_valid_geo_map_from_personality(personality=sc.PERSONALITY)
+            answer = dbconn.send(executable_sql_query=query)
+            sensorid2geom_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
-        # Create a PostGISGeometryFactory for making the geometry object
-        postgis_geom_fact = PostGISGeometryFactory(geom_class=PostGISPoint)
+            # Create the active locations
+            active_locations = {}
+            for name in sensorname2id_map.keys():
+                sensor_id = sensorname2id_map[name]
+                if sensor_id in sensorid2geom_map.keys():
+                    active_locations[name] = sensorid2geom_map[sensor_id]
 
-        # Make packets compliant to the interface {'name': 'geom'} to compare them with the old locations packet pulled down
-        # from the database.
-        new_locations = {}
-        for packet in reshaped_packets:
-            sensor_adapted_packet = sensor_adapter.adapt_packet(packet)
-            geom_adapted_packet = geom_adapter.adapt_packet(packet)
-            geometry = postgis_geom_fact.create_geometry(geom_adapted_packet)
-            new_locations[sensor_adapted_packet['name']] = geometry.get_geomtype_string()
-
-        # Now the packets are in the form {'name': 'geom'} like those pulled down from the database
-
-        ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR STATIONS ################################
-        query = query_builder.select_sensor_valid_geo_map_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
-        sensorid2geom_map = DatabaseAnswerParser.parse_key_val_answer(answer)
-
-        # Create the active locations
-        active_locations = {}
-        for name in sensorname2id_map.keys():
-            sensor_id = sensorname2id_map[name]
-            if sensor_id in sensorid2geom_map.keys():
-                active_locations[name] = sensorid2geom_map[sensor_id]
-
-        if sc.DEBUG_MODE:
-            if active_locations:
+            if sc.DEBUG_MODE:
                 print(20 * "=" + " ACTIVE LOCATIONS " + 20 * '=')
                 for key, val in active_locations.items():
                     print(f"{DEBUG_HEADER} {key}={val}")
 
-        ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
+            ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
+            for name in new_locations.keys():
+                if name in active_locations.keys():
+                    # compare the locations
+                    if new_locations[name] != active_locations[name]:
 
-        # CYCLE THROUGH THE RESHAPED API PACKETS (SENSOR_ID: GEOM)
-        for name in new_locations.keys():
-            if name in active_locations.keys():
-                # compare the locations
-                if new_locations[name] != active_locations[name]:
+                        # update the old location 'valid_to' timestamp
+                        ts = DatetimeParser.current_sqltimestamp()
+                        query = query_builder.update_valid_to_timestamp_location(timestamp=ts, sensor_id=sensorname2id_map[name])
+                        dbconn.send(executable_sql_query=query)
 
-                    # update the old location 'valid_to' timestamp
-                    ts = DatetimeParser.current_sqltimestamp()
-                    query = query_builder.update_valid_to_timestamp_location(timestamp=ts, sensor_id=sensorname2id_map[name])
-                    dbconn.send(executable_sql_query=query)
+                        # insert new record corresponding to the sensor_id with the
+                        query_statement = query_builder.insert_into_sensor_at_location()
+                        query_statement += f"({sensorname2id_map[name]}, '{ts}', ST_GeomFromText('{new_locations[name]}', 26918));"
+                        dbconn.send(executable_sql_query=query_statement)
 
-                    # insert new record corresponding to the sensor_id with the
-                    query_statement = query_builder.insert_into_sensor_at_location()
-                    query_statement += f"({sensorname2id_map[name]}, '{ts}', ST_GeomFromText('{new_locations[name]}', 26918));"
-                    dbconn.send(executable_sql_query=query_statement)
-
+                    else:
+                        print(f"{INFO_HEADER} old_location='{active_locations[name]}' is equal to new_location='{new_locations[name]}'")
                 else:
-                    print(f"{INFO_HEADER} old_location='{active_locations[name]}' is equal to new_location='{new_locations[name]}'")
-            else:
-                print(f"{INFO_HEADER} name='{name}' is not an active locations...")
+                    print(f"{INFO_HEADER} name='{name}' is not an active locations...")
+        else:
+            print(f"{INFO_HEADER} empty packets.")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()

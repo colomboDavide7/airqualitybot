@@ -8,11 +8,10 @@
 ######################################################
 from abc import abstractmethod
 from typing import Dict, Any, List
-from airquality.container.filterable_container import FilterableContainer, ContainerFilter
 from airquality.container.identifiable_container import IdentifiableContainer
 
 
-class SQLContainer(FilterableContainer, IdentifiableContainer):
+class SQLContainer(IdentifiableContainer):
     """Interface to SQL containers object that can be translated into SQL query."""
 
     def __init__(self, packet: Dict[str, Any]):
@@ -25,9 +24,6 @@ class SQLContainer(FilterableContainer, IdentifiableContainer):
 
     def identifier(self) -> str:
         return self.identity
-
-    def apply_filter(self, container_filter: ContainerFilter):
-        return container_filter.filter_container(to_filter=self.identity)
 
 
 class GeoSQLContainer(SQLContainer):
@@ -108,13 +104,6 @@ class SQLContainerComposition(SQLContainer):
         for c in self.containers:
             query += c.sql(query="") + ','
         return query.strip(',') + ';'
-
-    def apply_filter(self, container_filter: ContainerFilter) -> SQLContainer:
-        filtered_containers = []
-        for c in self.containers:
-            if c.apply_filter(container_filter=container_filter):
-                filtered_containers.append(c)
-        return SQLContainerComposition(containers=filtered_containers)
 
     def identifier(self) -> str:
         return ', '.join(f'{c.identifier()}' for c in self.containers)

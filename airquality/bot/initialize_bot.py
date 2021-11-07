@@ -18,7 +18,6 @@ from airquality.adapter.geom_adapter import GeometryAdapterPurpleair, GeometryAd
 from airquality.adapter.container_adapter import ContainerAdapterFactory, ContainerAdapterPurpleair
 from airquality.container.sql_container import SensorSQLContainer, GeoSQLContainer, APIParamSQLContainer
 from airquality.container.sql_container_factory import SQLContainerFactory
-from airquality.filter.container_filter import ContainerIdentifierFilter
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_builder import URLBuilderFactory, URLBuilderPurpleair
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
@@ -110,88 +109,74 @@ class InitializeBotPurpleair(InitializeBot):
         ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR CREATING A CONTAINER ####################
         reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
         reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_packets)
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+
+        if reshaped_packets:
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+                for packet in reshaped_packets:
+                    print(30 * '*')
+                    for key, val in packet.items():
+                        print(f"{DEBUG_HEADER} {key}={val}")
+
+            ############################## ADAPTED PACKETS #############################
+            # Create a ContainerAdapter object for adapting the packets to the general container interface (dict keys)
+            container_adapter_fact = ContainerAdapterFactory(container_adapter_class=ContainerAdapterPurpleair)
+            container_adapter = container_adapter_fact.make_container_adapter()
+
+            # Create GeometryContainerAdapter for properly transforming geometry
+            geom_adapter_fact = GeometryAdapterFactory(geom_adapter_class=GeometryAdapterPurpleair)
+            geom_adapter = geom_adapter_fact.make_geometry_adapter()
+
+            # Create the postgis geometry factory for adapting geometry into
+            postgis_geom_fact = PostGISGeometryFactory(geom_class=PostGISPoint)
+
+            # Adapt packets for building container
+            adapted_packets = []
             for packet in reshaped_packets:
-                print(30 * '*')
-                for key, val in packet.items():
-                    print(f"{DEBUG_HEADER} {key}={val}")
+                geom_adapted_packet = geom_adapter.adapt_packet(packet)
+                geometry = postgis_geom_fact.create_geometry(geom_adapted_packet)
+                packet['geometry'] = geometry.get_database_string()
+                packet['timestamp'] = DatetimeParser.current_sqltimestamp()
+                adapted_packet = container_adapter.adapt_packet(packet=packet)
+                adapted_packets.append(adapted_packet)
 
-        ############################## ADAPTED PACKETS #############################
-        # Create a ContainerAdapter object for adapting the packets to the general container interface (dict keys)
-        container_adapter_fact = ContainerAdapterFactory(container_adapter_class=ContainerAdapterPurpleair)
-        container_adapter = container_adapter_fact.make_container_adapter()
+            filtered_packets = []
+            for packet in adapted_packets:
+                if packet['name'] not in sensor_names:
+                    filtered_packets.append(packet)
 
-        # Create GeometryContainerAdapter for properly transforming geometry
-        geom_adapter_fact = GeometryAdapterFactory(geom_adapter_class=GeometryAdapterPurpleair)
-        geom_adapter = geom_adapter_fact.make_geometry_adapter()
+            if filtered_packets:
 
-        # Create the postgis geometry factory for adapting geometry into
-        postgis_geom_fact = PostGISGeometryFactory(geom_class=PostGISPoint)
+                ############################## SENSOR CONTAINERS #############################
+                container_factory = SQLContainerFactory(container_class=SensorSQLContainer)
+                sensor_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
-        # Adapt packets for building container
-        adapted_packets = []
-        for packet in reshaped_packets:
-            geom_adapted_packet = geom_adapter.adapt_packet(packet)
-            geometry = postgis_geom_fact.create_geometry(geom_adapted_packet)
-            packet['geometry'] = geometry.get_database_string()
-            packet['timestamp'] = DatetimeParser.current_sqltimestamp()
-            adapted_packet = container_adapter.adapt_packet(packet=packet)
-            adapted_packets.append(adapted_packet)
+                # Create a query for inserting sensors
+                query_statement = query_builder.insert_into_sensor()
+                query = sensor_containers.sql(query=query_statement)
+                dbconn.send(executable_sql_query=query)
 
-        ############################## SENSOR CONTAINERS #############################
-        container_factory = SQLContainerFactory(container_class=SensorSQLContainer)
-        sensor_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
+                ############################## API PARAM CONTAINERS #############################
+                container_factory = SQLContainerFactory(container_class=APIParamSQLContainer)
+                apiparam_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
-        # Create a container filter with the filter list it needs for filtering the packets
-        container_filter = ContainerIdentifierFilter(filter_list=sensor_names)
+                # Create query for inserting api parameters
+                query_statement = query_builder.insert_into_api_param()
+                query = apiparam_containers.sql(query=query_statement)
+                dbconn.send(executable_sql_query=query)
 
-        # Filter containers (!!! this return a SQLContainerComposition !!!)
-        filtered_containers = sensor_containers.apply_filter(container_filter)
+                ############################## SENSOR AT LOCATION CONTAINERS #############################
+                container_factory = SQLContainerFactory(container_class=GeoSQLContainer)
+                geo_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
 
-        ####################### IF THERE ARE NO NEW SENSORS TO ADD, RETURN FROM THE METHOD ########################
-        if not filtered_containers.containers:
-            print(f"{INFO_HEADER} all the sensors found are already present into the database.")
-            dbconn.close_conn()
-            return
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " SENSOR FILTERED CONTAINERS " + 20 * '=')
-            print(f"{DEBUG_HEADER} {filtered_containers!s}")
-
-        query_statement = query_builder.insert_into_sensor()
-        query = sensor_containers.sql(query=query_statement)
-        dbconn.send(executable_sql_query=query)
-
-        ############################## API PARAM CONTAINERS #############################
-        container_factory = SQLContainerFactory(container_class=APIParamSQLContainer)
-        apiparam_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
-
-        # Filter containers (!!! this return a SQLContainerComposition !!!)
-        filtered_containers = apiparam_containers.apply_filter(container_filter)
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " API PARAM FILTERED CONTAINERS " + 20 * '=')
-            print(f"{DEBUG_HEADER} {filtered_containers!s}")
-
-        query_statement = query_builder.insert_into_api_param()
-        query = apiparam_containers.sql(query=query_statement)
-        dbconn.send(executable_sql_query=query)
-
-        ############################## SENSOR AT LOCATION CONTAINERS #############################
-        container_factory = SQLContainerFactory(container_class=GeoSQLContainer)
-        geo_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
-
-        # Filter containers (!!! this return a SQLContainerComposition !!!)
-        filtered_containers = geo_containers.apply_filter(container_filter)
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " GEO FILTERED CONTAINERS " + 20 * '=')
-            print(f"{DEBUG_HEADER} {filtered_containers!s}")
-
-        query_statement = query_builder.insert_into_sensor_at_location()
-        query = geo_containers.sql(query=query_statement)
-        dbconn.send(executable_sql_query=query)
+                # Create query for inserting sensor at location
+                query_statement = query_builder.insert_into_sensor_at_location()
+                query = geo_containers.sql(query=query_statement)
+                dbconn.send(executable_sql_query=query)
+            else:
+                print(f"{INFO_HEADER} all sensors are already present into the database.")
+        else:
+            print(f"{INFO_HEADER} empty packets.")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()
