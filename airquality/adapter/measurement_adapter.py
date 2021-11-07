@@ -39,13 +39,13 @@ class MeasurementAdapterAtmotube(MeasurementAdapter):
                                           self.measure_param_map['t'],
                                           self.measure_param_map['h'],
                                           self.measure_param_map['p']]
-            adapted_packet['param_val'] = [packet['voc'],
-                                           packet['pm1'],
-                                           packet['pm25'],
-                                           packet['pm10'],
-                                           packet['t'],
-                                           packet['h'],
-                                           packet['p']]
+            adapted_packet['param_val'] = [packet.get('voc'),
+                                           packet.get('pm1'),
+                                           packet.get('pm25'),
+                                           packet.get('pm10'),
+                                           packet.get('t'),
+                                           packet.get('h'),
+                                           packet.get('p')]
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} {MeasurementAdapterAtmotube.__name__} is missing the key={ke!s}.")
         return adapted_packet

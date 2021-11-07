@@ -28,14 +28,23 @@ class PostGISPoint(PostGISGeometry):
 
     def __init__(self, param: Dict[str, Any]):
         super().__init__(param)
-        self.lat = param['lat']
-        self.lng = param['lng']
+        self.lat = param.get('lat')
+        self.lng = param.get('lng')
 
     def get_database_string(self) -> str:
         return f"ST_GeomFromText('POINT({self.lng} {self.lat})', 26918)"
 
     def get_geomtype_string(self) -> str:
         return f"POINT({self.lng} {self.lat})"
+
+
+class PostGISNullObject(PostGISGeometry):
+
+    def get_database_string(self):
+        return None
+
+    def get_geomtype_string(self):
+        return None
 
 
 ################################ FACTORY ################################
@@ -45,4 +54,6 @@ class PostGISGeometryFactory:
         self.geom_class = geom_class
 
     def create_geometry(self, param: Dict[str, Any]) -> PostGISGeometry:
+        if not param:
+            return PostGISNullObject(param)
         return self.geom_class(param)

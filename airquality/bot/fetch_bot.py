@@ -13,6 +13,8 @@ import airquality.constants.system_constants as sc
 
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.container.sql_container import MobileMeasurementSQLContainer
+from airquality.container.sql_container_factory import SQLContainerFactory
 from airquality.geom.postgis_geometry import PostGISGeometryFactory, PostGISPoint
 from airquality.adapter.geom_adapter import GeometryAdapterFactory, GeometryAdapterAtmotube
 from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, MeasurementAdapterAtmotube
@@ -367,6 +369,9 @@ class FetchBotAtmotube(FetchBot):
         # PostGIS geometry Factory
         postgis_geom_fact = PostGISGeometryFactory(geom_class=PostGISPoint)
 
+        # MobileMeasurementSQLContainer factory
+        measure_container_fact = SQLContainerFactory(container_class=MobileMeasurementSQLContainer)
+
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
         for sensor_id in sensor_ids:
@@ -388,11 +393,6 @@ class FetchBotAtmotube(FetchBot):
 
             while (from_datetime - stop_datetime).total_seconds() < 0:
 
-                if sc.DEBUG_MODE:
-                    print(20 * "=" + " CHANNEL ADAPTED PACKETS " + 20 * '=')
-                    for api_key, api_val in channel_adapted_param.items():
-                        print(f"{DEBUG_HEADER} {api_key}={api_val}")
-
                 ############### CREATE FETCH CONTAINER ###################
                 channel_container = fetch_container_fact.make_container(parameters=channel_adapted_param)
 
@@ -409,73 +409,58 @@ class FetchBotAtmotube(FetchBot):
                 ########## RESHAPE THE API ANSWER INTO AN INTERFACE COMPLIANT TO SQL CONTAINER ################
                 reshaped_api_answer = api_answer_reshaper.reshape_packet(api_answer=api_answer)
 
-                if sc.DEBUG_MODE:
-                    print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+                if reshaped_api_answer:
+
+                    # Adapt packets to mobile measurement SQL container interface
+                    adapted_packets = []
                     for packet in reshaped_api_answer:
-                        print(30 * '*')
-                        for key, val in packet.items():
-                            print(f"{DEBUG_HEADER} {key}={val}")
+                        geom_adapted_packet = geom_adapter.adapt_packet(packet=packet)
+                        postgis_geom = postgis_geom_fact.create_geometry(param=geom_adapted_packet)
+                        packet['geom'] = postgis_geom.get_database_string()
+                        packet['timestamp'] = DatetimeParser.atmotube_to_sqltimestamp(ts=packet['time'])
+                        adapted_packet = measure_adapter.adapt_packets(packet=packet)
+                        adapted_packets.append(adapted_packet)
 
-                # Adapt packets to mobile measurement SQL container interface
-                adapted_packets = []
-                for packet in reshaped_api_answer:
-                    geom_adapted_packet = geom_adapter.adapt_packet(packet=packet)
-                    postgis_geom = postgis_geom_fact.create_geometry(param=geom_adapted_packet)
-                    packet['geom'] = postgis_geom.get_database_string()
-                    packet['timestamp'] = DatetimeParser.atmotube_to_sqltimestamp(ts=packet['time'])
-                    adapted_packet = measure_adapter.adapt_packets(packet=packet)
-                    adapted_packets.append(adapted_packet)
-
-                if sc.DEBUG_MODE:
-                    print(20 * "=" + " ADAPTED API PACKETS " + 20 * '=')
+                    # create a container filter to keep only the measurement from the last timestamp on
+                    filtered_packets = []
                     for packet in adapted_packets:
-                        for key, val in packet.items():
-                            print(f"{DEBUG_HEADER} {key}={val}")
+                        if DatetimeParser.is_ts2_after_ts1(ts1=filter_sqltimestamp, ts2=packet['timestamp']):
+                            filtered_packets.append(packet)
+
+                    if filtered_packets:
+
+                        if sc.DEBUG_MODE:
+                            print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
+                            for packet in filtered_packets:
+                                print(30 * '*')
+                                for key, val in packet.items():
+                                    print(f"{DEBUG_HEADER} {key}={val}")
+
+                        # measure containers
+                        measure_containers = measure_container_fact.make_container(packets=adapted_packets, sensor_id=sensor_id)
+
+                        # Execute the query
+                        query_statement = query_builder.insert_into_mobile_measurements()
+                        query = measure_containers.sql(query=query_statement)
+                        dbconn.send(executable_sql_query=query)
+
+                        ############# UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH #############
+                        if sc.DEBUG_MODE:
+                            print(f"{INFO_HEADER} last_timestamp={adapted_packets[-1]['timestamp']}")
+
+                        query = query_builder.update_last_packet_date_atmotube(
+                            last_timestamp=adapted_packets[-1]['timestamp'],
+                            sensor_id=sensor_id)
+                        dbconn.send(executable_sql_query=query)
+
+                    else:
+                        print(f"{INFO_HEADER} all packets downloaded are already present into the database.")
+                else:
+                    print(f"{INFO_HEADER} empty packets.")
 
                 ################# END OF THE LOOP: ADD ONE DAY TO THE CURRENT FROM DATE ########################
                 from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=1)
                 channel_adapted_param['channel_ts']['val'] = DatetimeParser.datetime2string(from_datetime)
-
-            #     ################# FILTER PACKETS ONLY IF IT IS NOT THE FIRST ACQUISITION FOR THE SENSOR ################
-            #     filtered_packets = datetime_filter.filter_packets(packets=plain_packets, sqltimestamp=filter_sqltimestamp)
-            #
-            #     if sc.DEBUG_MODE:
-            #         print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
-            #         if filtered_packets != EMPTY_LIST:
-            #             for packet in filtered_packets[0:3]:
-            #                 print(f"{DEBUG_HEADER} {str(packet)}")
-            #
-            #             for packet in filtered_packets[-4:-1]:
-            #                 print(f"{DEBUG_HEADER} {packet}")
-            #
-            #     ########################### INSERT MEASURE ONLY IF THERE ARE NEW MEASUREMENTS ##########################
-            #     if filtered_packets:
-            #
-            #         mobile_packets = []
-            #         for packet in filtered_packets:
-            #             mobile_packets.append(SQLWrapperMobilePacketAtmotube(mapping=measure_param_map, packet=packet))
-            #
-            #         if sc.DEBUG_MODE:
-            #             print(20 * "=" + " SQL WRAPPER MOBILE PACKETS " + 20 * '=')
-            #             for packet in mobile_packets[0:3]:
-            #                 print(f"{DEBUG_HEADER} {str(packet)}")
-            #
-            #             for packet in mobile_packets[-4:-1]:
-            #                 print(f"{DEBUG_HEADER} {packet}")
-            #
-            #         bridge = BridgeObject(packets=mobile_packets)
-            #         query = query_builder.insert_into_mobile_measurements(bridge)
-            #         dbconn.send(executable_sql_query=query)
-            #
-            #         ############# UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH #############
-            #         if sc.DEBUG_MODE:
-            #             print(f"{DEBUG_HEADER} last timestamp = {filtered_packets[-1].time}")
-            #
-            #         query = query_builder.update_last_packet_date_atmotube(
-            #             last_timestamp=filtered_packets[-1].time,
-            #             sensor_id=sensor_id)
-            #         dbconn.send(executable_sql_query=query)
-            #
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()

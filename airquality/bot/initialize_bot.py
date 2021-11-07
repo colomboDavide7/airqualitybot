@@ -25,7 +25,6 @@ from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
 from airquality.api.urllib_adapter import UrllibAdapter
-from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
@@ -97,13 +96,6 @@ class InitializeBotPurpleair(InitializeBot):
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(raw_string=raw_api_data)
-
-        ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
-        path2key = [sc.PERSONALITY, "api_address"]
-        api_address = JSONParamPicker.pick_parameter(parsed_json=parsed_api_data, path2key=path2key)
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " API ADDRESS " + 20 * '=')
-            print(f"{DEBUG_HEADER} {api_address}")
 
         ################################ QUERYSTRING BUILDER ################################
         url_builder_fact = URLBuilderFactory(url_builder_class=URLBuilderPurpleair)
