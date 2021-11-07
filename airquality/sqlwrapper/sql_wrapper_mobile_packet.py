@@ -11,7 +11,6 @@ from abc import ABC
 from typing import Dict, Any
 from airquality.sqlwrapper.sql_wrapper_packet import SQLWrapperPacket
 from airquality.plain.plain_api_packet import PlainAPIPacketAtmotube
-from airquality.geom.postgis_geometry import PostGISPointFactory
 
 DEFAULT_VALUE = 'null'
 
@@ -32,11 +31,11 @@ class SQLWrapperMobilePacketAtmotube(SQLWrapperMobilePacket):
         self.pm25_param_id = self.mapping.get('pm25', DEFAULT_VALUE)
         self.pm10_param_id = self.mapping.get('pm10', DEFAULT_VALUE)
 
-        # transform geolocation into valid postGIS data type (if any)
-        self.geom = DEFAULT_VALUE
-        if self.packet.latitude != DEFAULT_VALUE and self.packet.longitude != DEFAULT_VALUE:
-            tmp = PostGISPointFactory(lat=self.packet.latitude, lng=self.packet.longitude).create_geometry()
-            self.geom = tmp.get_database_string()
+        # # transform geolocation into valid postGIS data type (if any)
+        # self.geom = DEFAULT_VALUE
+        # if self.packet.latitude != DEFAULT_VALUE and self.packet.longitude != DEFAULT_VALUE:
+        #     tmp = PostGISPointFactory(lat=self.packet.latitude, lng=self.packet.longitude).create_geometry()
+        #     self.geom = tmp.get_database_string()
 
     def sql(self) -> str:
         query = ""
