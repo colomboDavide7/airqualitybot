@@ -29,7 +29,6 @@ class MeasurementAdapterAtmotube(MeasurementAdapter):
     def adapt_packets(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         adapted_packet = {}
         try:
-            adapted_packet['name'] = "some name"        # it must be present for SQLContainer
             adapted_packet['timestamp'] = packet['timestamp']
             adapted_packet['geom'] = packet['geom']
             adapted_packet['param_id'] = [self.measure_param_map['voc'],

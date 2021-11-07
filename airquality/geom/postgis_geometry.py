@@ -41,10 +41,10 @@ class PostGISPoint(PostGISGeometry):
 class PostGISNullObject(PostGISGeometry):
 
     def get_database_string(self):
-        return None
+        return 'null'
 
     def get_geomtype_string(self):
-        return None
+        return 'null'
 
 
 ################################ FACTORY ################################
