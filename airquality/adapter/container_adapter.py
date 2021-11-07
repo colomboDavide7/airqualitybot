@@ -47,10 +47,10 @@ class ContainerAdapterPurpleair(ContainerAdapter):
                                          packet['secondary_id_b'],
                                          packet['secondary_key_a'],
                                          packet['secondary_key_b'],
-                                         'null',
-                                         'null',
-                                         'null',
-                                         'null']
+                                         '2018-01-01 00:00:00',
+                                         '2018-01-01 00:00:00',
+                                         '2018-01-01 00:00:00',
+                                         '2018-01-01 00:00:00']
         except KeyError as ke:
             # Raise Exception if any key is missing from the 'packet' dictionary
             raise SystemExit(f"{EXCEPTION_HEADER} {ContainerAdapterPurpleair.__name__} is missing the key={ke!s}.")
