@@ -13,12 +13,11 @@ import airquality.constants.system_constants as sc
 
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.adapter.channel_adapter import ChannelAdapter
 from airquality.container.fetch_container_factory import FetchContainerFactory
 from airquality.container.fetch_container import ChannelContainer, ChannelContainerWithFormattableAddress
 from airquality.adapter.fetch_adapter import FetchAdapterThingspeak, FetchAdapterFactory, FetchAdapterAtmotube
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
-from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
@@ -31,7 +30,7 @@ from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, INFO_HEADER, \
-    PURPLEAIR_PERSONALITY, THINGSPEAK_START_FETCH_TIMESTAMP
+    PURPLEAIR_PERSONALITY
 
 
 ################################################################################################
@@ -118,6 +117,9 @@ class FetchBotThingspeak(FetchBot):
             for param_code, param_id in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
+        ####################### CREATE QUERYSTRING OPTIONAL PARAMETERS DICTIONARY #####################
+        optional_param = {}  # no optional parameters for ThingSpeak bot
+
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
         for sensor_id in sensor_ids:
@@ -129,25 +131,38 @@ class FetchBotThingspeak(FetchBot):
             answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
+            # Reshape API param from all-in-one into single-channel param
+            sensor2channel_reshaper = ChannelAdapter(api_param=api_param)
+            single_channel_api_param = sensor2channel_reshaper.reshape()
+
+            #
+            # Now the packets are compliant to the interface => {'id', 'key', 'ts'}
+            #
+
             # Create fetch adapter
             fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterThingspeak)
             fetch_adapter = fetch_adapter_fact.make_adapter()
 
             # Adapt packets to a general interface that is decoupled by the sensor's API data structure
-            channel_adapted_param = fetch_adapter.adapt_packet(packet=api_param)
+            channel_adapted_parameters = []
+            for single_channel in single_channel_api_param:
+                channel_adapted_parameters.append(fetch_adapter.adapt_packet(packet=single_channel))
+
+            #
+            # Now the packets are compliant to the interface => {'channel_id', 'channel_key', 'channel_ts'}
+            #
 
             if sc.DEBUG_MODE:
-                print(20 * "=" + " CHANNEL ADAPTED PACKETS " + 20 * '=')
-                for param in channel_adapted_param:
+                print(20 * "=" + " CHANNEL ADAPTED PARAMETERS " + 20 * '=')
+                for param in channel_adapted_parameters:
                     for api_key, api_val in param.items():
                         print(f"{DEBUG_HEADER} {api_key}={api_val}")
 
-            ####################### CREATE QUERYSTRING OPTIONAL PARAMETERS DICTIONARY #####################
-            optional_param = {}         # no optional parameters for ThingSpeak bot
-
             # Create FetchContainer
             fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainerWithFormattableAddress)
-            channel_containers = fetch_container_fact.make_container(parameters=channel_adapted_param)
+            channel_containers = []
+            for channel_param in channel_adapted_parameters:
+                channel_containers.append(fetch_container_fact.make_container(parameters=channel_param))
 
             # Make URL from container
             for channel in channel_containers:
@@ -332,9 +347,15 @@ class FetchBotAtmotube(FetchBot):
             for code, id_ in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {code}={id_}")
 
-        # CREATE A DATETIME FILTER THAT WILL BE USED BELOW FOR FILTERING OUT PACKETS WHICH TIMESTAMP IS BEFORE
-        # THE FILTER TIMESTAMP
-        # datetime_filter = DatetimePacketFilterFactory().create_datetime_filter(bot_personality=sc.PERSONALITY)
+        ############### CREATE OPTIONAL API PARAMETERS ###################
+        api_param2pick = ResourcePicker.pick_optional_api_parameters_from_api_data(personality=sc.PERSONALITY)
+        optional_param = APIParamPicker.pick_param(api_param=parsed_api_data[sc.PERSONALITY],
+                                                   param2pick=api_param2pick)
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " OPTIONAL API PARAMETERS " + 20 * '=')
+            for key, val in optional_param.items():
+                print(f"{DEBUG_HEADER} {key}={val}")
 
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
@@ -356,25 +377,14 @@ class FetchBotAtmotube(FetchBot):
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " CHANNEL ADAPTED PACKETS " + 20 * '=')
-                for param in channel_adapted_param:
-                    for api_key, api_val in param.items():
-                        print(f"{DEBUG_HEADER} {api_key}={api_val}")
-
-            ############### CREATE OPTIONAL API PARAMETERS ###################
-            api_param2pick = ResourcePicker.pick_optional_api_parameters_from_api_data(personality=sc.PERSONALITY)
-            optional_param = APIParamPicker.pick_param(api_param=parsed_api_data[sc.PERSONALITY],
-                                                       param2pick=api_param2pick)
-
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " OPTIONAL API PARAMETERS " + 20 * '=')
-                for key, val in optional_param.items():
-                    print(f"{DEBUG_HEADER} {key}={val}")
+                for api_key, api_val in channel_adapted_param.items():
+                    print(f"{DEBUG_HEADER} {api_key}={api_val}")
 
             ############### CREATE FETCH CONTAINER ###################
             fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainer)
-            channel_containers = fetch_container_fact.make_container(parameters=channel_adapted_param)
+            channel_container = fetch_container_fact.make_container(parameters=channel_adapted_param)
 
-            url = channel_containers[0].url(api_address=api_address, optional_param=optional_param)
+            url = channel_container.url(api_address=api_address, optional_param=optional_param)
             if sc.DEBUG_MODE:
                 print(20 * "=" + " URL " + 20 * '=')
                 print(f"{DEBUG_HEADER} {url}")

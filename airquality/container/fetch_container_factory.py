@@ -6,7 +6,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import Dict, Any, List
+from typing import Dict, Any
 from airquality.container.fetch_container import FetchContainer
 
 
@@ -15,8 +15,5 @@ class FetchContainerFactory:
     def __init__(self, fetch_container_class=FetchContainer):
         self.fetch_container_class = fetch_container_class
 
-    def make_container(self, parameters: List[Dict[str, Any]]) -> List[FetchContainer]:
-        containers = []
-        for param in parameters:
-            containers.append(self.fetch_container_class(param))
-        return containers
+    def make_container(self, parameters: Dict[str, Any]) -> FetchContainer:
+        return self.fetch_container_class(parameters=parameters)
