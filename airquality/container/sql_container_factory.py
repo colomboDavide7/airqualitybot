@@ -16,10 +16,10 @@ class SQLContainerFactory(object):
     def __init__(self, container_class=None):
         self.container_class = container_class
 
-    def make_container(self, packets: List[Dict[str, Any]], sensor_id: int) -> SQLContainer:
+    def make_container_with_start_sensor_id(self, packets: List[Dict[str, Any]], start_sensor_id: int) -> SQLContainer:
 
         containers = []
-        temp_sensor_id = sensor_id
+        temp_sensor_id = start_sensor_id
         for packet in packets:
             containers.append(self.container_class(sensor_id=temp_sensor_id, packet=packet))
             temp_sensor_id += 1
@@ -35,4 +35,10 @@ class SQLContainerFactory(object):
             if sensor_name in sensor_names:
                 sensor_id = sensorname2id_map[sensor_name]
                 containers.append(self.container_class(sensor_id=sensor_id, packet=packet))
+        return SQLContainerComposition(containers=containers)
+
+    def make_container_with_sensor_id(self, packets: List[Dict[str, Any]], sensor_id: int):
+        containers = []
+        for packet in packets:
+            containers.append(self.container_class(sensor_id=sensor_id, packet=packet))
         return SQLContainerComposition(containers=containers)

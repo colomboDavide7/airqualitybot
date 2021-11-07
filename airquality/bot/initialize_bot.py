@@ -149,7 +149,7 @@ class InitializeBotPurpleair(InitializeBot):
 
                 ############################## SENSOR CONTAINERS #############################
                 container_factory = SQLContainerFactory(container_class=SensorSQLContainer)
-                sensor_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
+                sensor_containers = container_factory.make_container_with_start_sensor_id(packets=adapted_packets, start_sensor_id=sensor_id)
 
                 # Create a query for inserting sensors
                 query_statement = query_builder.insert_into_sensor()
@@ -158,7 +158,7 @@ class InitializeBotPurpleair(InitializeBot):
 
                 ############################## API PARAM CONTAINERS #############################
                 container_factory = SQLContainerFactory(container_class=APIParamSQLContainer)
-                apiparam_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
+                apiparam_containers = container_factory.make_container_with_start_sensor_id(packets=adapted_packets, start_sensor_id=sensor_id)
 
                 # Create query for inserting api parameters
                 query_statement = query_builder.insert_into_api_param()
@@ -167,7 +167,7 @@ class InitializeBotPurpleair(InitializeBot):
 
                 ############################## SENSOR AT LOCATION CONTAINERS #############################
                 container_factory = SQLContainerFactory(container_class=GeoSQLContainer)
-                geo_containers = container_factory.make_container(packets=adapted_packets, sensor_id=sensor_id)
+                geo_containers = container_factory.make_container_with_start_sensor_id(packets=adapted_packets, start_sensor_id=sensor_id)
 
                 # Create query for inserting sensor at location
                 query_statement = query_builder.insert_into_sensor_at_location()

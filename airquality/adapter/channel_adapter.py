@@ -21,22 +21,26 @@ class ChannelAdapter:
             reshaped_packets.append(
                 {'id': self.api_param['primary_id_a'],
                  'key': self.api_param['primary_key_a'],
-                 'ts': self.api_param['primary_timestamp_a']}
+                 'ts': self.api_param['primary_timestamp_a'],
+                 'ts_name': 'primary_timestamp_a'}
             )
             reshaped_packets.append(
                 {'id': self.api_param['primary_id_b'],
                  'key': self.api_param['primary_key_b'],
-                 'ts': self.api_param['primary_timestamp_b']}
+                 'ts': self.api_param['primary_timestamp_b'],
+                 'ts_name': 'primary_timestamp_b'}
             )
             reshaped_packets.append(
                 {'id': self.api_param['secondary_id_a'],
                  'key': self.api_param['secondary_key_a'],
-                 'ts': self.api_param['secondary_timestamp_a']}
+                 'ts': self.api_param['secondary_timestamp_a'],
+                 'ts_name': 'secondary_timestamp_a'}
             )
             reshaped_packets.append(
                 {'id': self.api_param['secondary_id_b'],
                  'key': self.api_param['secondary_key_b'],
-                 'ts': self.api_param['secondary_timestamp_b']}
+                 'ts': self.api_param['secondary_timestamp_b'],
+                 'ts_name': 'secondary_timestamp_b'}
             )
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} {ChannelAdapter.__name__} missing key='{ke!s}'.")

@@ -59,7 +59,7 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
 
         # SELECT THE RESHAPE MAPPING BASED ON PRIMARY/SECONDARY DATA AND CHANNEL A/B
         if '_b' in sensor_name:
-            if '_b' in sensor_name:
+            if 'Counters' in sensor_name:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
             else:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B

@@ -13,11 +13,12 @@ import airquality.constants.system_constants as sc
 
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.container.sql_container import MobileMeasurementSQLContainer
+from airquality.container.sql_container import MobileMeasurementSQLContainer, StationMeasurementSQLContainer
 from airquality.container.sql_container_factory import SQLContainerFactory
 from airquality.geom.postgis_geometry import PostGISGeometryFactory, PostGISPoint
 from airquality.adapter.geom_adapter import GeometryAdapterFactory, GeometryAdapterAtmotube
-from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, MeasurementAdapterAtmotube
+from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, MeasurementAdapterAtmotube, \
+    MeasurementAdapterThingspeak
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.adapter.channel_adapter import ChannelAdapter
 from airquality.container.fetch_container_factory import FetchContainerFactory
@@ -93,9 +94,6 @@ class FetchBotThingspeak(FetchBot):
         ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
         path2key = [sc.PERSONALITY, "api_address"]
         api_address = JSONParamPicker.pick_parameter(parsed_json=parsed_api_data, path2key=path2key)
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " API ADDRESS " + 20 * '=')
-            print(f"{DEBUG_HEADER} {api_address}")
 
         ################################ SELECT SENSOR IDS FROM PERSONALITY ################################
         query = query_builder.select_sensor_ids_from_personality(personality=PURPLEAIR_PERSONALITY)
@@ -129,6 +127,13 @@ class FetchBotThingspeak(FetchBot):
 
         # Create FetchContainer factory
         fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainerWithFormattableAddress)
+
+        # Create MeasurementAdapter factory
+        measure_adapter_fact = MeasurementAdapterFactory(adapter_class=MeasurementAdapterThingspeak)
+        measure_adapter = measure_adapter_fact.make_adapter(measure_param_map=measure_param_map)
+
+        # StationMeasurementSQLContainer factory
+        measure_container_fact = SQLContainerFactory(container_class=StationMeasurementSQLContainer)
 
         ####################### DEFINE START DATE AND STOP DATE FOR FETCHING DATA FROM API #####################
         stop_datetime = DatetimeParser.today()
@@ -202,20 +207,32 @@ class FetchBotThingspeak(FetchBot):
                         bot_personality=sc.PERSONALITY)
                     reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
 
-                    if sc.DEBUG_MODE:
-                        if reshaped_api_packets:
-                            print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
-                            for packet in reshaped_api_packets[0:3]:
-                                print(f"{DEBUG_HEADER} {packet!s}")
-
-                            for packet in reshaped_api_packets[-4:-1]:
-                                print(f"{DEBUG_HEADER} {packet!s}")
-
                     if reshaped_api_packets:
 
                         adapted_packets = []
                         for packet in reshaped_api_packets:
                             packet['timestamp'] = DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
+                            adapted_packet = measure_adapter.adapt_packets(packet)
+                            adapted_packets.append(adapted_packet)
+
+                        # This method return a SQLContainerComposition object !!!
+                        measure_container = measure_container_fact.make_container_with_sensor_id(
+                            packets=adapted_packets, sensor_id=sensor_id
+                        )
+
+                        query_statement = query_builder.insert_into_station_measurements()
+                        query = measure_container.sql(query=query_statement)
+                        dbconn.send(executable_sql_query=query)
+
+                        ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
+                        if sc.DEBUG_MODE:
+                            print(f"{INFO_HEADER} last {channel_param['ts_name']} => {adapted_packets[-1]['timestamp']}")
+
+                        query = query_builder.update_last_channel_acquisition_timestamp(
+                            sensor_id=sensor_id,
+                            ts=adapted_packets[-1]['timestamp'],
+                            param2update=channel_param['ts_name'])
+                        dbconn.send(executable_sql_query=query)
 
                     else:
                         print(f"{INFO_HEADER} empty packets.")
@@ -227,23 +244,6 @@ class FetchBotThingspeak(FetchBot):
 
                     if (to_datetime - stop_datetime).total_seconds() >= 0:
                         to_datetime = stop_datetime
-
-            #         ####################### DO THE INSERT AND UPDATE ONLY IF PACKETS ARE PRESENT #####################
-            #         if reshaped_api_packets:
-            #
-            #             query = query_builder.insert_into_station_measurements(bridge=bridge)
-            #             dbconn.send(executable_sql_query=query)
-            #
-            #             ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
-            #             if sc.DEBUG_MODE:
-            #                 print(f"{DEBUG_HEADER} last {channel.ts_name} = {reshaped_api_packets[-1].created_at}")
-            #
-            #             query = query_builder.update_last_channel_acquisition_timestamp(
-            #                 sensor_id=sensor_id,
-            #                 ts=reshaped_api_packets[-1].created_at,
-            #                 param2update=channel.ts_name)
-            #             dbconn.send(executable_sql_query=query)
-            #
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()
@@ -424,7 +424,9 @@ class FetchBotAtmotube(FetchBot):
                                     print(f"{DEBUG_HEADER} {key}={val}")
 
                         # measure containers
-                        measure_containers = measure_container_fact.make_container(packets=adapted_packets, sensor_id=sensor_id)
+                        measure_containers = measure_container_fact.make_container_with_sensor_id(
+                            packets=adapted_packets, sensor_id=sensor_id
+                        )
 
                         # Execute the query
                         query_statement = query_builder.insert_into_mobile_measurements()

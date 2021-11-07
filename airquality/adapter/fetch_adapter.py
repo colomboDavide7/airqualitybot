@@ -24,7 +24,8 @@ class FetchAdapterThingspeak(FetchAdapter):
         try:
             return {'channel_id': {'name': 'channel_id', 'val': packet['id']},
                     'channel_key': {'name': 'api_key', 'val': packet['key']},
-                    'channel_ts': {'name': 'start', 'val': packet['ts']}}
+                    'channel_ts': {'name': 'start', 'val': packet['ts']},
+                    'ts_name': packet['ts_name']}
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} {FetchAdapterThingspeak.__name__} missing key='{ke!s}'.")
 
