@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.api.api_request_adapter import APIRequestAdapter
+from airquality.api.urllib_adapter import APIRequestAdapter
 
 
 class TestAPIRequestAdapter(unittest.TestCase):

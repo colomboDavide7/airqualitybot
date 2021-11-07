@@ -16,15 +16,13 @@ import airquality.constants.system_constants as sc
 from airquality.container.fetch_container_factory import FetchContainerFactory
 from airquality.container.fetch_container import ChannelContainer, ChannelContainerWithFormattableAddress
 from airquality.adapter.fetch_adapter import FetchAdapterThingspeak, FetchAdapterFactory, FetchAdapterAtmotube
-from airquality.sqlwrapper.sql_wrapper_mobile_packet import SQLWrapperMobilePacketAtmotube
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
-from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
-from airquality.api.api_request_adapter import APIRequestAdapter
+from airquality.api.urllib_adapter import APIRequestAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.api_param_picker import APIParamPicker
 from airquality.picker.resource_picker import ResourcePicker
@@ -33,7 +31,7 @@ from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, INFO_HEADER, \
-    EMPTY_LIST, PURPLEAIR_PERSONALITY, ATMOTUBE_START_FETCH_TIMESTAMP, THINGSPEAK_START_FETCH_TIMESTAMP
+    PURPLEAIR_PERSONALITY, THINGSPEAK_START_FETCH_TIMESTAMP
 
 
 ################################################################################################
@@ -94,9 +92,6 @@ class FetchBotThingspeak(FetchBot):
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
-        ################################ QUERYSTRING BUILDER ################################
-        querystring_builder = URLQuerystringBuilderFactory().create_querystring_builder(bot_personality=sc.PERSONALITY)
-
         ################################ SELECT SENSOR IDS FROM PERSONALITY ################################
         query = query_builder.select_sensor_ids_from_personality(personality=PURPLEAIR_PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
@@ -123,9 +118,6 @@ class FetchBotThingspeak(FetchBot):
             for param_code, param_id in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
-        # create a wrapper station packet factory
-        # wrapper_factory = WrapperStationPacketFactory()
-
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
         for sensor_id in sensor_ids:
@@ -146,9 +138,8 @@ class FetchBotThingspeak(FetchBot):
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " CHANNEL ADAPTED PACKETS " + 20 * '=')
-                for key, val in channel_adapted_param.items():
-                    print(f"{INFO_HEADER} {key}")
-                    for api_key, api_val in val.items():
+                for param in channel_adapted_param:
+                    for api_key, api_val in param.items():
                         print(f"{DEBUG_HEADER} {api_key}={api_val}")
 
             ####################### CREATE QUERYSTRING OPTIONAL PARAMETERS DICTIONARY #####################
@@ -156,12 +147,13 @@ class FetchBotThingspeak(FetchBot):
 
             # Create FetchContainer
             fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainerWithFormattableAddress)
-            channel_container = fetch_container_fact.make_container(parameters=channel_adapted_param)
+            channel_containers = fetch_container_fact.make_container(parameters=channel_adapted_param)
 
             # Make URL from container
-            url = channel_container.url(api_address=api_address, optional_param=optional_param)
-            if sc.DEBUG_MODE:
-                print(f"{DEBUG_HEADER} {url}")
+            for channel in channel_containers:
+                url = channel.url(api_address=api_address, optional_param=optional_param)
+                if sc.DEBUG_MODE:
+                    print(f"{DEBUG_HEADER} {url}")
 
             # # Cycle on channels
             # for channel in reshaped_channels:
@@ -314,9 +306,6 @@ class FetchBotAtmotube(FetchBot):
             print(20 * "=" + " API ADDRESS " + 20 * '=')
             print(f"{DEBUG_HEADER} {api_address}")
 
-        ################################ API REQUEST ADAPTER ################################
-        api_adapter = APIRequestAdapter(api_address=api_address)
-
         ##################### SELECT SENSOR IDS ASSOCIATED TO CURRENT PERSONALITY (ATMOTUBE) ###########################
         query = query_builder.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
@@ -367,9 +356,8 @@ class FetchBotAtmotube(FetchBot):
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " CHANNEL ADAPTED PACKETS " + 20 * '=')
-                for key, val in channel_adapted_param.items():
-                    print(f"{INFO_HEADER} {key}")
-                    for api_key, api_val in val.items():
+                for param in channel_adapted_param:
+                    for api_key, api_val in param.items():
                         print(f"{DEBUG_HEADER} {api_key}={api_val}")
 
             ############### CREATE OPTIONAL API PARAMETERS ###################
@@ -384,65 +372,27 @@ class FetchBotAtmotube(FetchBot):
 
             ############### CREATE FETCH CONTAINER ###################
             fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainer)
-            channel_container = fetch_container_fact.make_container(parameters=channel_adapted_param)
+            channel_containers = fetch_container_fact.make_container(parameters=channel_adapted_param)
 
-            url = channel_container.url(api_address=api_address, optional_param=optional_param)
+            url = channel_containers[0].url(api_address=api_address, optional_param=optional_param)
             if sc.DEBUG_MODE:
                 print(20 * "=" + " URL " + 20 * '=')
                 print(f"{DEBUG_HEADER} {url}")
 
+            ################################ CYCLE THROUGH DATE UNTIL NOW ################################
+            stop_datetime = DatetimeParser.today()
+            from_datetime = DatetimeParser.string2datetime(datetime_string=api_param['date'])
+            filter_sqltimestamp = api_param['date']
 
-            # ################################ MERGE API PARAM WITH OPTIONAL API PARAM ################################
-            # api_param.update(optional_params)
-            # if sc.DEBUG_MODE:
-            #     print(20 * "=" + " TOTAL API PARAMETERS " + 20 * '=')
-            #     for name, value in api_param.items():
-            #         print(f"{DEBUG_HEADER} {name}={value}")
-            #
-            # ################################ CREATE URL QUERYSTRING BUILDER ################################
-            # querystring_builder = URLQuerystringBuilderFactory.create_querystring_builder(bot_personality=sc.PERSONALITY)
-            #
-            # ################################ CYCLE THROUGH DATE UNTIL NOW ################################
-            # stop_datetime = DatetimeParser.today()
-            # from_datetime = DatetimeParser.string2datetime(datetime_string=ATMOTUBE_START_FETCH_TIMESTAMP)
-            #
-            # # If api_param['date'] IS NOT NULL, use that value for filtering out packets in the same 'from_datetime'
-            # # but previous in time.
-            # filter_sqltimestamp = ""
-            # if api_param.get('date', None) is not None:
-            #     from_datetime = DatetimeParser.string2datetime(datetime_string=api_param['date'])
-            #     filter_sqltimestamp = api_param['date']
-            #
-            # while (from_datetime - stop_datetime).total_seconds() < 0:
-            #
-            #     # INSERT DATETIME INTO API PARAMETERS
-            #     from_datetime_string = DatetimeParser.datetime2string(ts=from_datetime)
-            #     api_param['date'] = DatetimeParser.sqltimestamp_date(ts=from_datetime_string)
-            #
-            #     # BUILD THE QUERYSTRING
-            #     querystring = querystring_builder.make_querystring(parameters=api_param)
-            #
-            #     if sc.DEBUG_MODE:
-            #         print(20 * "=" + " URL QUERYSTRING " + 20 * '=')
-            #         print(f"{DEBUG_HEADER} {querystring}")
-            #
-            #     ################################ FETCH DATA FROM API ################################
-            #     api_answer = api_adapter.fetch(querystring=querystring)
-            #     parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
-            #     api_answer = parser.parse(raw_string=api_answer)
-            #
-            #     ################################ RESHAPE THE API ANSWER INTO PLAIN API PACKET ################################
-            #     plain_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
-            #     plain_packets = plain_reshaper.reshape_packet(api_answer=api_answer)
-            #
-            #     if sc.DEBUG_MODE:
-            #         print(20 * "=" + " PLAIN PACKETS " + 20 * '=')
-            #         for packet in plain_packets[0:3]:
-            #             print(f"{DEBUG_HEADER} {str(packet)}")
-            #
-            #         for packet in plain_packets[-4:-1]:
-            #             print(f"{DEBUG_HEADER} {str(packet)}")
-            #
+            while (from_datetime - stop_datetime).total_seconds() < 0:
+
+                ################################ FETCH DATA FROM API ################################
+                api_answer = APIRequestAdapter.fetch(url=url)
+                parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
+                api_answer = parser.parse(raw_string=api_answer)
+
+                ################################ RESHAPE THE API ANSWER INTO PLAIN API PACKET ################################
+
             #     ################# FILTER PACKETS ONLY IF IT IS NOT THE FIRST ACQUISITION FOR THE SENSOR ################
             #     filtered_packets = datetime_filter.filter_packets(packets=plain_packets, sqltimestamp=filter_sqltimestamp)
             #

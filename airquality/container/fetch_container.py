@@ -18,7 +18,7 @@ class FetchContainer(ABC):
         self.key_name = parameters['channel_key']['name']
         self.key_val = parameters['channel_key']['val']
         self.ts_name = parameters['channel_ts']['name']
-        self.ts_val = parameters['channel_ts']['val']
+        self.ts_val = parameters['channel_ts']['val'].replace(' ', '%20')
 
     @abstractmethod
     def url(self, api_address: str, optional_param: Dict[str, Any]) -> str:

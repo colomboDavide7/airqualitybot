@@ -10,7 +10,6 @@ from abc import abstractmethod
 from typing import Dict, Any, List
 from airquality.container.filterable_container import FilterableContainer, ContainerFilter
 from airquality.container.identifiable_container import IdentifiableContainer
-from airquality.constants.shared_constants import EXCEPTION_HEADER
 
 
 class SQLContainer(FilterableContainer, IdentifiableContainer):
@@ -30,13 +29,6 @@ class SQLContainer(FilterableContainer, IdentifiableContainer):
     def apply_filter(self, container_filter: ContainerFilter):
         return container_filter.filter_container(to_filter=self.identity)
 
-    # def compare_to(self, container: object):
-    #     if not isinstance(container, SQLContainer):
-    #         raise SystemExit(f"{EXCEPTION_HEADER} {SQLContainer.__name__} cannot compare object of type='{type(container)}'.")
-    #     else:
-    #         raise NotImplementedError(f"{EXCEPTION_HEADER} '{SQLContainer.compare_to.__name__}' method in "
-    #                                   f"{SQLContainer.__name__} is not implemented.")
-
 
 class GeoSQLContainer(SQLContainer):
     """SQL container that defines how a sensor location in translated into SQL query."""
@@ -49,11 +41,6 @@ class GeoSQLContainer(SQLContainer):
 
     def sql(self, query: str) -> str:
         return query + f"({self.sensor_id}, '{self.timestamp}', {self.geometry})"
-
-    # def compare_to(self, container: object) -> bool:
-    #     if not isinstance(container, GeoSQLContainer):
-    #         raise SystemExit(f"{EXCEPTION_HEADER} {GeoSQLContainer.__name__} cannot compare object of type='{type(container)}'.")
-    #     return self.geometry == container.geometry
 
     def __str__(self):
         return f"sensor_id={self.sensor_id}, valid_from={self.timestamp}, geom={self.geometry}"

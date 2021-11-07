@@ -21,7 +21,7 @@ from airquality.api.url_querystring_builder import URLQuerystringBuilderFactory
 from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.database.sql_query_builder import SQLQueryBuilder
-from airquality.api.api_request_adapter import APIRequestAdapter
+from airquality.api.urllib_adapter import APIRequestAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.file_parser import FileParserFactory
