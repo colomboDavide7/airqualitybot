@@ -17,7 +17,7 @@ class MeasurementAdapter(ABC):
         self.measure_param_map = measure_param_map
 
     @abstractmethod
-    def adapt_packets(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
 
@@ -26,7 +26,7 @@ class MeasurementAdapterAtmotube(MeasurementAdapter):
     def __init__(self, measure_param_map: Dict[str, Any]):
         super().__init__(measure_param_map)
 
-    def adapt_packets(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         adapted_packet = {}
         try:
             adapted_packet['timestamp'] = packet['timestamp']
@@ -55,7 +55,7 @@ class MeasurementAdapterThingspeak(MeasurementAdapter):
     def __init__(self, measure_param_map: Dict[str, Any]):
         super().__init__(measure_param_map)
 
-    def adapt_packets(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         adapted_packet = {}
         try:
             adapted_packet['timestamp'] = packet['timestamp']

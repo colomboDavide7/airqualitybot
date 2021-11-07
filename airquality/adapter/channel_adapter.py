@@ -15,7 +15,7 @@ class ChannelAdapter:
     def __init__(self, api_param: Dict[str, Any]):
         self.api_param = api_param
 
-    def reshape(self) -> List[Dict[str, Any]]:
+    def adapt(self) -> List[Dict[str, Any]]:
         reshaped_packets = []
         try:
             reshaped_packets.append(

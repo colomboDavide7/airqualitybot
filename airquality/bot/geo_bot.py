@@ -18,9 +18,9 @@ from airquality.geom.postgis_geometry import PostGISGeometryFactory, PostGISPoin
 from airquality.adapter.geom_adapter import GeometryAdapterFactory, GeometryAdapterPurpleair
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_builder import URLBuilderFactory, URLBuilderPurpleair
-from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
+from airquality.reshaper.packet_reshaper import PacketReshaperFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.database.sql_query_builder import SQLQueryBuilder
+from picker.query_picker import QueryPicker
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.file_parser import FileParserFactory
@@ -64,7 +64,7 @@ class GeoBotPurpleair(GeoBot):
         raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
         parsed_query_data = parser.parse(raw_string=raw_query_data)
-        query_builder = SQLQueryBuilder(parsed_query_data)
+        query_builder = QueryPicker(parsed_query_data)
 
         ########### QUERY SENSOR NAME 2 SENSOR ID MAPPING FOR ASSOCIATE AN API PACKET TO A DATABASE RECORD #############
         query = query_builder.select_sensor_name_id_map_from_personality(personality=sc.PERSONALITY)
@@ -92,7 +92,7 @@ class GeoBotPurpleair(GeoBot):
         parsed_api_packets = parser.parse(raw_string=raw_api_packets)
 
         ################ RESHAPE API DATA FOR GETTING THEM IN A BETTER SHAPE FOR DATABASE INSERTION ####################
-        reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(bot_personality=sc.PERSONALITY)
+        reshaper = PacketReshaperFactory().make_reshaper(bot_personality=sc.PERSONALITY)
         reshaped_packets = reshaper.reshape_packet(api_answer=parsed_api_packets)
 
         if reshaped_packets:
@@ -119,8 +119,8 @@ class GeoBotPurpleair(GeoBot):
             # pulled from the database.
             new_locations = {}
             for packet in reshaped_packets:
-                sensor_adapted_packet = sensor_adapter.adapt_packet(packet)
-                geom_adapted_packet = geom_adapter.adapt_packet(packet)
+                sensor_adapted_packet = sensor_adapter.adapt(packet)
+                geom_adapted_packet = geom_adapter.adapt(packet)
                 geometry = postgis_geom_fact.create_geometry(geom_adapted_packet)
                 new_locations[sensor_adapted_packet['name']] = geometry.get_geomtype_string()
 

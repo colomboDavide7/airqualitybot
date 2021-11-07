@@ -19,7 +19,7 @@ from airquality.geom.postgis_geometry import PostGISGeometryFactory, PostGISPoin
 from airquality.adapter.geom_adapter import GeometryAdapterFactory, GeometryAdapterAtmotube
 from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, MeasurementAdapterAtmotube, \
     MeasurementAdapterThingspeak
-from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
+from airquality.reshaper.packet_reshaper import PacketReshaperFactory
 from airquality.adapter.channel_adapter import ChannelAdapter
 from airquality.container.fetch_container_factory import FetchContainerFactory
 from airquality.container.fetch_container import ChannelContainer, ChannelContainerWithFormattableAddress
@@ -27,7 +27,7 @@ from airquality.adapter.fetch_adapter import FetchAdapterThingspeak, FetchAdapte
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.database.sql_query_builder import SQLQueryBuilder
+from picker.query_picker import QueryPicker
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.api_param_picker import APIParamPicker
@@ -84,7 +84,7 @@ class FetchBotThingspeak(FetchBot):
         raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
         parsed_query_data = parser.parse(raw_string=raw_query_data)
-        query_builder = SQLQueryBuilder(parsed_query_data)
+        query_builder = QueryPicker(parsed_query_data)
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
@@ -151,7 +151,7 @@ class FetchBotThingspeak(FetchBot):
 
             # Reshape API param from all-in-one into single-channel param
             sensor2channel_reshaper = ChannelAdapter(api_param=api_param)
-            single_channel_api_param = sensor2channel_reshaper.reshape()
+            single_channel_api_param = sensor2channel_reshaper.adapt()
 
             #
             # Now the packets are compliant to the interface => {'id', 'key', 'ts'}
@@ -160,7 +160,7 @@ class FetchBotThingspeak(FetchBot):
             # Adapt packets to a general interface that is decoupled by the sensor's API data structure
             channel_adapted_parameters = []
             for single_channel in single_channel_api_param:
-                channel_adapted_parameters.append(fetch_adapter.adapt_packet(packet=single_channel))
+                channel_adapted_parameters.append(fetch_adapter.adapt(packet=single_channel))
 
             #
             # Now the packets are compliant to the interface => {'channel_id', 'channel_key', 'channel_ts'}
@@ -203,7 +203,7 @@ class FetchBotThingspeak(FetchBot):
                     parsed_api_packets = parser.parse(raw_string=api_packets)
 
                     # Reshape API packets: merge all data coming from different channels into a single PlainAPIPacket object
-                    api_packet_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(
+                    api_packet_reshaper = PacketReshaperFactory().make_reshaper(
                         bot_personality=sc.PERSONALITY)
                     reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
 
@@ -212,7 +212,7 @@ class FetchBotThingspeak(FetchBot):
                         adapted_packets = []
                         for packet in reshaped_api_packets:
                             packet['timestamp'] = DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
-                            adapted_packet = measure_adapter.adapt_packets(packet)
+                            adapted_packet = measure_adapter.adapt(packet)
                             adapted_packets.append(adapted_packet)
 
                         # This method return a SQLContainerComposition object !!!
@@ -283,7 +283,7 @@ class FetchBotAtmotube(FetchBot):
         raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
         parsed_query_data = parser.parse(raw_string=raw_query_data)
-        query_builder = SQLQueryBuilder(parsed_query_data)
+        query_builder = QueryPicker(parsed_query_data)
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
@@ -342,7 +342,7 @@ class FetchBotAtmotube(FetchBot):
         fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainer)
 
         # API answer reshaper factory
-        api_answer_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(
+        api_answer_reshaper = PacketReshaperFactory().make_reshaper(
             bot_personality=sc.PERSONALITY)
 
         # Create measurement container adapter to adapt packets to a general SQLContainer interface
@@ -371,7 +371,7 @@ class FetchBotAtmotube(FetchBot):
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
             # Adapt packets to the general interface in order to decouple them from the sensor's specific API param name.
-            channel_adapted_param = fetch_adapter.adapt_packet(packet=api_param)
+            channel_adapted_param = fetch_adapter.adapt(packet=api_param)
 
             ################################ CYCLE THROUGH DATE UNTIL NOW ################################
             stop_datetime = DatetimeParser.today()
@@ -401,11 +401,11 @@ class FetchBotAtmotube(FetchBot):
                     # Adapt packets to mobile measurement SQL container interface
                     adapted_packets = []
                     for packet in reshaped_api_answer:
-                        geom_adapted_packet = geom_adapter.adapt_packet(packet=packet)
+                        geom_adapted_packet = geom_adapter.adapt(packet=packet)
                         postgis_geom = postgis_geom_fact.create_geometry(param=geom_adapted_packet)
                         packet['geom'] = postgis_geom.get_database_string()
                         packet['timestamp'] = DatetimeParser.atmotube_to_sqltimestamp(ts=packet['time'])
-                        adapted_packet = measure_adapter.adapt_packets(packet=packet)
+                        adapted_packet = measure_adapter.adapt(packet=packet)
                         adapted_packets.append(adapted_packet)
 
                     # create a container filter to keep only the measurement from the last timestamp on

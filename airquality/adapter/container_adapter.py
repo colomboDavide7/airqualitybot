@@ -14,13 +14,13 @@ from airquality.constants.shared_constants import EXCEPTION_HEADER
 class ContainerAdapter(ABC):
 
     @abstractmethod
-    def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
 
 class ContainerAdapterPurpleair(ContainerAdapter):
 
-    def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         new_packet = {}
         try:
             new_packet['name'] = f"{packet['name']} ({packet['sensor_index']})"

@@ -14,13 +14,13 @@ from airquality.constants.shared_constants import EXCEPTION_HEADER
 class FetchAdapter(ABC):
 
     @abstractmethod
-    def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
 
 class FetchAdapterThingspeak(FetchAdapter):
 
-    def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         try:
             return {'channel_id': {'name': 'channel_id', 'val': packet['id']},
                     'channel_key': {'name': 'api_key', 'val': packet['key']},
@@ -32,7 +32,7 @@ class FetchAdapterThingspeak(FetchAdapter):
 
 class FetchAdapterAtmotube(FetchAdapter):
 
-    def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         try:
             return {'channel_id': {'name': 'mac', 'val': packet['mac']},
                     'channel_key': {'name': 'api_key', 'val': packet['api_key']},

@@ -11,11 +11,11 @@ from typing import Dict, Any
 from airquality.constants.shared_constants import EXCEPTION_HEADER
 
 
-class SQLQueryBuilder(builtins.object):
+class QueryPicker(builtins.object):
 
     def __init__(self, parsed_query_data: Dict[str, Any]):
         if not parsed_query_data:
-            raise SystemExit(f"{EXCEPTION_HEADER} cannot instantiate '{SQLQueryBuilder.__name__}' with empty dictionary.")
+            raise SystemExit(f"{EXCEPTION_HEADER} cannot instantiate '{QueryPicker.__name__}' with empty dictionary.")
         self.parsed_query_data = parsed_query_data
 
     ################################ METHODS THAT RETURN SELECT QUERY ################################
@@ -134,4 +134,4 @@ class SQLQueryBuilder(builtins.object):
         identifiers read from the SQL FILE passed to '__init__()' method."""
 
         if query_id not in self.parsed_query_data.keys():
-            raise SystemExit(f"{EXCEPTION_HEADER} {SQLQueryBuilder.__name__} is missing query_id='{query_id}'.")
+            raise SystemExit(f"{EXCEPTION_HEADER} {QueryPicker.__name__} is missing query_id='{query_id}'.")

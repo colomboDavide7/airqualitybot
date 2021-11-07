@@ -25,7 +25,7 @@ class ConnectionAdapter(ABC):
         pass
 
     @abstractmethod
-    def send(self, msg_str: str):
+    def send(self, executable_sql_query: str):
         """Abstract method for executing SQL statement through this connection."""
         pass
 

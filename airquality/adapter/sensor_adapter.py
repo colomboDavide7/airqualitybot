@@ -14,13 +14,13 @@ from airquality.constants.shared_constants import EXCEPTION_HEADER
 class SensorAdapter(ABC):
 
     @abstractmethod
-    def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
 
 class SensorAdapterPurpleair(SensorAdapter):
 
-    def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         keys = packet.keys()
         if 'name' not in keys or 'sensor_index' not in keys:
             raise SystemExit(f"{EXCEPTION_HEADER} {SensorAdapterPurpleair.__name__} missing keys=['name' | 'sensor_index'].")

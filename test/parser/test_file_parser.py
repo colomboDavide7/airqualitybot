@@ -15,7 +15,6 @@ class TestFileParser(unittest.TestCase):
     def setUp(self) -> None:
         self.json_parser = FileParserFactory.file_parser_from_file_extension("json")
 
-
     def test_successfully_parse_json_file(self):
         """Test method for parsing json file."""
 
@@ -24,13 +23,11 @@ class TestFileParser(unittest.TestCase):
         actual_parsed = self.json_parser.parse(test_raw)
         self.assertEqual(actual_parsed, expected_parsed)
 
-
     def test_system_exit_parser_factory(self):
         """Test SystemExit when not supported file extension is passed as argument."""
 
         with self.assertRaises(SystemExit):
             FileParserFactory.file_parser_from_file_extension("xml")
-
 
     def test_system_exit_when_parse_invalid_json(self):
         """Test SystemExit when parsing invalid json."""

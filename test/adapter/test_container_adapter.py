@@ -32,7 +32,7 @@ class TestContainerAdapter(unittest.TestCase):
                                            'null', 'null', 'null', 'null']}
 
         container_adapter = self.purpleair_fact.make_container_adapter()
-        actual_output = container_adapter.adapt_packet(packet=test_packet)
+        actual_output = container_adapter.adapt(packet=test_packet)
         self.assertEqual(actual_output, expected_output)
 
     def test_system_exit_when_key_error_occur_purpleair_container_adapter(self):
@@ -43,7 +43,7 @@ class TestContainerAdapter(unittest.TestCase):
 
         container_adapter = self.purpleair_fact.make_container_adapter()
         with self.assertRaises(SystemExit):
-            container_adapter.adapt_packet(packet=test_packet)
+            container_adapter.adapt(packet=test_packet)
 
 
 if __name__ == '__main__':

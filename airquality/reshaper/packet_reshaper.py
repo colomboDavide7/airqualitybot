@@ -5,7 +5,6 @@
 # @Description: this script defines the classes for dynamically reshaping packets from sensor's API
 #
 #################################################
-import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 
@@ -15,14 +14,16 @@ from airquality.constants.shared_constants import EMPTY_LIST, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
 
 
-class APIPacketReshaper(ABC):
+################################ ABSTRACT BASE CLASS ################################
+class PacketReshaper(ABC):
 
     @abstractmethod
     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
 
-class APIPacketReshaperPurpleair(APIPacketReshaper):
+################################ PURPLEAIR PACKET RESHAPER ################################
+class PurpleairPacketReshaper(PacketReshaper):
 
     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
         """This method takes a purpleair API answer and reshape it by creating a dictionary association between the
@@ -43,9 +44,8 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
         return reshaped_packets
 
 
-################################ THINGSPEAK API PACKET RESHAPER ################################
-
-class APIPacketReshaperThingspeak(APIPacketReshaper):
+################################ THINGSPEAK PACKET RESHAPER ################################
+class ThingspeakPacketReshaper(PacketReshaper):
 
     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
 
@@ -83,9 +83,9 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
         return reshaped_packets
 
 
-################################ ATMOTUBE API PACKET RESHAPER ################################
+################################ ATMOTUBE PACKET RESHAPER ################################
 
-class APIPacketReshaperAtmotube(APIPacketReshaper):
+class AtmotubePacketReshaper(PacketReshaper):
 
     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
 
@@ -100,16 +100,10 @@ class APIPacketReshaperAtmotube(APIPacketReshaper):
 
 
 ################################ FACTORY ################################
-class APIPacketReshaperFactory(builtins.object):
+class PacketReshaperFactory(object):
 
-    @classmethod
-    def create_api_packet_reshaper(cls, bot_personality: str) -> APIPacketReshaper:
-        if bot_personality == "purpleair":
-            return APIPacketReshaperPurpleair()
-        elif bot_personality == "thingspeak":
-            return APIPacketReshaperThingspeak()
-        elif bot_personality == 'atmotube':
-            return APIPacketReshaperAtmotube()
-        else:
-            raise SystemExit(f"{APIPacketReshaperFactory.__name__}: cannot instantiate {APIPacketReshaper.__name__} "
-                             f"instance for personality='{bot_personality}'.")
+    def __init__(self, reshaper_class=PacketReshaper):
+        self.reshaper_class = reshaper_class
+
+    def make_reshaper(self) -> PacketReshaper:
+        return self.reshaper_class()
