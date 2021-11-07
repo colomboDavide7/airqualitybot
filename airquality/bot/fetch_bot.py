@@ -13,6 +13,10 @@ import airquality.constants.system_constants as sc
 
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.geom.postgis_geometry import PostGISGeometryFactory, PostGISPoint
+from airquality.adapter.geom_adapter import GeometryAdapterFactory, GeometryAdapterAtmotube
+from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, MeasurementAdapterAtmotube
+from airquality.reshaper.api_packet_reshaper import APIPacketReshaperFactory
 from airquality.adapter.channel_adapter import ChannelAdapter
 from airquality.container.fetch_container_factory import FetchContainerFactory
 from airquality.container.fetch_container import ChannelContainer, ChannelContainerWithFormattableAddress
@@ -357,6 +361,29 @@ class FetchBotAtmotube(FetchBot):
             for key, val in optional_param.items():
                 print(f"{DEBUG_HEADER} {key}={val}")
 
+        ################################ INITIALIZE FACTORIES ################################
+        # Create FetchAdapter for adapting packets
+        fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterAtmotube)
+        fetch_adapter = fetch_adapter_fact.make_adapter()
+
+        # FetchContainer factory
+        fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainer)
+
+        # API answer reshaper factory
+        api_answer_reshaper = APIPacketReshaperFactory().create_api_packet_reshaper(
+            bot_personality=sc.PERSONALITY)
+
+        # Create measurement container adapter to adapt packets to a general SQLContainer interface
+        measure_adapter_fact = MeasurementAdapterFactory(adapter_class=MeasurementAdapterAtmotube)
+        measure_adapter = measure_adapter_fact.make_adapter(measure_param_map=measure_param_map)
+
+        # Create GeometryAdapter
+        geom_adapter_fact = GeometryAdapterFactory(geom_adapter_class=GeometryAdapterAtmotube)
+        geom_adapter = geom_adapter_fact.make_geometry_adapter()
+
+        # PostGIS geometry Factory
+        postgis_geom_fact = PostGISGeometryFactory(geom_class=PostGISPoint)
+
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
         for sensor_id in sensor_ids:
@@ -368,27 +395,6 @@ class FetchBotAtmotube(FetchBot):
             answer = dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
-            # Create FetchAdapter for adapting packets
-            fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterAtmotube)
-            fetch_adapter = fetch_adapter_fact.make_adapter()
-
-            # Adapt packets to the general interface in order to decouple them from the sensor's specific API param name.
-            channel_adapted_param = fetch_adapter.adapt_packet(packet=api_param)
-
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " CHANNEL ADAPTED PACKETS " + 20 * '=')
-                for api_key, api_val in channel_adapted_param.items():
-                    print(f"{DEBUG_HEADER} {api_key}={api_val}")
-
-            ############### CREATE FETCH CONTAINER ###################
-            fetch_container_fact = FetchContainerFactory(fetch_container_class=ChannelContainer)
-            channel_container = fetch_container_fact.make_container(parameters=channel_adapted_param)
-
-            url = channel_container.url(api_address=api_address, optional_param=optional_param)
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " URL " + 20 * '=')
-                print(f"{DEBUG_HEADER} {url}")
-
             ################################ CYCLE THROUGH DATE UNTIL NOW ################################
             stop_datetime = DatetimeParser.today()
             from_datetime = DatetimeParser.string2datetime(datetime_string=api_param['date'])
@@ -396,12 +402,58 @@ class FetchBotAtmotube(FetchBot):
 
             while (from_datetime - stop_datetime).total_seconds() < 0:
 
+                # Adapt packets to the general interface in order to decouple them from the sensor's specific API param name.
+                channel_adapted_param = fetch_adapter.adapt_packet(packet=api_param)
+
+                if sc.DEBUG_MODE:
+                    print(20 * "=" + " CHANNEL ADAPTED PACKETS " + 20 * '=')
+                    for api_key, api_val in channel_adapted_param.items():
+                        print(f"{DEBUG_HEADER} {api_key}={api_val}")
+
+                ############### CREATE FETCH CONTAINER ###################
+                channel_container = fetch_container_fact.make_container(parameters=channel_adapted_param)
+
+                url = channel_container.url(api_address=api_address, optional_param=optional_param)
+                if sc.DEBUG_MODE:
+                    print(20 * "=" + " URL " + 20 * '=')
+                    print(f"{DEBUG_HEADER} {url}")
+
                 ################################ FETCH DATA FROM API ################################
                 api_answer = UrllibAdapter.fetch(url=url)
                 parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
                 api_answer = parser.parse(raw_string=api_answer)
 
-                ################################ RESHAPE THE API ANSWER INTO PLAIN API PACKET ################################
+                ########## RESHAPE THE API ANSWER INTO AN INTERFACE COMPLIANT TO SQL CONTAINER ################
+                reshaped_api_answer = api_answer_reshaper.reshape_packet(api_answer=api_answer)
+
+                if sc.DEBUG_MODE:
+                    print(20 * "=" + " RESHAPED API PACKETS " + 20 * '=')
+                    for packet in reshaped_api_answer:
+                        print(30 * '*')
+                        for key, val in packet.items():
+                            print(f"{DEBUG_HEADER} {key}={val}")
+
+                # Adapt packets to mobile measurement SQL container interface
+                adapted_packets = []
+                for packet in reshaped_api_answer:
+                    geom_adapted_packet = geom_adapter.adapt_packet(packet=packet)
+                    postgis_geom = postgis_geom_fact.create_geometry(param=geom_adapted_packet)
+                    packet['geom'] = postgis_geom.get_database_string()
+                    packet['timestamp'] = DatetimeParser.atmotube_to_sqltimestamp(ts=packet['time'])
+                    adapted_packet = measure_adapter.adapt_packets(packet=packet)
+                    adapted_packets.append(adapted_packet)
+
+                if sc.DEBUG_MODE:
+                    print(20 * "=" + " ADAPTED API PACKETS " + 20 * '=')
+                    for packet in adapted_packets:
+                        for key, val in packet.items():
+                            print(f"{DEBUG_HEADER} {key}={val}")
+
+
+
+
+
+
 
             #     ################# FILTER PACKETS ONLY IF IT IS NOT THE FIRST ACQUISITION FOR THE SENSOR ################
             #     filtered_packets = datetime_filter.filter_packets(packets=plain_packets, sqltimestamp=filter_sqltimestamp)

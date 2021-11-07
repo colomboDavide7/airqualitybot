@@ -79,6 +79,24 @@ class SensorSQLContainer(SQLContainer):
         return f"name={self.identity}, type={self.type}"
 
 
+class MobileMeasurementSQLContainer(SQLContainer):
+
+    def __init__(self, sensor_id: int, packet: Dict[str, Any]):
+        super().__init__(packet)
+        self.param_id = packet['param_id']
+        self.param_val = packet['param_val']
+        self.timestamp = packet['timestamp']
+        self.geom = packet['geom']
+
+    def sql(self, query: str) -> str:
+        for i in range(len(self.param_id)):
+            query += f"({self.param_id[i]}, '{self.param_val[i]}', '{self.timestamp}', {self.geom}),"
+        return query.strip(',')
+
+    def __str__(self):
+        return ', '.join(f'{id_}={val}' for id_, val in zip(self.param_id, self.param_val))
+
+
 ########################### SQL CONTAINER COMPOSITION CLASS ############################
 class SQLContainerComposition(SQLContainer):
 

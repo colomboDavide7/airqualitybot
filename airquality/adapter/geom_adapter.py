@@ -27,6 +27,16 @@ class GeometryAdapterPurpleair(GeometryAdapter):
         return {'lat': packet.pop('latitude'), 'lng': packet.pop('longitude')}
 
 
+class GeometryAdapterAtmotube(GeometryAdapter):
+
+    def adapt_packet(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+        keys = packet.keys()
+        if 'coords' not in keys:
+            return {}
+        coords = packet.pop('coords')
+        return {'lat': coords['lat'], 'lng': coords['lon']}
+
+
 class GeometryAdapterFactory:
 
     def __init__(self, geom_adapter_class=GeometryAdapter):

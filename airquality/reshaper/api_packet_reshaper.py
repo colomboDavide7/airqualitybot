@@ -8,7 +8,6 @@
 import builtins
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
-from airquality.plain.plain_api_packet import PlainAPIPacketAtmotube
 from airquality.plain.plain_api_packet_mergeable import PlainAPIPacketThingspeakPrimaryChannelAFactory, \
     PlainAPIPacketThingspeakPrimaryChannelBFactory, PlainAPIPacketThingspeakSecondaryChannelAFactory, \
     PlainAPIPacketThingspeakSecondaryChannelBFactory, PlainAPIPacketMergeable
@@ -100,7 +99,7 @@ class APIPacketReshaperThingspeak(APIPacketReshaper):
 
 class APIPacketReshaperAtmotube(APIPacketReshaper):
 
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[PlainAPIPacketAtmotube]:
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         items = api_answer['data']['items']
         if not items:
@@ -108,7 +107,7 @@ class APIPacketReshaperAtmotube(APIPacketReshaper):
 
         reshaped_items = []
         for item in items:
-            reshaped_items.append(PlainAPIPacketAtmotube(api_answer=item))
+            reshaped_items.append(item)
         return reshaped_items
 
 
