@@ -14,10 +14,6 @@ from airquality.constants.shared_constants import EMPTY_LIST, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
 
-# ThingSpeak API sqlwrapper decoding constants for decoding an API sqlwrapper
-from airquality.constants.shared_constants import THINGSPEAK_API_DECODE_FEEDS, THINGSPEAK_API_DECODE_CHANNEL, \
-    THINGSPEAK_API_DECODE_NAME, THINGSPEAK_CHANNEL_DECODE_SYMBOL, THINGSPEAK_COUNTERS_DECODE_SYMBOL
-
 
 class APIPacketReshaper(ABC):
 
@@ -49,48 +45,43 @@ class APIPacketReshaperPurpleair(APIPacketReshaper):
 
 ################################ THINGSPEAK API PACKET RESHAPER ################################
 
-# class APIPacketReshaperThingspeak(APIPacketReshaper):
-#
-#     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[PlainAPIPacketMergeable]:
-#
-#         feeds = api_answer[THINGSPEAK_API_DECODE_FEEDS]
-#         if not feeds:
-#             return []
-#
-#         channel = api_answer[THINGSPEAK_API_DECODE_CHANNEL]
-#         sensor_name = channel[THINGSPEAK_API_DECODE_NAME]
-#
-#         field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
-#         factory = PlainAPIPacketThingspeakPrimaryChannelAFactory()
-#
-#         # SELECT THE RESHAPE MAPPING BASED ON PRIMARY/SECONDARY DATA AND CHANNEL A/B
-#         if THINGSPEAK_CHANNEL_DECODE_SYMBOL in sensor_name:
-#             if THINGSPEAK_COUNTERS_DECODE_SYMBOL in sensor_name:
-#                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
-#                 factory = PlainAPIPacketThingspeakSecondaryChannelBFactory()
-#             else:
-#                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B
-#                 factory = PlainAPIPacketThingspeakPrimaryChannelBFactory()
-#         else:
-#             if THINGSPEAK_COUNTERS_DECODE_SYMBOL in sensor_name:
-#                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
-#                 factory = PlainAPIPacketThingspeakSecondaryChannelAFactory()
-#
-#         # Decode the "fieldN" value in the 'api_answer' header with the chosen mapping (field_to_use)
-#         selected_fields = {}
-#         for param in channel.keys():
-#             if channel[param] in field_to_use.keys():
-#                 selected_fields[param] = field_to_use[channel[param]]
-#
-#         reshaped_packets = []
-#         for feed in feeds:
-#             reshaped_packet = {'created_at': feed['created_at']}
-#             for field in feed.keys():
-#                 if field in selected_fields.keys():
-#                     reshaped_packet[selected_fields[field]] = feed[field]
-#             reshaped_packets.append(factory.make_plain_object(api_answer=reshaped_packet))
-#         return reshaped_packets
-#
+class APIPacketReshaperThingspeak(APIPacketReshaper):
+
+    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+
+        feeds = api_answer['feeds']
+        if not feeds:
+            return []
+
+        channel = api_answer['channel']
+        sensor_name = channel['name']
+        field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
+
+        # SELECT THE RESHAPE MAPPING BASED ON PRIMARY/SECONDARY DATA AND CHANNEL A/B
+        if '_b' in sensor_name:
+            if '_b' in sensor_name:
+                field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
+            else:
+                field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B
+        else:
+            if 'Counters' in sensor_name:
+                field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
+
+        # Decode the "fieldN" value in the 'api_answer' header with the chosen mapping (field_to_use)
+        selected_fields = {}
+        for param in channel.keys():
+            if channel[param] in field_to_use.keys():
+                selected_fields[param] = field_to_use[channel[param]]
+
+        reshaped_packets = []
+        for feed in feeds:
+            reshaped_packet = {'created_at': feed['created_at'], 'fields': []}
+            for field in feed.keys():
+                if field in selected_fields.keys():
+                    reshaped_packet['fields'].append({'name': selected_fields[field], 'val': feed[field]})
+            reshaped_packets.append(reshaped_packet)
+        return reshaped_packets
+
 
 ################################ ATMOTUBE API PACKET RESHAPER ################################
 
@@ -115,8 +106,8 @@ class APIPacketReshaperFactory(builtins.object):
     def create_api_packet_reshaper(cls, bot_personality: str) -> APIPacketReshaper:
         if bot_personality == "purpleair":
             return APIPacketReshaperPurpleair()
-        # elif bot_personality == "thingspeak":
-        #     return APIPacketReshaperThingspeak()
+        elif bot_personality == "thingspeak":
+            return APIPacketReshaperThingspeak()
         elif bot_personality == 'atmotube':
             return APIPacketReshaperAtmotube()
         else:

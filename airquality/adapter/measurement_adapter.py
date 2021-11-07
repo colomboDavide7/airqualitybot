@@ -50,6 +50,28 @@ class MeasurementAdapterAtmotube(MeasurementAdapter):
         return adapted_packet
 
 
+class MeasurementAdapterThingspeak(MeasurementAdapter):
+
+    def __init__(self, measure_param_map: Dict[str, Any]):
+        super().__init__(measure_param_map)
+
+    def adapt_packets(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+        adapted_packet = {}
+        try:
+            adapted_packet['timestamp'] = packet['timestamp']
+            param_id = []
+            param_val = []
+            for field in packet['fields']:
+                param_val.append(field['val'])
+                name = field['name']
+                param_id.append(self.measure_param_map[name])
+            adapted_packet['param_id'] = param_id
+            adapted_packet['param_val'] = param_val
+        except KeyError as ke:
+            raise SystemExit(f"{EXCEPTION_HEADER} {MeasurementAdapterThingspeak.__name__} is missing the key={ke!s}.")
+        return adapted_packet
+
+
 class MeasurementAdapterFactory(object):
 
     def __init__(self, adapter_class=MeasurementAdapter):

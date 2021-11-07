@@ -123,9 +123,6 @@ class FetchBotThingspeak(FetchBot):
             for param_code, param_id in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
-        ####################### CREATE QUERYSTRING OPTIONAL PARAMETERS DICTIONARY #####################
-        optional_param = {}  # no optional parameters for ThingSpeak bot
-
         # Create fetch adapter
         fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterThingspeak)
         fetch_adapter = fetch_adapter_fact.make_adapter()
@@ -214,6 +211,15 @@ class FetchBotThingspeak(FetchBot):
                             for packet in reshaped_api_packets[-4:-1]:
                                 print(f"{DEBUG_HEADER} {packet!s}")
 
+                    if reshaped_api_packets:
+
+                        adapted_packets = []
+                        for packet in reshaped_api_packets:
+                            packet['timestamp'] = DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
+
+                    else:
+                        print(f"{INFO_HEADER} empty packets.")
+
                     ############################## INCREMENT THE PERIOD FOR DATA FETCHING ##############################
                     from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
                     channel_param['channel_ts']['val'] = DatetimeParser.datetime2string(from_datetime)
@@ -225,25 +231,6 @@ class FetchBotThingspeak(FetchBot):
             #         ####################### DO THE INSERT AND UPDATE ONLY IF PACKETS ARE PRESENT #####################
             #         if reshaped_api_packets:
             #
-            #             # Create a station packet wrapper for decoding api packets into sql wrapper packets
-            #             station_packet_wrapper = wrapper_factory.create_packet_wrapper(bot_personality=sc.PERSONALITY,
-            #                                                                            mapping=measure_param_map,
-            #                                                                            sensor_id=sensor_id)
-            #
-            #             # got a list of SQL wrapper station packet(s)
-            #             wrapped_packets = station_packet_wrapper.decode_packets(packets=reshaped_api_packets)
-            #
-            #             if sc.DEBUG_MODE:
-            #                 if wrapped_packets != EMPTY_LIST:
-            #                     print(20 * "=" + " SQL WRAPPER STATION PACKETS " + 20 * '=')
-            #                     for packet in wrapped_packets[0:3]:
-            #                         print(f"{DEBUG_HEADER} {str(packet)}")
-            #
-            #                     for packet in wrapped_packets[-4:-1]:
-            #                         print(f"{DEBUG_HEADER} {str(packet)}")
-            #
-            #             # Create a Bridge object for inserting packets
-            #             bridge = BridgeObject(packets=wrapped_packets)
             #             query = query_builder.insert_into_station_measurements(bridge=bridge)
             #             dbconn.send(executable_sql_query=query)
             #
