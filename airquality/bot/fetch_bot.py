@@ -15,7 +15,6 @@ import airquality.constants.system_constants as sc
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.wrapper.wrapper_station_packet import WrapperStationPacketFactory
 from airquality.plain.plain_api_param import PlainAPIParamThingspeak
-from airquality.bridge.bridge_object import BridgeObject
 from airquality.sqlwrapper.sql_wrapper_mobile_packet import SQLWrapperMobilePacketAtmotube
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.filter.datetime_packet_filter import DatetimePacketFilterFactory
@@ -33,7 +32,7 @@ from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, \
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, INFO_HEADER, \
     EMPTY_LIST, PURPLEAIR_PERSONALITY, ATMOTUBE_START_FETCH_TIMESTAMP, THINGSPEAK_START_FETCH_TIMESTAMP
 
 
@@ -78,7 +77,10 @@ class FetchBotThingspeak(FetchBot):
         dbconn.open_conn()
 
         ################################ SQL QUERY BUILDER ################################
-        query_builder = SQLQueryBuilder(parsed_query_data=QUERY_FILE)
+        raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
+        parsed_query_data = parser.parse(raw_string=raw_query_data)
+        query_builder = SQLQueryBuilder(parsed_query_data)
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
@@ -102,8 +104,7 @@ class FetchBotThingspeak(FetchBot):
 
         ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
         if not sensor_ids:
-            if sc.DEBUG_MODE:
-                print(f"{DEBUG_HEADER} no sensor associated to personality = '{PURPLEAIR_PERSONALITY}'.")
+            print(f"{INFO_HEADER} no sensor found for personality='{PURPLEAIR_PERSONALITY}'.")
             dbconn.close_conn()
             return
 
@@ -123,7 +124,7 @@ class FetchBotThingspeak(FetchBot):
                 print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
         # create a wrapper station packet factory
-        wrapper_factory = WrapperStationPacketFactory()
+        # wrapper_factory = WrapperStationPacketFactory()
 
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
@@ -159,7 +160,7 @@ class FetchBotThingspeak(FetchBot):
                 from_datetime = DatetimeParser.string2datetime(datetime_string=THINGSPEAK_START_FETCH_TIMESTAMP)
 
                 # CHECK IF THERE ARE MEASUREMENTS ALREADY PRESENT INTO THE DATABASE FOR THE GIVEN CHANNEL_ID
-                if channel.channel_ts is not None:
+                if channel.channel_ts != 'null':
                     from_datetime = DatetimeParser.string2datetime(datetime_string=channel.channel_ts)
                     from_datetime = DatetimeParser.add_seconds_to_datetime(ts=from_datetime, seconds=3)
 

@@ -53,8 +53,7 @@ class ContainerAdapterPurpleair(ContainerAdapter):
                                          'null']
         except KeyError as ke:
             # Raise Exception if any key is missing from the 'packet' dictionary
-            msg = f"{EXCEPTION_HEADER} {ContainerAdapterPurpleair.__name__} is missing the key={ke!s}."
-            raise SystemExit(msg)
+            raise SystemExit(f"{EXCEPTION_HEADER} {ContainerAdapterPurpleair.__name__} is missing the key={ke!s}.")
         return new_packet
 
 

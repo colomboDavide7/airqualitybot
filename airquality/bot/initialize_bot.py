@@ -73,7 +73,7 @@ class InitializeBotPurpleair(InitializeBot):
         sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
         if not sensor_names:
-            print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'")
+            print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'.")
         else:
             if sc.DEBUG_MODE:
                 print(20 * "=" + " SENSORS FOUND " + 20 * '=')
