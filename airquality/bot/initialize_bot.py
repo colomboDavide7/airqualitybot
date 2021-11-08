@@ -13,11 +13,12 @@ import airquality.constants.system_constants as sc
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.api.url_builder import URLBuilder
 from airquality.api.urllib_adapter import UrllibAdapter
+from airquality.adapter.geom_adapter import GeometryAdapter
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.db_conn_adapter import ConnectionAdapter
-from airquality.adapter.universal_adapter import UniversalAdapter
-from airquality.adapter.geom_adapter import GeometryAdapter
-from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition, SensorSQLContainer, APIParamSQLContainer
+from airquality.adapter.universal_adapter import UniversalDatabaseAdapter
+from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition, \
+    SensorSQLContainer, APIParamSQLContainer
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER
@@ -31,7 +32,7 @@ class InitializeBot:
                  file_parser_class,  # file parser class for parsing raw file lines
                  reshaper_class,  # reshaper class for getting the packets in a better shape
                  url_builder_class=URLBuilder,  # builder class for creating the URL for fetching data from API
-                 universal_adapter_class=UniversalAdapter,  # adapter class for giving the packets a universal interface
+                 universal_adapter_class=UniversalDatabaseAdapter,  # adapter class for giving the packets a universal interface
                  geom_adapter_class=GeometryAdapter,  # adapter class for geolocation information
                  geo_sqlcontainer_class=GeoSQLContainer,  # container class for converting dict into SQLContainer
                  sensor_sqlcontainer_class=SensorSQLContainer,
@@ -46,7 +47,7 @@ class InitializeBot:
         self.sensor_sqlcontainer_class = sensor_sqlcontainer_class
         self.apiparam_sqlcontainer_class = apiparam_sqlcontainer_class
         self.composition_class = composition_class
-        self.universal_adapter = universal_adapter_class
+        self.universal_db_adapter_class = universal_adapter_class
 
     def run(self,
             first_sensor_id: int,
@@ -78,15 +79,15 @@ class InitializeBot:
                         print(f"{DEBUG_HEADER} {key}={val}")
 
             ############################## UNIVERSAL ADAPTER #############################
-            universal_adapter = self.universal_adapter()
+            universal_db_adapter = self.universal_db_adapter_class()
 
-            universal_packets = []
+            universal_db_packets = []
             for universal_packet in reshaped_packets:
-                universal_packets.append(universal_adapter.adapt(universal_packet))
+                universal_db_packets.append(universal_db_adapter.adapt(universal_packet))
 
             ############################## FILTER PACKETS #############################
             filtered_universal_packets = []
-            for universal_packet in universal_packets:
+            for universal_packet in universal_db_packets:
                 if universal_packet['name'] not in sensor_names:
                     filtered_universal_packets.append(universal_packet)
 

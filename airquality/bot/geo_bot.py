@@ -16,7 +16,7 @@ from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.adapter.geom_adapter import GeometryAdapter
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.reshaper.packet_reshaper import PacketReshaper
-from airquality.adapter.universal_adapter import UniversalAdapter
+from airquality.adapter.universal_adapter import UniversalDatabaseAdapter
 from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
 
 # IMPORT SHARED CONSTANTS
@@ -31,7 +31,7 @@ class GeoBot:
                  file_parser_class,
                  url_builder_class=URLBuilder,
                  reshaper_class=PacketReshaper,
-                 universal_adapter_class=UniversalAdapter,
+                 universal_adapter_class=UniversalDatabaseAdapter,
                  geom_adapter_class=GeometryAdapter,
                  geom_sqlcontainer_class=GeoSQLContainer,
                  composition_class=SQLContainerComposition):

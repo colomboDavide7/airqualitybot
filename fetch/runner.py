@@ -8,27 +8,23 @@
 import sys
 import time
 from typing import List
-from airquality.bot.date_fetch_bot import DateFetchBot
-from airquality.bot.fetch_bot import FetchBot
 
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.api.url_builder import URLBuilderThingspeak, URLBuilderAtmotube
-from airquality.reshaper.packet_reshaper import ThingspeakPacketReshaper, AtmotubePacketReshaper
-from airquality.adapter.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
 from airquality.io.io import IOManager
-from airquality.bot.geo_bot import GeoBot
+from airquality.bot.fetch_bot import FetchBot
 from airquality.picker.query_picker import QueryPicker
-from airquality.api.url_builder import URLBuilderPurpleair
+from airquality.bot.date_fetch_bot import DateFetchBot
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
-from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
-from airquality.adapter.universal_adapter import PurpleairUniversalAdapter
 from airquality.parser.file_parser import FileParserFactory, JSONFileParser
+from airquality.api.url_builder import URLBuilderThingspeak, URLBuilderAtmotube
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
+from airquality.reshaper.packet_reshaper import ThingspeakPacketReshaper, AtmotubePacketReshaper
+from airquality.adapter.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
+from airquality.adapter.universal_adapter import AtmotubeUniversalDatabaseAdapter
+
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
@@ -166,6 +162,9 @@ def main():
             # UniversalAPIAdapter class
             universal_api_adapter_class = AtmotubeUniversalAPIAdapter
 
+            # UniversalDatabaseAdapter class
+            universal_db_adapter_class = AtmotubeUniversalDatabaseAdapter
+
         # *****************************************************************
         elif sc.PERSONALITY == 'thingspeak':
 
@@ -190,18 +189,22 @@ def main():
             # UniversalAPIAdapter class
             universal_api_adapter_class = ThingspeakUniversalAPIAdapter
 
+            # UniversalDatabaseAdapter class
+            universal_db_adapter_class = None
+
         # *****************************************************************
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for fetch bot.")
 
-        ############################# RUN THE BOT ###########################
-
+        ############################# BUILD THE BOT ###########################
         fetch_bot = bot_class(dbconn=dbconn,
                               file_parser_class=file_parser_class,
                               url_builder_class=url_builder_class,
                               packet_reshaper_class=packet_reshaper_class,
-                              universal_api_adapter_class=universal_api_adapter_class)
+                              universal_api_adapter_class=universal_api_adapter_class,
+                              universal_db_adapter_class=universal_db_adapter_class)
 
+        ############################# RUN THE BOT ###########################
         fetch_bot.run(api_address=api_address,
                       url_param=url_param,
                       sensor_ids=sensor_ids,

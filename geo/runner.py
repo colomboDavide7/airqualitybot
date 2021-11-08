@@ -20,7 +20,7 @@ from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
-from airquality.adapter.universal_adapter import PurpleairUniversalAdapter
+from airquality.adapter.universal_adapter import PurpleairUniversalDatabaseAdapter
 from airquality.parser.file_parser import FileParserFactory, JSONFileParser
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
@@ -130,7 +130,7 @@ def main():
                              url_builder_class=URLBuilderPurpleair,
                              file_parser_class=JSONFileParser,
                              reshaper_class=PurpleairPacketReshaper,
-                             universal_adapter_class=PurpleairUniversalAdapter,
+                             universal_adapter_class=PurpleairUniversalDatabaseAdapter,
                              geom_adapter_class=GeometryAdapterPurpleair,
                              geom_sqlcontainer_class=GeoSQLContainer,
                              composition_class=SQLContainerComposition)

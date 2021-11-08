@@ -14,25 +14,16 @@ import airquality.constants.system_constants as sc
 
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.reshaper.packet_reshaper import PacketReshaper
 from airquality.api.url_builder import URLBuilder
-from airquality.adapter.universal_api_adapter import UniversalAPIAdapter
-from airquality.container.sql_container import MobileMeasurementSQLContainer, StationMeasurementSQLContainer
-from airquality.container.sql_container_factory import SQLContainerFactory
-from airquality.geom.postgis_geometry import PostGISPoint
-from airquality.adapter.geom_adapter import GeometryAdapterAtmotube
-from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, MeasurementAdapterAtmotube, \
-    MeasurementAdapterThingspeak
-from airquality.adapter.channel_adapter import ChannelAdapter
-from airquality.container.fetch_container_factory import FetchContainerFactory
-from airquality.container.fetch_container import ChannelContainer, ChannelContainerWithFormattableAddress
-from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.parser.datetime_parser import DatetimeParser
 from airquality.api.urllib_adapter import UrllibAdapter
+from airquality.parser.datetime_parser import DatetimeParser
+from airquality.reshaper.packet_reshaper import PacketReshaper
+from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.adapter.universal_api_adapter import UniversalAPIAdapter
+
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER
+from airquality.constants.shared_constants import DEBUG_HEADER, EXCEPTION_HEADER
 
 
 class DateFetchBot:
@@ -56,9 +47,10 @@ class DateFetchBot:
             select_apiparam_query: str):
 
         ################################ DEFINE ALL VARIABLES USED BELOW ################################
+        universal_api_adapter = self.universal_api_adapter_class()
         packet_reshaper = self.packet_reshaper_class()
-        file_parser = self.file_parser_class()          # file parser object for parsing packets fetched from API.
-        stop_datetime = DatetimeParser.today()          # datetime object that indicates the bot when stop.
+        file_parser = self.file_parser_class()
+        stop_datetime = DatetimeParser.today()
 
         ################################ CYCLE ON EACH SENSOR ################################
         for sensor_id in sensor_ids:
@@ -74,7 +66,6 @@ class DateFetchBot:
                                  f"but are empty.")
 
             ################################ UNIVERSAL API ADAPTER ################################
-            universal_api_adapter = self.universal_api_adapter_class()
             universal_api_param = universal_api_adapter.adapt(api_param)
 
             ############################# CYCLE ON UNIVERSAL API PARAM OF A SINGLE SENSOR ##############################
