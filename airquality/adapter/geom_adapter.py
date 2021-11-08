@@ -35,11 +35,3 @@ class GeometryAdapterAtmotube(GeometryAdapter):
             return PostGISNullObject()
         coords = packet.pop('coords')
         return PostGISPoint(lat=coords['lat'], lng=coords['lon'])
-
-# class GeometryAdapterFactory:
-#
-#     def __init__(self, geom_adapter_class=GeometryAdapter):
-#         self.geom_adapter_class = geom_adapter_class
-#
-#     def make_geometry_adapter(self) -> GeometryAdapter:
-#         return self.geom_adapter_class()

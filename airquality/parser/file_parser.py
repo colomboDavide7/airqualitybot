@@ -38,19 +38,20 @@ class JSONFileParser(FileParser):
             raise SystemExit(f"{JSONFileParser.__name__}: {str(jerr)}")
         return parsed
 
-# class FileParserFactory(object):
-#     """This class defines a @staticmethod for creating a FileParser object given the file extension."""
-#
-#     @classmethod
-#     def file_parser_from_file_extension(cls, file_extension: str) -> FileParser:
-#         """Factory method for creating FileParser objects from file extension.
-#
-#         If invalid file extension is passed, SystemExit is raised.
-#
-#         Supported file extensions are: [ json ]."""
-#
-#         if file_extension == 'json':
-#             return JSONFileParser()
-#         else:
-#             raise SystemExit(f"{FileParserFactory.__name__}: unknown {FileParser.__name__} for file extension "
-#                              f"'{file_extension}'.")
+
+class FileParserFactory(object):
+    """This class defines a @staticmethod for creating a FileParser object given the file extension."""
+
+    @classmethod
+    def file_parser_from_file_extension(cls, file_extension: str) -> FileParser:
+        """Factory method for creating FileParser objects from file extension.
+
+        If invalid file extension is passed, SystemExit is raised.
+
+        Supported file extensions are: [ json ]."""
+
+        if file_extension == 'json':
+            return JSONFileParser()
+        else:
+            raise SystemExit(f"{FileParserFactory.__name__}: unknown {FileParser.__name__} for file extension "
+                             f"'{file_extension}'.")

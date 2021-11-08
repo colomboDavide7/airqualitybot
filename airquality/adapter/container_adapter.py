@@ -58,10 +58,10 @@ class ContainerAdapterPurpleair(ContainerAdapter):
 
 
 ################################ CONTAINER ADAPTER FACTORY ################################
-class ContainerAdapterFactory(object):
-
-    def __init__(self, container_adapter_class=ContainerAdapter):
-        self.container_adapter_class = container_adapter_class
-
-    def make_container_adapter(self) -> ContainerAdapter:
-        return self.container_adapter_class()
+# class ContainerAdapterFactory(object):
+#
+#     def __init__(self, container_adapter_class=ContainerAdapter):
+#         self.container_adapter_class = container_adapter_class
+#
+#     def make_container_adapter(self) -> ContainerAdapter:
+#         return self.container_adapter_class()

@@ -15,17 +15,18 @@ from airquality.bot.initialize_bot import InitializeBot
 from airquality.constants.shared_constants import VALID_PERSONALITIES, INFO_HEADER, INITIALIZE_USAGE, EXCEPTION_HEADER
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.geom.postgis_geometry import PostGISPoint
+from airquality.container.sql_container import SQLContainerComposition
 from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
-from airquality.adapter.container_adapter import ContainerAdapterPurpleair
-from airquality.container.sql_container import SensorSQLContainer, GeoSQLContainer, APIParamSQLContainer
+from airquality.adapter.sensor_adapter import SensorAdapterPurpleair
+from airquality.adapter.apiparam_adapter import APIParamAdapterPurpleair
+from airquality.container.sql_container import GeoSQLContainer
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.api.url_builder import URLBuilderPurpleair
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.picker.query_picker import QueryPicker
 from airquality.picker.resource_picker import ResourcePicker
-from airquality.parser.file_parser import FileParserFactory
+from airquality.parser.file_parser import JSONFileParser, FileParserFactory
 from airquality.io.io import IOManager
 
 # IMPORT SHARED CONSTANTS
@@ -129,14 +130,14 @@ def main():
         ###################### INSTANTIATE THE BOT WITH THE PROPER CLASSES BASED ON PERSONALITY ########################
         if sc.PERSONALITY == 'purpleair':
             initialize_bot = InitializeBot(dbconn=dbconn,
+                                           file_parser_class=JSONFileParser,
                                            url_builder_class=URLBuilderPurpleair,
                                            reshaper_class=PurpleairPacketReshaper,
-                                           container_adapter_class=ContainerAdapterPurpleair,
                                            geom_adapter_class=GeometryAdapterPurpleair,
-                                           postgis_geom_class=PostGISPoint,
-                                           sensor_sqlcontainer_class=SensorSQLContainer,
-                                           apiparam_sqlcontainer_class=APIParamSQLContainer,
-                                           geo_sqlcontainer_class=GeoSQLContainer)
+                                           sensor_adapter_class=SensorAdapterPurpleair,
+                                           apiparam_adapter_class=APIParamAdapterPurpleair,
+                                           geo_sqlcontainer_class=GeoSQLContainer,
+                                           composition_class=SQLContainerComposition)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")
 

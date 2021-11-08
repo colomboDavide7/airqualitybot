@@ -98,12 +98,11 @@ class AtmotubePacketReshaper(PacketReshaper):
             reshaped_items.append(item)
         return reshaped_items
 
-
-################################ FACTORY ################################
-class PacketReshaperFactory(object):
-
-    def __init__(self, reshaper_class=PacketReshaper):
-        self.reshaper_class = reshaper_class
-
-    def make_reshaper(self) -> PacketReshaper:
-        return self.reshaper_class()
+# ################################ FACTORY ################################
+# class PacketReshaperFactory(object):
+#
+#     def __init__(self, reshaper_class=PacketReshaper):
+#         self.reshaper_class = reshaper_class
+#
+#     def make_reshaper(self) -> PacketReshaper:
+#         return self.reshaper_class()
