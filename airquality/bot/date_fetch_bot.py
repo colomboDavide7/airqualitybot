@@ -36,7 +36,7 @@ from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.file_parser import FileParserFactory
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER
+from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER
 
 
 class DateFetchBot:
@@ -63,10 +63,19 @@ class DateFetchBot:
             answer = self.dbconn.send(executable_sql_query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
+            if not api_param:
+                raise SystemExit(f"{EXCEPTION_HEADER} {DateFetchBot.__name__} fetched API param but are empty.")
+
             ################################ UNIVERSAL API ADAPTER ################################
             universal_api_adapter = self.universal_api_adapter_class()
             universal_api_param = universal_api_adapter.adapt(api_param)
 
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " UNIVERSAL API PARAMETERS " + 20 * '=')
+                for api_param in universal_api_param:
+                    print(30*"*")
+                    for key, val in api_param.items():
+                        print(f"{DEBUG_HEADER} {key}={val!s}")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()

@@ -21,7 +21,7 @@ from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, Me
 from airquality.adapter.channel_adapter import ChannelAdapter
 from airquality.container.fetch_container_factory import FetchContainerFactory
 from airquality.container.fetch_container import ChannelContainer, ChannelContainerWithFormattableAddress
-from airquality.adapter.universal_api_adapter import ThingspeakUniversalAPIAdapter, FetchAdapterFactory, AtmotubeUniversalAPIAdapter
+from airquality.adapter.universal_api_adapter import ThingspeakUniversalAPIAdapter, AtmotubeUniversalAPIAdapter
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
@@ -91,25 +91,6 @@ class FetchBotThingspeak(FetchBot):
         ################################ FOR EACH SENSOR DO THE STUFF BELOW ################################
 
         for sensor_id in sensor_ids:
-
-            print(20 * "*" + f" {sensor_id} " + 20 * '*')
-
-            # Reshape API param from all-in-one into single-channel param
-            sensor2channel_reshaper = ChannelAdapter(api_param=api_param)
-            single_channel_api_param = sensor2channel_reshaper.adapt()
-
-            #
-            # Now the packets are compliant to the interface => {'id', 'key', 'ts'}
-            #
-
-            # Adapt packets to a general interface that is decoupled by the sensor's API data structure
-            channel_adapted_parameters = []
-            for single_channel in single_channel_api_param:
-                channel_adapted_parameters.append(fetch_adapter.adapt(api_param=single_channel))
-
-            #
-            # Now the packets are compliant to the interface => {'channel_id', 'channel_key', 'channel_ts'}
-            #
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " CHANNEL ADAPTED PARAMETERS " + 20 * '=')

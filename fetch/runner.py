@@ -14,6 +14,7 @@ from airquality.bot.fetch_bot import FetchBot
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.adapter.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
 from airquality.io.io import IOManager
 from airquality.bot.geo_bot import GeoBot
 from airquality.picker.query_picker import QueryPicker
@@ -153,6 +154,8 @@ def main():
                 bot_class = DateFetchBot
             print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
 
+            universal_api_adapter_class = AtmotubeUniversalAPIAdapter
+
         # *****************************************************************
         elif sc.PERSONALITY == 'thingspeak':
 
@@ -174,16 +177,19 @@ def main():
                 bot_class = DateFetchBot
             print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
 
+            universal_api_adapter_class = ThingspeakUniversalAPIAdapter
+
         # *****************************************************************
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for fetch bot.")
 
         ############################# RUN THE BOT ###########################
 
-        fetch_bot = bot_class(dbconn=dbconn)
+        fetch_bot = bot_class(dbconn=dbconn, universal_api_adapter_class=universal_api_adapter_class)
 
         fetch_bot.run(api_address=api_address,
                       url_param=url_param,
+                      sensor_ids=sensor_ids,
                       select_apiparam_query=select_apiparam_query)
 
 
