@@ -27,12 +27,12 @@ class QueryPicker(builtins.object):
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
         return self.parsed_query_data[query_id]
 
-    def select_api_param_from_sensor_id(self, sensor_id: int) -> str:
+    def select_api_param_from_sensor_id(self) -> str:
         """This method return a query for selecting 'param_name, param_value' tuples associated to a given "sensor_id"."""
 
         query_id = "s2"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
-        return self.parsed_query_data[query_id].format(id=sensor_id)
+        return self.parsed_query_data[query_id]
 
     def select_sensor_ids_from_personality(self, personality: str) -> str:
         """This method returns a SQL query that selects all the "sensor_id"(s) from the database, which "sensor_type"

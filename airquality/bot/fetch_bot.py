@@ -5,7 +5,6 @@
 # @Description: this script defines the bot classes for the fetch module
 #
 #################################################
-import builtins
 from abc import ABC, abstractmethod
 
 # IMPORT GLOBAL VARIABLE FROM FETCH MODULE
@@ -22,7 +21,7 @@ from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, Me
 from airquality.adapter.channel_adapter import ChannelAdapter
 from airquality.container.fetch_container_factory import FetchContainerFactory
 from airquality.container.fetch_container import ChannelContainer, ChannelContainerWithFormattableAddress
-from airquality.adapter.fetch_adapter import FetchAdapterThingspeak, FetchAdapterFactory, FetchAdapterAtmotube
+from airquality.adapter.universal_api_adapter import ThingspeakUniversalAPIAdapter, FetchAdapterFactory, AtmotubeUniversalAPIAdapter
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
@@ -42,11 +41,22 @@ from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_F
 ################################################################################################
 
 
-class FetchBot(ABC):
+class FetchBot:
 
-    @abstractmethod
-    def run(self):
+    def __init__(self,
+                 dbconn):
+        self.dbconn = dbconn
+
+    def run(self,
+            api_address: str,
+            url_param: str):
         pass
+
+
+
+
+
+
 
 
 ################################################################################################
@@ -62,7 +72,7 @@ class FetchBotThingspeak(FetchBot):
     def run(self):
 
         # Create fetch adapter
-        fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterThingspeak)
+        fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=ThingspeakUniversalAPIAdapter)
         fetch_adapter = fetch_adapter_fact.make_adapter()
 
         # Create FetchContainer factory
@@ -84,11 +94,6 @@ class FetchBotThingspeak(FetchBot):
 
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
-            ################################ SELECT SENSOR API PARAM FROM DATABASE ################################
-            query = query_builder.select_api_param_from_sensor_id(sensor_id=sensor_id)
-            answer = dbconn.send(executable_sql_query=query)
-            api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
-
             # Reshape API param from all-in-one into single-channel param
             sensor2channel_reshaper = ChannelAdapter(api_param=api_param)
             single_channel_api_param = sensor2channel_reshaper.adapt()
@@ -100,7 +105,7 @@ class FetchBotThingspeak(FetchBot):
             # Adapt packets to a general interface that is decoupled by the sensor's API data structure
             channel_adapted_parameters = []
             for single_channel in single_channel_api_param:
-                channel_adapted_parameters.append(fetch_adapter.adapt(packet=single_channel))
+                channel_adapted_parameters.append(fetch_adapter.adapt(api_param=single_channel))
 
             #
             # Now the packets are compliant to the interface => {'channel_id', 'channel_key', 'channel_ts'}
@@ -213,7 +218,7 @@ class FetchBotAtmotube(FetchBot):
 
         ################################ INITIALIZE FACTORIES ################################
         # Create FetchAdapter for adapting packets
-        fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterAtmotube)
+        fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=AtmotubeUniversalAPIAdapter)
         fetch_adapter = fetch_adapter_fact.make_adapter()
 
         # FetchContainer factory
@@ -249,7 +254,7 @@ class FetchBotAtmotube(FetchBot):
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
             # Adapt packets to the general interface in order to decouple them from the sensor's specific API param name.
-            channel_adapted_param = fetch_adapter.adapt(packet=api_param)
+            channel_adapted_param = fetch_adapter.adapt(api_param=api_param)
 
             ################################ CYCLE THROUGH DATE UNTIL NOW ################################
             stop_datetime = DatetimeParser.today()
@@ -279,11 +284,11 @@ class FetchBotAtmotube(FetchBot):
                     # Adapt packets to mobile measurement SQL container interface
                     adapted_packets = []
                     for packet in reshaped_api_answer:
-                        geom_adapted_packet = geom_adapter.adapt(packet=packet)
+                        geom_adapted_packet = geom_adapter.adapt(api_param=packet)
                         postgis_geom = postgis_geom_fact.create_geometry(param=geom_adapted_packet)
                         packet['geom'] = postgis_geom.get_database_string()
                         packet['timestamp'] = DatetimeParser.atmotube_to_sqltimestamp(ts=packet['time'])
-                        adapted_packet = measure_adapter.adapt(packet=packet)
+                        adapted_packet = measure_adapter.adapt(api_param=packet)
                         adapted_packets.append(adapted_packet)
 
                     # create a container filter to keep only the measurement from the last timestamp on
@@ -334,15 +339,15 @@ class FetchBotAtmotube(FetchBot):
 
 
 ################################ FACTORY ################################
-class FetchBotFactory(builtins.object):
-
-    @classmethod
-    def create_fetch_bot(cls, bot_personality: str) -> FetchBot:
-
-        if bot_personality == "thingspeak":
-            return FetchBotThingspeak()
-        elif bot_personality == "atmotube":
-            return FetchBotAtmotube()
-        else:
-            raise SystemExit(f"{FetchBotFactory.__name__}: cannot instantiate {FetchBot.__name__} "
-                             f"instance for personality='{bot_personality}'.")
+# class FetchBotFactory(builtins.object):
+#
+#     @classmethod
+#     def create_fetch_bot(cls, bot_personality: str) -> FetchBot:
+#
+#         if bot_personality == "thingspeak":
+#             return FetchBotThingspeak()
+#         elif bot_personality == "atmotube":
+#             return FetchBotAtmotube()
+#         else:
+#             raise SystemExit(f"{FetchBotFactory.__name__}: cannot instantiate {FetchBot.__name__} "
+#                              f"instance for personality='{bot_personality}'.")

@@ -129,6 +129,9 @@ def main():
             for param_code, param_id in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
+        ################################ QUERY STATEMENT ################################
+        select_apiparam_query = query_picker.select_api_param_from_sensor_id()
+
         ############################# CREATE THE PROPER BOT OBJECT ###########################
         if sc.PERSONALITY == 'atmotube':
 
@@ -176,7 +179,14 @@ def main():
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for fetch bot.")
 
         ############################# RUN THE BOT ###########################
-        bot_class().run()
+
+        fetch_bot = bot_class(dbconn=dbconn)
+
+        fetch_bot.run(api_address=api_address,
+                      url_param=url_param,
+                      select_apiparam_query=select_apiparam_query)
+
+
 
         end_time = time.perf_counter()
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
