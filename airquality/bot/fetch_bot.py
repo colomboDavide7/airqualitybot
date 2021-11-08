@@ -26,7 +26,7 @@ from airquality.adapter.fetch_adapter import FetchAdapterThingspeak, FetchAdapte
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
-from picker.query_picker import QueryPicker
+from airquality.picker.query_picker import QueryPicker
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.picker.json_param_picker import JSONParamPicker
 from airquality.picker.api_param_picker import APIParamPicker

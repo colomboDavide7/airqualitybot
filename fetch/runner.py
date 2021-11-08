@@ -8,7 +8,8 @@
 import sys
 import time
 from typing import List
-from airquality.bot.fetch_bot import FetchBotFactory
+from airquality.bot.date_fetch_bot import DateFetchBot
+from airquality.bot.fetch_bot import FetchBot
 
 import airquality.constants.system_constants as sc
 
@@ -101,7 +102,7 @@ def main():
             api_address = parsed_api_data[sc.PERSONALITY]['api_address']
             url_param = parsed_api_data[sc.PERSONALITY]['url_param']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key='{ke!s}' "
+            raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} "
                              f"for personality='{sc.PERSONALITY}'.")
 
         ################################ DATABASE SENSOR ID ASSOCIATED TO PERSONALITY ################################
@@ -123,23 +124,59 @@ def main():
         query = query_picker.select_measure_param_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
-
         if sc.DEBUG_MODE:
             print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
             for param_code, param_id in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
+        ############################# CREATE THE PROPER BOT OBJECT ###########################
+        if sc.PERSONALITY == 'atmotube':
 
+            # Check if the format argument exists
+            if url_param.get('format') is None:
+                raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing 'format' key.")
 
-        fetch_bot = FetchBotFactory().create_fetch_bot(bot_personality = sc.PERSONALITY)
-        fetch_bot.run()
+            # Decide the format to use
+            if url_param['format'] == 'json':
+                file_parser_class = JSONFileParser
+            else:
+                raise SystemExit(f"{EXCEPTION_HEADER} format='{url_param['format']}' is unsupported for "
+                                 f"personality='{sc.PERSONALITY}'.")
+            print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
 
+            # Decide the bot class to use
+            bot_class = FetchBot
+            if url_param.get('date') is not None:
+                bot_class = DateFetchBot
+            print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
 
+        # *****************************************************************
+        elif sc.PERSONALITY == 'thingspeak':
 
+            # Check if the format argument exists
+            if url_param.get('format') is None:
+                raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing 'format' key.")
 
+            # Decide the format to use
+            if url_param['format'] == 'json':
+                file_parser_class = JSONFileParser
+            else:
+                raise SystemExit(f"{EXCEPTION_HEADER} format='{url_param['format']}' is unsupported for "
+                                 f"personality='{sc.PERSONALITY}'.")
+            print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
 
+            # Decide the bot class to use
+            bot_class = FetchBot
+            if url_param.get('start') is not None and url_param.get('end') is not None:
+                bot_class = DateFetchBot
+            print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
 
+        # *****************************************************************
+        else:
+            raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for fetch bot.")
 
+        ############################# RUN THE BOT ###########################
+        bot_class().run()
 
         end_time = time.perf_counter()
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')

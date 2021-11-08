@@ -25,7 +25,7 @@ class PurpleairUniversalAdapter(UniversalAdapter):
         try:
             corrected_name = packet['name'].replace("'", "")
             new_packet['name'] = f"{corrected_name} ({packet['sensor_index']})"
-            new_packet['type'] = 'purpleair'
+            new_packet['type'] = 'PurpleAir/ThingSpeak'
             new_packet['lat'] = packet['latitude']
             new_packet['lng'] = packet['longitude']
             new_packet['param_name'] = ['primary_id_a',

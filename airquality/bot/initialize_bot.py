@@ -111,7 +111,7 @@ class InitializeBot:
             for universal_packet in filtered_universal_packets:
                 # **************************
                 sensor_containers.append(self.sensor_sqlcontainer_class(name=universal_packet['name'],
-                                                                        type_= sc.PERSONALITY))
+                                                                        type_= universal_packet['type']))
                 # **************************
                 geometry = geom_adapter.adapt(universal_packet)
                 geom = geometry.get_database_string()
