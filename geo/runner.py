@@ -10,25 +10,23 @@ import sys
 import time
 from typing import List
 import airquality.constants.system_constants as sc
-from airquality.bot.geo_bot import GeoBot
-from airquality.constants.shared_constants import GEO_USAGE, VALID_PERSONALITIES, INFO_HEADER
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.adapter.sensor_adapter import SensorAdapterPurpleair
-from airquality.parser.datetime_parser import DatetimeParser
-from airquality.geom.postgis_geometry import PostGISPoint
-from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
-from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.api.url_builder import URLBuilderFactory, URLBuilderPurpleair
-from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.picker.query_picker import QueryPicker
-from airquality.api.urllib_adapter import UrllibAdapter
-from airquality.picker.resource_picker import ResourcePicker
-from airquality.parser.file_parser import FileParserFactory
 from airquality.io.io import IOManager
+from airquality.bot.geo_bot import GeoBot
+from airquality.picker.query_picker import QueryPicker
+from airquality.api.url_builder import URLBuilderPurpleair
+from airquality.picker.resource_picker import ResourcePicker
+from airquality.mapper.packet_mapper import PacketMapperPurpleair
+from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
+from airquality.parser.file_parser import FileParserFactory, JSONFileParser
+from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, INFO_HEADER
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
+    DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
+    GEO_USAGE, VALID_PERSONALITIES
 
 
 ################################ SYSTEM ARGS PARSER FUNCTION ################################
@@ -88,7 +86,7 @@ def main():
         ################################ CREATE QUERY PICKER ###############################
         query_picker = QueryPicker(parsed_query_data)
 
-        ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR STATIONS ################################
+        ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR SENSORS ################################
         query = query_picker.select_sensor_valid_name_geom_mapping_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(executable_sql_query=query)
         active_locations = DatabaseAnswerParser.parse_key_val_answer(answer)
@@ -103,23 +101,35 @@ def main():
             for key, val in active_locations.items():
                 print(f"{DEBUG_HEADER} {key}={val}")
 
+        ####################### QUERY THE (SENSOR_NAME, SENSOR_ID) MAPPING FROM PERSONALITY ############################
+        query = query_picker.select_sensor_name_id_mapping_from_personality(personality=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
+        name2id_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(raw_string=raw_api_data)
         personal_api_data = parsed_api_data[sc.PERSONALITY]
 
+        update_valid_to_timestamp = query_picker.update_valid_to_timestamp_location()
+        insert_into_sensor_at_location = query_picker.insert_into_sensor_at_location()
 
+        if sc.PERSONALITY == 'purpleair':
+            geo_bot = GeoBot(dbconn=dbconn,
+                             url_builder_class=URLBuilderPurpleair,
+                             file_parser_class=JSONFileParser,
+                             reshaper_class=PurpleairPacketReshaper,
+                             packet_mapper_class=PacketMapperPurpleair)
+        else:
+            raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for geo bot.")
 
-
-        # geo_bot = GeoBotFactory().create_geo_bot(bot_personality=sc.PERSONALITY)
-        # geo_bot.run()
-
-
-
-
-
-
+        ################################ RUN THE BOT ################################
+        geo_bot.run(url_builder_param=personal_api_data,
+                    active_locations=active_locations,
+                    name2id_map=name2id_map,
+                    update_valid_to_timestamp=update_valid_to_timestamp,
+                    insert_into_sensor_at_location=insert_into_sensor_at_location)
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()

@@ -108,7 +108,7 @@ class InitializeBot:
             query = sensor_container_composition.sql(query=sensor_query)
             query += apiparam_container_composition.sql(query=api_param_query)
             query += geo_container_composition.sql(query=sensor_at_location_query)
-            # self.dbconn.send(executable_sql_query=query)
+            self.dbconn.send(executable_sql_query=query)
         else:
             print(f"{INFO_HEADER} empty packets.")
 

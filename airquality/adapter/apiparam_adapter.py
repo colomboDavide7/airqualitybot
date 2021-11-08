@@ -33,8 +33,10 @@ class APIParamAdapterPurpleair(APIParamAdapter):
             raise SystemExit(f"{EXCEPTION_HEADER} {APIParamAdapterPurpleair.__name__} missing ['secondary_id_b'|'secondary_key_b']")
 
         param_name = ['primary_id_a', 'primary_key_a', 'primary_id_b', 'primary_key_b',
-                      'secondary_id_a', 'secondary_key_a', 'secondary_id_b', 'secondary_key_b']
+                      'secondary_id_a', 'secondary_key_a', 'secondary_id_b', 'secondary_key_b',
+                      'primary_timestamp_a', 'primary_timestamp_b', 'secondary_timestamp_a', 'secondary_timestamp_b']
         param_value = [packet['primary_id_a'], packet['primary_key_a'], packet['primary_id_b'], packet['primary_key_b'],
-                       packet['secondary_id_a'], packet['secondary_key_a'], packet['secondary_id_b'], packet['secondary_key_b']]
+                       packet['secondary_id_a'], packet['secondary_key_a'], packet['secondary_id_b'], packet['secondary_key_b'],
+                       '2018-01-01 00:00:00', '2018-01-01 00:00:00', '2018-01-01 00:00:00', '2018-01-01 00:00:00']
 
         return APIParamSQLContainer(sensor_id=sensor_id, param_name=param_name, param_value=param_value)

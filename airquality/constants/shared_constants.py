@@ -25,15 +25,17 @@ QUERY_FILE = "properties/sql_query.json"
 
 ################################ ANSI ESCAPE CODES FOR COLOR IN TERMINAL ################################
 
-GREEN = "\033[0;32m"
+GREEN = "\033[1;32m"
 BLUE = "\033[1;34m"
-RED = "\033[0;31m"
+RED = "\033[1;31m"
 RESET = "\033[0m"
+YELLOW = "\033[1;33m"
 
 ################################ OUTPUT FORMAT CONSTANTS ################################
 
 DEBUG_HEADER = f"{GREEN}[DEBUG]:{RESET}"
 INFO_HEADER = f"{BLUE}[INFO]:{RESET}"
+WARNING_HEADER = f"{YELLOW}[WARNING]:{RESET}"
 EXCEPTION_HEADER = f"{RED}[EXCEPTION]:{RESET}"
 INITIALIZE_USAGE = "USAGE: python -m initialize [--help or -h] [--debug  or -d] personality"
 FETCH_USAGE = "USAGE: python -m fetch [--help or -h] [--debug  or -d] personality"

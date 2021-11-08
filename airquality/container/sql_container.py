@@ -55,7 +55,7 @@ class APIParamSQLContainer(SQLContainer):
 class SensorSQLContainer(SQLContainer):
 
     def __init__(self, name: str, type_: str):
-        self.name = name
+        self.name = name.replace("'", "")
         self.type = type_
 
     def sql(self, query: str) -> str:
