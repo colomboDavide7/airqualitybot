@@ -92,84 +92,78 @@ class FetchBotThingspeak(FetchBot):
 
         for sensor_id in sensor_ids:
 
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " CHANNEL ADAPTED PARAMETERS " + 20 * '=')
-                for param in channel_adapted_parameters:
-                    for api_key, api_val in param.items():
-                        print(f"{DEBUG_HEADER} {api_key}={api_val}")
-
             # Create FetchContainers
             for channel_param in channel_adapted_parameters:
+                pass
+                # # define from datetime
+                # from_datetime = DatetimeParser.string2datetime(datetime_string=channel_param['channel_ts']['val'])
+                # from_datetime = DatetimeParser.add_seconds_to_datetime(ts=from_datetime, seconds=3)
+                #
+                # # define to datetime
+                # to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
+                #
+                # if (to_datetime - stop_datetime).total_seconds() > 0:
+                #     to_datetime = stop_datetime
+                #
+                # # CONTINUE UNTIL TODAY IS REACHED
+                # while (stop_datetime - from_datetime).total_seconds() >= 0:
+                #
+                #     # Create a ChannelContainer object for building the api URL
+                #     channel_container = fetch_container_fact.make_container(parameters=channel_param)
+                #
+                #     # build URL
+                #     url = channel_container.url(api_address=api_address,
+                #                                 optional_param={'end': DatetimeParser.datetime2string(to_datetime)})
+                #     if sc.DEBUG_MODE:
+                #         print(f"{DEBUG_HEADER} {url}")
+                #
+                #     # Fetch data from API (API packets)
+                #     api_packets = UrllibAdapter.fetch(url=url)
+                #     parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
+                #     parsed_api_packets = parser.parse(raw_string=api_packets)
+                #
+                #     # Reshape API packets: merge all data coming from different channels into a single PlainAPIPacket object
+                #     api_packet_reshaper = PacketReshaperFactory().make_reshaper(
+                #         bot_personality=sc.PERSONALITY)
+                #     reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
+                #
+                #     if reshaped_api_packets:
+                #
+                #         adapted_packets = []
+                #         for packet in reshaped_api_packets:
+                #             packet['timestamp'] = DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
+                #             adapted_packet = measure_adapter.adapt(packet)
+                #             adapted_packets.append(adapted_packet)
 
-                # define from datetime
-                from_datetime = DatetimeParser.string2datetime(datetime_string=channel_param['channel_ts']['val'])
-                from_datetime = DatetimeParser.add_seconds_to_datetime(ts=from_datetime, seconds=3)
-
-                # define to datetime
-                to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
-
-                if (to_datetime - stop_datetime).total_seconds() > 0:
-                    to_datetime = stop_datetime
-
-                # CONTINUE UNTIL TODAY IS REACHED
-                while (stop_datetime - from_datetime).total_seconds() >= 0:
-
-                    # Create a ChannelContainer object for building the api URL
-                    channel_container = fetch_container_fact.make_container(parameters=channel_param)
-
-                    # build URL
-                    url = channel_container.url(api_address=api_address,
-                                                optional_param={'end': DatetimeParser.datetime2string(to_datetime)})
-                    if sc.DEBUG_MODE:
-                        print(f"{DEBUG_HEADER} {url}")
-
-                    # Fetch data from API (API packets)
-                    api_packets = UrllibAdapter.fetch(url=url)
-                    parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
-                    parsed_api_packets = parser.parse(raw_string=api_packets)
-
-                    # Reshape API packets: merge all data coming from different channels into a single PlainAPIPacket object
-                    api_packet_reshaper = PacketReshaperFactory().make_reshaper(
-                        bot_personality=sc.PERSONALITY)
-                    reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
-
-                    if reshaped_api_packets:
-
-                        adapted_packets = []
-                        for packet in reshaped_api_packets:
-                            packet['timestamp'] = DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
-                            adapted_packet = measure_adapter.adapt(packet)
-                            adapted_packets.append(adapted_packet)
-
-                        # This method return a SQLContainerComposition object !!!
-                        measure_container = measure_container_fact.make_container_with_sensor_id(
-                            packets=adapted_packets, sensor_id=sensor_id
-                        )
-
-                        query_statement = query_builder.insert_into_station_measurements()
-                        query = measure_container.sql(query=query_statement)
-                        dbconn.send(executable_sql_query=query)
-
-                        ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
-                        if sc.DEBUG_MODE:
-                            print(f"{INFO_HEADER} last {channel_param['ts_name']} => {adapted_packets[-1]['timestamp']}")
-
-                        query = query_builder.update_last_channel_acquisition_timestamp(
-                            sensor_id=sensor_id,
-                            ts=adapted_packets[-1]['timestamp'],
-                            param2update=channel_param['ts_name'])
-                        dbconn.send(executable_sql_query=query)
-
-                    else:
-                        print(f"{INFO_HEADER} empty packets.")
-
-                    ############################## INCREMENT THE PERIOD FOR DATA FETCHING ##############################
-                    from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
-                    channel_param['channel_ts']['val'] = DatetimeParser.datetime2string(from_datetime)
-                    to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
-
-                    if (to_datetime - stop_datetime).total_seconds() >= 0:
-                        to_datetime = stop_datetime
+                #     # This method return a SQLContainerComposition object !!!
+                #     measure_container = measure_container_fact.make_container_with_sensor_id(
+                #         packets=adapted_packets, sensor_id=sensor_id
+                #     )
+                #
+                #     query_statement = query_builder.insert_into_station_measurements()
+                #     query = measure_container.sql(query=query_statement)
+                #     dbconn.send(executable_sql_query=query)
+                #
+                #     ###################### UPDATE LAST CHANNEL ACQUISITION TIMESTAMP #########################
+                #     if sc.DEBUG_MODE:
+                #         print(f"{INFO_HEADER} last {channel_param['ts_name']} => {adapted_packets[-1]['timestamp']}")
+                #
+                #     query = query_builder.update_last_channel_acquisition_timestamp(
+                #         sensor_id=sensor_id,
+                #         ts=adapted_packets[-1]['timestamp'],
+                #         param2update=channel_param['ts_name'])
+                #     dbconn.send(executable_sql_query=query)
+                #
+                # else:
+                #     print(f"{INFO_HEADER} empty packets.")
+                #
+                # ############################## INCREMENT THE PERIOD FOR DATA FETCHING ##############################
+                # from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
+                # channel_param['channel_ts']['val'] = DatetimeParser.datetime2string(from_datetime)
+                # to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
+                #
+                # if (to_datetime - stop_datetime).total_seconds() >= 0:
+                #     to_datetime = stop_datetime
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         dbconn.close_conn()

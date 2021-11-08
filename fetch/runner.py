@@ -102,6 +102,7 @@ def main():
         try:
             api_address = parsed_api_data[sc.PERSONALITY]['api_address']
             url_param = parsed_api_data[sc.PERSONALITY]['url_param']
+            use_date = parsed_api_data[sc.PERSONALITY]['use_date']
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} "
                              f"for personality='{sc.PERSONALITY}'.")
@@ -133,6 +134,12 @@ def main():
         ################################ QUERY STATEMENT ################################
         select_apiparam_query = query_picker.select_api_param_from_sensor_id()
 
+        ################################ DYNAMICALLY DEFINE BOT CLASS ################################
+        bot_class = FetchBot
+        if use_date:
+            bot_class = DateFetchBot
+        print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
+
         ############################# CREATE THE PROPER BOT OBJECT ###########################
         if sc.PERSONALITY == 'atmotube':
 
@@ -148,12 +155,7 @@ def main():
                                  f"personality='{sc.PERSONALITY}'.")
             print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
 
-            # Decide the bot class to use
-            bot_class = FetchBot
-            if url_param.get('date') is not None:
-                bot_class = DateFetchBot
-            print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
-
+            # UniversalAPIAdapter class
             universal_api_adapter_class = AtmotubeUniversalAPIAdapter
 
         # *****************************************************************
@@ -171,12 +173,7 @@ def main():
                                  f"personality='{sc.PERSONALITY}'.")
             print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
 
-            # Decide the bot class to use
-            bot_class = FetchBot
-            if url_param.get('start') is not None and url_param.get('end') is not None:
-                bot_class = DateFetchBot
-            print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
-
+            # UniversalAPIAdapter class
             universal_api_adapter_class = ThingspeakUniversalAPIAdapter
 
         # *****************************************************************
