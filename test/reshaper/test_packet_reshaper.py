@@ -7,8 +7,6 @@
 #################################################
 
 import unittest
-from airquality.reshaper.packet_reshaper import PacketReshaperFactory
-from airquality.constants.shared_constants import PURPLEAIR_FIELDS_PARAM, PURPLEAIR_DATA_PARAM
 
 
 class TestAPIPacketReshaper(unittest.TestCase):
@@ -19,8 +17,8 @@ class TestAPIPacketReshaper(unittest.TestCase):
     def test_reshape_purpleair_packets(self):
         purpleair_reshaper = self.factory.make_reshaper(bot_personality="purpleair")
         test_api_answer = {
-            PURPLEAIR_FIELDS_PARAM: ["name", "sensor_index"],
-            PURPLEAIR_DATA_PARAM: [
+            'fields': ["name", "sensor_index"],
+            'data': [
                 ["n1", "idx1"],
                 ["n2", "idx2"]
             ]
@@ -36,8 +34,8 @@ class TestAPIPacketReshaper(unittest.TestCase):
     def test_empty_list_value_when_empty_data_reshape_purpleair_packets(self):
         purpleair_reshaper = self.factory.make_reshaper(bot_personality="purpleair")
         test_api_answer = {
-            PURPLEAIR_FIELDS_PARAM: ["f1", "f2"],
-            PURPLEAIR_DATA_PARAM: []
+            'fields': ["f1", "f2"],
+            'data': []
         }
         expected_answer = []
         actual_answer = purpleair_reshaper.reshape_packet(api_answer=test_api_answer)

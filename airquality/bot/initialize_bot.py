@@ -16,12 +16,12 @@ from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.adapter.geom_adapter import GeometryAdapter
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.db_conn_adapter import ConnectionAdapter
-from airquality.adapter.universal_adapter import UniversalDatabaseAdapter
+from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
 from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition, \
     SensorSQLContainer, APIParamSQLContainer
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER
+from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
 
 ################################ INITIALIZE BOT ################################
@@ -71,13 +71,6 @@ class InitializeBot:
 
         if reshaped_packets:
 
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " ALL SENSORS " + 20 * '=')
-                for packet in reshaped_packets:
-                    print(30 * '*')
-                    for key, val in packet.items():
-                        print(f"{DEBUG_HEADER} {key}={val}")
-
             ############################## UNIVERSAL ADAPTER #############################
             universal_db_adapter = self.universal_db_adapter_class()
 
@@ -86,10 +79,14 @@ class InitializeBot:
                 universal_db_packets.append(universal_db_adapter.adapt(universal_packet))
 
             ############################## FILTER PACKETS #############################
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " FILTER SENSORS " + 20 * '=')
             filtered_universal_packets = []
             for universal_packet in universal_db_packets:
                 if universal_packet['name'] not in sensor_names:
                     filtered_universal_packets.append(universal_packet)
+                else:
+                    print(f"{WARNING_HEADER} '{universal_packet['name']}' already present...")
 
             if not filtered_universal_packets:
                 print(f"{INFO_HEADER} all sensors are already present into the database.")

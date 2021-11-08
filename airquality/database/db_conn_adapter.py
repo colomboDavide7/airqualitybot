@@ -9,7 +9,7 @@
 import psycopg2
 from typing import Dict, Any
 from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EMPTY_STRING, EMPTY_DICT
+from airquality.constants.shared_constants import EMPTY_STRING
 
 
 class ConnectionAdapter(ABC):
@@ -54,7 +54,7 @@ class Psycopg2ConnectionAdapter(ConnectionAdapter):
         self.__psycopg2_conn = None
         self.__set_ok = 0b00000
 
-        if settings != EMPTY_DICT:
+        if settings:
             for key, val in settings.items():
                 if key == 'port':
                     self.__port = val

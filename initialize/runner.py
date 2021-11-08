@@ -21,7 +21,7 @@ from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
-from airquality.adapter.universal_adapter import PurpleairUniversalDatabaseAdapter
+from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter
 from airquality.parser.file_parser import JSONFileParser, FileParserFactory
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.container.sql_container import SQLContainerComposition, SensorSQLContainer, \
@@ -99,7 +99,7 @@ def main():
             print(f"{INFO_HEADER} no sensor found into the database for personality='{sc.PERSONALITY}'.")
         else:
             if sc.DEBUG_MODE:
-                print(20 * "=" + " SENSORS FOUND " + 20 * '=')
+                print(20 * "=" + " SENSORS FOUND INTO THE DATABASE " + 20 * '=')
                 for name in sensor_names:
                     print(f"{DEBUG_HEADER} name='{name}'.")
 

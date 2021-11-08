@@ -7,7 +7,6 @@
 #################################################
 import unittest
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.constants.shared_constants import EMPTY_LIST, EMPTY_DICT
 
 
 class TestDatabaseAnswerParser(unittest.TestCase):
@@ -15,8 +14,8 @@ class TestDatabaseAnswerParser(unittest.TestCase):
     def test_parse_key_val_answer(self):
         """Test the correct conversion from list of key-value tuples to dictionary."""
 
-        test_answer = EMPTY_LIST
-        expected_output = EMPTY_DICT
+        test_answer = []
+        expected_output = {}
         actual_output = DatabaseAnswerParser.parse_key_val_answer(test_answer)
         self.assertEqual(actual_output, expected_output)
 

@@ -44,22 +44,6 @@ GEO_USAGE = "USAGE: python -m geo [--help or -h] [--debug  or -d] personality"
 ################################ EMPTY CONSTANTS ################################
 
 EMPTY_STRING = ""
-EMPTY_LIST = []
-EMPTY_DICT = {}
-
-################################ VALID ATMOTUBE API PARAMETERS ################################
-
-ATMOTUBE_DATE_PARAM = "date"
-ATMOTUBE_TIME_PARAM = "time"
-ATMOTUBE_COORDS_PARAM = "coords"
-ATMOTUBE_API_KEY_PARAM = 'api_key'
-ATMOTUBE_MAC_PARAM = 'mac'
-
-################################ VALID PURPLE AIR API PARAM ################################
-
-PURPLEAIR_FIELDS_PARAM = "fields"
-PURPLEAIR_API_KEY_PARAM = "api_key"
-PURPLEAIR_DATA_PARAM = "data"
 
 ################################ DATETIME REGULAR EXPRESSION PATTERN ################################
 
@@ -70,22 +54,6 @@ THINGSPEAK_DATETIME_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
 ################################ DATETIME FORMAT FOR DATETIME2STR CONVERSION ################################
 
 DATETIME2SQLTIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
-
-############# THINGSPEAK API PARAM FOR STORING LAST ACQUISITION TIMESTAMP FOR EACH CHANNEL ################
-
-THINGSPEAK_TIMESTAMP_1A = "primary_timestamp_a"
-THINGSPEAK_TIMESTAMP_1B = "primary_timestamp_b"
-THINGSPEAK_TIMESTAMP_2A = "secondary_timestamp_a"
-THINGSPEAK_TIMESTAMP_2B = "secondary_timestamp_b"
-
-################################ THINGSPEAK API PARAM2PICK ################################
-"""Pay attention to the order of this variable inside the list: remember to put channel id and channel key in the same
-list index: these are going to be used by the Database2APIReshaper."""
-
-THINGSPEAK_CH_ID_2PICK = ["primary_id_a", "primary_id_b", "secondary_id_a", "secondary_id_b"]
-THINGSPEAK_KEY_2PICK = ["primary_key_a", "primary_key_b", "secondary_key_a", "secondary_key_b"]
-THINGSPEAK_TS_2PICK = [THINGSPEAK_TIMESTAMP_1A, THINGSPEAK_TIMESTAMP_1B, THINGSPEAK_TIMESTAMP_2A,
-                       THINGSPEAK_TIMESTAMP_2B]
 
 ################################ THINGSPEAK 2 DATABASE PARAM NAME MAPPING ################################
 
@@ -100,32 +68,3 @@ THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A = {"0.3um": "0.3_um_count_a", "0.5um":
 THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B = {"0.3um": "0.3_um_count_b", "0.5um": "0.5_um_count_b",
                                              "1.0um": "1.0_um_count_b", "2.5um": "2.5_um_count_b",
                                              "5.0um": "5.0_um_count_b", "10.0um": "10.0_um_count_b"}
-
-################################ THINGSPEAK API PACKET RESHAPER CONSTANTS ################################
-
-THINGSPEAK_API_RESHAPER_TIME = "time"
-
-################################ THINGSPEAK API DECODE CONSTANTS ################################
-
-THINGSPEAK_API_DECODE_FEEDS = "feeds"
-THINGSPEAK_API_DECODE_CHANNEL = "channel"
-THINGSPEAK_API_DECODE_NAME = "name"
-THINGSPEAK_API_DECODE_CREATED_AT = "created_at"
-THINGSPEAK_CHANNEL_DECODE_SYMBOL = "_b"
-THINGSPEAK_COUNTERS_DECODE_SYMBOL = "Counters"
-
-################################ THINGSPEAK API PARAM CONSTANTS ################################
-
-THINGSPEAK_API_KEY_PARAM = 'api_key'
-THINGSPEAK_START_PARAM = 'start'
-THINGSPEAK_END_PARAM = 'end'
-
-################################ OPTIONAL API PARAMETERS TO PICK FROM API DATA ################################
-
-ATMOTUBE_OPTIONAL_API_PARAM = ['order']
-ATMOTUBE_START_FETCH_TIMESTAMP = '2021-01-01 00:00:00'
-THINGSPEAK_START_FETCH_TIMESTAMP = '2018-01-01 00:00:00'
-
-################################ DEFAULT VALUE FOR PARAMETERS TAKEN FROM API AND DATABASE ##############################
-
-PARAM_DEFAULT_VALUE = 'null'

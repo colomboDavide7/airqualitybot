@@ -6,8 +6,7 @@
 #
 #################################################
 import builtins
-from typing import Dict, Any, List
-from airquality.constants.shared_constants import ATMOTUBE_PERSONALITY, ATMOTUBE_OPTIONAL_API_PARAM
+from typing import Dict, Any
 
 LOGGER_SECTION = "logger"
 SERVER_SECTION = "server"
@@ -46,12 +45,3 @@ class ResourcePicker(builtins.object):
         settings["username"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["username"]
         settings["password"] = parsed_resources[PERSONALITY_SECTION][f"{bot_personality}"]["password"]
         return settings
-
-    @classmethod
-    def pick_optional_api_parameters_from_api_data(cls, personality: str) -> List[str]:
-
-        if personality == ATMOTUBE_PERSONALITY:
-            return ATMOTUBE_OPTIONAL_API_PARAM
-        else:
-            raise SystemExit(f"{ResourcePicker.pick_optional_api_parameters_from_api_data.__name__}: "
-                             f"cannot pick optional API parameters for personality = '{personality}'.")

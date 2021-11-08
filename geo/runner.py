@@ -20,7 +20,7 @@ from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
-from airquality.adapter.universal_adapter import PurpleairUniversalDatabaseAdapter
+from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter
 from airquality.parser.file_parser import FileParserFactory, JSONFileParser
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
@@ -99,7 +99,7 @@ def main():
             return
 
         if sc.DEBUG_MODE:
-            print(20 * "=" + " ACTIVE LOCATIONS " + 20 * '=')
+            print(20 * "=" + " SENSORS FOUND INTO THE DATABASE " + 20 * '=')
             for key, val in active_locations.items():
                 print(f"{DEBUG_HEADER} {key}={val}")
 

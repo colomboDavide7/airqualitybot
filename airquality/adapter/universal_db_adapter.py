@@ -80,3 +80,24 @@ class AtmotubeUniversalDatabaseAdapter(UniversalDatabaseAdapter):
             raise SystemExit(
                 f"{EXCEPTION_HEADER} {PurpleairUniversalDatabaseAdapter.__name__} is missing the key={ke!s}.")
         return universal_packet
+
+
+class ThingspeakUniversalDatabaseAdapter(UniversalDatabaseAdapter):
+
+    def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
+        universal_packet = {}
+        try:
+            universal_packet['timestamp'] = DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
+            param_name = []
+            param_value = []
+            for field in packet['fields']:
+                param_name.append(field['name'])
+                param_value.append(field['value'])
+            universal_packet['param_name'] = param_name
+            universal_packet['param_value'] = param_value
+
+        except KeyError as ke:
+            # Raise Exception if any key is missing from the 'packet' dictionary
+            raise SystemExit(
+                f"{EXCEPTION_HEADER} {PurpleairUniversalDatabaseAdapter.__name__} is missing the key={ke!s}.")
+        return universal_packet

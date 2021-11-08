@@ -17,10 +17,10 @@ from airquality.parser.datetime_parser import DatetimeParser
 from airquality.reshaper.packet_reshaper import PacketReshaper
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.adapter.universal_api_adapter import UniversalAPIAdapter
-from airquality.adapter.universal_adapter import UniversalDatabaseAdapter
+from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import DEBUG_HEADER, EXCEPTION_HEADER, INFO_HEADER
+from airquality.constants.shared_constants import DEBUG_HEADER, EXCEPTION_HEADER, INFO_HEADER, WARNING_HEADER
 
 
 class FetchBot:
@@ -99,67 +99,26 @@ class FetchBot:
                         universal_db_packets.append(universal_db_adapter.adapt(packet))
 
                     ################################ FILTER PACKETS ################################
+                    if sc.DEBUG_MODE:
+                        print(20 * "=" + " FILTER MEASUREMENTS " + 20 * '=')
                     filtered_universal_packets = []
-                    for universal_packet in filtered_universal_packets:
-                        if DatetimeParser.is_ts2_after_ts1(ts2=universal_packet['time'], ts1=filter_sqltimestamp):
+                    for universal_packet in universal_db_packets:
+                        if DatetimeParser.is_ts2_after_ts1(ts2=universal_packet['timestamp'], ts1=filter_sqltimestamp):
                             filtered_universal_packets.append(universal_packet)
+                        else:
+                            print(f"{WARNING_HEADER} '{universal_packet['timestamp']}' is an old measure...")
 
                     if filtered_universal_packets:
 
                         if sc.DEBUG_MODE:
                             print(20 * "=" + " FILTERED MEASUREMENTS " + 20 * '=')
                             for universal_packet in filtered_universal_packets:
-                                print(f"{DEBUG_HEADER} time={universal_packet['time']}")
+                                print(f"{DEBUG_HEADER} time={universal_packet['timestamp']}")
 
                     else:
                         print(f"{INFO_HEADER} no new measurements for sensor_id={sensor_id}")
+                else:
+                    print(f"{INFO_HEADER} empty packets.")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()
-
-############################## INCREMENT THE PERIOD FOR DATA FETCHING ##############################
-
-        # from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
-        # channel_param['channel_ts']['val'] = DatetimeParser.datetime2string(from_datetime)
-        # to_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=7)
-        #
-        # if (to_datetime - stop_datetime).total_seconds() >= 0:
-        #     to_datetime = stop_datetime
-
-        # create a container filter to keep only the measurement from the last timestamp on
-        # filtered_packets = []
-        # for packet in adapted_packets:
-        #     if DatetimeParser.is_ts2_after_ts1(ts1=filter_sqltimestamp, ts2=packet['timestamp']):
-        #         filtered_packets.append(packet)
-        #
-        # if filtered_packets:
-        #
-        #     if sc.DEBUG_MODE:
-        #         print(20 * "=" + " FILTERED PACKETS " + 20 * '=')
-        #         for packet in filtered_packets:
-        #             print(30 * '*')
-        #             for key, val in packet.items():
-        #                 print(f"{DEBUG_HEADER} {key}={val}")
-        #
-        #     # measure containers
-        #     measure_containers = measure_container_fact.make_container_with_sensor_id(
-        #         packets=adapted_packets, sensor_id=sensor_id
-        #     )
-        #
-        #     # Execute the query
-        #     query_statement = query_builder.insert_into_mobile_measurements()
-        #     query = measure_containers.sql(query=query_statement)
-        #     dbconn.send(executable_sql_query=query)
-        #
-        #     ############# UPDATE LAST MEASURE TIMESTAMP FOR KNOWING WHERE TO START WITH NEXT FETCH #############
-        #     if sc.DEBUG_MODE:
-        #         print(f"{INFO_HEADER} last_timestamp={adapted_packets[-1]['timestamp']}")
-        #
-        #     query = query_builder.update_last_packet_date_atmotube(
-        #         last_timestamp=adapted_packets[-1]['timestamp'],
-        #         sensor_id=sensor_id)
-        #     dbconn.send(executable_sql_query=query)
-
-    ################# END OF THE LOOP: ADD ONE DAY TO THE CURRENT FROM DATE ########################
-    # from_datetime = DatetimeParser.add_days_to_datetime(ts=from_datetime, days=1)
-    # channel_adapted_param['channel_ts']['val'] = DatetimeParser.datetime2string(from_datetime)

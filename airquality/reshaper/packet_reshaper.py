@@ -8,8 +8,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 
-from airquality.constants.shared_constants import EMPTY_LIST, \
-    PURPLEAIR_DATA_PARAM, PURPLEAIR_FIELDS_PARAM, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
+from airquality.constants.shared_constants import  THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
 
@@ -29,12 +28,12 @@ class PurpleairPacketReshaper(PacketReshaper):
         """This method takes a purpleair API answer and reshape it by creating a dictionary association between the
         'fields' parameter and the 'data' parameter for each item in the 'data' list."""
 
-        fields = api_answer[PURPLEAIR_FIELDS_PARAM]
+        fields = api_answer['fields']
         n_fields = len(fields)
 
         reshaped_packets = []
-        if api_answer[PURPLEAIR_DATA_PARAM] != EMPTY_LIST:
-            for data in api_answer[PURPLEAIR_DATA_PARAM]:
+        if api_answer['data']:
+            for data in api_answer['data']:
                 rpacket = {}
                 for i in range(n_fields):
                     key = fields[i]
@@ -78,7 +77,7 @@ class ThingspeakPacketReshaper(PacketReshaper):
             reshaped_packet = {'created_at': feed['created_at'], 'fields': []}
             for field in feed.keys():
                 if field in selected_fields.keys():
-                    reshaped_packet['fields'].append({'name': selected_fields[field], 'val': feed[field]})
+                    reshaped_packet['fields'].append({'name': selected_fields[field], 'value': feed[field]})
             reshaped_packets.append(reshaped_packet)
         return reshaped_packets
 

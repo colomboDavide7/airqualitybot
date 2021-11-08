@@ -23,7 +23,7 @@ from airquality.api.url_builder import URLBuilderThingspeak, URLBuilderAtmotube
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.reshaper.packet_reshaper import ThingspeakPacketReshaper, AtmotubePacketReshaper
 from airquality.adapter.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
-from airquality.adapter.universal_adapter import AtmotubeUniversalDatabaseAdapter
+from airquality.adapter.universal_db_adapter import AtmotubeUniversalDatabaseAdapter, ThingspeakUniversalDatabaseAdapter
 
 
 # IMPORT SHARED CONSTANTS
@@ -190,7 +190,7 @@ def main():
             universal_api_adapter_class = ThingspeakUniversalAPIAdapter
 
             # UniversalDatabaseAdapter class
-            universal_db_adapter_class = None
+            universal_db_adapter_class = ThingspeakUniversalDatabaseAdapter
 
         # *****************************************************************
         else:

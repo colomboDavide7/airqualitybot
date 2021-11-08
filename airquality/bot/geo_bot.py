@@ -16,11 +16,11 @@ from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.adapter.geom_adapter import GeometryAdapter
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.reshaper.packet_reshaper import PacketReshaper
-from airquality.adapter.universal_adapter import UniversalDatabaseAdapter
+from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
 from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER
+from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
 
 ################################ GEO BOT ABSTRACT BASE CLASS ################################
@@ -65,13 +65,6 @@ class GeoBot:
 
         if reshaped_packets:
 
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
-                for packet in reshaped_packets:
-                    print(30 * '*')
-                    for key, val in packet.items():
-                        print(f"{DEBUG_HEADER} {key}={val}")
-
             ############################## UNIVERSAL ADAPTER #############################
             universal_adapter = self.universal_adapter_class()
 
@@ -81,10 +74,14 @@ class GeoBot:
                 universal_packets.append(universal_adapter.adapt(packet))
 
             ############################## KEEP ONLY DATABASE SENSORS #############################
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " FILTER SENSORS " + 20 * '=')
             filtered_universal_packets = []
             for universal_packet in universal_packets:
                 if universal_packet['name'] in name2id_map.keys():
                     filtered_universal_packets.append(universal_packet)
+                else:
+                    print(f"{WARNING_HEADER} '{universal_packet['name']}' is not active...")
 
             if not filtered_universal_packets:
                 print(f"{INFO_HEADER} no active locations found.")

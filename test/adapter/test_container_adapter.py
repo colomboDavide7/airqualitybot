@@ -8,7 +8,7 @@
 ######################################################
 
 import unittest
-from airquality.adapter.universal_adapter import ContainerAdapterFactory, PurpleairUniversalDatabaseAdapter
+from airquality.adapter.universal_db_adapter import ContainerAdapterFactory, PurpleairUniversalDatabaseAdapter
 
 
 class TestContainerAdapter(unittest.TestCase):
