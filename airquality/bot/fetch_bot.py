@@ -15,11 +15,10 @@ import airquality.constants.system_constants as sc
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.container.sql_container import MobileMeasurementSQLContainer, StationMeasurementSQLContainer
 from airquality.container.sql_container_factory import SQLContainerFactory
-from airquality.geom.postgis_geometry import PostGISGeometryFactory, PostGISPoint
-from airquality.adapter.geom_adapter import GeometryAdapterFactory, GeometryAdapterAtmotube
+from airquality.geom.postgis_geometry import PostGISPoint
+from airquality.adapter.geom_adapter import GeometryAdapterAtmotube
 from airquality.adapter.measurement_adapter import MeasurementAdapterFactory, MeasurementAdapterAtmotube, \
     MeasurementAdapterThingspeak
-from airquality.reshaper.packet_reshaper import PacketReshaperFactory
 from airquality.adapter.channel_adapter import ChannelAdapter
 from airquality.container.fetch_container_factory import FetchContainerFactory
 from airquality.container.fetch_container import ChannelContainer, ChannelContainerWithFormattableAddress
@@ -61,65 +60,6 @@ class FetchBot(ABC):
 class FetchBotThingspeak(FetchBot):
 
     def run(self):
-
-        ################################ READ SERVER FILE ################################
-        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
-        parsed_server_data = parser.parse(raw_string=raw_server_data)
-
-        ################################ PICK DATABASE CONNECTION PROPERTIES ################################
-        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources=parsed_server_data,
-                                                             bot_personality=sc.PERSONALITY)
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SETTINGS " + 20 * '=')
-            for key, val in db_settings.items():
-                print(f"{DEBUG_HEADER} {key}={val}")
-
-        ################################ DATABASE CONNECTION ADAPTER ################################
-        db_conn_factory = Psycopg2ConnectionAdapterFactory()
-        dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
-        dbconn.open_conn()
-
-        ################################ SQL QUERY BUILDER ################################
-        raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
-        parsed_query_data = parser.parse(raw_string=raw_query_data)
-        query_builder = QueryPicker(parsed_query_data)
-
-        ################################ READ API FILE ################################
-        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string=raw_api_data)
-
-        ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
-        path2key = [sc.PERSONALITY, "api_address"]
-        api_address = JSONParamPicker.pick_parameter(parsed_json=parsed_api_data, path2key=path2key)
-
-        ################################ SELECT SENSOR IDS FROM PERSONALITY ################################
-        query = query_builder.select_sensor_ids_from_personality(personality=PURPLEAIR_PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
-        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
-
-        ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
-        if not sensor_ids:
-            print(f"{INFO_HEADER} no sensor found for personality='{PURPLEAIR_PERSONALITY}'.")
-            dbconn.close_conn()
-            return
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
-            for sensor_id in sensor_ids:
-                print(f"{DEBUG_HEADER} {sensor_id}")
-
-        ################################ SELECT MEASURE PARAM FROM PERSONALITY ################################
-        query = query_builder.select_measure_param_from_personality(personality=PURPLEAIR_PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
-        measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
-            for param_code, param_id in measure_param_map.items():
-                print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
         # Create fetch adapter
         fetch_adapter_fact = FetchAdapterFactory(fetch_adapter_class=FetchAdapterThingspeak)
@@ -260,68 +200,6 @@ class FetchBotThingspeak(FetchBot):
 class FetchBotAtmotube(FetchBot):
 
     def run(self):
-
-        ################################ READ SERVER FILE ################################
-        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
-        parsed_server_data = parser.parse(raw_string=raw_server_data)
-
-        ################################ PICK DATABASE CONNECTION PROPERTIES ################################
-        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources=parsed_server_data,
-                                                             bot_personality=sc.PERSONALITY)
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SETTINGS " + 20 * '=')
-            for key, val in db_settings.items():
-                print(f"{DEBUG_HEADER} {key}={val}")
-
-        ################################ DATABASE CONNECTION ADAPTER ################################
-        db_conn_factory = Psycopg2ConnectionAdapterFactory()
-        dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
-        dbconn.open_conn()
-
-        ################################ SQL QUERY BUILDER ################################
-        raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
-        parsed_query_data = parser.parse(raw_string=raw_query_data)
-        query_builder = QueryPicker(parsed_query_data)
-
-        ################################ READ API FILE ################################
-        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string=raw_api_data)
-
-        ################################ PICK API ADDRESS FROM PARSED JSON DATA ################################
-        path2key = [sc.PERSONALITY, "api_address"]
-        api_address = JSONParamPicker.pick_parameter(parsed_json=parsed_api_data, path2key=path2key)
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " API ADDRESS " + 20 * '=')
-            print(f"{DEBUG_HEADER} {api_address}")
-
-        ##################### SELECT SENSOR IDS ASSOCIATED TO CURRENT PERSONALITY (ATMOTUBE) ###########################
-        query = query_builder.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
-        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
-
-        ################################ IF THERE ARE NO SENSORS, THE PROGRAM STOPS HERE ###############################
-        if not sensor_ids:
-            print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'.")
-            dbconn.close_conn()
-            return
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SENSOR IDS " + 20 * '=')
-            for sensor_id in sensor_ids:
-                print(f"{DEBUG_HEADER} {sensor_id}")
-
-        ################################ SELECT MEASURE PARAM FROM IDENTIFIER ################################
-        query = query_builder.select_measure_param_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
-        measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
-            for code, id_ in measure_param_map.items():
-                print(f"{DEBUG_HEADER} {code}={id_}")
 
         ############### CREATE OPTIONAL API PARAMETERS ###################
         api_param2pick = ResourcePicker.pick_optional_api_parameters_from_api_data(personality=sc.PERSONALITY)

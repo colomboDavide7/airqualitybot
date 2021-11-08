@@ -11,6 +11,7 @@ from typing import Dict, Any, List
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.api.url_builder import URLBuilder
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.db_conn_adapter import ConnectionAdapter
@@ -28,8 +29,8 @@ class InitializeBot:
     def __init__(self,
                  dbconn: ConnectionAdapter,  # database connection adapter object
                  file_parser_class,  # file parser class for parsing raw file lines
-                 url_builder_class,  # builder class for creating the URL for fetching data from API
                  reshaper_class,  # reshaper class for getting the packets in a better shape
+                 url_builder_class=URLBuilder,  # builder class for creating the URL for fetching data from API
                  universal_adapter_class=UniversalAdapter,  # adapter class for giving the packets a universal interface
                  geom_adapter_class=GeometryAdapter,  # adapter class for geolocation information
                  geo_sqlcontainer_class=GeoSQLContainer,  # container class for converting dict into SQLContainer
@@ -48,19 +49,20 @@ class InitializeBot:
         self.universal_adapter = universal_adapter_class
 
     def run(self,
-            first_sensor_id: int,               # first sensor id from which starts to count
-            url_builder_param: Dict[str, Any],  # parameters for building URL for fetching data from API
-            sensor_names: List[str],            # list of the name of the sensor present in database or []
-            sensor_query: str,                  # INSERT INTO query for inserting records into 'sensor' table
-            api_param_query: str,               # INSERT INTO query for inserting records into 'api_param' table
-            sensor_at_location_query: str):     # INSERT INTO query for inserting records into 'sensor_at_location' table
+            first_sensor_id: int,
+            api_address: str,
+            url_param: Dict[str, Any],
+            sensor_names: List[str],
+            sensor_query: str,
+            api_param_query: str,
+            sensor_at_location_query: str):
 
         ################################ API DATA FETCHING ################################
-        url_builder = self.url_builder_class()              # instance for building URL
-        url = url_builder.build_url(url_builder_param)      # the URL used for fetching data
-        raw_packets = UrllibAdapter.fetch(url)              # raw packets fetched from API (json)
-        parser = self.file_parser_class()                   # instance for parsing the content
-        parsed_packets = parser.parse(raw_packets)          # parsed packets fetched from API (dict)
+        url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
+        url = url_builder.build_url()
+        raw_packets = UrllibAdapter.fetch(url)
+        parser = self.file_parser_class()
+        parsed_packets = parser.parse(raw_packets)
 
         ################################ RESHAPE PACKETS ################################
         packet_reshaper = self.reshaper_class()

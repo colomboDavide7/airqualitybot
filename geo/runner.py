@@ -112,8 +112,16 @@ def main():
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(raw_string=raw_api_data)
-        personal_api_data = parsed_api_data[sc.PERSONALITY]
 
+        ################################ GET THE API ADDRESS ################################
+        try:
+            api_address = parsed_api_data[sc.PERSONALITY]['api_address']
+            url_param = parsed_api_data[sc.PERSONALITY]['url_param']
+        except KeyError as ke:
+            raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} "
+                             f"for personality='{sc.PERSONALITY}'.")
+
+        ################################ GET THE NEEDED QUERY STATEMENT ################################
         update_valid_to_timestamp = query_picker.update_valid_to_timestamp_location()
         insert_into_sensor_at_location = query_picker.insert_into_sensor_at_location()
 
@@ -130,7 +138,8 @@ def main():
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for geo bot.")
 
         ################################ RUN THE BOT ################################
-        geo_bot.run(url_builder_param=personal_api_data,
+        geo_bot.run(api_address=api_address,
+                    url_param=url_param,
                     active_locations=active_locations,
                     name2id_map=name2id_map,
                     update_valid_to_ts_query=update_valid_to_timestamp,

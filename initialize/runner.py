@@ -119,8 +119,13 @@ def main():
         parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(raw_string=raw_api_data)
 
-        ################################ GET THE API DATA ASSOCIATED TO PERSONALITY ################################
-        personal_api_data = parsed_api_data[sc.PERSONALITY]
+        ################################ GET THE API ADDRESS ################################
+        try:
+            api_address = parsed_api_data[sc.PERSONALITY]['api_address']
+            url_param = parsed_api_data[sc.PERSONALITY]['url_param']
+        except KeyError as ke:
+            raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} "
+                             f"for personality='{sc.PERSONALITY}'.")
 
         ################################ GET QUERY STATEMENT FOR INSERTION ################################
         insert_into_sensor_statement = query_picker.insert_into_sensor()
@@ -144,7 +149,8 @@ def main():
 
         ################################ RUN THE BOT ################################
         initialize_bot.run(first_sensor_id=first_sensor_id,
-                           url_builder_param=personal_api_data,
+                           api_address=api_address,
+                           url_param=url_param,
                            sensor_names=sensor_names,
                            sensor_query=insert_into_sensor_statement,
                            api_param_query=insert_into_api_param_statement,

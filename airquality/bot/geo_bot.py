@@ -11,6 +11,7 @@ from typing import Dict, Any
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.api.url_builder import URLBuilder
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.adapter.geom_adapter import GeometryAdapter
 from airquality.parser.datetime_parser import DatetimeParser
@@ -27,8 +28,8 @@ class GeoBot:
 
     def __init__(self,
                  dbconn,
-                 url_builder_class,
                  file_parser_class,
+                 url_builder_class=URLBuilder,
                  reshaper_class=PacketReshaper,
                  universal_adapter_class=UniversalAdapter,
                  geom_adapter_class=GeometryAdapter,
@@ -44,18 +45,19 @@ class GeoBot:
         self.composition_class = composition_class
 
     def run(self,
-            url_builder_param: Dict[str, Any],
+            api_address: str,
+            url_param: Dict[str, Any],
             active_locations: Dict[str, Any],
             name2id_map: Dict[str, Any],
             update_valid_to_ts_query: str,
             sensor_at_location_query: str):
 
         ################################ API DATA FETCHING ################################
-        url_builder = self.url_builder_class()  # instance for building URL
-        url = url_builder.build_url(url_builder_param)  # the URL used for fetching data
-        raw_packets = UrllibAdapter.fetch(url)  # raw packets fetched from API (json)
-        parser = self.file_parser_class()  # instance for parsing the content
-        parsed_packets = parser.parse(raw_packets)  # parsed packets fetched from API (dict)
+        url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
+        url = url_builder.build_url()
+        raw_packets = UrllibAdapter.fetch(url)
+        parser = self.file_parser_class()
+        parsed_packets = parser.parse(raw_packets)
 
         ################################ RESHAPE PACKETS ################################
         packet_reshaper = self.reshaper_class()
