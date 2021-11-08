@@ -133,7 +133,7 @@ def main():
                                            file_parser_class=JSONFileParser,
                                            url_builder_class=URLBuilderPurpleair,
                                            reshaper_class=PurpleairPacketReshaper,
-                                           container_adapter_class=PurpleairUniversalAdapter,
+                                           universal_adapter_class=PurpleairUniversalAdapter,
                                            geom_adapter_class=GeometryAdapterPurpleair,
                                            geo_sqlcontainer_class=GeoSQLContainer,
                                            sensor_sqlcontainer_class=SensorSQLContainer,

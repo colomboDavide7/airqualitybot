@@ -17,11 +17,13 @@ from airquality.bot.geo_bot import GeoBot
 from airquality.picker.query_picker import QueryPicker
 from airquality.api.url_builder import URLBuilderPurpleair
 from airquality.picker.resource_picker import ResourcePicker
-from airquality.mapper.packet_mapper import NameGeomPacketMapperPurpleair
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
+from airquality.adapter.universal_adapter import PurpleairUniversalAdapter
 from airquality.parser.file_parser import FileParserFactory, JSONFileParser
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
+from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
@@ -120,7 +122,10 @@ def main():
                              url_builder_class=URLBuilderPurpleair,
                              file_parser_class=JSONFileParser,
                              reshaper_class=PurpleairPacketReshaper,
-                             packet_mapper_class=NameGeomPacketMapperPurpleair)
+                             universal_adapter_class=PurpleairUniversalAdapter,
+                             geom_adapter_class=GeometryAdapterPurpleair,
+                             geom_sqlcontainer_class=GeoSQLContainer,
+                             composition_class=SQLContainerComposition)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for geo bot.")
 
@@ -128,8 +133,8 @@ def main():
         geo_bot.run(url_builder_param=personal_api_data,
                     active_locations=active_locations,
                     name2id_map=name2id_map,
-                    update_valid_to_timestamp=update_valid_to_timestamp,
-                    insert_into_sensor_at_location=insert_into_sensor_at_location)
+                    update_valid_to_ts_query=update_valid_to_timestamp,
+                    sensor_at_location_query=insert_into_sensor_at_location)
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
