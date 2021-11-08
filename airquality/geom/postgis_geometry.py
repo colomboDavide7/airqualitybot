@@ -6,14 +6,10 @@
 # Description: this script defines a class for building geometry type string based on API parameters
 #
 ######################################################
-from typing import Dict, Any
 from abc import ABC, abstractmethod
 
 
 class PostGISGeometry(ABC):
-
-    def __init__(self, param: Dict[str, Any]):
-        self.param = param
 
     @abstractmethod
     def get_database_string(self) -> str:
@@ -26,10 +22,9 @@ class PostGISGeometry(ABC):
 
 class PostGISPoint(PostGISGeometry):
 
-    def __init__(self, param: Dict[str, Any]):
-        super().__init__(param)
-        self.lat = param.get('lat')
-        self.lng = param.get('lng')
+    def __init__(self, lat: str, lng: str):
+        self.lat = lat
+        self.lng = lng
 
     def get_database_string(self) -> str:
         return f"ST_GeomFromText('POINT({self.lng} {self.lat})', 26918)"
@@ -38,6 +33,7 @@ class PostGISPoint(PostGISGeometry):
         return f"POINT({self.lng} {self.lat})"
 
 
+############################## NULL OBJECT USED WHEN COORDS ARE MISSING #############################
 class PostGISNullObject(PostGISGeometry):
 
     def get_database_string(self):
@@ -45,15 +41,3 @@ class PostGISNullObject(PostGISGeometry):
 
     def get_geomtype_string(self):
         return 'null'
-
-
-################################ FACTORY ################################
-class PostGISGeometryFactory:
-
-    def __init__(self, geom_class=PostGISGeometry):
-        self.geom_class = geom_class
-
-    def create_geometry(self, param: Dict[str, Any]) -> PostGISGeometry:
-        if not param:
-            return PostGISNullObject(param)
-        return self.geom_class(param)

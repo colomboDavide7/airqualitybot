@@ -13,11 +13,10 @@ import airquality.constants.system_constants as sc
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.api.url_builder import URLBuilderFactory
-from airquality.parser.file_parser import FileParserFactory
+# from airquality.parser.file_parser import FileParserFactory
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.db_conn_adapter import ConnectionAdapter
-from airquality.adapter.geom_adapter import GeometryAdapterFactory
-from airquality.geom.postgis_geometry import PostGISGeometryFactory
+from airquality.geom.postgis_geometry import PostGISNullObject
 from airquality.reshaper.packet_reshaper import PacketReshaperFactory
 from airquality.adapter.container_adapter import ContainerAdapterFactory
 from airquality.container.sql_container_factory import SQLContainerFactory
@@ -31,20 +30,20 @@ class InitializeBot:
 
     def __init__(self,
                  dbconn: ConnectionAdapter,     # database connection adapter object
+                 file_parser_class,             # file parser class for parsing raw file lines
                  url_builder_class,             # builder class for creating the URL for fetching data from API
                  reshaper_class,                # reshaper class for getting the packets in a better shape
                  container_adapter_class,       # adapter class for all sensor's information
                  geom_adapter_class,            # adapter class for geolocation information
-                 postgis_geom_class,            # geometry class for building database geometry string
                  sensor_sqlcontainer_class,     # container class for translating Dict into SQL string
                  apiparam_sqlcontainer_class,   # container class for translating Dict into SQL string
                  geo_sqlcontainer_class):       # container class for translating Dict into SQL string
         self.dbconn = dbconn
+        self.file_parser_class = file_parser_class
         self.url_builder_class = url_builder_class
         self.reshaper_class = reshaper_class
         self.container_adapter_class = container_adapter_class
         self.geom_adapter_class = geom_adapter_class
-        self.postgis_geom_class = postgis_geom_class
         self.sensor_sqlcontainer_class = sensor_sqlcontainer_class
         self.apiparam_sqlcontainer_class = apiparam_sqlcontainer_class
         self.geo_sqlcontainer_class = geo_sqlcontainer_class
@@ -57,24 +56,19 @@ class InitializeBot:
             api_param_query: str,               # INSERT INTO query for inserting records into 'api_param' table
             sensor_at_location_query: str):     # INSERT INTO query for inserting records into 'sensor_at_location' table
 
-        ################################ URL BUILDER ################################
-        url_builder_fact = URLBuilderFactory(url_builder_class=self.url_builder_class)
-        url_builder = url_builder_fact.create_url_builder()
-
-        ################################ BUILD URL ################################
-        url = url_builder.build_url(parameters=url_builder_param)
-
-        ################################ FETCHING API DATA ################################
-        raw_api_packets = UrllibAdapter.fetch(url=url)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension='json')
-        parsed_api_packets = parser.parse(raw_string=raw_api_packets)
+        ################################ API DATA FATCHING ################################
+        url_builder = self.url_builder_class()              # instance for building URL
+        url = url_builder.build_url(url_builder_param)      # the URL used for fetching data
+        raw_packets = UrllibAdapter.fetch(url)              # raw packets fetched from API (json)
+        parser = self.file_parser_class()                   # instance for parsing the content
+        parsed_packets = parser.parse(raw_packets)          # parsed packets fetched from API (dict)
 
         ################################ RESHAPE PACKETS ################################
-        reshaper_fact = PacketReshaperFactory(reshaper_class=self.reshaper_class)
-        packet_reshaper = reshaper_fact.make_reshaper()
-        reshaped_packets = packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
+        packet_reshaper = self.reshaper_class()
+        reshaped_packets = packet_reshaper.reshape_packet(parsed_packets)
 
         if reshaped_packets:
+
             if sc.DEBUG_MODE:
                 print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
                 for packet in reshaped_packets:
@@ -82,22 +76,14 @@ class InitializeBot:
                     for key, val in packet.items():
                         print(f"{DEBUG_HEADER} {key}={val}")
 
-            ############################## CONTAINER ADAPTER #############################
-            container_adapter_fact = ContainerAdapterFactory(container_adapter_class=self.container_adapter_class)
-            container_adapter = container_adapter_fact.make_container_adapter()
-
-            ############################## GEOMETRY ADAPTER #############################
-            geom_adapter_fact = GeometryAdapterFactory(geom_adapter_class=self.geom_adapter_class)
-            geom_adapter = geom_adapter_fact.make_geometry_adapter()
-
-            ############################## POSTGIS ADAPTER #############################
-            postgis_geom_fact = PostGISGeometryFactory(geom_class=self.postgis_geom_class)
+            ############################## ADAPTER FOR CONVERTING DICT INTO CONTAINERS #############################
+            container_adapter = self.container_adapter_class()
+            geom_adapter = self.geom_adapter_class()
 
             ############################## ADAPT PACKETS TO SQL CONTAINER INTERFACE #############################
             adapted_packets = []
             for packet in reshaped_packets:
-                geom_adapted_packet = geom_adapter.adapt(packet)
-                geometry = postgis_geom_fact.create_geometry(geom_adapted_packet)
+                geometry = geom_adapter.adapt(packet)
                 packet['geometry'] = geometry.get_database_string()
                 packet['timestamp'] = DatetimeParser.current_sqltimestamp()
                 adapted_packet = container_adapter.adapt(packet=packet)

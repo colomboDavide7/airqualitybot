@@ -6,7 +6,6 @@
 #
 #################################################
 import json
-import builtins
 from typing import Dict, Any
 from abc import ABC, abstractmethod
 from json.decoder import JSONDecodeError
@@ -28,7 +27,6 @@ class JSONFileParser(FileParser):
         """Core method of this every FileParser instance that takes a raw string and parses it.
 
         If 'raw_string' is empty, SystemExit exception is raised.
-
         If some error occur while parsing the string, SystemExit exception is raised."""
 
         if raw_string == EMPTY_STRING:
@@ -40,20 +38,19 @@ class JSONFileParser(FileParser):
             raise SystemExit(f"{JSONFileParser.__name__}: {str(jerr)}")
         return parsed
 
-
-class FileParserFactory(builtins.object):
-    """This class defines a @staticmethod for creating a FileParser object given the file extension."""
-
-    @classmethod
-    def file_parser_from_file_extension(cls, file_extension: str) -> FileParser:
-        """Factory method for creating FileParser objects from file extension.
-
-        If invalid file extension is passed, SystemExit is raised.
-
-        Supported file extensions are: [ json ]."""
-
-        if file_extension == 'json':
-            return JSONFileParser()
-        else:
-            raise SystemExit(f"{FileParserFactory.__name__}: unknown {FileParser.__name__} for file extension "
-                             f"'{file_extension}'.")
+# class FileParserFactory(object):
+#     """This class defines a @staticmethod for creating a FileParser object given the file extension."""
+#
+#     @classmethod
+#     def file_parser_from_file_extension(cls, file_extension: str) -> FileParser:
+#         """Factory method for creating FileParser objects from file extension.
+#
+#         If invalid file extension is passed, SystemExit is raised.
+#
+#         Supported file extensions are: [ json ]."""
+#
+#         if file_extension == 'json':
+#             return JSONFileParser()
+#         else:
+#             raise SystemExit(f"{FileParserFactory.__name__}: unknown {FileParser.__name__} for file extension "
+#                              f"'{file_extension}'.")
