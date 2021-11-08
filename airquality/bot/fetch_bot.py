@@ -165,10 +165,6 @@ class FetchBotThingspeak(FetchBot):
                 # if (to_datetime - stop_datetime).total_seconds() >= 0:
                 #     to_datetime = stop_datetime
 
-        ################################ SAFELY CLOSE DATABASE CONNECTION ################################
-        dbconn.close_conn()
-
-
 ################################################################################################
 
 

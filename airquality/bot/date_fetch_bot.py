@@ -14,6 +14,7 @@ import airquality.constants.system_constants as sc
 
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.reshaper.packet_reshaper import PacketReshaper
 from airquality.api.url_builder import URLBuilder
 from airquality.adapter.universal_api_adapter import UniversalAPIAdapter
 from airquality.container.sql_container import MobileMeasurementSQLContainer, StationMeasurementSQLContainer
@@ -28,12 +29,7 @@ from airquality.container.fetch_container import ChannelContainer, ChannelContai
 from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.parser.datetime_parser import DatetimeParser
-from airquality.picker.query_picker import QueryPicker
 from airquality.api.urllib_adapter import UrllibAdapter
-from airquality.picker.json_param_picker import JSONParamPicker
-from airquality.picker.api_param_picker import APIParamPicker
-from airquality.picker.resource_picker import ResourcePicker
-from airquality.parser.file_parser import FileParserFactory
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER
@@ -43,10 +39,14 @@ class DateFetchBot:
 
     def __init__(self,
                  dbconn,
+                 file_parser_class,
                  url_builder_class=URLBuilder,
+                 packet_reshaper_class=PacketReshaper,
                  universal_api_adapter_class=UniversalAPIAdapter):
         self.dbconn = dbconn
+        self.file_parser_class = file_parser_class
         self.url_builder_class = url_builder_class
+        self.packet_reshaper_class = packet_reshaper_class
         self.universal_api_adapter_class = universal_api_adapter_class
 
     def run(self,
@@ -55,8 +55,10 @@ class DateFetchBot:
             sensor_ids: List[int],
             select_apiparam_query: str):
 
-        ################################ DEFINE STOP DATETIME ################################
-        stop_datetime = DatetimeParser.today()
+        ################################ DEFINE ALL VARIABLES USED BELOW ################################
+        packet_reshaper = self.packet_reshaper_class()
+        file_parser = self.file_parser_class()          # file parser object for parsing packets fetched from API.
+        stop_datetime = DatetimeParser.today()          # datetime object that indicates the bot when stop.
 
         ################################ CYCLE ON EACH SENSOR ################################
         for sensor_id in sensor_ids:
@@ -68,30 +70,18 @@ class DateFetchBot:
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
             if not api_param:
-                raise SystemExit(f"{EXCEPTION_HEADER} {DateFetchBot.__name__} fetched API param but are empty.")
+                raise SystemExit(f"{EXCEPTION_HEADER} {DateFetchBot.__name__} fetched API param for sensor_id={sensor_id} "
+                                 f"but are empty.")
 
             ################################ UNIVERSAL API ADAPTER ################################
             universal_api_adapter = self.universal_api_adapter_class()
             universal_api_param = universal_api_adapter.adapt(api_param)
 
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " UNIVERSAL API PARAMETERS " + 20 * '=')
-                for api_param in universal_api_param:
-                    print(30*"*")
-                    for key, val in api_param.items():
-                        print(f"{DEBUG_HEADER} {key}={val!s}")
-
             ############################# CYCLE ON UNIVERSAL API PARAM OF A SINGLE SENSOR ##############################
             for api_param in universal_api_param:
 
-                # TODO: TAKE START AND STOP DATA FROM THE FILE
-
-                ################################ MERGE TOGETHER ALL URL PARAMETERS ################################
-                url_param.update(api_param)
-
-                # TODO: ADD ALSO TIMESTAMP PARAM TAKEN FROM THE FILE
-
-                # define from datetime
+                # from_datetime = DatetimeParser.string2datetime("2018-01-01 00:00:00")  # [ONLY FOR NOW]
+                #
                 # from_datetime = DatetimeParser.string2datetime(datetime_string=channel_param['channel_ts']['val'])
                 # from_datetime = DatetimeParser.add_seconds_to_datetime(ts=from_datetime, seconds=3)
                 #
@@ -100,36 +90,42 @@ class DateFetchBot:
                 #
                 # if (to_datetime - stop_datetime).total_seconds() > 0:
                 #     to_datetime = stop_datetime
+                #
+                # # CONTINUE UNTIL TODAY IS REACHED
+                # while (stop_datetime - from_datetime).total_seconds() >= 0:
+                #
 
-                # CONTINUE UNTIL TODAY IS REACHED
-                while (stop_datetime - from_datetime).total_seconds() >= 0:
+                # TODO: TAKE START AND STOP DATA FROM THE FILE FROM THE SENSOR_ID
 
-                    # Create a ChannelContainer object for building the api URL
-                    channel_container = fetch_container_fact.make_container(parameters=channel_param)
+                ################################ MERGE TOGETHER ALL URL PARAMETERS ################################
+                url_param.update(api_param)
 
-                    # build URL
-                    url = channel_container.url(api_address=api_address,
-                                                optional_param={'end': DatetimeParser.datetime2string(to_datetime)})
+                # TODO: ADD ALSO TIMESTAMP PARAM TAKEN FROM THE FILE
+
+                if sc.DEBUG_MODE:
+                    print(20 * "=" + " URL PARAMETERS " + 20 * '=')
+                    for key, val in url_param.items():
+                        print(f"{DEBUG_HEADER} {key}={val}")
+
+                ################################ FETCH DATA FROM API ################################
+                url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
+                url = url_builder.build_url()
+                raw_api_packets = UrllibAdapter.fetch(url)
+                parsed_api_packets = file_parser.parse(raw_api_packets)
+
+                if sc.DEBUG_MODE:
+                    print(f"{DEBUG_HEADER} {url}")
+
+                ################################ RESHAPE PACKETS ################################
+                reshaped_packets = packet_reshaper.reshape_packet(parsed_api_packets)
+
+                if reshaped_packets:
                     if sc.DEBUG_MODE:
-                        print(f"{DEBUG_HEADER} {url}")
-
-                    # Fetch data from API (API packets)
-                    api_packets = UrllibAdapter.fetch(url=url)
-                    parser = FileParserFactory.file_parser_from_file_extension(file_extension="json")
-                    parsed_api_packets = parser.parse(raw_string=api_packets)
-
-                    # Reshape API packets: merge all data coming from different channels into a single PlainAPIPacket object
-                    api_packet_reshaper = PacketReshaperFactory().make_reshaper(
-                        bot_personality=sc.PERSONALITY)
-                    reshaped_api_packets = api_packet_reshaper.reshape_packet(api_answer=parsed_api_packets)
-
-                    if reshaped_api_packets:
-
-                        adapted_packets = []
-                        for packet in reshaped_api_packets:
-                            packet['timestamp'] = DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
-                            adapted_packet = measure_adapter.adapt(packet)
-                            adapted_packets.append(adapted_packet)
+                        print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
+                        for packet in reshaped_packets:
+                            print(30 * '*')
+                            for key, val in packet.items():
+                                print(f"{DEBUG_HEADER} {key}={val}")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()

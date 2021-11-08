@@ -14,6 +14,8 @@ from airquality.bot.fetch_bot import FetchBot
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.api.url_builder import URLBuilderThingspeak, URLBuilderAtmotube
+from airquality.reshaper.packet_reshaper import ThingspeakPacketReshaper, AtmotubePacketReshaper
 from airquality.adapter.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
 from airquality.io.io import IOManager
 from airquality.bot.geo_bot import GeoBot
@@ -155,6 +157,12 @@ def main():
                                  f"personality='{sc.PERSONALITY}'.")
             print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
 
+            # URLBuilder class
+            url_builder_class = URLBuilderAtmotube
+
+            # PacketReshaper class
+            packet_reshaper_class = AtmotubePacketReshaper
+
             # UniversalAPIAdapter class
             universal_api_adapter_class = AtmotubeUniversalAPIAdapter
 
@@ -173,6 +181,12 @@ def main():
                                  f"personality='{sc.PERSONALITY}'.")
             print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
 
+            # PacketReshaper class
+            packet_reshaper_class = ThingspeakPacketReshaper
+
+            # URLBuilder class
+            url_builder_class = URLBuilderThingspeak
+
             # UniversalAPIAdapter class
             universal_api_adapter_class = ThingspeakUniversalAPIAdapter
 
@@ -182,14 +196,16 @@ def main():
 
         ############################# RUN THE BOT ###########################
 
-        fetch_bot = bot_class(dbconn=dbconn, universal_api_adapter_class=universal_api_adapter_class)
+        fetch_bot = bot_class(dbconn=dbconn,
+                              file_parser_class=file_parser_class,
+                              url_builder_class=url_builder_class,
+                              packet_reshaper_class=packet_reshaper_class,
+                              universal_api_adapter_class=universal_api_adapter_class)
 
         fetch_bot.run(api_address=api_address,
                       url_param=url_param,
                       sensor_ids=sensor_ids,
                       select_apiparam_query=select_apiparam_query)
-
-
 
         end_time = time.perf_counter()
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')

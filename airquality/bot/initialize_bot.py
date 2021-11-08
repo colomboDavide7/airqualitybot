@@ -72,9 +72,9 @@ class InitializeBot:
 
             if sc.DEBUG_MODE:
                 print(20 * "=" + " ALL SENSORS " + 20 * '=')
-                for universal_packet in reshaped_packets:
+                for packet in reshaped_packets:
                     print(30 * '*')
-                    for key, val in universal_packet.items():
+                    for key, val in packet.items():
                         print(f"{DEBUG_HEADER} {key}={val}")
 
             ############################## UNIVERSAL ADAPTER #############################

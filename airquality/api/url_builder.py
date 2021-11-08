@@ -76,9 +76,11 @@ class URLBuilderThingspeak(URLBuilder):
         self.raise_system_exit_when_is_missing_param(param2find='channel_id')
         self.raise_system_exit_when_is_missing_param(param2find='format')
         self.raise_system_exit_when_is_missing_param(param2find='api_key')
-
+        ans_format = self.parameters['format']
         url = self.api_address + self.parameters.pop('channel_id') + '/'
-        url += 'feeds.' + self.parameters.pop('format') + '?'
+        url += 'feeds.' + ans_format + '?'
         for param_name, param_value in self.parameters.items():
             url += param_name + '=' + param_value + '&'
+        # Insert again the format into the parameters for the other channels
+        self.parameters['format'] = ans_format
         return url.strip('&')
