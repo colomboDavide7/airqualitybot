@@ -17,7 +17,7 @@ from airquality.bot.geo_bot import GeoBot
 from airquality.picker.query_picker import QueryPicker
 from airquality.api.url_builder import URLBuilderPurpleair
 from airquality.picker.resource_picker import ResourcePicker
-from airquality.mapper.packet_mapper import PacketMapperPurpleair
+from airquality.mapper.packet_mapper import NameGeomPacketMapperPurpleair
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
 from airquality.parser.file_parser import FileParserFactory, JSONFileParser
@@ -120,7 +120,7 @@ def main():
                              url_builder_class=URLBuilderPurpleair,
                              file_parser_class=JSONFileParser,
                              reshaper_class=PurpleairPacketReshaper,
-                             packet_mapper_class=PacketMapperPurpleair)
+                             packet_mapper_class=NameGeomPacketMapperPurpleair)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for geo bot.")
 

@@ -8,13 +8,13 @@
 ######################################################
 
 import unittest
-from airquality.adapter.container_adapter import ContainerAdapterFactory, ContainerAdapterPurpleair
+from airquality.adapter.universal_adapter import ContainerAdapterFactory, PurpleairUniversalAdapter
 
 
 class TestContainerAdapter(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.purpleair_fact = ContainerAdapterFactory(container_adapter_class=ContainerAdapterPurpleair)
+        self.purpleair_fact = ContainerAdapterFactory(container_adapter_class=PurpleairUniversalAdapter)
 
     def test_successfully_adapt_purpleair_packets(self):
         test_packet = {'name': 'n1', 'sensor_index': 'idx1', 'geometry': 'geom', 'timestamp': 'ts',

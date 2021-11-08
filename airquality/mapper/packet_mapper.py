@@ -19,7 +19,7 @@ class PacketMapper(ABC):
         pass
 
 
-class PacketMapperPurpleair(PacketMapper):
+class NameGeomPacketMapperPurpleair(PacketMapper):
     """ name:geom mapper """
 
     def reshape(self, packets: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -27,9 +27,9 @@ class PacketMapperPurpleair(PacketMapper):
         for packet in packets:
             keys = packet.keys()
             if 'name' not in keys or 'sensor_index' not in keys:
-                raise SystemExit(f"{EXCEPTION_HEADER} {PacketMapperPurpleair.__name__} missing ['name'|'sensor_index']")
+                raise SystemExit(f"{EXCEPTION_HEADER} {NameGeomPacketMapperPurpleair.__name__} missing ['name'|'sensor_index']")
             if 'latitude' not in keys or 'longitude' not in keys:
-                raise SystemExit(f"{EXCEPTION_HEADER}{PacketMapperPurpleair.__name__} missing ['latitude'|'longitude']")
+                raise SystemExit(f"{EXCEPTION_HEADER}{NameGeomPacketMapperPurpleair.__name__} missing ['latitude'|'longitude']")
 
             sensor_name = packet['name'].replace("'", "")
             name = f"{sensor_name} ({packet['sensor_index']})"

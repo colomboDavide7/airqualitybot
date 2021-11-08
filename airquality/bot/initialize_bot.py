@@ -14,10 +14,9 @@ import airquality.constants.system_constants as sc
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.database.db_conn_adapter import ConnectionAdapter
-from airquality.adapter.sensor_adapter import SensorAdapter
-from airquality.adapter.apiparam_adapter import APIParamAdapter
+from airquality.adapter.universal_adapter import UniversalAdapter
 from airquality.adapter.geom_adapter import GeometryAdapter
-from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
+from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition, SensorSQLContainer, APIParamSQLContainer
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER
@@ -27,24 +26,26 @@ from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER
 class InitializeBot:
 
     def __init__(self,
-                 dbconn: ConnectionAdapter,     # database connection adapter object
-                 file_parser_class,             # file parser class for parsing raw file lines
-                 url_builder_class,             # builder class for creating the URL for fetching data from API
-                 reshaper_class,                # reshaper class for getting the packets in a better shape
-                 geom_adapter_class=GeometryAdapter,            # adapter class for geolocation information
-                 sensor_adapter_class=SensorAdapter,            # adapter class for sensor information
-                 apiparam_adapter_class=APIParamAdapter,        # adapter class for api parameters
-                 geo_sqlcontainer_class=GeoSQLContainer,        # container class for converting dict into SQLContainer
+                 dbconn: ConnectionAdapter,  # database connection adapter object
+                 file_parser_class,  # file parser class for parsing raw file lines
+                 url_builder_class,  # builder class for creating the URL for fetching data from API
+                 reshaper_class,  # reshaper class for getting the packets in a better shape
+                 container_adapter_class=UniversalAdapter,  # adapter class for giving the packets a general interface
+                 geom_adapter_class=GeometryAdapter,  # adapter class for geolocation information
+                 geo_sqlcontainer_class=GeoSQLContainer,  # container class for converting dict into SQLContainer
+                 sensor_sqlcontainer_class=SensorSQLContainer,
+                 apiparam_sqlcontainer_class=APIParamSQLContainer,
                  composition_class=SQLContainerComposition):    # container class that contains a collection of SQLContainer
         self.dbconn = dbconn
         self.file_parser_class = file_parser_class
         self.url_builder_class = url_builder_class
         self.reshaper_class = reshaper_class
         self.geom_adapter_class = geom_adapter_class
-        self.sensor_adapter_class = sensor_adapter_class
-        self.apiparam_adapter_class = apiparam_adapter_class
         self.geo_sqlcontainer_class = geo_sqlcontainer_class
+        self.sensor_sqlcontainer_class = sensor_sqlcontainer_class
+        self.apiparam_sqlcontainer_class = apiparam_sqlcontainer_class
         self.composition_class = composition_class
+        self.container_adapter_class = container_adapter_class
 
     def run(self,
             first_sensor_id: int,               # first sensor id from which starts to count
@@ -68,35 +69,58 @@ class InitializeBot:
         if reshaped_packets:
 
             if sc.DEBUG_MODE:
-                print(20 * "=" + " RESHAPED PACKETS " + 20 * '=')
+                print(20 * "=" + " ALL SENSORS " + 20 * '=')
                 for packet in reshaped_packets:
                     print(30 * '*')
                     for key, val in packet.items():
                         print(f"{DEBUG_HEADER} {key}={val}")
 
+            ############################## GENERAL INTERFACE ADAPTER #############################
+            container_adapter = self.container_adapter_class()
+
+            general_packets = []
+            for packet in reshaped_packets:
+                general_packets.append(container_adapter.adapt(packet))
+
+            ############################## FILTER PACKETS #############################
+            filtered_packets = []
+            for packet in general_packets:
+                if packet['name'] not in sensor_names:
+                    filtered_packets.append(packet)
+
+            if not filtered_packets:
+                print(f"{INFO_HEADER} all sensors are already present into the database.")
+                self.dbconn.close_conn()
+                return
+
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " NEW SENSORS " + 20 * '=')
+                for packet in filtered_packets:
+                    print(f"{DEBUG_HEADER} name={packet['name']}")
+
             ############################## ADAPTER FOR CONVERTING DICT INTO CONTAINERS #############################
             geom_adapter = self.geom_adapter_class()
-            sensor_adapter = self.sensor_adapter_class()
-            apiparam_adapter = self.apiparam_adapter_class()
 
             ############################## CONVERT PARAMETERS INTO SQL CONTAINERS #############################
             temp_sensor_id = first_sensor_id
             geo_containers = []
             sensor_containers = []
             apiparam_containers = []
-            for packet in reshaped_packets:
-
-                # TODO: FILTER CLASS
-
+            for packet in filtered_packets:
                 # **************************
-                sensor_containers.append(sensor_adapter.adapt(packet))
+                sensor_containers.append(self.sensor_sqlcontainer_class(name=packet['name'],
+                                                                        type_= sc.PERSONALITY))
                 # **************************
                 geometry = geom_adapter.adapt(packet)
                 geom = geometry.get_database_string()
                 valid_from = DatetimeParser.current_sqltimestamp()
-                geo_containers.append(self.geo_sqlcontainer_class(sensor_id=temp_sensor_id, valid_from=valid_from, geom=geom))
+                geo_containers.append(self.geo_sqlcontainer_class(sensor_id=temp_sensor_id,
+                                                                  valid_from=valid_from,
+                                                                  geom=geom))
                 # **************************
-                apiparam_containers.append(apiparam_adapter.adapt(packet=packet, sensor_id=temp_sensor_id))
+                apiparam_containers.append(self.apiparam_sqlcontainer_class(param_name=packet['param_name'],
+                                                                            param_value=packet['param_value'],
+                                                                            sensor_id=temp_sensor_id))
                 temp_sensor_id += 1
 
             ############################## COMPOSITION CONTAINERS #############################

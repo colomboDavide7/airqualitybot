@@ -11,22 +11,23 @@ from abc import ABC, abstractmethod
 from airquality.constants.shared_constants import EXCEPTION_HEADER
 
 
-class ContainerAdapter(ABC):
+class UniversalAdapter(ABC):
 
     @abstractmethod
     def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
 
-class ContainerAdapterPurpleair(ContainerAdapter):
+class PurpleairUniversalAdapter(UniversalAdapter):
 
     def adapt(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         new_packet = {}
         try:
-            new_packet['name'] = f"{packet['name']} ({packet['sensor_index']})"
+            corrected_name = packet['name'].replace("'", "")
+            new_packet['name'] = f"{corrected_name} ({packet['sensor_index']})"
             new_packet['type'] = 'purpleair'
-            new_packet['timestamp'] = packet['timestamp']
-            new_packet['geometry'] = packet['geometry']
+            new_packet['lat'] = packet['latitude']
+            new_packet['lng'] = packet['longitude']
             new_packet['param_name'] = ['primary_id_a',
                                         'primary_id_b',
                                         'primary_key_a',
@@ -53,15 +54,5 @@ class ContainerAdapterPurpleair(ContainerAdapter):
                                          '2018-01-01 00:00:00']
         except KeyError as ke:
             # Raise Exception if any key is missing from the 'packet' dictionary
-            raise SystemExit(f"{EXCEPTION_HEADER} {ContainerAdapterPurpleair.__name__} is missing the key={ke!s}.")
+            raise SystemExit(f"{EXCEPTION_HEADER} {PurpleairUniversalAdapter.__name__} is missing the key={ke!s}.")
         return new_packet
-
-
-################################ CONTAINER ADAPTER FACTORY ################################
-# class ContainerAdapterFactory(object):
-#
-#     def __init__(self, container_adapter_class=ContainerAdapter):
-#         self.container_adapter_class = container_adapter_class
-#
-#     def make_container_adapter(self) -> ContainerAdapter:
-#         return self.container_adapter_class()

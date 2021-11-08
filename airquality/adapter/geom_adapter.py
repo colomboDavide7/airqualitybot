@@ -21,10 +21,7 @@ class GeometryAdapter(ABC):
 class GeometryAdapterPurpleair(GeometryAdapter):
 
     def adapt(self, packet: Dict[str, Any]) -> PostGISPoint:
-        keys = packet.keys()
-        if 'latitude' not in keys or 'longitude' not in keys:
-            raise SystemExit(f"{GeometryAdapterPurpleair.__name__} missing required geometry fields=['latitude' | 'longitude']")
-        return PostGISPoint(lat=packet.pop('latitude'), lng=packet.pop('longitude'))
+        return PostGISPoint(lat=packet['lat'], lng=packet['lng'])
 
 
 class GeometryAdapterAtmotube(GeometryAdapter):

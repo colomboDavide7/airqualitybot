@@ -12,25 +12,25 @@ import time
 from typing import List
 import airquality.constants.system_constants as sc
 from airquality.bot.initialize_bot import InitializeBot
-from airquality.constants.shared_constants import VALID_PERSONALITIES, INFO_HEADER, INITIALIZE_USAGE, EXCEPTION_HEADER
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.container.sql_container import SQLContainerComposition
-from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
-from airquality.adapter.sensor_adapter import SensorAdapterPurpleair
-from airquality.adapter.apiparam_adapter import APIParamAdapterPurpleair
-from airquality.container.sql_container import GeoSQLContainer
-from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
-from airquality.api.url_builder import URLBuilderPurpleair
-from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
-from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.picker.query_picker import QueryPicker
-from airquality.picker.resource_picker import ResourcePicker
-from airquality.parser.file_parser import JSONFileParser, FileParserFactory
 from airquality.io.io import IOManager
+from airquality.picker.query_picker import QueryPicker
+from airquality.api.url_builder import URLBuilderPurpleair
+from airquality.picker.resource_picker import ResourcePicker
+from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
+from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
+from airquality.adapter.universal_adapter import PurpleairUniversalAdapter
+from airquality.parser.file_parser import JSONFileParser, FileParserFactory
+from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
+from airquality.container.sql_container import SQLContainerComposition, SensorSQLContainer, \
+    APIParamSQLContainer, GeoSQLContainer
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
+    DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
+    VALID_PERSONALITIES, INITIALIZE_USAGE
 
 
 ################################ SYSTEM ARGS PARSER FUNCTION ################################
@@ -133,10 +133,11 @@ def main():
                                            file_parser_class=JSONFileParser,
                                            url_builder_class=URLBuilderPurpleair,
                                            reshaper_class=PurpleairPacketReshaper,
+                                           container_adapter_class=PurpleairUniversalAdapter,
                                            geom_adapter_class=GeometryAdapterPurpleair,
-                                           sensor_adapter_class=SensorAdapterPurpleair,
-                                           apiparam_adapter_class=APIParamAdapterPurpleair,
                                            geo_sqlcontainer_class=GeoSQLContainer,
+                                           sensor_sqlcontainer_class=SensorSQLContainer,
+                                           apiparam_sqlcontainer_class=APIParamSQLContainer,
                                            composition_class=SQLContainerComposition)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")
