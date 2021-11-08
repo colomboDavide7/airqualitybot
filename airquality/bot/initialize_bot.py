@@ -54,7 +54,7 @@ class InitializeBot:
             api_param_query: str,               # INSERT INTO query for inserting records into 'api_param' table
             sensor_at_location_query: str):     # INSERT INTO query for inserting records into 'sensor_at_location' table
 
-        ################################ API DATA FATCHING ################################
+        ################################ API DATA FETCHING ################################
         url_builder = self.url_builder_class()              # instance for building URL
         url = url_builder.build_url(url_builder_param)      # the URL used for fetching data
         raw_packets = UrllibAdapter.fetch(url)              # raw packets fetched from API (json)

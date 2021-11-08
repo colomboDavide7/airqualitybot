@@ -67,7 +67,7 @@ class SensorSQLContainer(SQLContainer):
 
 class MobileMeasurementSQLContainer(SQLContainer):
 
-    def __init__(self, sensor_id: int, packet: Dict[str, Any]):
+    def __init__(self, packet: Dict[str, Any]):
         self.param_id = packet['param_id']
         self.param_val = packet['param_val']
         self.timestamp = packet['timestamp']

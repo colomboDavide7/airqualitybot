@@ -50,27 +50,16 @@ class QueryPicker(builtins.object):
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
 
-    def select_sensor_name_id_map_from_personality(self, personality: str) -> str:
-        """This method returns a query that selects the (sensor_name, sensor_id) tuples that correspond to the
-         identifier argument."""
-
-        query_id = "s5"
-        self._raise_exception_if_query_identifier_not_found(query_id)
-        return self.parsed_query_data[query_id].format(personality=personality)
-
     def select_measure_param_from_personality(self, personality: str) -> str:
         """This method returns a query for selecting 'param_code, id' tuples which 'param_name' contains the identifier
         argument."""
 
-        query_id = "s6"
+        query_id = "s5"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
 
-    def select_sensor_valid_geo_map_from_personality(self, personality: str) -> str:
-        """This method returns a query that selects the (sensor_id, ST_AsText(geom)) tuple from the sensor_at_location
-        table by looking only at those sensors whose type contains the identifiers and whose 'valid_to' field is NULL."""
-
-        query_id = "s7"
+    def select_sensor_valid_name_geom_mapping_from_personality(self, personality: str) -> str:
+        query_id = "s6"
         self._raise_exception_if_query_identifier_not_found(query_id=query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
 

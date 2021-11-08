@@ -10,10 +10,28 @@ import sys
 import time
 from typing import List
 import airquality.constants.system_constants as sc
-from airquality.bot.geo_bot import GeoBotFactory
+from airquality.bot.geo_bot import GeoBot
 from airquality.constants.shared_constants import GEO_USAGE, VALID_PERSONALITIES, INFO_HEADER
 
+# IMPORT CLASSES FROM AIRQUALITY MODULE
+from airquality.adapter.sensor_adapter import SensorAdapterPurpleair
+from airquality.parser.datetime_parser import DatetimeParser
+from airquality.geom.postgis_geometry import PostGISPoint
+from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
+from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
+from airquality.api.url_builder import URLBuilderFactory, URLBuilderPurpleair
+from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from airquality.picker.query_picker import QueryPicker
+from airquality.api.urllib_adapter import UrllibAdapter
+from airquality.picker.resource_picker import ResourcePicker
+from airquality.parser.file_parser import FileParserFactory
+from airquality.io.io import IOManager
 
+# IMPORT SHARED CONSTANTS
+from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, DEBUG_HEADER, INFO_HEADER
+
+
+################################ SYSTEM ARGS PARSER FUNCTION ################################
 def parse_sys_argv(args: List[str]):
     if args[0] in ("--help", "-h"):
         print(GEO_USAGE)
@@ -47,8 +65,62 @@ def main():
     try:
         start_time = time.perf_counter()
         print(20 * '-' + " START THE PROGRAM " + 20 * '-')
-        geo_bot = GeoBotFactory().create_geo_bot(bot_personality=sc.PERSONALITY)
-        geo_bot.run()
+
+        ################################ READ SERVER FILE ################################
+        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
+        parsed_server_data = parser.parse(raw_string=raw_server_data)
+
+        ################################ PICK DATABASE CONNECTION PROPERTIES ################################
+        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources=parsed_server_data,
+                                                             bot_personality=sc.PERSONALITY)
+
+        ################################ DATABASE CONNECTION ADAPTER ################################
+        db_conn_factory = Psycopg2ConnectionAdapterFactory()
+        dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
+        dbconn.open_conn()
+
+        ################################ READ QUERY FILE ###############################
+        raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
+        parsed_query_data = parser.parse(raw_string=raw_query_data)
+
+        ################################ CREATE QUERY PICKER ###############################
+        query_picker = QueryPicker(parsed_query_data)
+
+        ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR STATIONS ################################
+        query = query_picker.select_sensor_valid_name_geom_mapping_from_personality(personality=sc.PERSONALITY)
+        answer = dbconn.send(executable_sql_query=query)
+        active_locations = DatabaseAnswerParser.parse_key_val_answer(answer)
+
+        if not active_locations:
+            print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'.")
+            dbconn.close_conn()
+            return
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " ACTIVE LOCATIONS " + 20 * '=')
+            for key, val in active_locations.items():
+                print(f"{DEBUG_HEADER} {key}={val}")
+
+        ################################ READ API FILE ################################
+        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
+        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
+        parsed_api_data = parser.parse(raw_string=raw_api_data)
+        personal_api_data = parsed_api_data[sc.PERSONALITY]
+
+
+
+
+        # geo_bot = GeoBotFactory().create_geo_bot(bot_personality=sc.PERSONALITY)
+        # geo_bot.run()
+
+
+
+
+
+
+
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
         print(f"{INFO_HEADER} total time = {end_time - start_time}")
