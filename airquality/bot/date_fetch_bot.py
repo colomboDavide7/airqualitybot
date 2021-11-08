@@ -7,7 +7,7 @@
 #
 ######################################################
 
-from typing import List
+from typing import Dict, Any, List
 
 # IMPORT GLOBAL VARIABLE FROM FETCH MODULE
 import airquality.constants.system_constants as sc
@@ -51,10 +51,14 @@ class DateFetchBot:
 
     def run(self,
             api_address: str,
-            url_param: str,
+            url_param: Dict[str, Any],
             sensor_ids: List[int],
             select_apiparam_query: str):
 
+        ################################ DEFINE STOP DATETIME ################################
+        stop_datetime = DatetimeParser.today()
+
+        ################################ CYCLE ON EACH SENSOR ################################
         for sensor_id in sensor_ids:
             print(20 * "*" + f" {sensor_id} " + 20 * '*')
 
@@ -81,6 +85,11 @@ class DateFetchBot:
             for api_param in universal_api_param:
 
                 # TODO: TAKE START AND STOP DATA FROM THE FILE
+
+                ################################ MERGE TOGETHER ALL URL PARAMETERS ################################
+                url_param.update(api_param)
+
+                # TODO: ADD ALSO TIMESTAMP PARAM TAKEN FROM THE FILE
 
                 # define from datetime
                 # from_datetime = DatetimeParser.string2datetime(datetime_string=channel_param['channel_ts']['val'])
@@ -121,7 +130,6 @@ class DateFetchBot:
                             packet['timestamp'] = DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
                             adapted_packet = measure_adapter.adapt(packet)
                             adapted_packets.append(adapted_packet)
-
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()
