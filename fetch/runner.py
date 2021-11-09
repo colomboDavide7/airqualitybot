@@ -19,7 +19,7 @@ from airquality.bot.date_fetch_bot import DateFetchBot
 from utility.db_answer_parser import DatabaseAnswerParser
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
 from utility.file_parser import FileParserFactory, JSONFileParser
-from data.builder.url import URLBuilderThingspeak, URLBuilderAtmotube
+from data.builder.url import ThingspeakURLBuilder, AtmotubeURLBuilder
 from data.packet_reshaper import ThingspeakPacketReshaper, AtmotubePacketReshaper
 from data.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
 from data.universal_db_adapter import AtmotubeUniversalDatabaseAdapter, ThingspeakUniversalDatabaseAdapter
@@ -149,7 +149,7 @@ def main():
             print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
 
             # URLBuilder class
-            url_builder_class = URLBuilderAtmotube
+            url_builder_class = AtmotubeURLBuilder
 
             # PacketReshaper class
             packet_reshaper_class = AtmotubePacketReshaper
@@ -179,7 +179,7 @@ def main():
             packet_reshaper_class = ThingspeakPacketReshaper
 
             # URLBuilder class
-            url_builder_class = URLBuilderThingspeak
+            url_builder_class = ThingspeakURLBuilder
 
             # UniversalAPIAdapter class
             universal_api_adapter_class = ThingspeakUniversalAPIAdapter

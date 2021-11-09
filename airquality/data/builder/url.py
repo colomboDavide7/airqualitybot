@@ -57,37 +57,46 @@ class PurpleairURLBuilder(URLBuilder):
         return url.strip(AND)
 
 
-class URLBuilderAtmotube(URLBuilder):
+class AtmotubeURLBuilder(URLBuilder):
 
     def __init__(self, api_address: str, parameters: Dict[str, Any]):
-        super().__init__(api_address=api_address, parameters=parameters)
+        super().__init__(api_address=api_address)
+        try:
+            self.api_key = parameters.pop('api_key')
+            self.mac = parameters.pop('mac')
+            self.opt_param = parameters
+        except KeyError as ke:
+            raise SystemExit(
+                f"{EXCEPTION_HEADER} {AtmotubeURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}"
+            )
 
     def url(self) -> str:
-
-        self.raise_system_exit_when_is_missing_param(param2find='api_key')
-        self.raise_system_exit_when_is_missing_param(param2find='mac')
-
-        url = self.api_address + '?'
-        for param_name, param_value in self.parameters.items():
-            url += param_name + '=' + param_value + '&'
-        return url.strip('&')
+        url = self.api_address + QU
+        url += 'api_key' + EQ + self.api_key + AND
+        url += 'mac' + EQ + self.mac + AND
+        for param_name, param_value in self.opt_param.items():
+            url += param_name + EQ + param_value + AND
+        return url.strip(AND)
 
 
-class URLBuilderThingspeak(URLBuilder):
+class ThingspeakURLBuilder(URLBuilder):
 
     def __init__(self, api_address: str, parameters: Dict[str, Any]):
-        super().__init__(api_address=api_address, parameters=parameters)
+        super().__init__(api_address=api_address)
+        try:
+            self.api_key = parameters.pop('api_key')
+            self.format = parameters.pop('format')
+            self.id = parameters.pop('channel_id')
+            self.opt_param = parameters
+        except KeyError as ke:
+            raise SystemExit(
+                f"{EXCEPTION_HEADER} {ThingspeakURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}"
+            )
 
     def url(self) -> str:
-
-        self.raise_system_exit_when_is_missing_param(param2find='channel_id')
-        self.raise_system_exit_when_is_missing_param(param2find='format')
-        self.raise_system_exit_when_is_missing_param(param2find='api_key')
-        ans_format = self.parameters.pop('format')
-        url = self.api_address + '/' + self.parameters.pop('channel_id') + '/'
-        url += 'feeds.' + ans_format + '?'
-        for param_name, param_value in self.parameters.items():
-            url += param_name + '=' + param_value + '&'
-        # Insert again the format into the parameters for the other channels
-        self.parameters['format'] = ans_format
-        return url.strip('&')
+        url = self.api_address + '/' + self.id + '/'
+        url += 'feeds.' + self.format + QU
+        url += 'api_key' + EQ + self.api_key + AND
+        for param_name, param_value in self.opt_param.items():
+            url += param_name + EQ + param_value + AND
+        return url.strip(AND)

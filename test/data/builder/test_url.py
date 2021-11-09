@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.data.builder.url import PurpleairURLBuilder, URLBuilderAtmotube, URLBuilderThingspeak
+from airquality.data.builder.url import PurpleairURLBuilder, AtmotubeURLBuilder, ThingspeakURLBuilder
 
 
 class TestURLBuilder(unittest.TestCase):
@@ -36,49 +36,43 @@ class TestURLBuilder(unittest.TestCase):
         with self.assertRaises(SystemExit):
             builder.url()
 
-
     ################################ TEST BUILD ATMOTUBE URL ################################
-    # def test_successfully_build_atmotube_url(self):
-    #     test_param = {"api_key": "key", 'mac': 'some_mac', "opt": "val"}
-    #     expected_output = "some_api_address?api_key=key&mac=some_mac&opt=val"
-    #     atmotube_builder = URLBuilderAtmotube(api_address=self.api_address, parameters=test_param)
-    #     actual_output = atmotube_builder.url()
-    #     self.assertEqual(actual_output, expected_output)
-    #
-    # def test_system_exit_when_building_atmotube_url(self):
-    #     test_param_missing_key = {'mac': 'some_mac', "opt": "val"}
-    #     atmotube_builder = URLBuilderAtmotube(api_address=self.api_address, parameters=test_param_missing_key)
-    #     with self.assertRaises(SystemExit):
-    #         atmotube_builder.url()
-    #
-    #     test_param_missing_mac = {"api_key": "key", "opt": "val"}
-    #     atmotube_builder = URLBuilderAtmotube(api_address=self.api_address, parameters=test_param_missing_mac)
-    #     with self.assertRaises(SystemExit):
-    #         atmotube_builder.url()
+    def test_successfully_build_atmotube_url(self):
+        test_param = {"api_key": "key", 'mac': 'some_mac', "opt": "val"}
+        expected_output = "some_api_address?api_key=key&mac=some_mac&opt=val"
+        atmotube_builder = AtmotubeURLBuilder(api_address=self.api_address, parameters=test_param)
+        actual_output = atmotube_builder.url()
+        self.assertEqual(actual_output, expected_output)
+
+    def test_system_exit_when_building_atmotube_url(self):
+        test_param_missing_key = {'mac': 'some_mac', "opt": "val"}
+        with self.assertRaises(SystemExit):
+            AtmotubeURLBuilder(api_address=self.api_address, parameters=test_param_missing_key)
+
+        test_param_missing_mac = {"api_key": "key", "opt": "val"}
+        with self.assertRaises(SystemExit):
+            AtmotubeURLBuilder(api_address=self.api_address, parameters=test_param_missing_mac)
 
     ################################ TEST BUILD THINGSPEAK URL ################################
-    # def test_successfully_build_thingspeak_url(self):
-    #     test_param = {"channel_id": "id", 'format': 'json', "api_key": "key", "opt": "val"}
-    #     expected_output = "some_api_address/id/feeds.json?api_key=key&opt=val"
-    #     thingspeak_builder = URLBuilderThingspeak(api_address=self.api_address, parameters=test_param)
-    #     actual_output = thingspeak_builder.url()
-    #     self.assertEqual(actual_output, expected_output)
-    #
-    # def test_system_exit_when_building_thingspeak_url(self):
-    #     test_param_missing_id = {'format': 'json', "api_key": "key", "opt": "val"}
-    #     thingspeak_builder = URLBuilderThingspeak(api_address=self.api_address, parameters=test_param_missing_id)
-    #     with self.assertRaises(SystemExit):
-    #         thingspeak_builder.url()
-    #
-    #     test_param_missing_format = {"channel_id": "id", "api_key": "key", "opt": "val"}
-    #     thingspeak_builder = URLBuilderThingspeak(api_address=self.api_address, parameters=test_param_missing_format)
-    #     with self.assertRaises(SystemExit):
-    #         thingspeak_builder.url()
-    #
-    #     test_param_missing_key = {"channel_id": "id", 'format': 'json', "opt": "val"}
-    #     thingspeak_builder = URLBuilderThingspeak(api_address=self.api_address, parameters=test_param_missing_key)
-    #     with self.assertRaises(SystemExit):
-    #         thingspeak_builder.url()
+    def test_successfully_build_thingspeak_url(self):
+        test_param = {"channel_id": "id", 'format': 'json', "api_key": "key", "opt": "val"}
+        expected_output = "some_api_address/id/feeds.json?api_key=key&opt=val"
+        thingspeak_builder = ThingspeakURLBuilder(api_address=self.api_address, parameters=test_param)
+        actual_output = thingspeak_builder.url()
+        self.assertEqual(actual_output, expected_output)
+
+    def test_system_exit_when_building_thingspeak_url(self):
+        test_param_missing_id = {'format': 'json', "api_key": "key", "opt": "val"}
+        with self.assertRaises(SystemExit):
+            ThingspeakURLBuilder(api_address=self.api_address, parameters=test_param_missing_id)
+
+        test_param_missing_format = {"channel_id": "id", "api_key": "key", "opt": "val"}
+        with self.assertRaises(SystemExit):
+            ThingspeakURLBuilder(api_address=self.api_address, parameters=test_param_missing_format)
+
+        test_param_missing_key = {"channel_id": "id", 'format': 'json', "opt": "val"}
+        with self.assertRaises(SystemExit):
+            ThingspeakURLBuilder(api_address=self.api_address, parameters=test_param_missing_key)
 
 
 if __name__ == '__main__':
