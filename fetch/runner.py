@@ -102,7 +102,7 @@ def main():
 
         ################################ DATABASE SENSOR ID ASSOCIATED TO PERSONALITY ################################
         query = query_picker.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
+        answer = dbconn.send(query=query)
         sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
 
         if not sensor_ids:
@@ -117,7 +117,7 @@ def main():
 
         ################################ SELECT MEASURE PARAM FROM PERSONALITY ################################
         query = query_picker.select_measure_param_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
+        answer = dbconn.send(query=query)
         measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
         if sc.DEBUG_MODE:
             print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')

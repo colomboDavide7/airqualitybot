@@ -7,14 +7,14 @@
 #################################################
 
 import unittest
-from io.remote.api.adapter import UrllibAdapter
+import airquality.io.remote.api.adapter as adpt
 
 
 class TestAPIRequestAdapter(unittest.TestCase):
 
     def test_system_exit_when_invalid_url_is_used(self):
         with self.assertRaises(SystemExit):
-            UrllibAdapter.fetch(url="bad url")
+            adpt.UrllibAdapter.fetch(url="bad url")
 
 
 if __name__ == '__main__':

@@ -58,7 +58,7 @@ class DateFetchBot:
 
             ################################ SELECT API PARAM FROM DATABASE ################################
             query = select_apiparam_query.format(sensor_id=sensor_id)
-            answer = self.dbconn.send(executable_sql_query=query)
+            answer = self.dbconn.send(query=query)
             api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
 
             if not api_param:

@@ -87,7 +87,7 @@ def main():
 
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
         query = query_picker.select_sensor_name_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
+        answer = dbconn.send(query=query)
         sensor_names = DatabaseAnswerParser.parse_single_attribute_answer(answer)
 
         if not sensor_names:
@@ -100,7 +100,7 @@ def main():
 
         ####################### SELECT THE MAX SENSOR ID PRESENT INTO THE DATABASE ########################
         query = query_picker.select_max_sensor_id()
-        answer = dbconn.send(executable_sql_query=query)
+        answer = dbconn.send(query=query)
         max_sensor_id = DatabaseAnswerParser.parse_single_attribute_answer(answer)
 
         ####################### DEFINE THE FIRST SENSOR ID FROM WHERE TO START ########################

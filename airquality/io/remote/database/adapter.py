@@ -53,16 +53,16 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
         except Exception as ex:
             raise SystemExit(f"{EXCEPTION_HEADER} {Psycopg2DatabaseAdapter.__name__} bad connection => {ex!s}.")
 
-    def send(self, executable_sql_query: str):
+    def send(self, query: str):
         if self.conn is None:
             raise SystemExit(f"{EXCEPTION_HEADER} {Psycopg2DatabaseAdapter.__name__} bad 'send' operation => "
                              f"connection is not open.")
         try:
             answer = ""
             cursor = self.conn.cursor()
-            cursor.execute(executable_sql_query)
+            cursor.execute(query)
             self.conn.commit()
-            if executable_sql_query.startswith("SELECT"):
+            if query.startswith("SELECT"):
                 answer = cursor.fetchall()
         except Exception as err:
             raise SystemExit(f"{EXCEPTION_HEADER} {Psycopg2DatabaseAdapter.__name__} bad query => {err!s}")

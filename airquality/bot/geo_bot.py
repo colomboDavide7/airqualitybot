@@ -123,8 +123,8 @@ class GeoBot:
                 ############################## BUILD THE QUERY FROM CONTAINERS #############################
                 query_statement = self.query_picker_instance.insert_into_sensor_at_location()
                 insert_statement = geo_container_composition.sql(query_statement)
-                self.dbconn.send(executable_sql_query=update_statements)
-                self.dbconn.send(executable_sql_query=insert_statement)
+                self.dbconn.send(query=update_statements)
+                self.dbconn.send(query=insert_statement)
             else:
                 print(f"{INFO_HEADER} all sensor have the same location => no location updated.")
 

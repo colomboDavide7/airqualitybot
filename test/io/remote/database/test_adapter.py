@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from io.remote.database.adapter import Psycopg2DatabaseAdapter
+import airquality.io.remote.database.adapter as adpt
 
 
 class TestDatabaseConnectionAdapter(unittest.TestCase):
@@ -18,12 +18,12 @@ class TestDatabaseConnectionAdapter(unittest.TestCase):
                              "host": "some_host_name",
                              "username": "some_user_name",
                              "password": "some_password"}
-        self.database_adapter = Psycopg2DatabaseAdapter(self.bad_settings)
+        self.database_adapter = adpt.Psycopg2DatabaseAdapter(self.bad_settings)
 
     def test_system_exit_when_key_error_is_raised(self):
         test_settings = {"port": 12345, "dbname": "some_db_name"}
         with self.assertRaises(SystemExit):
-            Psycopg2DatabaseAdapter(test_settings)
+            adpt.Psycopg2DatabaseAdapter(test_settings)
 
     def test_system_exit_when_opening_connection_with_wrong_settings(self):
         with self.assertRaises(SystemExit):

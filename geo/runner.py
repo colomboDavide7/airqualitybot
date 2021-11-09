@@ -85,7 +85,7 @@ def main():
 
         ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR SENSORS ################################
         query = query_picker.select_sensor_valid_name_geom_mapping_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
+        answer = dbconn.send(query=query)
         active_locations = DatabaseAnswerParser.parse_key_val_answer(answer)
 
         if not active_locations:
@@ -100,7 +100,7 @@ def main():
 
         ####################### QUERY THE (SENSOR_NAME, SENSOR_ID) MAPPING FROM PERSONALITY ############################
         query = query_picker.select_sensor_name_id_mapping_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(executable_sql_query=query)
+        answer = dbconn.send(query=query)
         name2id_map = DatabaseAnswerParser.parse_key_val_answer(answer)
 
         ################################ READ API FILE ################################
