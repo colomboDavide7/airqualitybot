@@ -59,7 +59,7 @@ class InitializeBot:
 
         ################################ API DATA FETCHING ################################
         url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
-        url = url_builder.build_url()
+        url = url_builder.url()
         raw_packets = api.UrllibAdapter.fetch(url)
         parser = self.file_parser_class()
         parsed_packets = parser.parse(raw_packets)

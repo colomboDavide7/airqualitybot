@@ -100,7 +100,7 @@ class DateFetchBot:
 
                 ################################ FETCH DATA FROM API ################################
                 url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
-                url = url_builder.build_url()
+                url = url_builder.url()
                 raw_api_packets = UrllibAdapter.fetch(url)
                 parsed_api_packets = file_parser.parse(raw_api_packets)
 

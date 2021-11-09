@@ -16,7 +16,7 @@ from io.local.io import IOManager
 from airquality.bot.geo_bot import GeoBot
 from utility.query_picker import QueryPicker
 from data.builder.geom import PointBuilder
-from data.builder.url import URLBuilderPurpleair
+from data.builder.url import PurpleairURLBuilder
 from utility.db_answer_parser import DatabaseAnswerParser
 from data.packet_reshaper import PurpleairPacketReshaper
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
@@ -118,7 +118,7 @@ def main():
 
         if sc.PERSONALITY == 'purpleair':
             geo_bot = GeoBot(dbconn=dbconn,
-                             url_builder_class=URLBuilderPurpleair,
+                             url_builder_class=PurpleairURLBuilder,
                              file_parser_class=JSONFileParser,
                              reshaper_class=PurpleairPacketReshaper,
                              universal_db_adapter_class=PurpleairUniversalDatabaseAdapter,
