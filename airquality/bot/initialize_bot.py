@@ -15,7 +15,7 @@ from airquality.api.url_builder import URLBuilder
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geometry import PostGISGeometry
-from airquality.database.db_conn_adapter import ConnectionAdapter
+from airquality.database.database_adapter import DatabaseAdapter
 from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
 from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition, \
     SensorSQLContainer, APIParamSQLContainer
@@ -28,7 +28,7 @@ from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WAR
 class InitializeBot:
 
     def __init__(self,
-                 dbconn: ConnectionAdapter,
+                 dbconn: DatabaseAdapter,
                  file_parser_class,
                  reshaper_class,
                  url_builder_class=URLBuilder,
@@ -86,10 +86,10 @@ class InitializeBot:
                 if universal_packet['name'] not in sensor_names:
                     filtered_universal_packets.append(universal_packet)
                 else:
-                    print(f"{WARNING_HEADER} '{universal_packet['name']}' already present...")
+                    print(f"{WARNING_HEADER} '{universal_packet['name']}' => already present")
 
             if not filtered_universal_packets:
-                print(f"{INFO_HEADER} all sensors are already present into the database.")
+                print(f"{INFO_HEADER} all sensors are already present into the database")
                 self.dbconn.close_conn()
                 return
 

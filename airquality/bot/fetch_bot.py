@@ -106,7 +106,7 @@ class FetchBot:
                         if DatetimeParser.is_ts2_after_ts1(ts2=universal_packet['timestamp'], ts1=filter_sqltimestamp):
                             filtered_universal_packets.append(universal_packet)
                         else:
-                            print(f"{WARNING_HEADER} '{universal_packet['timestamp']}' is an old measure...")
+                            print(f"{WARNING_HEADER} '{universal_packet['timestamp']}' => old measure")
 
                     if filtered_universal_packets:
 

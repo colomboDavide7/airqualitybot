@@ -17,12 +17,11 @@ from airquality.bot.geo_bot import GeoBot
 from airquality.picker.query_picker import QueryPicker
 from airquality.geom.postgis_geometry import PostGISPoint
 from airquality.api.url_builder import URLBuilderPurpleair
-from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
-from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter
+from airquality.database.database_adapter import Psycopg2DatabaseAdapter
 from airquality.parser.file_parser import FileParserFactory, JSONFileParser
-from airquality.database.db_conn_adapter import Psycopg2ConnectionAdapterFactory
+from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter
 from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
 
 # IMPORT SHARED CONSTANTS
@@ -70,14 +69,10 @@ def main():
         raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
         parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
         parsed_server_data = parser.parse(raw_string=raw_server_data)
-
-        ################################ PICK DATABASE CONNECTION PROPERTIES ################################
-        db_settings = ResourcePicker.pick_db_conn_properties(parsed_resources=parsed_server_data,
-                                                             bot_personality=sc.PERSONALITY)
+        server_settings = parsed_server_data[sc.PERSONALITY]
 
         ################################ DATABASE CONNECTION ADAPTER ################################
-        db_conn_factory = Psycopg2ConnectionAdapterFactory()
-        dbconn = db_conn_factory.create_database_connection_adapter(settings=db_settings)
+        dbconn = Psycopg2DatabaseAdapter(server_settings)
         dbconn.open_conn()
 
         ################################ READ QUERY FILE ###############################

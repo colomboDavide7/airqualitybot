@@ -35,19 +35,3 @@ class PostGISPoint(PostGISGeometry):
             return f"POINT({packet['lng']} {packet['lat']})"
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} {PostGISPoint.__name__} missing required key={ke!s}")
-
-
-############################## NULL OBJECT USED WHEN COORDS ARE MISSING #############################
-# class PostGISNullObject(PostGISGeometry):
-#
-#     def get_database_string(self):
-#         return 'null'
-#
-#     def get_geomtype_string(self):
-#         return 'null'
-#
-#     def __eq__(self, other):
-#         if not isinstance(other, PostGISNullObject):
-#             raise SystemExit(f"{EXCEPTION_HEADER} {PostGISNullObject.__name__} cannot be compared with object of type => "
-#                              f"'{other.__class__.__name__}'.")
-#         return True
