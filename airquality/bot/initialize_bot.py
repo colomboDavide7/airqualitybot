@@ -105,8 +105,8 @@ class InitializeBot:
             apiparam_containers = []
             for universal_packet in filtered_universal_packets:
                 # **************************
-                sensor_containers.append(self.sensor_sqlcontainer_class(name=universal_packet['name'],
-                                                                        type_= universal_packet['type']))
+                sensor_containers.append(self.sensor_sqlcontainer_class(sensor_name=universal_packet['name'],
+                                                                        sensor_type= universal_packet['type']))
                 # **************************
                 # geometry = geom_adapter.adapt(universal_packet)
                 geometry = self.postgis_geom_class()

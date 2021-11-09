@@ -19,7 +19,7 @@ class SQLContainer(ABC):
 
 
 class GeoSQLContainer(SQLContainer):
-    """SQL container that defines how a sensor location in translated into SQL query."""
+    """SQL container that defines how a sensor location is translated into SQL query."""
 
     def __init__(self, sensor_id: int, valid_from: str, geom: str):
         self.sensor_id = sensor_id
@@ -54,9 +54,9 @@ class APIParamSQLContainer(SQLContainer):
 
 class SensorSQLContainer(SQLContainer):
 
-    def __init__(self, name: str, type_: str):
-        self.name = name
-        self.type = type_
+    def __init__(self, sensor_name: str, sensor_type: str):
+        self.name = sensor_name
+        self.type = sensor_type
 
     def sql(self, query: str) -> str:
         return query + f"('{self.type}', '{self.name}')"
@@ -88,6 +88,8 @@ class MobileMeasurementSQLContainer(SQLContainer):
 
 
 class StationMeasurementSQLContainer(SQLContainer):
+
+    # TODO: ADD EXTERNAL MEASUREMENT ID
 
     def __init__(self, sensor_id: int, packet: Dict[str, Any]):
         self.sensor_id = sensor_id

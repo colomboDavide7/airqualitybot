@@ -71,7 +71,7 @@ class TestURLBuilder(unittest.TestCase):
         with self.assertRaises(SystemExit):
             thingspeak_builder.build_url()
 
-        test_param_missing_format = {"channel_id": "id","api_key": "key", "opt": "val"}
+        test_param_missing_format = {"channel_id": "id", "api_key": "key", "opt": "val"}
         thingspeak_builder = URLBuilderThingspeak(api_address=self.api_address, parameters=test_param_missing_format)
         with self.assertRaises(SystemExit):
             thingspeak_builder.build_url()
