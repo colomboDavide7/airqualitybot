@@ -5,7 +5,6 @@
 # @Description: unit test script
 #
 #################################################
-
 import unittest
 import airquality.data.builder.timest as tsmp
 

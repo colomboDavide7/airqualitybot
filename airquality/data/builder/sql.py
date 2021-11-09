@@ -6,17 +6,17 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import abc
 from typing import Dict, Any
-from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
-class SQLBuilder(ABC):
+class SQLBuilder(abc.ABC):
 
     def __init__(self, sensor_id: int):
         self.sensor_id = sensor_id
 
-    @abstractmethod
+    @abc.abstractmethod
     def sql(self) -> str:
         pass
 

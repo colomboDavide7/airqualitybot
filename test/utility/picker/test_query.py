@@ -6,16 +6,17 @@
 #
 #################################################
 import unittest
-from utility.query_picker import QueryPicker
+import airquality.utility.picker.query as pk
 
 
 class TestSQLQueryBuilder(unittest.TestCase):
 
+    def setUp(self) -> None:
+        self.picker = pk.QueryPicker({'q1': 'v1'})
+
     def test_system_exit_when_query_identifier_not_found(self):
-        test_query_id = "bad query identifier"
-        sqlbuilder = QueryPicker(parsed_query_data={'q1': 'v1'})
         with self.assertRaises(SystemExit):
-            sqlbuilder.search_query_id(query_id=test_query_id)
+            self.picker.search_query_id("bad query identifier")
 
 
 if __name__ == '__main__':

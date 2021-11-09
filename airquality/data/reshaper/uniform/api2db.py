@@ -6,10 +6,10 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import abc
 from typing import Dict, Any
-from abc import ABC, abstractmethod
-import data.builder.timest as dtp
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+import airquality.data.builder.timest as dtp
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 TS = 'timestamp'
 NAME = 'name'
@@ -20,9 +20,9 @@ PAR_NAME = 'param_name'
 PAR_VAL = 'param_value'
 
 
-class UniformReshaper(ABC):
+class UniformReshaper(abc.ABC):
 
-    @abstractmethod
+    @abc.abstractmethod
     def api2db(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         pass
 

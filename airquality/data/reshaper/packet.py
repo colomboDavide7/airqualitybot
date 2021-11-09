@@ -5,9 +5,9 @@
 # @Description: this script defines the classes for dynamically reshaping packets from sensor's API
 #
 #################################################
-from abc import ABC, abstractmethod
+import abc
 from typing import Dict, Any, List
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A = {"PM1.0 (ATM)": "pm1.0_atm_a", "PM2.5 (ATM)": "pm2.5_atm_a",
                                              "PM10.0 (ATM)": "pm10.0_atm_a", "Temperature": "temperature_a",
@@ -23,9 +23,9 @@ THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B = {"0.3um": "0.3_um_count_b", "0.5um":
 
 
 ################################ ABSTRACT BASE CLASS ################################
-class PacketReshaper(ABC):
+class PacketReshaper(abc.ABC):
 
-    @abstractmethod
+    @abc.abstractmethod
     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
@@ -66,7 +66,7 @@ class ThingspeakPacketReshaper(PacketReshaper):
             raise SystemExit(
                 f"{EXCEPTION_HEADER} {ThingspeakPacketReshaper.__name__} bad name => expected a name that starts with "
                 f"'AirMonitor', got name='{sensor_name}'."
-        )
+            )
 
         # SELECT THE RESHAPE MAPPING BASED ON PRIMARY/SECONDARY DATA AND CHANNEL A/B
         if '_b' in sensor_name:

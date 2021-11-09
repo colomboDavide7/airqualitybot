@@ -6,23 +6,23 @@
 #               the database and execute SQL query.
 #
 #################################################
+import abc
 import psycopg2
 from typing import Dict, Any
-from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
-class DatabaseAdapter(ABC):
+class DatabaseAdapter(abc.ABC):
 
-    @abstractmethod
+    @abc.abstractmethod
     def open_conn(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def close_conn(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def send(self, executable_sql_query: str):
         pass
 

@@ -5,21 +5,21 @@
 # @Description: this script defines a simple factory class for building valid URL querystring based on sensor type.
 #
 #################################################
+import abc
 from typing import Dict, Any
-from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 EQ = '='
 AND = '&'
 QU = '?'
 
 
-class URLBuilder(ABC):
+class URLBuilder(abc.ABC):
 
     def __init__(self, api_address: str):
         self.api_address = api_address
 
-    @abstractmethod
+    @abc.abstractmethod
     def url(self) -> str:
         pass
 

@@ -6,7 +6,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-
 import unittest
 import airquality.data.reshaper.uniform.db2api as rshp
 

@@ -6,7 +6,6 @@
 # Description: unit test script
 #
 ######################################################
-
 import unittest
 import airquality.data.builder.geom as g
 

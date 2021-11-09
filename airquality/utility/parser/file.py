@@ -5,15 +5,15 @@
 # @Description: this script defines the classes for parsing file content from different extensions.
 #
 #################################################
+import abc
 import json
 from typing import Dict, Any
-from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
-class FileParser(ABC):
+class FileParser(abc.ABC):
 
-    @abstractmethod
+    @abc.abstractmethod
     def parse(self, text: str) -> Dict[str, Any]:
         pass
 

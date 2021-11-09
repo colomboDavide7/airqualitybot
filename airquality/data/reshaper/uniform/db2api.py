@@ -6,18 +6,18 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import abc
 from typing import Dict, Any, List
-from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 CH = 'channel_id'
 KEY = 'api_key'
 MAC = 'mac'
 
 
-class UniformReshaper(ABC):
+class UniformReshaper(abc.ABC):
 
-    @abstractmethod
+    @abc.abstractmethod
     def db2api(self, api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 

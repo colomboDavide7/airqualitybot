@@ -9,22 +9,22 @@
 import sys
 import time
 from typing import List
-import airquality.constants.system_constants as sc
+import core.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from io.local.io import IOManager
 from airquality.bot.geo_bot import GeoBot
-from utility.query_picker import QueryPicker
+from utility.picker.query import QueryPicker
 from data.builder.geom import PointBuilder
 from data.builder.url import PurpleairURLBuilder
 from data.reshaper.packet import PurpleairPacketReshaper
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
-from utility.file import FileParserFactory, JSONFileParser
+from utility.parser.file import FileParserFactory, JSONFileParser
 from data.reshaper.uniform.api2db import PurpleairUniformReshaper
 from data.builder.sql import SensorAtLocationSQLBuilder
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
+from core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
     DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
     GEO_USAGE, VALID_PERSONALITIES
 

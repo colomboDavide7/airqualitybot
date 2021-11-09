@@ -6,24 +6,24 @@
 # Description: this script defines a class for building geometry type string based on API parameters
 #
 ######################################################
+import abc
 from typing import Dict, Any
-from abc import ABC, abstractmethod
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 POINT_GEOMETRY = "POINT({lng} {lat})"
 
 
-class GeometryBuilder(ABC):
+class GeometryBuilder(abc.ABC):
 
     def __init__(self, srid: int):
         self.srid = srid
 
-    @abstractmethod
+    @abc.abstractmethod
     def geom_from_text(self) -> str:
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def as_text(self) -> str:
         pass
 

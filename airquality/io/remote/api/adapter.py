@@ -6,12 +6,11 @@
 #               to sensor's API and fetch data.
 #
 #################################################
-import builtins
 import urllib.request as req
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
-class UrllibAdapter(builtins.object):
+class UrllibAdapter:
 
     @staticmethod
     def fetch(url: str) -> str:

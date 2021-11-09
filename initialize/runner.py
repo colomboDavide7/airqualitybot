@@ -10,23 +10,22 @@
 import sys
 import time
 from typing import List
-import airquality.constants.system_constants as sc
-from airquality.bot.initialize_bot import InitializeBot
+import airquality.core.constants.system_constants as sc
 
-# IMPORT CLASSES FROM AIRQUALITY MODULE
-from io.local.io import IOManager
-from utility.query_picker import QueryPicker
-from data.builder.geom import PointBuilder
-from data.builder.url import PurpleairURLBuilder
-from data.reshaper.packet import PurpleairPacketReshaper
-from io.remote.database.adapter import Psycopg2DatabaseAdapter
-from utility.file import JSONFileParser, FileParserFactory
-from data.reshaper.uniform.api2db import PurpleairUniformReshaper
-from data.builder.sql import SQLCompositionBuilder, SensorSQLBuilder, \
-    APIParamSQLBuilder, SensorAtLocationSQLBuilder
+# IMPORT MODULES
+import airquality.bot.initialize_bot as bot
+import airquality.io.local.io as io
+import airquality.utility.picker.query as pk
+import airquality.data.builder.geom as gb
+import airquality.data.builder.url as url
+import airquality.data.reshaper.packet as rshp
+import airquality.io.remote.database.adapter as db
+import airquality.utility.parser.file as fp
+import airquality.data.reshaper.uniform.api2db as a2d
+import airquality.data.builder.sql as sql
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
+from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
     DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
     VALID_PERSONALITIES, INITIALIZE_USAGE
 
@@ -67,22 +66,22 @@ def main():
         print(20 * '-' + " START THE PROGRAM " + 20 * '-')
 
         ################################ READ SERVER FILE ################################
-        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
-        parser = FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
+        raw_server_data = io.IOManager.open_read_close_file(path=SERVER_FILE)
+        parser = fp.FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
         parsed_server_data = parser.parse(text=raw_server_data)
         server_settings = parsed_server_data[sc.PERSONALITY]
 
         ################################ DATABASE CONNECTION ADAPTER ################################
-        dbconn = Psycopg2DatabaseAdapter(server_settings)
+        dbconn = db.Psycopg2DatabaseAdapter(server_settings)
         dbconn.open_conn()
 
         ################################ READ QUERY FILE ###############################
-        raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
-        parser = FileParserFactory.make_parser(file_extension=QUERY_FILE.split('.')[-1])
+        raw_query_data = io.IOManager.open_read_close_file(path=QUERY_FILE)
+        parser = fp.FileParserFactory.make_parser(file_extension=QUERY_FILE.split('.')[-1])
         parsed_query_data = parser.parse(text=raw_query_data)
 
         ################################ CREATE QUERY PICKER ###############################
-        query_picker = QueryPicker(parsed_query_data)
+        query_picker = pk.QueryPicker(parsed_query_data)
 
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
         query = query_picker.select_sensor_name_from_personality(personality=sc.PERSONALITY)
@@ -109,8 +108,8 @@ def main():
             first_sensor_id = max_sensor_id[0] + 1
 
         ################################ READ API FILE ################################
-        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
-        parser = FileParserFactory.make_parser(file_extension=API_FILE.split('.')[-1])
+        raw_api_data = io.IOManager.open_read_close_file(path=API_FILE)
+        parser = fp.FileParserFactory.make_parser(file_extension=API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(text=raw_api_data)
 
         ################################ GET THE API ADDRESS ################################
@@ -122,17 +121,16 @@ def main():
 
         ###################### INSTANTIATE THE BOT WITH THE PROPER CLASSES BASED ON PERSONALITY ########################
         if sc.PERSONALITY == 'purpleair':
-            initialize_bot = InitializeBot(dbconn=dbconn,
-                                           file_parser_class=JSONFileParser,
-                                           url_builder_class=PurpleairURLBuilder,
-                                           reshaper_class=PurpleairPacketReshaper,
-                                           universal_adapter_class=PurpleairUniformReshaper,
-                                           geo_sqlcontainer_class=SensorAtLocationSQLBuilder,
-                                           sensor_sqlcontainer_class=SensorSQLBuilder,
-                                           apiparam_sqlcontainer_class=APIParamSQLBuilder,
-                                           composition_class=SQLCompositionBuilder,
-                                           postgis_geom_class=PointBuilder,
-                                           query_picker_instance=query_picker)
+            initialize_bot = bot.InitializeBot(dbconn=dbconn,
+                                               file_parser_class=fp.JSONFileParser,
+                                               url_builder_class=url.PurpleairURLBuilder,
+                                               reshaper_class=rshp.PurpleairPacketReshaper,
+                                               universal_adapter_class=a2d.PurpleairUniformReshaper,
+                                               geo_sqlcontainer_class=sql.SensorAtLocationSQLBuilder,
+                                               sensor_sqlcontainer_class=sql.SensorSQLBuilder,
+                                               apiparam_sqlcontainer_class=sql.APIParamSQLBuilder,
+                                               postgis_geom_class=gb.PointBuilder,
+                                               query_picker_instance=query_picker)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")
 

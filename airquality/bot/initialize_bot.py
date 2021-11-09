@@ -7,20 +7,19 @@
 #################################################
 from typing import Dict, Any, List
 
-import airquality.constants.system_constants as sc
+import core.constants.system_constants as sc
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from utility.query_picker import QueryPicker
-from data.builder.timest import DatetimeParser
+from utility.picker.query import QueryPicker
+from data.builder.timest import Timestamp
 from data.builder.geom import GeometryBuilder
 from data.reshaper.uniform.api2db import UniformReshaper
-from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder, \
-    SensorSQLBuilder, APIParamSQLBuilder
+from data.builder.sql import SensorAtLocationSQLBuilder, SensorSQLBuilder, APIParamSQLBuilder
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
+from core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
 
 ################################ INITIALIZE BOT ################################

@@ -5,9 +5,8 @@
 # @Description: unit test script
 #
 #################################################
-
 import unittest
-import utility.file as fp
+import airquality.utility.parser.file as fp
 
 
 class TestFileParser(unittest.TestCase):

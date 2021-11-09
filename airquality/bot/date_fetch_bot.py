@@ -10,7 +10,7 @@
 from typing import Dict, Any, List
 
 # IMPORT GLOBAL VARIABLE FROM FETCH MODULE
-import airquality.constants.system_constants as sc
+import core.constants.system_constants as sc
 
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
@@ -22,7 +22,7 @@ from data.reshaper.uniform.db2api import UniformReshaper
 
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import DEBUG_HEADER, EXCEPTION_HEADER
+from core.constants.shared_constants import DEBUG_HEADER, EXCEPTION_HEADER
 
 
 class DateFetchBot:

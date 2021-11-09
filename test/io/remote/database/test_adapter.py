@@ -5,7 +5,6 @@
 # @Description: unit test script
 #
 #################################################
-
 import unittest
 import airquality.io.remote.database.adapter as adpt
 

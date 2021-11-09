@@ -9,15 +9,15 @@ import sys
 import time
 from typing import List
 
-import airquality.constants.system_constants as sc
+import core.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from io.local.io import IOManager
 from airquality.bot.fetch_bot import FetchBot
-from utility.query_picker import QueryPicker
+from utility.picker.query import QueryPicker
 from airquality.bot.date_fetch_bot import DateFetchBot
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
-from utility.file import FileParserFactory, JSONFileParser
+from utility.parser.file import FileParserFactory, JSONFileParser
 from data.builder.url import ThingspeakURLBuilder, AtmotubeURLBuilder
 from data.reshaper.packet import ThingspeakPacketReshaper, AtmotubePacketReshaper
 from data.reshaper.uniform.db2api import AtmotubeUniformReshaper, ThingspeakUniformReshaper
@@ -25,7 +25,7 @@ from data.reshaper.uniform.api2db import AtmotubeUniformReshaper, ThingspeakUnif
 
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
+from core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
     DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
     FETCH_USAGE, VALID_PERSONALITIES
 

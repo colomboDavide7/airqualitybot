@@ -6,12 +6,11 @@
 #               'properties/query.json' file.
 #
 #################################################
-import builtins
 from typing import Dict, Any
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
-class QueryPicker(builtins.object):
+class QueryPicker:
 
     def __init__(self, parsed_query_data: Dict[str, Any]):
         self.parsed_query_data = parsed_query_data

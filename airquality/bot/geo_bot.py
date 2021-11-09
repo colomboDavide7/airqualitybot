@@ -8,11 +8,11 @@
 from typing import Dict, Any
 
 # IMPORT GLOBAL VARIABLE FROM FETCH MODULE
-import airquality.constants.system_constants as sc
+import core.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from data.builder.url import URLBuilder
-from utility.query_picker import QueryPicker
+from utility.picker.query import QueryPicker
 from io.remote.api.adapter import UrllibAdapter
 from data.builder.geom import GeometryBuilder
 from data.builder.timest import DatetimeParser
@@ -21,7 +21,7 @@ from data.reshaper.uniform.api2db import UniformReshaper
 from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder
 
 # IMPORT SHARED CONSTANTS
-from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
+from core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
 
 ################################ GEO BOT ABSTRACT BASE CLASS ################################

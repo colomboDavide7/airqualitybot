@@ -8,7 +8,7 @@
 import re
 import abc
 import datetime as dt
-from airquality.constants.shared_constants import EXCEPTION_HEADER
+from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 THINGSPK_FMT = "%Y-%m-%dT%H:%M:%SZ"
 ATMOTUBE_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
