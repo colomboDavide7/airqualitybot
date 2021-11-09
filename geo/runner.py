@@ -15,10 +15,10 @@ import airquality.constants.system_constants as sc
 from airquality.io.io import IOManager
 from airquality.bot.geo_bot import GeoBot
 from airquality.picker.query_picker import QueryPicker
+from airquality.geom.postgis_geometry import PostGISPoint
 from airquality.api.url_builder import URLBuilderPurpleair
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
 from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter
 from airquality.parser.file_parser import FileParserFactory, JSONFileParser
@@ -130,10 +130,10 @@ def main():
                              url_builder_class=URLBuilderPurpleair,
                              file_parser_class=JSONFileParser,
                              reshaper_class=PurpleairPacketReshaper,
-                             universal_adapter_class=PurpleairUniversalDatabaseAdapter,
-                             geom_adapter_class=GeometryAdapterPurpleair,
+                             universal_db_adapter_class=PurpleairUniversalDatabaseAdapter,
                              geom_sqlcontainer_class=GeoSQLContainer,
-                             composition_class=SQLContainerComposition)
+                             composition_class=SQLContainerComposition,
+                             postgis_geom_class=PostGISPoint)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for geo bot.")
 

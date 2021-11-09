@@ -13,7 +13,7 @@ import airquality.constants.system_constants as sc
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.api.url_builder import URLBuilder
 from airquality.api.urllib_adapter import UrllibAdapter
-from airquality.adapter.geom_adapter import GeometryAdapter
+from airquality.geom.postgis_geometry import PostGISGeometry
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.reshaper.packet_reshaper import PacketReshaper
 from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
@@ -31,18 +31,18 @@ class GeoBot:
                  file_parser_class,
                  url_builder_class=URLBuilder,
                  reshaper_class=PacketReshaper,
-                 universal_adapter_class=UniversalDatabaseAdapter,
-                 geom_adapter_class=GeometryAdapter,
+                 universal_db_adapter_class=UniversalDatabaseAdapter,
                  geom_sqlcontainer_class=GeoSQLContainer,
-                 composition_class=SQLContainerComposition):
+                 composition_class=SQLContainerComposition,
+                 postgis_geom_class=PostGISGeometry):
         self.dbconn = dbconn
         self.url_builder_class = url_builder_class
         self.file_parser_class = file_parser_class
         self.reshaper_class = reshaper_class
-        self.universal_adapter_class = universal_adapter_class
-        self.geom_adapter_class = geom_adapter_class
+        self.universal_db_adapter_class = universal_db_adapter_class
         self.geo_sqlcontainer_class = geom_sqlcontainer_class
         self.composition_class = composition_class
+        self.postgis_geom_class = postgis_geom_class
 
     def run(self,
             api_address: str,
@@ -66,12 +66,12 @@ class GeoBot:
         if reshaped_packets:
 
             ############################## UNIVERSAL ADAPTER #############################
-            universal_adapter = self.universal_adapter_class()
+            universal_db_adapter = self.universal_db_adapter_class()
 
             ############################## ADAPT PACKETS TO THE UNIVERSAL INTERFACE #############################
             universal_packets = []
             for packet in reshaped_packets:
-                universal_packets.append(universal_adapter.adapt(packet))
+                universal_packets.append(universal_db_adapter.adapt(packet))
 
             ############################## KEEP ONLY DATABASE SENSORS #############################
             if sc.DEBUG_MODE:
@@ -81,37 +81,36 @@ class GeoBot:
                 if universal_packet['name'] in name2id_map.keys():
                     filtered_universal_packets.append(universal_packet)
                 else:
-                    print(f"{WARNING_HEADER} '{universal_packet['name']}' is not active...")
+                    print(f"{WARNING_HEADER} '{universal_packet['name']}' => not active")
 
+            ############################## STOP PROGRAM IF NO LOCATION FOUND #############################
             if not filtered_universal_packets:
                 print(f"{INFO_HEADER} no active locations found.")
                 self.dbconn.close_conn()
                 return
 
             if sc.DEBUG_MODE:
-                print(20 * "=" + " ACTIVE SENSORS " + 20 * '=')
+                print(20 * "=" + " ACTIVE SENSORS FOUND " + 20 * '=')
                 for universal_packet in filtered_universal_packets:
                     print(f"{DEBUG_HEADER} name={universal_packet['name']}")
-
-            ############################## GEOMETRY ADAPTER CLASS #############################
-            geom_adapter = self.geom_adapter_class()
 
             ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
             update_statements = ""
             geo_containers = []
             for universal_packet in filtered_universal_packets:
                 name = universal_packet['name']
-                geometry = geom_adapter.adapt(universal_packet)
-                if geometry.get_geomtype_string() != active_locations[name]:
+                geometry = self.postgis_geom_class()
+                if geometry.get_geomtype_string(universal_packet) != active_locations[name]:
                     sensor_id = name2id_map[name]
                     # ***************************
                     timestamp = DatetimeParser.current_sqltimestamp()
                     update_statements += update_valid_to_ts_query.format(sens_id=sensor_id,
                                                                          ts=timestamp)
                     # ***************************
+                    geom = geometry.get_database_string(universal_packet)
                     geo_containers.append(self.geo_sqlcontainer_class(sensor_id=sensor_id,
                                                                       valid_from=timestamp,
-                                                                      geom=geometry.get_database_string()))
+                                                                      geom=geom))
 
             if geo_containers:
                 ############################## COMPOSITION CONTAINERS #############################
