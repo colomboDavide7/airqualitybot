@@ -16,8 +16,8 @@ from io.remote.api.adapter import UrllibAdapter
 from utility.datetime_parser import DatetimeParser
 from data.reshaper.packet import PacketReshaper
 from utility.db_answer_parser import DatabaseAnswerParser
-from data.reshaper.uniform.db2api import UniversalAPIAdapter
-from data.reshaper.uniform.api2db import UniversalDatabaseAdapter
+from data.reshaper.uniform.db2api import UniformReshaper
+from data.reshaper.uniform.api2db import UniformReshaper
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, EXCEPTION_HEADER, INFO_HEADER, WARNING_HEADER
@@ -30,8 +30,8 @@ class FetchBot:
                  file_parser_class,
                  url_builder_class=URLBuilder,
                  packet_reshaper_class=PacketReshaper,
-                 universal_api_adapter_class=UniversalAPIAdapter,
-                 universal_db_adapter_class=UniversalDatabaseAdapter):
+                 universal_api_adapter_class=UniformReshaper,
+                 universal_db_adapter_class=UniformReshaper):
         self.dbconn = dbconn
         self.file_parser_class = file_parser_class
         self.url_builder_class = url_builder_class
@@ -96,7 +96,7 @@ class FetchBot:
                     ################################ ADAPT PACKETS FOR DATABASE ################################
                     universal_db_packets = []
                     for packet in reshaped_packets:
-                        universal_db_packets.append(universal_db_adapter.adapt(packet))
+                        universal_db_packets.append(universal_db_adapter.api2db(packet))
 
                     ################################ FILTER PACKETS ################################
                     if sc.DEBUG_MODE:

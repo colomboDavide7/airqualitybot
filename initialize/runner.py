@@ -22,7 +22,7 @@ from utility.db_answer_parser import DatabaseAnswerParser
 from data.reshaper.packet import PurpleairPacketReshaper
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
 from utility.file_parser import JSONFileParser, FileParserFactory
-from data.reshaper.uniform.api2db import PurpleairUniversalDatabaseAdapter
+from data.reshaper.uniform.api2db import PurpleairUniformReshaper
 from data.builder.sql import SQLCompositionBuilder, SensorSQLBuilder, \
     APIParamSQLBuilder, SensorAtLocationSQLBuilder
 
@@ -127,7 +127,7 @@ def main():
                                            file_parser_class=JSONFileParser,
                                            url_builder_class=PurpleairURLBuilder,
                                            reshaper_class=PurpleairPacketReshaper,
-                                           universal_adapter_class=PurpleairUniversalDatabaseAdapter,
+                                           universal_adapter_class=PurpleairUniformReshaper,
                                            geo_sqlcontainer_class=SensorAtLocationSQLBuilder,
                                            sensor_sqlcontainer_class=SensorSQLBuilder,
                                            apiparam_sqlcontainer_class=APIParamSQLBuilder,

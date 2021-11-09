@@ -17,7 +17,7 @@ from io.remote.api.adapter import UrllibAdapter
 from data.builder.geom import GeometryBuilder
 from utility.datetime_parser import DatetimeParser
 from data.reshaper.packet import PacketReshaper
-from data.reshaper.uniform.api2db import UniversalDatabaseAdapter
+from data.reshaper.uniform.api2db import UniformReshaper
 from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder
 
 # IMPORT SHARED CONSTANTS
@@ -33,7 +33,7 @@ class GeoBot:
                  query_picker_instance: QueryPicker,
                  url_builder_class=URLBuilder,
                  reshaper_class=PacketReshaper,
-                 universal_db_adapter_class=UniversalDatabaseAdapter,
+                 universal_db_adapter_class=UniformReshaper,
                  geom_sqlcontainer_class=SensorAtLocationSQLBuilder,
                  composition_class=SQLCompositionBuilder,
                  postgis_geom_class=GeometryBuilder):
@@ -72,7 +72,7 @@ class GeoBot:
             ############################## ADAPT PACKETS TO THE UNIVERSAL INTERFACE #############################
             universal_packets = []
             for packet in reshaped_packets:
-                universal_packets.append(universal_db_adapter.adapt(packet))
+                universal_packets.append(universal_db_adapter.api2db(packet))
 
             ############################## KEEP ONLY DATABASE SENSORS #############################
             if sc.DEBUG_MODE:

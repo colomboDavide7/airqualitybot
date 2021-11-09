@@ -10,39 +10,43 @@ from typing import Dict, Any, List
 from abc import ABC, abstractmethod
 from airquality.constants.shared_constants import EXCEPTION_HEADER
 
+CH = 'channel_id'
+KEY = 'api_key'
+MAC = 'mac'
 
-class UniversalAPIAdapter(ABC):
+
+class UniformReshaper(ABC):
 
     @abstractmethod
-    def adapt(self, api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def db2api(self, api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
 
-class ThingspeakUniversalAPIAdapter(UniversalAPIAdapter):
+class ThingspeakUniformReshaper(UniformReshaper):
 
-    def adapt(self, api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
-        universal_api_packets = []
+    def db2api(self, api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
+        uniform_packets = []
         try:
-            universal_api_packets.append({'channel_id': api_param['primary_id_a'],
-                                          'api_key': api_param['primary_key_a']})
-            universal_api_packets.append({'channel_id': api_param['primary_id_b'],
-                                          'api_key': api_param['primary_key_b']})
-            universal_api_packets.append({'channel_id': api_param['secondary_id_a'],
-                                          'api_key': api_param['secondary_key_a']})
-            universal_api_packets.append({'channel_id': api_param['secondary_id_b'],
-                                          'api_key': api_param['secondary_key_b']})
+            uniform_packets.append({CH: api_param['primary_id_a'],
+                                    KEY: api_param['primary_key_a']})
+            uniform_packets.append({CH: api_param['primary_id_b'],
+                                    KEY: api_param['primary_key_b']})
+            uniform_packets.append({CH: api_param['secondary_id_a'],
+                                    KEY: api_param['secondary_key_a']})
+            uniform_packets.append({CH: api_param['secondary_id_b'],
+                                    KEY: api_param['secondary_key_b']})
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakUniversalAPIAdapter.__name__} missing key={ke!s}.")
-        return universal_api_packets
+            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakUniformReshaper.__name__} missing key={ke!s}.")
+        return uniform_packets
 
 
-class AtmotubeUniversalAPIAdapter(UniversalAPIAdapter):
+class AtmotubeUniformReshaper(UniformReshaper):
 
-    def adapt(self, api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
-        universal_api_packets = []
+    def db2api(self, api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
+        uniform_packets = []
         try:
-            universal_api_packets.append({'mac': api_param['mac'],
-                                          'api_key': api_param['api_key']})
+            uniform_packets.append({MAC: api_param['mac'],
+                                    KEY: api_param['api_key']})
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {AtmotubeUniversalAPIAdapter.__name__} missing key={ke!s}.")
-        return universal_api_packets
+            raise SystemExit(f"{EXCEPTION_HEADER} {AtmotubeUniformReshaper.__name__} missing key={ke!s}.")
+        return uniform_packets

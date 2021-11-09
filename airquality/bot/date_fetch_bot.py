@@ -19,7 +19,7 @@ from io.remote.api.adapter import UrllibAdapter
 from utility.datetime_parser import DatetimeParser
 from data.reshaper.packet import PacketReshaper
 from utility.db_answer_parser import DatabaseAnswerParser
-from data.reshaper.uniform.db2api import UniversalAPIAdapter
+from data.reshaper.uniform.db2api import UniformReshaper
 
 
 # IMPORT SHARED CONSTANTS
@@ -33,7 +33,7 @@ class DateFetchBot:
                  file_parser_class,
                  url_builder_class=URLBuilder,
                  packet_reshaper_class=PacketReshaper,
-                 universal_api_adapter_class=UniversalAPIAdapter):
+                 universal_api_adapter_class=UniformReshaper):
         self.dbconn = dbconn
         self.file_parser_class = file_parser_class
         self.url_builder_class = url_builder_class
@@ -66,7 +66,7 @@ class DateFetchBot:
                                  f"but are empty.")
 
             ################################ UNIVERSAL API ADAPTER ################################
-            universal_api_param = universal_api_adapter.adapt(api_param)
+            universal_api_param = universal_api_adapter.db2api(api_param)
 
             ############################# CYCLE ON UNIVERSAL API PARAM OF A SINGLE SENSOR ##############################
             for api_param in universal_api_param:

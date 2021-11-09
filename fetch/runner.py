@@ -21,8 +21,8 @@ from io.remote.database.adapter import Psycopg2DatabaseAdapter
 from utility.file_parser import FileParserFactory, JSONFileParser
 from data.builder.url import ThingspeakURLBuilder, AtmotubeURLBuilder
 from data.reshaper.packet import ThingspeakPacketReshaper, AtmotubePacketReshaper
-from data.reshaper.uniform.db2api import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
-from data.reshaper.uniform.api2db import AtmotubeUniversalDatabaseAdapter, ThingspeakUniversalDatabaseAdapter
+from data.reshaper.uniform.db2api import AtmotubeUniformReshaper, ThingspeakUniformReshaper
+from data.reshaper.uniform.api2db import AtmotubeUniformReshaper, ThingspeakUniformReshaper
 
 
 # IMPORT SHARED CONSTANTS
@@ -155,10 +155,10 @@ def main():
             packet_reshaper_class = AtmotubePacketReshaper
 
             # UniversalAPIAdapter class
-            universal_api_adapter_class = AtmotubeUniversalAPIAdapter
+            universal_api_adapter_class = AtmotubeUniformReshaper
 
             # UniversalDatabaseAdapter class
-            universal_db_adapter_class = AtmotubeUniversalDatabaseAdapter
+            universal_db_adapter_class = AtmotubeUniformReshaper
 
         # *****************************************************************
         elif sc.PERSONALITY == 'thingspeak':
@@ -182,10 +182,10 @@ def main():
             url_builder_class = ThingspeakURLBuilder
 
             # UniversalAPIAdapter class
-            universal_api_adapter_class = ThingspeakUniversalAPIAdapter
+            universal_api_adapter_class = ThingspeakUniformReshaper
 
             # UniversalDatabaseAdapter class
-            universal_db_adapter_class = ThingspeakUniversalDatabaseAdapter
+            universal_db_adapter_class = ThingspeakUniformReshaper
 
         # *****************************************************************
         else:

@@ -15,7 +15,7 @@ import airquality.io.remote.database.adapter as db
 from utility.query_picker import QueryPicker
 from utility.datetime_parser import DatetimeParser
 from data.builder.geom import GeometryBuilder
-from data.reshaper.uniform.api2db import UniversalDatabaseAdapter
+from data.reshaper.uniform.api2db import UniformReshaper
 from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder, \
     SensorSQLBuilder, APIParamSQLBuilder
 
@@ -32,7 +32,7 @@ class InitializeBot:
                  reshaper_class,
                  query_picker_instance: QueryPicker,
                  url_builder_class,
-                 universal_adapter_class=UniversalDatabaseAdapter,
+                 universal_adapter_class=UniformReshaper,
                  geo_sqlcontainer_class=SensorAtLocationSQLBuilder,
                  sensor_sqlcontainer_class=SensorSQLBuilder,
                  apiparam_sqlcontainer_class=APIParamSQLBuilder,
@@ -74,7 +74,7 @@ class InitializeBot:
 
             universal_db_packets = []
             for universal_packet in reshaped_packets:
-                universal_db_packets.append(universal_db_adapter.adapt(universal_packet))
+                universal_db_packets.append(universal_db_adapter.api2db(universal_packet))
 
             ############################## FILTER PACKETS #############################
             if sc.DEBUG_MODE:
