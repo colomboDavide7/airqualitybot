@@ -116,10 +116,6 @@ def main():
             raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} "
                              f"for personality='{sc.PERSONALITY}'.")
 
-        ################################ GET THE NEEDED QUERY STATEMENT ################################
-        update_valid_to_timestamp = query_picker.update_valid_to_timestamp_location()
-        insert_into_sensor_at_location = query_picker.insert_into_sensor_at_location()
-
         if sc.PERSONALITY == 'purpleair':
             geo_bot = GeoBot(dbconn=dbconn,
                              url_builder_class=URLBuilderPurpleair,
@@ -128,7 +124,8 @@ def main():
                              universal_db_adapter_class=PurpleairUniversalDatabaseAdapter,
                              geom_sqlcontainer_class=GeoSQLContainer,
                              composition_class=SQLContainerComposition,
-                             postgis_geom_class=PostGISPoint)
+                             postgis_geom_class=PostGISPoint,
+                             query_picker_instance=query_picker)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for geo bot.")
 
@@ -136,9 +133,7 @@ def main():
         geo_bot.run(api_address=api_address,
                     url_param=url_param,
                     active_locations=active_locations,
-                    name2id_map=name2id_map,
-                    update_valid_to_ts_query=update_valid_to_timestamp,
-                    sensor_at_location_query=insert_into_sensor_at_location)
+                    name2id_map=name2id_map)
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()

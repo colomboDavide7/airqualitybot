@@ -81,16 +81,16 @@ class QueryPicker(builtins.object):
 
     ################################ METHODS THAT RETURN UPDATE QUERY ################################
 
-    def update_last_packet_date_atmotube(self, last_timestamp: str, sensor_id: int) -> str:
+    def update_last_packet_date_atmotube(self, ts: str, sensor_id: int) -> str:
         query_id = "u1"
         self.search_query_id(query_id)
-        query = self.parsed_query_data[query_id].format(par_val=last_timestamp, sens_id=sensor_id, par_name="date")
+        query = self.parsed_query_data[query_id].format(par_val=ts, sens_id=sensor_id, par_name="date")
         return query
 
-    def update_valid_to_timestamp_location(self) -> str:
+    def update_valid_to_timestamp_location(self, sensor_id: int, ts: str) -> str:
         query_id = "u2"
         self.search_query_id(query_id)
-        return self.parsed_query_data[query_id]
+        return self.parsed_query_data[query_id].format(ts=ts, sens_id=sensor_id)
 
     def update_last_channel_acquisition_timestamp(self, sensor_id: str, ts: str, param2update: str) -> str:
         query_id = "u3"

@@ -12,6 +12,7 @@ import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.api.url_builder import URLBuilder
+from airquality.picker.query_picker import QueryPicker
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.geom.postgis_geometry import PostGISGeometry
 from airquality.parser.datetime_parser import DatetimeParser
@@ -29,6 +30,7 @@ class GeoBot:
     def __init__(self,
                  dbconn,
                  file_parser_class,
+                 query_picker_instance: QueryPicker,
                  url_builder_class=URLBuilder,
                  reshaper_class=PacketReshaper,
                  universal_db_adapter_class=UniversalDatabaseAdapter,
@@ -43,14 +45,13 @@ class GeoBot:
         self.geo_sqlcontainer_class = geom_sqlcontainer_class
         self.composition_class = composition_class
         self.postgis_geom_class = postgis_geom_class
+        self.query_picker_instance = query_picker_instance
 
     def run(self,
             api_address: str,
             url_param: Dict[str, Any],
             active_locations: Dict[str, Any],
-            name2id_map: Dict[str, Any],
-            update_valid_to_ts_query: str,
-            sensor_at_location_query: str):
+            name2id_map: Dict[str, Any]):
 
         ################################ API DATA FETCHING ################################
         url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
@@ -92,32 +93,36 @@ class GeoBot:
             if sc.DEBUG_MODE:
                 print(20 * "=" + " ACTIVE SENSORS FOUND " + 20 * '=')
                 for universal_packet in filtered_universal_packets:
-                    print(f"{DEBUG_HEADER} name={universal_packet['name']}")
+                    print(f"{DEBUG_HEADER} '{universal_packet['name']}'")
 
             ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
+            if sc.DEBUG_MODE:
+                print(20 * "=" + " UPDATE LOCATIONS " + 20 * '=')
+
             update_statements = ""
             geo_containers = []
             for universal_packet in filtered_universal_packets:
                 name = universal_packet['name']
                 geometry = self.postgis_geom_class()
                 if geometry.get_geomtype_string(universal_packet) != active_locations[name]:
+                    if sc.DEBUG_MODE:
+                        print(f"{INFO_HEADER} '{universal_packet['name']}' => update location")
                     sensor_id = name2id_map[name]
                     # ***************************
                     timestamp = DatetimeParser.current_sqltimestamp()
-                    update_statements += update_valid_to_ts_query.format(sens_id=sensor_id,
-                                                                         ts=timestamp)
+                    update_statements += self.query_picker_instance.update_valid_to_timestamp_location(sensor_id=sensor_id,
+                                                                                                       ts=timestamp)
                     # ***************************
                     geom = geometry.get_database_string(universal_packet)
-                    geo_containers.append(self.geo_sqlcontainer_class(sensor_id=sensor_id,
-                                                                      valid_from=timestamp,
-                                                                      geom=geom))
+                    geo_containers.append(self.geo_sqlcontainer_class(sensor_id=sensor_id, valid_from=timestamp, geom=geom))
 
             if geo_containers:
                 ############################## COMPOSITION CONTAINERS #############################
                 geo_container_composition = self.composition_class(geo_containers)
 
                 ############################## BUILD THE QUERY FROM CONTAINERS #############################
-                insert_statement = geo_container_composition.sql(query=sensor_at_location_query)
+                query_statement = self.query_picker_instance.insert_into_sensor_at_location()
+                insert_statement = geo_container_composition.sql(query_statement)
                 self.dbconn.send(executable_sql_query=update_statements)
                 self.dbconn.send(executable_sql_query=insert_statement)
             else:
