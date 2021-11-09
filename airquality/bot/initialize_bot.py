@@ -15,7 +15,7 @@ import airquality.io.remote.database.adapter as db
 from utility.query_picker import QueryPicker
 from utility.datetime_parser import DatetimeParser
 from data.builder.geom import GeometryBuilder
-from data.universal_db_adapter import UniversalDatabaseAdapter
+from data.reshaper.uniform.api2db import UniversalDatabaseAdapter
 from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder, \
     SensorSQLBuilder, APIParamSQLBuilder
 

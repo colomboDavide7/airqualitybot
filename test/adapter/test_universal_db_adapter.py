@@ -8,7 +8,7 @@
 ######################################################
 
 import unittest
-from data.universal_db_adapter import PurpleairUniversalDatabaseAdapter, AtmotubeUniversalDatabaseAdapter, \
+from data.reshaper.uniform.api2db import PurpleairUniversalDatabaseAdapter, AtmotubeUniversalDatabaseAdapter, \
     ThingspeakUniversalDatabaseAdapter
 
 

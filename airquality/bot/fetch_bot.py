@@ -14,10 +14,10 @@ import airquality.constants.system_constants as sc
 from data.builder.url import URLBuilder
 from io.remote.api.adapter import UrllibAdapter
 from utility.datetime_parser import DatetimeParser
-from data.packet_reshaper import PacketReshaper
+from data.reshaper.packet import PacketReshaper
 from utility.db_answer_parser import DatabaseAnswerParser
-from data.universal_api_adapter import UniversalAPIAdapter
-from data.universal_db_adapter import UniversalDatabaseAdapter
+from data.reshaper.uniform.db2api import UniversalAPIAdapter
+from data.reshaper.uniform.api2db import UniversalDatabaseAdapter
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, EXCEPTION_HEADER, INFO_HEADER, WARNING_HEADER

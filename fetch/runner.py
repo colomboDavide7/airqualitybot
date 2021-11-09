@@ -20,9 +20,9 @@ from utility.db_answer_parser import DatabaseAnswerParser
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
 from utility.file_parser import FileParserFactory, JSONFileParser
 from data.builder.url import ThingspeakURLBuilder, AtmotubeURLBuilder
-from data.packet_reshaper import ThingspeakPacketReshaper, AtmotubePacketReshaper
-from data.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
-from data.universal_db_adapter import AtmotubeUniversalDatabaseAdapter, ThingspeakUniversalDatabaseAdapter
+from data.reshaper.packet import ThingspeakPacketReshaper, AtmotubePacketReshaper
+from data.reshaper.uniform.db2api import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
+from data.reshaper.uniform.api2db import AtmotubeUniversalDatabaseAdapter, ThingspeakUniversalDatabaseAdapter
 
 
 # IMPORT SHARED CONSTANTS

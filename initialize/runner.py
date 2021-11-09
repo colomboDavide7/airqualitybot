@@ -19,10 +19,10 @@ from utility.query_picker import QueryPicker
 from data.builder.geom import PointBuilder
 from data.builder.url import PurpleairURLBuilder
 from utility.db_answer_parser import DatabaseAnswerParser
-from data.packet_reshaper import PurpleairPacketReshaper
+from data.reshaper.packet import PurpleairPacketReshaper
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
 from utility.file_parser import JSONFileParser, FileParserFactory
-from data.universal_db_adapter import PurpleairUniversalDatabaseAdapter
+from data.reshaper.uniform.api2db import PurpleairUniversalDatabaseAdapter
 from data.builder.sql import SQLCompositionBuilder, SensorSQLBuilder, \
     APIParamSQLBuilder, SensorAtLocationSQLBuilder
 

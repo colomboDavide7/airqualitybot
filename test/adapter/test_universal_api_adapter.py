@@ -8,7 +8,7 @@
 ######################################################
 
 import unittest
-from data.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
+from data.reshaper.uniform.db2api import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
 
 
 class TestUniversalAPIAdapter(unittest.TestCase):
