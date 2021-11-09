@@ -12,11 +12,9 @@ from airquality.api.urllib_adapter import UrllibAdapter
 
 class TestAPIRequestAdapter(unittest.TestCase):
 
-    def test_system_exit_fetch(self):
-        """Test SystemExit when invalid URL is given."""
-
+    def test_system_exit_when_invalid_url_is_used(self):
         with self.assertRaises(SystemExit):
-            UrllibAdapter.fetch("ciao=hello")
+            UrllibAdapter.fetch(url="bad url")
 
 
 if __name__ == '__main__':

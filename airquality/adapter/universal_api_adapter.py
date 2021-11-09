@@ -32,7 +32,7 @@ class ThingspeakUniversalAPIAdapter(UniversalAPIAdapter):
             universal_api_packets.append({'channel_id': api_param['secondary_id_b'],
                                           'api_key': api_param['secondary_key_b']})
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakUniversalAPIAdapter.__name__} missing key='{ke!s}'.")
+            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakUniversalAPIAdapter.__name__} missing key={ke!s}.")
         return universal_api_packets
 
 
@@ -44,5 +44,5 @@ class AtmotubeUniversalAPIAdapter(UniversalAPIAdapter):
             universal_api_packets.append({'mac': api_param['mac'],
                                           'api_key': api_param['api_key']})
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {AtmotubeUniversalAPIAdapter.__name__} missing key='{ke!s}'.")
+            raise SystemExit(f"{EXCEPTION_HEADER} {AtmotubeUniversalAPIAdapter.__name__} missing key={ke!s}.")
         return universal_api_packets
