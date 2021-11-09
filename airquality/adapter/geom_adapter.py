@@ -27,8 +27,7 @@ class GeometryAdapterPurpleair(GeometryAdapter):
 class GeometryAdapterAtmotube(GeometryAdapter):
 
     def adapt(self, packet: Dict[str, Any]) -> PostGISGeometry:
-        keys = packet.keys()
-        if 'coords' not in keys:
+        if 'coords' not in packet.keys():
             return PostGISNullObject()
         coords = packet.pop('coords')
         return PostGISPoint(lat=coords['lat'], lng=coords['lon'])
