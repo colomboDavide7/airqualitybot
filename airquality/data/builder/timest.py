@@ -28,6 +28,19 @@ class Timestamp(abc.ABC):
         pass
 
 
+class CurrentTimestamp(Timestamp):
+
+    def __init__(self):
+        tmp = dt.datetime.now()
+        self.ts = tmp.strftime(SQL_TIMEST_FMT)
+
+    def add_days(self, days: int):
+        raise NotImplementedError(f"{EXCEPTION_HEADER} {CurrentTimestamp.__name__} bad operation => cannot add days")
+
+    def is_before(self, other):
+        raise NotImplementedError(f"{EXCEPTION_HEADER} {CurrentTimestamp.__name__} bad operation => cannot compare ts")
+
+
 class AtmotubeTimestamp(Timestamp):
 
     def __init__(self, timestamp: str):

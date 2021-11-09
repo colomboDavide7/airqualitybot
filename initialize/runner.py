@@ -10,11 +10,11 @@
 import sys
 import time
 from typing import List
-import airquality.core.constants.system_constants as sc
 
 # IMPORT MODULES
 import airquality.bot.initialize_bot as bot
 import airquality.io.local.io as io
+import airquality.data.builder.timest as ts
 import airquality.utility.picker.query as pk
 import airquality.data.builder.geom as gb
 import airquality.data.builder.url as url
@@ -24,7 +24,8 @@ import airquality.utility.parser.file as fp
 import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.data.builder.sql as sql
 
-# IMPORT SHARED CONSTANTS
+# IMPORT CONSTANTS
+import airquality.core.constants.system_constants as sc
 from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
     DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
     VALID_PERSONALITIES, INITIALIZE_USAGE
@@ -119,26 +120,31 @@ def main():
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s}.")
 
+        ################################ GET THE API ADDRESS ################################
+        current_ts = ts.CurrentTimestamp()
+        file_parser = fp.JSONFileParser()
+
         ###################### INSTANTIATE THE BOT WITH THE PROPER CLASSES BASED ON PERSONALITY ########################
         if sc.PERSONALITY == 'purpleair':
+            url_builder = url.PurpleairURLBuilder(api_address=api_address, parameters=url_param)
+            packet_reshaper = rshp.PurpleairPacketReshaper()
+            api2db_uniform_reshaper = a2d.PurpleairUniformReshaper()
             initialize_bot = bot.InitializeBot(dbconn=dbconn,
-                                               file_parser_class=fp.JSONFileParser,
-                                               url_builder_class=url.PurpleairURLBuilder,
-                                               reshaper_class=rshp.PurpleairPacketReshaper,
-                                               universal_adapter_class=a2d.PurpleairUniformReshaper,
-                                               geo_sqlcontainer_class=sql.SensorAtLocationSQLBuilder,
-                                               sensor_sqlcontainer_class=sql.SensorSQLBuilder,
-                                               apiparam_sqlcontainer_class=sql.APIParamSQLBuilder,
-                                               postgis_geom_class=gb.PointBuilder,
-                                               query_picker_instance=query_picker)
+                                               current_ts=current_ts,
+                                               file_parser=file_parser,
+                                               packet_reshaper=packet_reshaper,
+                                               query_picker=query_picker,
+                                               url_builder=url_builder,
+                                               api2db_uniform_reshaper=api2db_uniform_reshaper,
+                                               sens_at_loc_builder_class=sql.SensorAtLocationSQLBuilder,
+                                               sensor_builder_class=sql.SensorSQLBuilder,
+                                               api_param_builder_class=sql.APIParamSQLBuilder,
+                                               geom_builder_class=gb.PointBuilder)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")
 
         ################################ RUN THE BOT ################################
-        initialize_bot.run(first_sensor_id=first_sensor_id,
-                           api_address=api_address,
-                           url_param=url_param,
-                           sensor_names=sensor_names)
+        initialize_bot.run(first_sensor_id=first_sensor_id, sensor_names=sensor_names)
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()

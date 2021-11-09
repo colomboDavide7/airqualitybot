@@ -6,7 +6,8 @@
 #               'properties/query.json' file.
 #
 #################################################
-from typing import Dict, Any
+from typing import Dict, Any, List
+import airquality.data.builder.sql as sb
 from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
@@ -63,20 +64,29 @@ class QueryPicker:
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id]
 
-    def insert_into_sensor(self) -> str:
+    def insert_into_sensor(self, values: List[sb.SensorSQLBuilder]) -> str:
         query_id = "i3"
         self.search_query_id(query_id)
-        return self.parsed_query_data[query_id]
+        query = self.parsed_query_data[query_id]
+        for value in values:
+            query += value.sql() + ','
+        return query.strip(',') + ';'
 
-    def insert_into_api_param(self) -> str:
+    def insert_into_api_param(self, values: List[sb.APIParamSQLBuilder]) -> str:
         query_id = "i4"
         self.search_query_id(query_id)
-        return self.parsed_query_data[query_id]
+        query = self.parsed_query_data[query_id]
+        for value in values:
+            query += value.sql() + ','
+        return query.strip(',') + ';'
 
-    def insert_into_sensor_at_location(self) -> str:
+    def insert_into_sensor_at_location(self, values: List[sb.SensorAtLocationSQLBuilder]) -> str:
         query_id = "i5"
         self.search_query_id(query_id)
-        return self.parsed_query_data[query_id]
+        query = self.parsed_query_data[query_id]
+        for value in values:
+            query += value.sql() + ','
+        return query.strip(',') + ';'
 
     ################################ METHODS THAT RETURN UPDATE QUERY ################################
 
