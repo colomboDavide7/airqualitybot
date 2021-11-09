@@ -7,7 +7,7 @@
 #################################################
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
-
+from airquality.constants.shared_constants import EXCEPTION_HEADER
 from airquality.constants.shared_constants import THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
@@ -48,13 +48,16 @@ class ThingspeakPacketReshaper(PacketReshaper):
 
     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
 
-        feeds = api_answer['feeds']
+        feeds: List[Dict[str, Any]] = api_answer['feeds']
         if not feeds:
             return []
 
-        channel = api_answer['channel']
-        sensor_name = channel['name']
-        field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
+        channel: Dict[str, Any] = api_answer['channel']
+        sensor_name: str = channel['name']
+
+        if not sensor_name.startswith('AirMonitor'):
+            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakPacketReshaper.__name__} invalid name => expected a name "
+                             f"starting with 'AirMonitor', got name='{sensor_name}'.")
 
         # SELECT THE RESHAPE MAPPING BASED ON PRIMARY/SECONDARY DATA AND CHANNEL A/B
         if '_b' in sensor_name:
@@ -65,14 +68,14 @@ class ThingspeakPacketReshaper(PacketReshaper):
         else:
             if 'Counters' in sensor_name:
                 field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
+            else:
+                field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
 
         # Decode the "fieldN" value in the 'api_answer' header with the chosen mapping (field_to_use)
         selected_fields = {}
         for param in channel.keys():
             if channel[param] in field_to_use.keys():
                 selected_fields[param] = field_to_use[channel[param]]
-
-        # TODO: handle the case 'empty selected_fields'
 
         reshaped_packets = []
         for feed in feeds:
