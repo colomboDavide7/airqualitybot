@@ -15,7 +15,7 @@ from data.builder.url import URLBuilder
 from utility.query_picker import QueryPicker
 from io.remote.api.adapter import UrllibAdapter
 from data.builder.geom import GeometryBuilder
-from utility.datetime_parser import DatetimeParser
+from data.builder.timest import DatetimeParser
 from data.reshaper.packet import PacketReshaper
 from data.reshaper.uniform.api2db import UniformReshaper
 from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder

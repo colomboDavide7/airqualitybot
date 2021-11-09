@@ -7,13 +7,13 @@
 #################################################
 
 import unittest
-from utility.file_parser import FileParserFactory
+import utility.file as fp
 
 
 class TestFileParser(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.json_parser = FileParserFactory.file_parser_from_file_extension("json")
+        self.json_parser = fp.FileParserFactory.make_parser("json")
 
     def test_successfully_parse_json_file(self):
         test_raw = '{"hello": "world"}'
@@ -23,7 +23,7 @@ class TestFileParser(unittest.TestCase):
 
     def test_system_exit_parser_factory(self):
         with self.assertRaises(SystemExit):
-            FileParserFactory.file_parser_from_file_extension("xml")
+            fp.FileParserFactory.make_parser("xml")
 
     def test_system_exit_when_parse_invalid_json(self):
         test_raw = '{ "hello": "world" '

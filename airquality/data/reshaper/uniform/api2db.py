@@ -8,7 +8,7 @@
 ######################################################
 from typing import Dict, Any
 from abc import ABC, abstractmethod
-import airquality.utility.datetime_parser as dtp
+import data.builder.timest as dtp
 from airquality.constants.shared_constants import EXCEPTION_HEADER
 
 TS = 'timestamp'

@@ -16,9 +16,8 @@ from io.local.io import IOManager
 from airquality.bot.fetch_bot import FetchBot
 from utility.query_picker import QueryPicker
 from airquality.bot.date_fetch_bot import DateFetchBot
-from utility.db_answer_parser import DatabaseAnswerParser
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
-from utility.file_parser import FileParserFactory, JSONFileParser
+from utility.file import FileParserFactory, JSONFileParser
 from data.builder.url import ThingspeakURLBuilder, AtmotubeURLBuilder
 from data.reshaper.packet import ThingspeakPacketReshaper, AtmotubePacketReshaper
 from data.reshaper.uniform.db2api import AtmotubeUniformReshaper, ThingspeakUniformReshaper
@@ -70,8 +69,8 @@ def main():
 
         ################################ READ SERVER FILE ################################
         raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
-        parsed_server_data = parser.parse(raw_string=raw_server_data)
+        parser = FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
+        parsed_server_data = parser.parse(text=raw_server_data)
         server_settings = parsed_server_data[sc.PERSONALITY]
 
         ################################ DATABASE CONNECTION ADAPTER ################################
@@ -80,16 +79,16 @@ def main():
 
         ################################ READ QUERY FILE ###############################
         raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
-        parsed_query_data = parser.parse(raw_string=raw_query_data)
+        parser = FileParserFactory.make_parser(file_extension=QUERY_FILE.split('.')[-1])
+        parsed_query_data = parser.parse(text=raw_query_data)
 
         ################################ CREATE QUERY PICKER ###############################
         query_picker = QueryPicker(parsed_query_data)
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string=raw_api_data)
+        parser = FileParserFactory.make_parser(file_extension=API_FILE.split('.')[-1])
+        parsed_api_data = parser.parse(text=raw_api_data)
 
         ################################ GET THE API ADDRESS ################################
         try:
@@ -103,7 +102,7 @@ def main():
         ################################ DATABASE SENSOR ID ASSOCIATED TO PERSONALITY ################################
         query = query_picker.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(query=query)
-        sensor_ids = DatabaseAnswerParser.parse_single_attribute_answer(response=answer)
+        sensor_ids = [t[0] for t in answer]
 
         if not sensor_ids:
             print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'.")
@@ -118,7 +117,7 @@ def main():
         ################################ SELECT MEASURE PARAM FROM PERSONALITY ################################
         query = query_picker.select_measure_param_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(query=query)
-        measure_param_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+        measure_param_map = dict(answer)
         if sc.DEBUG_MODE:
             print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
             for param_code, param_id in measure_param_map.items():

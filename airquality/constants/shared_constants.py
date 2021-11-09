@@ -40,21 +40,3 @@ EXCEPTION_HEADER = f"{RED}[EXCEPTION]:{RESET}"
 INITIALIZE_USAGE = "USAGE: python -m initialize [--help or -h] [--debug  or -d] personality"
 FETCH_USAGE = "USAGE: python -m fetch [--help or -h] [--debug  or -d] personality"
 GEO_USAGE = "USAGE: python -m geo [--help or -h] [--debug  or -d] personality"
-
-################################ EMPTY CONSTANTS ################################
-
-EMPTY_STRING = ""
-
-################################ DATETIME REGULAR EXPRESSION PATTERN ################################
-
-ATMOTUBE_DATETIME_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z'
-SQL_TIMESTAMP_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}'
-THINGSPEAK_DATETIME_REGEX_PATTERN = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
-
-################################ DATETIME FORMAT FOR DATETIME2STR CONVERSION ################################
-
-DATETIME2SQLTIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
-
-################################ THINGSPEAK 2 DATABASE PARAM NAME MAPPING ################################
-
-

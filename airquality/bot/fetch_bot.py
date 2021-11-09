@@ -13,10 +13,8 @@ import airquality.constants.system_constants as sc
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from data.builder.url import URLBuilder
 from io.remote.api.adapter import UrllibAdapter
-from utility.datetime_parser import DatetimeParser
+from data.builder.timest import DatetimeParser
 from data.reshaper.packet import PacketReshaper
-from utility.db_answer_parser import DatabaseAnswerParser
-from data.reshaper.uniform.db2api import UniformReshaper
 from data.reshaper.uniform.api2db import UniformReshaper
 
 # IMPORT SHARED CONSTANTS
@@ -59,7 +57,7 @@ class FetchBot:
             ################################ SELECT API PARAM FROM DATABASE ################################
             query = select_apiparam_query.format(sensor_id=sensor_id)
             answer = self.dbconn.send(query=query)
-            api_param = DatabaseAnswerParser.parse_key_val_answer(answer)
+            api_param = dict(answer)
 
             if not api_param:
                 raise SystemExit(f"{EXCEPTION_HEADER} {FetchBot.__name__} fetched API param for sensor_id={sensor_id} "

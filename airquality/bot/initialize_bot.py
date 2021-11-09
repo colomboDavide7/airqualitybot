@@ -13,7 +13,7 @@ import airquality.io.remote.database.adapter as db
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from utility.query_picker import QueryPicker
-from utility.datetime_parser import DatetimeParser
+from data.builder.timest import DatetimeParser
 from data.builder.geom import GeometryBuilder
 from data.reshaper.uniform.api2db import UniformReshaper
 from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder, \

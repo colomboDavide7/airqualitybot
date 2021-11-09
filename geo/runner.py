@@ -17,12 +17,11 @@ from airquality.bot.geo_bot import GeoBot
 from utility.query_picker import QueryPicker
 from data.builder.geom import PointBuilder
 from data.builder.url import PurpleairURLBuilder
-from utility.db_answer_parser import DatabaseAnswerParser
 from data.reshaper.packet import PurpleairPacketReshaper
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
-from utility.file_parser import FileParserFactory, JSONFileParser
+from utility.file import FileParserFactory, JSONFileParser
 from data.reshaper.uniform.api2db import PurpleairUniformReshaper
-from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder
+from data.builder.sql import SensorAtLocationSQLBuilder
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
@@ -67,8 +66,8 @@ def main():
 
         ################################ READ SERVER FILE ################################
         raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=SERVER_FILE.split('.')[-1])
-        parsed_server_data = parser.parse(raw_string=raw_server_data)
+        parser = FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
+        parsed_server_data = parser.parse(text=raw_server_data)
         server_settings = parsed_server_data[sc.PERSONALITY]
 
         ################################ DATABASE CONNECTION ADAPTER ################################
@@ -77,8 +76,8 @@ def main():
 
         ################################ READ QUERY FILE ###############################
         raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=QUERY_FILE.split('.')[-1])
-        parsed_query_data = parser.parse(raw_string=raw_query_data)
+        parser = FileParserFactory.make_parser(file_extension=QUERY_FILE.split('.')[-1])
+        parsed_query_data = parser.parse(text=raw_query_data)
 
         ################################ CREATE QUERY PICKER ###############################
         query_picker = QueryPicker(parsed_query_data)
@@ -86,7 +85,7 @@ def main():
         ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR SENSORS ################################
         query = query_picker.select_sensor_valid_name_geom_mapping_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(query=query)
-        active_locations = DatabaseAnswerParser.parse_key_val_answer(answer)
+        active_locations = dict(answer)
 
         if not active_locations:
             print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'.")
@@ -101,12 +100,12 @@ def main():
         ####################### QUERY THE (SENSOR_NAME, SENSOR_ID) MAPPING FROM PERSONALITY ############################
         query = query_picker.select_sensor_name_id_mapping_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(query=query)
-        name2id_map = DatabaseAnswerParser.parse_key_val_answer(answer)
+        name2id_map = dict(answer)
 
         ################################ READ API FILE ################################
         raw_api_data = IOManager.open_read_close_file(path=API_FILE)
-        parser = FileParserFactory.file_parser_from_file_extension(file_extension=API_FILE.split('.')[-1])
-        parsed_api_data = parser.parse(raw_string=raw_api_data)
+        parser = FileParserFactory.make_parser(file_extension=API_FILE.split('.')[-1])
+        parsed_api_data = parser.parse(text=raw_api_data)
 
         ################################ GET THE API ADDRESS ################################
         try:
