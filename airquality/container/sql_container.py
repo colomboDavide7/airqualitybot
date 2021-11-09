@@ -67,6 +67,8 @@ class SensorSQLContainer(SQLContainer):
 
 class MobileMeasurementSQLContainer(SQLContainer):
 
+    # TODO: ADD EXTERNAL MEASUREMENT ID
+
     def __init__(self, packet: Dict[str, Any]):
         self.param_id = packet['param_id']
         self.param_val = packet['param_val']
@@ -75,7 +77,10 @@ class MobileMeasurementSQLContainer(SQLContainer):
 
     def sql(self, query: str) -> str:
         for i in range(len(self.param_id)):
-            query += f"({self.param_id[i]}, '{self.param_val[i]}', '{self.timestamp}', {self.geom}),"
+            value = self.param_val[i]
+            if value is not None:
+                value = f"'{value}'"
+            query += f"({self.param_id[i]}, {value}, '{self.timestamp}', {self.geom}),"
         return query.strip(',')
 
     def __str__(self):
@@ -92,7 +97,10 @@ class StationMeasurementSQLContainer(SQLContainer):
 
     def sql(self, query: str) -> str:
         for i in range(len(self.param_id)):
-            query += f"({self.param_id[i]}, {self.sensor_id}, '{self.param_val[i]}', '{self.timestamp}'),"
+            value = self.param_val[i]
+            if value is not None:
+                value = f"'{value}'"
+            query += f"({self.param_id[i]}, {self.sensor_id}, {value}, '{self.timestamp}'),"
         return query.strip(',')
 
     def __str__(self):

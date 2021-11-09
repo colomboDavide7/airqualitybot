@@ -98,6 +98,5 @@ class ThingspeakUniversalDatabaseAdapter(UniversalDatabaseAdapter):
 
         except KeyError as ke:
             # Raise Exception if any key is missing from the 'packet' dictionary
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {PurpleairUniversalDatabaseAdapter.__name__} is missing the key={ke!s}.")
+            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakUniversalDatabaseAdapter.__name__} is missing the key={ke!s}.")
         return universal_packet

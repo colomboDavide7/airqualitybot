@@ -8,7 +8,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List
 
-from airquality.constants.shared_constants import  THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
+from airquality.constants.shared_constants import THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B, THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A, \
     THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
 
@@ -72,6 +72,8 @@ class ThingspeakPacketReshaper(PacketReshaper):
             if channel[param] in field_to_use.keys():
                 selected_fields[param] = field_to_use[channel[param]]
 
+        # TODO: handle the case 'empty selected_fields'
+
         reshaped_packets = []
         for feed in feeds:
             reshaped_packet = {'created_at': feed['created_at'], 'fields': []}
@@ -96,12 +98,3 @@ class AtmotubePacketReshaper(PacketReshaper):
         for item in items:
             reshaped_items.append(item)
         return reshaped_items
-
-# ################################ FACTORY ################################
-# class PacketReshaperFactory(object):
-#
-#     def __init__(self, reshaper_class=PacketReshaper):
-#         self.reshaper_class = reshaper_class
-#
-#     def make_reshaper(self) -> PacketReshaper:
-#         return self.reshaper_class()
