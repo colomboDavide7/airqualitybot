@@ -12,6 +12,7 @@ import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.api.url_builder import URLBuilder
+from airquality.picker.query_picker import QueryPicker
 from airquality.api.urllib_adapter import UrllibAdapter
 from airquality.parser.datetime_parser import DatetimeParser
 from airquality.geom.postgis_geometry import PostGISGeometry
@@ -31,6 +32,7 @@ class InitializeBot:
                  dbconn: DatabaseAdapter,
                  file_parser_class,
                  reshaper_class,
+                 query_picker_instance: QueryPicker,
                  url_builder_class=URLBuilder,
                  universal_adapter_class=UniversalDatabaseAdapter,
                  geo_sqlcontainer_class=GeoSQLContainer,
@@ -42,6 +44,7 @@ class InitializeBot:
         self.file_parser_class = file_parser_class
         self.url_builder_class = url_builder_class
         self.reshaper_class = reshaper_class
+        self.query_picker_instance = query_picker_instance
         self.geo_sqlcontainer_class = geo_sqlcontainer_class
         self.sensor_sqlcontainer_class = sensor_sqlcontainer_class
         self.apiparam_sqlcontainer_class = apiparam_sqlcontainer_class
@@ -53,10 +56,7 @@ class InitializeBot:
             first_sensor_id: int,
             api_address: str,
             url_param: Dict[str, Any],
-            sensor_names: List[str],
-            sensor_query: str,
-            api_param_query: str,
-            sensor_at_location_query: str):
+            sensor_names: List[str]):
 
         ################################ API DATA FETCHING ################################
         url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
@@ -127,9 +127,9 @@ class InitializeBot:
             geo_container_composition = self.composition_class(geo_containers)
 
             ############################## BUILD THE QUERY FROM CONTAINERS #############################
-            query = sensor_container_composition.sql(query=sensor_query)
-            query += apiparam_container_composition.sql(query=api_param_query)
-            query += geo_container_composition.sql(query=sensor_at_location_query)
+            query = sensor_container_composition.sql(query=self.query_picker_instance.insert_into_sensor())
+            query += apiparam_container_composition.sql(query=self.query_picker_instance.insert_into_api_param())
+            query += geo_container_composition.sql(query=self.query_picker_instance.insert_into_sensor_at_location())
             self.dbconn.send(executable_sql_query=query)
         else:
             print(f"{INFO_HEADER} empty packets.")

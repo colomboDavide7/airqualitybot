@@ -15,11 +15,7 @@ class TestSQLQueryBuilder(unittest.TestCase):
         test_query_id = "bad query identifier"
         sqlbuilder = QueryPicker(parsed_query_data={'q1': 'v1'})
         with self.assertRaises(SystemExit):
-            sqlbuilder._raise_exception_if_query_identifier_not_found(query_id=test_query_id)
-
-    def test_system_exit_when_parsed_query_data_is_empty(self):
-        with self.assertRaises(SystemExit):
-            QueryPicker(parsed_query_data={})
+            sqlbuilder.search_query_id(query_id=test_query_id)
 
 
 if __name__ == '__main__':

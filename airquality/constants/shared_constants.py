@@ -21,7 +21,7 @@ MOBILE_SENSOR_PERSONALITIES = (ATMOTUBE_PERSONALITY,)
 
 API_FILE = "properties/api.json"
 SERVER_FILE = "properties/server.json"
-QUERY_FILE = "properties/sql_query.json"
+QUERY_FILE = "properties/query.json"
 
 ################################ ANSI ESCAPE CODES FOR COLOR IN TERMINAL ################################
 

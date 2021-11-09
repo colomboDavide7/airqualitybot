@@ -119,13 +119,7 @@ def main():
             api_address = parsed_api_data[sc.PERSONALITY]['api_address']
             url_param = parsed_api_data[sc.PERSONALITY]['url_param']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} "
-                             f"for personality='{sc.PERSONALITY}'.")
-
-        ################################ GET QUERY STATEMENT FOR INSERTION ################################
-        insert_into_sensor_statement = query_picker.insert_into_sensor()
-        insert_into_api_param_statement = query_picker.insert_into_api_param()
-        insert_into_sensor_at_location_statement = query_picker.insert_into_sensor_at_location()
+            raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s}.")
 
         ###################### INSTANTIATE THE BOT WITH THE PROPER CLASSES BASED ON PERSONALITY ########################
         if sc.PERSONALITY == 'purpleair':
@@ -138,7 +132,8 @@ def main():
                                            sensor_sqlcontainer_class=SensorSQLContainer,
                                            apiparam_sqlcontainer_class=APIParamSQLContainer,
                                            composition_class=SQLContainerComposition,
-                                           postgis_geom_class=PostGISPoint)
+                                           postgis_geom_class=PostGISPoint,
+                                           query_picker_instance=query_picker)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")
 
@@ -146,10 +141,7 @@ def main():
         initialize_bot.run(first_sensor_id=first_sensor_id,
                            api_address=api_address,
                            url_param=url_param,
-                           sensor_names=sensor_names,
-                           sensor_query=insert_into_sensor_statement,
-                           api_param_query=insert_into_api_param_statement,
-                           sensor_at_location_query=insert_into_sensor_at_location_statement)
+                           sensor_names=sensor_names)
 
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
