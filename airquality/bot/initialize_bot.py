@@ -13,8 +13,8 @@ import airquality.constants.system_constants as sc
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.api.url_builder import URLBuilder
 from airquality.api.urllib_adapter import UrllibAdapter
-from airquality.adapter.geom_adapter import GeometryAdapter
 from airquality.parser.datetime_parser import DatetimeParser
+from airquality.geom.postgis_geometry import PostGISGeometry
 from airquality.database.db_conn_adapter import ConnectionAdapter
 from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
 from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition, \
@@ -28,26 +28,26 @@ from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WAR
 class InitializeBot:
 
     def __init__(self,
-                 dbconn: ConnectionAdapter,  # database connection adapter object
-                 file_parser_class,  # file parser class for parsing raw file lines
-                 reshaper_class,  # reshaper class for getting the packets in a better shape
-                 url_builder_class=URLBuilder,  # builder class for creating the URL for fetching data from API
-                 universal_adapter_class=UniversalDatabaseAdapter,  # adapter class for giving the packets a universal interface
-                 geom_adapter_class=GeometryAdapter,  # adapter class for geolocation information
-                 geo_sqlcontainer_class=GeoSQLContainer,  # container class for converting dict into SQLContainer
+                 dbconn: ConnectionAdapter,
+                 file_parser_class,
+                 reshaper_class,
+                 url_builder_class=URLBuilder,
+                 universal_adapter_class=UniversalDatabaseAdapter,
+                 geo_sqlcontainer_class=GeoSQLContainer,
                  sensor_sqlcontainer_class=SensorSQLContainer,
                  apiparam_sqlcontainer_class=APIParamSQLContainer,
-                 composition_class=SQLContainerComposition):    # container class that contains a collection of SQLContainer
+                 composition_class=SQLContainerComposition,
+                 postgis_geom_class=PostGISGeometry):
         self.dbconn = dbconn
         self.file_parser_class = file_parser_class
         self.url_builder_class = url_builder_class
         self.reshaper_class = reshaper_class
-        self.geom_adapter_class = geom_adapter_class
         self.geo_sqlcontainer_class = geo_sqlcontainer_class
         self.sensor_sqlcontainer_class = sensor_sqlcontainer_class
         self.apiparam_sqlcontainer_class = apiparam_sqlcontainer_class
         self.composition_class = composition_class
         self.universal_db_adapter_class = universal_adapter_class
+        self.postgis_geom_class = postgis_geom_class
 
     def run(self,
             first_sensor_id: int,
@@ -98,9 +98,6 @@ class InitializeBot:
                 for universal_packet in filtered_universal_packets:
                     print(f"{DEBUG_HEADER} name={universal_packet['name']}")
 
-            ############################## ADAPTER FOR CONVERTING DICT INTO CONTAINERS #############################
-            geom_adapter = self.geom_adapter_class()
-
             ############################## CONVERT PARAMETERS INTO SQL CONTAINERS #############################
             temp_sensor_id = first_sensor_id
             geo_containers = []
@@ -111,8 +108,9 @@ class InitializeBot:
                 sensor_containers.append(self.sensor_sqlcontainer_class(name=universal_packet['name'],
                                                                         type_= universal_packet['type']))
                 # **************************
-                geometry = geom_adapter.adapt(universal_packet)
-                geom = geometry.get_database_string()
+                # geometry = geom_adapter.adapt(universal_packet)
+                geometry = self.postgis_geom_class()
+                geom = geometry.get_database_string(universal_packet)
                 valid_from = DatetimeParser.current_sqltimestamp()
                 geo_containers.append(self.geo_sqlcontainer_class(sensor_id=temp_sensor_id,
                                                                   valid_from=valid_from,

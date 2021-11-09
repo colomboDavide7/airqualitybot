@@ -16,10 +16,10 @@ from airquality.bot.initialize_bot import InitializeBot
 # IMPORT CLASSES FROM AIRQUALITY MODULE
 from airquality.io.io import IOManager
 from airquality.picker.query_picker import QueryPicker
+from airquality.geom.postgis_geometry import PostGISPoint
 from airquality.api.url_builder import URLBuilderPurpleair
 from airquality.picker.resource_picker import ResourcePicker
 from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.adapter.geom_adapter import GeometryAdapterPurpleair
 from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
 from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter
 from airquality.parser.file_parser import JSONFileParser, FileParserFactory
@@ -139,11 +139,11 @@ def main():
                                            url_builder_class=URLBuilderPurpleair,
                                            reshaper_class=PurpleairPacketReshaper,
                                            universal_adapter_class=PurpleairUniversalDatabaseAdapter,
-                                           geom_adapter_class=GeometryAdapterPurpleair,
                                            geo_sqlcontainer_class=GeoSQLContainer,
                                            sensor_sqlcontainer_class=SensorSQLContainer,
                                            apiparam_sqlcontainer_class=APIParamSQLContainer,
-                                           composition_class=SQLContainerComposition)
+                                           composition_class=SQLContainerComposition,
+                                           postgis_geom_class=PostGISPoint)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")
 
