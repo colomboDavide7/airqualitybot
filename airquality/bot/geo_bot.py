@@ -18,7 +18,7 @@ from data.builder.geom import GeometryBuilder
 from utility.datetime_parser import DatetimeParser
 from data.packet_reshaper import PacketReshaper
 from data.universal_db_adapter import UniversalDatabaseAdapter
-from data.builder.sql import GeoSQLContainer, SQLContainerComposition
+from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
@@ -34,8 +34,8 @@ class GeoBot:
                  url_builder_class=URLBuilder,
                  reshaper_class=PacketReshaper,
                  universal_db_adapter_class=UniversalDatabaseAdapter,
-                 geom_sqlcontainer_class=GeoSQLContainer,
-                 composition_class=SQLContainerComposition,
+                 geom_sqlcontainer_class=SensorAtLocationSQLBuilder,
+                 composition_class=SQLCompositionBuilder,
                  postgis_geom_class=GeometryBuilder):
         self.dbconn = dbconn
         self.url_builder_class = url_builder_class

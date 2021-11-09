@@ -23,8 +23,8 @@ from data.packet_reshaper import PurpleairPacketReshaper
 from io.remote.database.adapter import Psycopg2DatabaseAdapter
 from utility.file_parser import JSONFileParser, FileParserFactory
 from data.universal_db_adapter import PurpleairUniversalDatabaseAdapter
-from data.builder.sql import SQLContainerComposition, SensorSQLContainer, \
-    APIParamSQLContainer, GeoSQLContainer
+from data.builder.sql import SQLCompositionBuilder, SensorSQLBuilder, \
+    APIParamSQLBuilder, SensorAtLocationSQLBuilder
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
@@ -128,10 +128,10 @@ def main():
                                            url_builder_class=PurpleairURLBuilder,
                                            reshaper_class=PurpleairPacketReshaper,
                                            universal_adapter_class=PurpleairUniversalDatabaseAdapter,
-                                           geo_sqlcontainer_class=GeoSQLContainer,
-                                           sensor_sqlcontainer_class=SensorSQLContainer,
-                                           apiparam_sqlcontainer_class=APIParamSQLContainer,
-                                           composition_class=SQLContainerComposition,
+                                           geo_sqlcontainer_class=SensorAtLocationSQLBuilder,
+                                           sensor_sqlcontainer_class=SensorSQLBuilder,
+                                           apiparam_sqlcontainer_class=APIParamSQLBuilder,
+                                           composition_class=SQLCompositionBuilder,
                                            postgis_geom_class=PointBuilder,
                                            query_picker_instance=query_picker)
         else:

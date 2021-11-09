@@ -12,13 +12,12 @@ import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from data.builder.url import URLBuilder
 from utility.query_picker import QueryPicker
 from utility.datetime_parser import DatetimeParser
 from data.builder.geom import GeometryBuilder
 from data.universal_db_adapter import UniversalDatabaseAdapter
-from data.builder.sql import GeoSQLContainer, SQLContainerComposition, \
-    SensorSQLContainer, APIParamSQLContainer
+from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder, \
+    SensorSQLBuilder, APIParamSQLBuilder
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
@@ -32,12 +31,12 @@ class InitializeBot:
                  file_parser_class,
                  reshaper_class,
                  query_picker_instance: QueryPicker,
-                 url_builder_class=URLBuilder,
+                 url_builder_class,
                  universal_adapter_class=UniversalDatabaseAdapter,
-                 geo_sqlcontainer_class=GeoSQLContainer,
-                 sensor_sqlcontainer_class=SensorSQLContainer,
-                 apiparam_sqlcontainer_class=APIParamSQLContainer,
-                 composition_class=SQLContainerComposition,
+                 geo_sqlcontainer_class=SensorAtLocationSQLBuilder,
+                 sensor_sqlcontainer_class=SensorSQLBuilder,
+                 apiparam_sqlcontainer_class=APIParamSQLBuilder,
+                 composition_class=SQLCompositionBuilder,
                  postgis_geom_class=GeometryBuilder):
         self.dbconn = dbconn
         self.file_parser_class = file_parser_class
@@ -99,37 +98,47 @@ class InitializeBot:
 
             ############################## CONVERT PARAMETERS INTO SQL CONTAINERS #############################
             temp_sensor_id = first_sensor_id
-            geo_containers = []
-            sensor_containers = []
-            apiparam_containers = []
+            sensor_at_location_values = []
+            api_param_values = []
+            sensor_values = []
             for universal_packet in filtered_universal_packets:
                 # **************************
-                sensor_containers.append(self.sensor_sqlcontainer_class(sensor_name=universal_packet['name'],
-                                                                        sensor_type= universal_packet['type']))
+                sensor_values.append(self.sensor_sqlcontainer_class(sensor_id=temp_sensor_id, packet=universal_packet))
                 # **************************
-                # geometry = geom_adapter.adapt(universal_packet)
-                geometry = self.postgis_geom_class()
-                geom = geometry.geom_from_text(universal_packet)
+                geometry = self.postgis_geom_class(srid=26918)
+                geom = geometry.geom_from_text()
                 valid_from = DatetimeParser.current_sqltimestamp()
-                geo_containers.append(self.geo_sqlcontainer_class(sensor_id=temp_sensor_id,
-                                                                  valid_from=valid_from,
-                                                                  geom=geom))
+                sensor_at_location_values.append(self.geo_sqlcontainer_class(sensor_id=temp_sensor_id,
+                                                                             valid_from=valid_from,
+                                                                             geom=geom))
                 # **************************
-                apiparam_containers.append(self.apiparam_sqlcontainer_class(param_name=universal_packet['param_name'],
-                                                                            param_value=universal_packet['param_value'],
-                                                                            sensor_id=temp_sensor_id))
+                api_param_values.append(self.apiparam_sqlcontainer_class(sensor_id=temp_sensor_id, packet=universal_packet))
                 temp_sensor_id += 1
 
-            ############################## COMPOSITION CONTAINERS #############################
-            sensor_container_composition = self.composition_class(sensor_containers)
-            apiparam_container_composition = self.composition_class(apiparam_containers)
-            geo_container_composition = self.composition_class(geo_containers)
+            ############################## QUERY HEADERS #############################
+            insert_sensor_at_location_header = self.query_picker_instance.insert_into_sensor_at_location()
+            insert_api_param_header = self.query_picker_instance.insert_into_api_param()
+            insert_sensor_header = self.query_picker_instance.insert_into_sensor()
 
-            ############################## BUILD THE QUERY FROM CONTAINERS #############################
-            query = sensor_container_composition.sql(query=self.query_picker_instance.insert_into_sensor())
-            query += apiparam_container_composition.sql(query=self.query_picker_instance.insert_into_api_param())
-            query += geo_container_composition.sql(query=self.query_picker_instance.insert_into_sensor_at_location())
-            self.dbconn.send(executable_sql_query=query)
+            ############################## BUILD THE QUERIES FROM VALUES #############################
+            query = insert_sensor_header
+            for val in sensor_values:
+                query += val.sql() + ','
+            query = query.strip(',') + ';'
+            self.dbconn.send(query)
+            # **************************
+            query = insert_api_param_header
+            for val in api_param_values:
+                query += val.sql() + ','
+            query = query.strip(',') + ';'
+            self.dbconn.send(query)
+            # **************************
+            query = insert_sensor_at_location_header
+            for val in sensor_at_location_values:
+                query += val.sql() + ','
+            query = query.strip(',') + ';'
+            self.dbconn.send(query)
+            # **************************
         else:
             print(f"{INFO_HEADER} empty packets.")
 
