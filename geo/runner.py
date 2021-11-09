@@ -12,17 +12,17 @@ from typing import List
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.io.io import IOManager
+from io.local.io import IOManager
 from airquality.bot.geo_bot import GeoBot
-from airquality.picker.query_picker import QueryPicker
-from airquality.geom.postgis_geometry import PostGISPoint
-from airquality.api.url_builder import URLBuilderPurpleair
-from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
-from airquality.database.database_adapter import Psycopg2DatabaseAdapter
-from airquality.parser.file_parser import FileParserFactory, JSONFileParser
-from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter
-from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
+from utility.query_picker import QueryPicker
+from data.builder.geom import PointBuilder
+from data.builder.url import URLBuilderPurpleair
+from utility.db_answer_parser import DatabaseAnswerParser
+from data.packet_reshaper import PurpleairPacketReshaper
+from io.remote.database.adapter import Psycopg2DatabaseAdapter
+from utility.file_parser import FileParserFactory, JSONFileParser
+from data.universal_db_adapter import PurpleairUniversalDatabaseAdapter
+from data.builder.sql import GeoSQLContainer, SQLContainerComposition
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
@@ -124,7 +124,7 @@ def main():
                              universal_db_adapter_class=PurpleairUniversalDatabaseAdapter,
                              geom_sqlcontainer_class=GeoSQLContainer,
                              composition_class=SQLContainerComposition,
-                             postgis_geom_class=PostGISPoint,
+                             postgis_geom_class=PointBuilder,
                              query_picker_instance=query_picker)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for geo bot.")

@@ -9,7 +9,7 @@
 from typing import Dict, Any
 from abc import ABC, abstractmethod
 from airquality.constants.shared_constants import EXCEPTION_HEADER
-from airquality.parser.datetime_parser import DatetimeParser
+from utility.datetime_parser import DatetimeParser
 
 
 class UniversalDatabaseAdapter(ABC):

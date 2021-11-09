@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.api.urllib_adapter import UrllibAdapter
+from io.remote.api.adapter import UrllibAdapter
 
 
 class TestAPIRequestAdapter(unittest.TestCase):

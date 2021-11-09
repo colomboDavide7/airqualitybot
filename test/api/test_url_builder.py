@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.api.url_builder import URLBuilderPurpleair, URLBuilderAtmotube, URLBuilderThingspeak
+from data.builder.url import URLBuilderPurpleair, URLBuilderAtmotube, URLBuilderThingspeak
 
 
 class TestURLBuilder(unittest.TestCase):

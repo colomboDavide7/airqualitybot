@@ -11,14 +11,14 @@ from typing import Dict, Any
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.api.url_builder import URLBuilder
-from airquality.picker.query_picker import QueryPicker
-from airquality.api.urllib_adapter import UrllibAdapter
-from airquality.geom.postgis_geometry import PostGISGeometry
-from airquality.parser.datetime_parser import DatetimeParser
-from airquality.reshaper.packet_reshaper import PacketReshaper
-from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
-from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition
+from data.builder.url import URLBuilder
+from utility.query_picker import QueryPicker
+from io.remote.api.adapter import UrllibAdapter
+from data.builder.geom import GeometryBuilder
+from utility.datetime_parser import DatetimeParser
+from data.packet_reshaper import PacketReshaper
+from data.universal_db_adapter import UniversalDatabaseAdapter
+from data.builder.sql import GeoSQLContainer, SQLContainerComposition
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
@@ -36,7 +36,7 @@ class GeoBot:
                  universal_db_adapter_class=UniversalDatabaseAdapter,
                  geom_sqlcontainer_class=GeoSQLContainer,
                  composition_class=SQLContainerComposition,
-                 postgis_geom_class=PostGISGeometry):
+                 postgis_geom_class=GeometryBuilder):
         self.dbconn = dbconn
         self.url_builder_class = url_builder_class
         self.file_parser_class = file_parser_class
@@ -104,7 +104,7 @@ class GeoBot:
             for universal_packet in filtered_universal_packets:
                 name = universal_packet['name']
                 geometry = self.postgis_geom_class()
-                if geometry.get_geomtype_string(universal_packet) != active_locations[name]:
+                if geometry.as_text(universal_packet) != active_locations[name]:
                     if sc.DEBUG_MODE:
                         print(f"{INFO_HEADER} '{universal_packet['name']}' => update location")
                     sensor_id = name2id_map[name]
@@ -113,7 +113,7 @@ class GeoBot:
                     update_statements += self.query_picker_instance.update_valid_to_timestamp_location(sensor_id=sensor_id,
                                                                                                        ts=timestamp)
                     # ***************************
-                    geom = geometry.get_database_string(universal_packet)
+                    geom = geometry.geom_from_text(universal_packet)
                     geo_containers.append(self.geo_sqlcontainer_class(sensor_id=sensor_id, valid_from=timestamp, geom=geom))
 
             if geo_containers:

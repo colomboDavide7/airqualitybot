@@ -8,7 +8,7 @@
 ######################################################
 
 import unittest
-from airquality.container.sql_container import SensorSQLContainer, APIParamSQLContainer, GeoSQLContainer
+from data.builder.sql import SensorSQLContainer, APIParamSQLContainer, GeoSQLContainer
 
 
 class TestSQLContainer(unittest.TestCase):

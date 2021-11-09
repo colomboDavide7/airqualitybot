@@ -11,13 +11,13 @@ from typing import Dict, Any, List
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.api.url_builder import URLBuilder
-from airquality.api.urllib_adapter import UrllibAdapter
-from airquality.parser.datetime_parser import DatetimeParser
-from airquality.reshaper.packet_reshaper import PacketReshaper
-from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.adapter.universal_api_adapter import UniversalAPIAdapter
-from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
+from data.builder.url import URLBuilder
+from io.remote.api.adapter import UrllibAdapter
+from utility.datetime_parser import DatetimeParser
+from data.packet_reshaper import PacketReshaper
+from utility.db_answer_parser import DatabaseAnswerParser
+from data.universal_api_adapter import UniversalAPIAdapter
+from data.universal_db_adapter import UniversalDatabaseAdapter
 
 # IMPORT SHARED CONSTANTS
 from airquality.constants.shared_constants import DEBUG_HEADER, EXCEPTION_HEADER, INFO_HEADER, WARNING_HEADER

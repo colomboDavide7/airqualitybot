@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-from airquality.picker.query_picker import QueryPicker
+from utility.query_picker import QueryPicker
 
 
 class TestSQLQueryBuilder(unittest.TestCase):

@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-from airquality.parser.db_answer_parser import DatabaseAnswerParser
+from utility.db_answer_parser import DatabaseAnswerParser
 
 
 class TestDatabaseAnswerParser(unittest.TestCase):

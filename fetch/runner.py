@@ -12,17 +12,17 @@ from typing import List
 import airquality.constants.system_constants as sc
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.io.io import IOManager
+from io.local.io import IOManager
 from airquality.bot.fetch_bot import FetchBot
-from airquality.picker.query_picker import QueryPicker
+from utility.query_picker import QueryPicker
 from airquality.bot.date_fetch_bot import DateFetchBot
-from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.database.database_adapter import Psycopg2DatabaseAdapter
-from airquality.parser.file_parser import FileParserFactory, JSONFileParser
-from airquality.api.url_builder import URLBuilderThingspeak, URLBuilderAtmotube
-from airquality.reshaper.packet_reshaper import ThingspeakPacketReshaper, AtmotubePacketReshaper
-from airquality.adapter.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
-from airquality.adapter.universal_db_adapter import AtmotubeUniversalDatabaseAdapter, ThingspeakUniversalDatabaseAdapter
+from utility.db_answer_parser import DatabaseAnswerParser
+from io.remote.database.adapter import Psycopg2DatabaseAdapter
+from utility.file_parser import FileParserFactory, JSONFileParser
+from data.builder.url import URLBuilderThingspeak, URLBuilderAtmotube
+from data.packet_reshaper import ThingspeakPacketReshaper, AtmotubePacketReshaper
+from data.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
+from data.universal_db_adapter import AtmotubeUniversalDatabaseAdapter, ThingspeakUniversalDatabaseAdapter
 
 
 # IMPORT SHARED CONSTANTS

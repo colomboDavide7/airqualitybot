@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.parser.file_parser import FileParserFactory
+from utility.file_parser import FileParserFactory
 
 
 class TestFileParser(unittest.TestCase):

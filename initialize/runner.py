@@ -14,16 +14,16 @@ import airquality.constants.system_constants as sc
 from airquality.bot.initialize_bot import InitializeBot
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.io.io import IOManager
-from airquality.picker.query_picker import QueryPicker
-from airquality.geom.postgis_geometry import PostGISPoint
-from airquality.api.url_builder import URLBuilderPurpleair
-from airquality.parser.db_answer_parser import DatabaseAnswerParser
-from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper
-from airquality.database.database_adapter import Psycopg2DatabaseAdapter
-from airquality.parser.file_parser import JSONFileParser, FileParserFactory
-from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter
-from airquality.container.sql_container import SQLContainerComposition, SensorSQLContainer, \
+from io.local.io import IOManager
+from utility.query_picker import QueryPicker
+from data.builder.geom import PointBuilder
+from data.builder.url import URLBuilderPurpleair
+from utility.db_answer_parser import DatabaseAnswerParser
+from data.packet_reshaper import PurpleairPacketReshaper
+from io.remote.database.adapter import Psycopg2DatabaseAdapter
+from utility.file_parser import JSONFileParser, FileParserFactory
+from data.universal_db_adapter import PurpleairUniversalDatabaseAdapter
+from data.builder.sql import SQLContainerComposition, SensorSQLContainer, \
     APIParamSQLContainer, GeoSQLContainer
 
 # IMPORT SHARED CONSTANTS
@@ -132,7 +132,7 @@ def main():
                                            sensor_sqlcontainer_class=SensorSQLContainer,
                                            apiparam_sqlcontainer_class=APIParamSQLContainer,
                                            composition_class=SQLContainerComposition,
-                                           postgis_geom_class=PostGISPoint,
+                                           postgis_geom_class=PointBuilder,
                                            query_picker_instance=query_picker)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")

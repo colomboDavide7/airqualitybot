@@ -7,18 +7,17 @@
 #################################################
 from typing import Dict, Any, List
 
-# IMPORT GLOBAL VARIABLE FROM FETCH MODULE
 import airquality.constants.system_constants as sc
+import airquality.io.remote.api.adapter as api
+import airquality.io.remote.database.adapter as db
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from airquality.api.url_builder import URLBuilder
-from airquality.picker.query_picker import QueryPicker
-from airquality.api.urllib_adapter import UrllibAdapter
-from airquality.parser.datetime_parser import DatetimeParser
-from airquality.geom.postgis_geometry import PostGISGeometry
-from airquality.database.database_adapter import DatabaseAdapter
-from airquality.adapter.universal_db_adapter import UniversalDatabaseAdapter
-from airquality.container.sql_container import GeoSQLContainer, SQLContainerComposition, \
+from data.builder.url import URLBuilder
+from utility.query_picker import QueryPicker
+from utility.datetime_parser import DatetimeParser
+from data.builder.geom import GeometryBuilder
+from data.universal_db_adapter import UniversalDatabaseAdapter
+from data.builder.sql import GeoSQLContainer, SQLContainerComposition, \
     SensorSQLContainer, APIParamSQLContainer
 
 # IMPORT SHARED CONSTANTS
@@ -29,7 +28,7 @@ from airquality.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WAR
 class InitializeBot:
 
     def __init__(self,
-                 dbconn: DatabaseAdapter,
+                 dbconn: db.DatabaseAdapter,
                  file_parser_class,
                  reshaper_class,
                  query_picker_instance: QueryPicker,
@@ -39,7 +38,7 @@ class InitializeBot:
                  sensor_sqlcontainer_class=SensorSQLContainer,
                  apiparam_sqlcontainer_class=APIParamSQLContainer,
                  composition_class=SQLContainerComposition,
-                 postgis_geom_class=PostGISGeometry):
+                 postgis_geom_class=GeometryBuilder):
         self.dbconn = dbconn
         self.file_parser_class = file_parser_class
         self.url_builder_class = url_builder_class
@@ -61,7 +60,7 @@ class InitializeBot:
         ################################ API DATA FETCHING ################################
         url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
         url = url_builder.build_url()
-        raw_packets = UrllibAdapter.fetch(url)
+        raw_packets = api.UrllibAdapter.fetch(url)
         parser = self.file_parser_class()
         parsed_packets = parser.parse(raw_packets)
 
@@ -110,7 +109,7 @@ class InitializeBot:
                 # **************************
                 # geometry = geom_adapter.adapt(universal_packet)
                 geometry = self.postgis_geom_class()
-                geom = geometry.get_database_string(universal_packet)
+                geom = geometry.geom_from_text(universal_packet)
                 valid_from = DatetimeParser.current_sqltimestamp()
                 geo_containers.append(self.geo_sqlcontainer_class(sensor_id=temp_sensor_id,
                                                                   valid_from=valid_from,

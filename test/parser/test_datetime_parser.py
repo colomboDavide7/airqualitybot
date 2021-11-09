@@ -7,7 +7,7 @@
 #################################################
 import datetime
 import unittest
-from airquality.parser.datetime_parser import DatetimeParser
+from utility.datetime_parser import DatetimeParser
 
 
 class TestDatetimeParser(unittest.TestCase):

@@ -8,7 +8,7 @@
 ######################################################
 
 import unittest
-from airquality.adapter.universal_db_adapter import PurpleairUniversalDatabaseAdapter, AtmotubeUniversalDatabaseAdapter, \
+from data.universal_db_adapter import PurpleairUniversalDatabaseAdapter, AtmotubeUniversalDatabaseAdapter, \
     ThingspeakUniversalDatabaseAdapter
 
 

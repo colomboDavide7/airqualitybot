@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.reshaper.packet_reshaper import PurpleairPacketReshaper, AtmotubePacketReshaper, \
+from data.packet_reshaper import PurpleairPacketReshaper, AtmotubePacketReshaper, \
     ThingspeakPacketReshaper
 
 

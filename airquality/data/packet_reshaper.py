@@ -25,8 +25,6 @@ class PacketReshaper(ABC):
 class PurpleairPacketReshaper(PacketReshaper):
 
     def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """This method takes a purpleair API answer and reshape it by creating a dictionary association between the
-        'fields' parameter and the 'data' parameter for each item in the 'data' list."""
 
         fields = api_answer['fields']
         n_fields = len(fields)

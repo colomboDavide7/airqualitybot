@@ -7,7 +7,7 @@
 #################################################
 
 import unittest
-from airquality.database.database_adapter import Psycopg2DatabaseAdapter
+from io.remote.database.adapter import Psycopg2DatabaseAdapter
 
 
 class TestDatabaseConnectionAdapter(unittest.TestCase):

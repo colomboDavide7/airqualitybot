@@ -8,7 +8,7 @@
 ######################################################
 
 import unittest
-from airquality.adapter.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
+from data.universal_api_adapter import AtmotubeUniversalAPIAdapter, ThingspeakUniversalAPIAdapter
 
 
 class TestUniversalAPIAdapter(unittest.TestCase):
