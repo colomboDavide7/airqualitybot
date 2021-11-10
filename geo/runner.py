@@ -133,7 +133,8 @@ def main():
                                  api2db_uniform_reshaper=uniform_reshaper,
                                  geom_builder_class=gb.PointBuilder)
         else:
-            raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for geo bot.")
+            raise SystemExit(
+                f"{EXCEPTION_HEADER} bad personality => geo bot is not implemented for personality='{sc.PERSONALITY}'.")
 
         ################################ RUN THE BOT ################################
         geo_bot.run(active_locations=active_locations, name2id_map=name2id_map)

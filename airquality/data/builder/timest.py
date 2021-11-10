@@ -5,7 +5,6 @@
 # @Description: this script defines a class for parsing sensor's API timestamps
 #
 #################################################
-import re
 import abc
 import datetime as dt
 from airquality.core.constants.shared_constants import EXCEPTION_HEADER
@@ -13,8 +12,6 @@ from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 THINGSPK_FMT = "%Y-%m-%dT%H:%M:%SZ"
 ATMOTUBE_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 SQL_TIMEST_FMT = "%Y-%m-%d %H:%M:%S"
-ATMOTUBE_REGEX = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z'
-THINGSPK_REGEX = r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z'
 
 
 class Timestamp(abc.ABC):
@@ -28,63 +25,33 @@ class Timestamp(abc.ABC):
         pass
 
 
-class CurrentTimestamp(Timestamp):
+class SQLTimestamp(Timestamp):
+
+    def __init__(self, timestamp: str, fmt: str = SQL_TIMEST_FMT):
+        self.ts = timestamp
+        self.fmt = fmt
+
+    def add_days(self, days: int):
+        my_dt = dt.datetime.strptime(self.ts, self.fmt)
+        my_dt = my_dt + dt.timedelta(days=days)
+        return SQLTimestamp(my_dt.strftime(SQL_TIMEST_FMT), SQL_TIMEST_FMT)
+
+    def is_after(self, other) -> bool:
+        if not isinstance(other, SQLTimestamp):
+            raise SystemExit(f"{EXCEPTION_HEADER} {SQLTimestamp.__name__} bad type => cannot compare with object "
+                             f"of type='{other.__class__.__name__}'")
+        my_dt = dt.datetime.strptime(self.ts, self.fmt)
+        other_dt = dt.datetime.strptime(other.ts, other.fmt)
+        return (my_dt - other_dt).total_seconds() > 0
+
+
+class CurrentTimestamp(SQLTimestamp):
 
     def __init__(self):
-        tmp = dt.datetime.now()
-        self.ts = tmp.strftime(SQL_TIMEST_FMT)
+        super().__init__(dt.datetime.now().strftime(SQL_TIMEST_FMT), SQL_TIMEST_FMT)
 
     def add_days(self, days: int):
-        raise NotImplementedError(f"{EXCEPTION_HEADER} {CurrentTimestamp.__name__} bad operation => cannot add days")
+        return super().add_days(days)
 
     def is_after(self, other):
-        raise NotImplementedError(f"{EXCEPTION_HEADER} {CurrentTimestamp.__name__} bad operation => cannot compare ts")
-
-
-class AtmotubeTimestamp(Timestamp):
-
-    def __init__(self, timestamp: str):
-        if not re.match(re.compile(ATMOTUBE_REGEX), timestamp):
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {AtmotubeTimestamp.__name__} bad timestamp => '{timestamp}' is not valid"
-            )
-        tmp = timestamp.strip('Z')
-        tmp, zone = tmp.split('.')
-        self.ts = tmp.replace('T', ' ')
-
-    def add_days(self, days: int):
-        my_dt = dt.datetime.strptime(self.ts, SQL_TIMEST_FMT)
-        my_dt = my_dt + dt.timedelta(days=days)
-        return AtmotubeTimestamp(timestamp=my_dt.strftime(ATMOTUBE_FMT))
-
-    def is_after(self, other) -> bool:
-        if not isinstance(other, AtmotubeTimestamp):
-            raise SystemExit(f"{EXCEPTION_HEADER} {AtmotubeTimestamp.__name__} bad type => cannot compare with object "
-                             f"of type='{other.__class__.__name__}'")
-        my_dt = dt.datetime.strptime(self.ts, SQL_TIMEST_FMT)
-        other_dt = dt.datetime.strptime(other.ts, SQL_TIMEST_FMT)
-        return (my_dt - other_dt).total_seconds() > 0
-
-
-class ThingspeakTimestamp(Timestamp):
-
-    def __init__(self, timestamp: str):
-        if not re.match(re.compile(THINGSPK_REGEX), timestamp):
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {ThingspeakTimestamp.__name__} bad timestamp => '{timestamp}' is not valid"
-            )
-        tmp = timestamp.strip('Z')
-        self.ts = tmp.replace('T', ' ')
-
-    def add_days(self, days: int):
-        my_dt = dt.datetime.strptime(self.ts, SQL_TIMEST_FMT)
-        my_dt = my_dt + dt.timedelta(days=days)
-        return ThingspeakTimestamp(timestamp=my_dt.strftime(THINGSPK_FMT))
-
-    def is_after(self, other) -> bool:
-        if not isinstance(other, ThingspeakTimestamp):
-            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakTimestamp.__name__} bad type => cannot compare with object "
-                             f"of type='{other.__class__.__name__}'")
-        my_dt = dt.datetime.strptime(self.ts, SQL_TIMEST_FMT)
-        other_dt = dt.datetime.strptime(other.ts, SQL_TIMEST_FMT)
-        return (my_dt - other_dt).total_seconds() > 0
+        return super().is_after(other)

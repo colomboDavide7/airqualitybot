@@ -137,7 +137,8 @@ def main():
                                                api2db_uniform_reshaper=api2db_uniform_reshaper,
                                                geom_builder_class=gb.PointBuilder)
         else:
-            raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")
+            raise SystemExit(
+                f"{EXCEPTION_HEADER} bad personality => init bot is not implemented for personality='{sc.PERSONALITY}'.")
 
         ################################ RUN THE BOT ################################
         initialize_bot.run(first_sensor_id=first_sensor_id, sensor_names=sensor_names)

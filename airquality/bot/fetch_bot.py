@@ -12,6 +12,7 @@ import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
 import airquality.utility.parser.file as fp
+import airquality.data.builder.timest as ts
 import airquality.data.reshaper.packet as rshp
 import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.data.reshaper.uniform.db2api as d2a
@@ -24,27 +25,28 @@ from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER
 class FetchBot:
 
     def __init__(self,
+                 timest_fmt: str,
                  dbconn: db.DatabaseAdapter,
                  file_parser: fp.FileParser,
                  query_picker: pk.QueryPicker,
                  packet_reshaper: rshp.PacketReshaper,
                  api2db_reshaper: a2d.UniformReshaper,
                  db2api_reshaper: d2a.UniformReshaper,
-                 url_builder_class=None,
-                 timest_builder_class=None):
+                 url_builder_class=None):
+
         self.dbconn = dbconn
+        self.timest_fmt = timest_fmt
         self.file_parser = file_parser
         self.query_picker = query_picker
         self.packet_reshaper = packet_reshaper
         self.db2api_reshaper = db2api_reshaper
         self.api2db_reshaper = api2db_reshaper
         self.url_builder_class = url_builder_class
-        self.timest_builder_class = timest_builder_class
 
-    ################################ SELECT API PARAM FROM DATABASE ################################
+    ################################ RUN METHOD ################################
     def run(self, api_address: str, url_param: Dict[str, Any], sensor_ids: List[int]):
 
-        last_acquisition_ts = "2021-11-08 20:00:00"
+        last_acquisition_ts = ts.SQLTimestamp("2021-11-08 20:00:00")
 
         for sensor_id in sensor_ids:
             print(20 * "=" + f" {sensor_id} " + 20 * '=')
@@ -62,8 +64,6 @@ class FetchBot:
                 url = url_builder.url()
 
                 if sc.DEBUG_MODE:
-                    print(20 * "=" + " URL PARAMETERS " + 20 * '=')
-                    print(f"{DEBUG_HEADER} {tmp_url_param!s}")
                     print(f"{DEBUG_HEADER} {url}")
 
                 ############################# RESHAPE PACKETS ##############################
@@ -71,9 +71,8 @@ class FetchBot:
                 parsed_api_packets = self.file_parser.parse(raw_api_packets)
                 reshaped_packets = self.packet_reshaper.reshape(parsed_api_packets)
                 if not reshaped_packets:
-                    print(f"{INFO_HEADER} empty API answer")
-                    self.dbconn.close_conn()
-                    return
+                    print(f"{INFO_HEADER} empty API answer for id={sensor_id}")
+                    continue
 
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
                 uniformed_packets = []
@@ -84,7 +83,7 @@ class FetchBot:
                     print(20 * "=" + " FILTER FETCHED MEASUREMENTS " + 20 * '=')
                 filtered_packets = []
                 for packet in uniformed_packets:
-                    timestamp = self.timest_builder_class(packet['timestamp'])
+                    timestamp = ts.SQLTimestamp(packet['timestamp'], fmt=self.timest_fmt)
                     if timestamp.is_after(last_acquisition_ts):
                         filtered_packets.append(packet)
                     else:
@@ -92,8 +91,7 @@ class FetchBot:
 
                 if not filtered_packets:
                     print(f"{INFO_HEADER} no new measurements for id={sensor_id}")
-                    self.dbconn.close_conn()
-                    return
+                    continue
 
                 ############################# PRINT ONLY NEW MEASUREMENTS ##############################
                 if sc.DEBUG_MODE:

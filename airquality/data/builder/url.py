@@ -48,12 +48,11 @@ class PurpleairURLBuilder(URLBuilder):
         url += 'fields' + EQ
 
         for field in self.fields:
-            url += field + ','
+            url += f"{field},"
         url = url.strip(',') + AND
 
         for param_name, param_value in self.opt_param.items():
-            url += param_name + EQ + param_value + AND
-
+            url += f"{param_name}={param_value}&"
         return url.strip(AND)
 
 
@@ -75,7 +74,7 @@ class AtmotubeURLBuilder(URLBuilder):
         url += 'api_key' + EQ + self.api_key + AND
         url += 'mac' + EQ + self.mac + AND
         for param_name, param_value in self.opt_param.items():
-            url += param_name + EQ + param_value + AND
+            url += f"{param_name}={param_value}&"
         return url.strip(AND)
 
 
@@ -98,5 +97,5 @@ class ThingspeakURLBuilder(URLBuilder):
         url += 'feeds.' + self.format + QU
         url += 'api_key' + EQ + self.api_key + AND
         for param_name, param_value in self.opt_param.items():
-            url += param_name + EQ + param_value + AND
+            url += f"{param_name}={param_value}&"
         return url.strip(AND)

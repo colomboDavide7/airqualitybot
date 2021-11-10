@@ -128,42 +128,43 @@ def main():
         if sc.PERSONALITY == 'atmotube':
             if url_param.get('format') is None:
                 raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing 'format' key.")
-            if url_param.get('date') is not None:
+            if url_param.get('date'):
                 bot_class = dfb.DateFetchBot
             file_parser = fp.FileParserFactory().make_parser(url_param['format'])
             packet_reshaper = rshp.AtmotubePacketReshaper()
             api2db_reshaper = a2d.AtmotubeUniformReshaper()
             db2api_reshaper = d2a.AtmotubeUniformReshaper()
             url_builder_class = url.AtmotubeURLBuilder
-            timest_builder_class = ts.AtmotubeTimestamp
+            timest_fmt = ts.ATMOTUBE_FMT
         # *****************************************************************
         elif sc.PERSONALITY == 'thingspeak':
             if url_param.get('format') is None:
                 raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing 'format' key.")
-            if url_param.get('start') is not None or url_param.get('end') is not None:
+            if url_param.get('start') or url_param.get('end'):
                 bot_class = dfb.DateFetchBot
             file_parser = fp.FileParserFactory().make_parser(url_param['format'])
             packet_reshaper = rshp.ThingspeakPacketReshaper()
             api2db_reshaper = a2d.ThingspeakUniformReshaper()
             db2api_reshaper = d2a.ThingspeakUniformReshaper()
             url_builder_class = url.ThingspeakURLBuilder
-            timest_builder_class = ts.ThingspeakTimestamp
-        # *****************************************************************
+            timest_fmt = ts.THINGSPK_FMT
         else:
-            raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for fetch bot.")
+            raise SystemExit(
+                f"{EXCEPTION_HEADER} bad personality => fetch bot is not implemented for personality='{sc.PERSONALITY}'.")
 
+        ############################# BOT SETTINGS ###########################
         print(f"{INFO_HEADER} using '{file_parser.__class__.__name__}' file parser.")
         print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
 
         ############################# BUILD THE BOT ###########################
         fetch_bot = bot_class(dbconn=dbconn,
+                              timest_fmt=timest_fmt,
                               file_parser=file_parser,
                               query_picker=query_picker,
                               packet_reshaper=packet_reshaper,
                               api2db_reshaper=api2db_reshaper,
                               db2api_reshaper=db2api_reshaper,
-                              url_builder_class=url_builder_class,
-                              timest_builder_class=timest_builder_class)
+                              url_builder_class=url_builder_class)
 
         ############################# RUN THE BOT ###########################
         fetch_bot.run(api_address=api_address, url_param=url_param, sensor_ids=sensor_ids)
