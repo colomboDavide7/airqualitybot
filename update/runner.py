@@ -11,7 +11,7 @@ import time
 from typing import List
 
 # IMPORT MODULES
-import airquality.bot.geo_bot as bot
+import airquality.bot.update_bot as bot
 import airquality.io.local.io as io
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
@@ -124,14 +124,14 @@ def main():
             url_builder = url.PurpleairURLBuilder(api_address=api_address, parameters=url_param)
             packet_reshaper = rshp.PurpleairPacketReshaper()
             uniform_reshaper = a2d.PurpleairUniformReshaper()
-            geo_bot = bot.GeoBot(dbconn=dbconn,
-                                 timestamp=current_ts,
-                                 file_parser=file_parser,
-                                 query_picker=query_picker,
-                                 url_builder=url_builder,
-                                 packet_reshaper=packet_reshaper,
-                                 api2db_uniform_reshaper=uniform_reshaper,
-                                 geom_builder_class=gb.PointBuilder)
+            geo_bot = bot.UpdateBot(dbconn=dbconn,
+                                    timestamp=current_ts,
+                                    file_parser=file_parser,
+                                    query_picker=query_picker,
+                                    url_builder=url_builder,
+                                    packet_reshaper=packet_reshaper,
+                                    api2db_uniform_reshaper=uniform_reshaper,
+                                    geom_builder_class=gb.PointBuilder)
         else:
             raise SystemExit(
                 f"{EXCEPTION_HEADER} bad personality => geo bot is not implemented for personality='{sc.PERSONALITY}'.")

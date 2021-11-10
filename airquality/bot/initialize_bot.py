@@ -8,6 +8,7 @@
 from typing import List
 
 # IMPORT MODULES
+import logging
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
@@ -21,6 +22,14 @@ import airquality.data.builder.sql as sb
 # IMPORT CONSTANTS
 import airquality.core.constants.system_constants as sc
 from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
+
+################################ INITIALIZE LOGGER ################################
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler(filename='log/initialize.log', mode='a')
+formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
 
 ################################ INITIALIZE BOT ################################
@@ -54,7 +63,9 @@ class InitializeBot:
         reshaped_packets = self.packet_reshaper.reshape(parsed_packets)
 
         if not reshaped_packets:
-            print(f"{INFO_HEADER} empty API answer")
+            msg = "empty API answer"
+            print(f"{INFO_HEADER} {msg}")
+            logger.info(msg)
             self.dbconn.close_conn()
             return
 
@@ -62,9 +73,7 @@ class InitializeBot:
         for packet in reshaped_packets:
             uniformed_packets.append(self.a2d_reshaper.api2db(packet))
 
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " FILTER FETCHED SENSORS " + 20 * '=')
-
+        print(20 * "=" + " FILTER FETCHED SENSORS " + 20 * '=')
         filtered_packets = []
         for uniformed_packet in uniformed_packets:
             if uniformed_packet['name'] not in sensor_names:
@@ -73,12 +82,14 @@ class InitializeBot:
                 print(f"{WARNING_HEADER} '{uniformed_packet['name']}' => already present")
 
         if not filtered_packets:
-            print(f"{INFO_HEADER} all sensors are already present into the database")
+            msg = "all sensors are already present into the database => done"
+            print(f"{INFO_HEADER} {msg}")
+            logger.info(msg)
             self.dbconn.close_conn()
             return
 
+        print(20 * "=" + " NEW SENSORS FETCHED " + 20 * '=')
         if sc.DEBUG_MODE:
-            print(20 * "=" + " NEW SENSORS FETCHED " + 20 * '=')
             for packet in filtered_packets:
                 print(f"{DEBUG_HEADER} name='{packet['name']}'")
 
@@ -110,6 +121,6 @@ class InitializeBot:
             location_values=location_values
         )
         self.dbconn.send(query)
-
+        logger.info("new sensor(s) successfully inserted => done")
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()

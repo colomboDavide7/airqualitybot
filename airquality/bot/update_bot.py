@@ -2,12 +2,13 @@
 #
 # @Author: davidecolombo
 # @Date: gio, 28-10-2021, 11:21
-# @Description: this script defines the classes for running the geo bot
+# @Description: this script defines the classes for running the update bot
 #
 #################################################
 from typing import Dict, Any
 
 # IMPORT MODULES
+import logging
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 import airquality.data.builder.timest as ts
@@ -22,9 +23,17 @@ import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.core.constants.system_constants as sc
 from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
+################################ INITIALIZE LOGGER ################################
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler(filename='log/update.log', mode='a')
+formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
 
 ################################ GEO BOT CLASS ################################
-class GeoBot:
+class UpdateBot:
 
     def __init__(self,
                  dbconn: db.DatabaseAdapter,
@@ -53,7 +62,9 @@ class GeoBot:
         reshaped_packets = self.packet_reshaper.reshape(parsed_packets)
 
         if not reshaped_packets:
-            print(f"{INFO_HEADER} empty API answer")
+            msg = "empty API answer"
+            print(f"{INFO_HEADER} {msg}")
+            logger.info(msg)
             self.dbconn.close_conn()
             return
 
@@ -61,8 +72,7 @@ class GeoBot:
         for packet in reshaped_packets:
             uniformed_packets.append(self.a2d_uniform_reshaper.api2db(packet))
 
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " FILTER FETCHED SENSORS " + 20 * '=')
+        print(20 * "=" + " FILTER FETCHED SENSORS " + 20 * '=')
         filtered_packets = []
         for uniformed_packet in uniformed_packets:
             if uniformed_packet['name'] in name2id_map.keys():
@@ -71,12 +81,14 @@ class GeoBot:
                 print(f"{WARNING_HEADER} '{uniformed_packet['name']}' => not active")
 
         if not filtered_packets:
-            print(f"{INFO_HEADER} no active locations found.")
+            msg = "no active locations found => done"
+            print(f"{INFO_HEADER} {msg}")
+            logger.info(msg)
             self.dbconn.close_conn()
             return
 
+        print(20 * "=" + " ACTIVE SENSORS FETCHED " + 20 * '=')
         if sc.DEBUG_MODE:
-            print(20 * "=" + " FETCHED ACTIVE SENSORS " + 20 * '=')
             for packet in filtered_packets:
                 print(f"{DEBUG_HEADER} '{packet['name']}'")
 
@@ -97,13 +109,15 @@ class GeoBot:
                 location_values.append(value)
 
         if not location_values:
-            print(f"{INFO_HEADER} all sensor have the same location => no location updated.")
+            msg = "all sensor have the same location => done"
+            print(f"{INFO_HEADER} {msg}")
+            logger.info(msg)
             self.dbconn.close_conn()
             return
 
         ############################## BUILD THE QUERY FROM VALUES #############################
         query = self.query_picker.update_location_values(location_values)
         self.dbconn.send(query)
-
+        logger.info("location(s) successfully updated => done")
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()
