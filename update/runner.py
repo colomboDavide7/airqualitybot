@@ -112,9 +112,7 @@ def main():
             api_address = parsed_api_data[sc.PERSONALITY]['api_address']
             url_param = parsed_api_data[sc.PERSONALITY]['url_param']
         except KeyError as ke:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} for personality='{sc.PERSONALITY}'."
-            )
+            raise SystemExit(f"bad 'api.json' file structure => missing key={ke!s} for personality='{sc.PERSONALITY}'.")
 
         ################################ MAKE COMMON VARIABLES FOR ALL THE BOTS ################################
         current_ts = ts.CurrentTimestamp()
@@ -133,8 +131,7 @@ def main():
                                     api2db_uniform_reshaper=uniform_reshaper,
                                     geom_builder_class=gb.PointBuilder)
         else:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} bad personality => geo bot is not implemented for personality='{sc.PERSONALITY}'.")
+            raise SystemExit(f"bad personality => geo bot is not implemented for personality='{sc.PERSONALITY}'.")
 
         ################################ RUN THE BOT ################################
         geo_bot.run(active_locations=active_locations, name2id_map=name2id_map)
@@ -144,6 +141,6 @@ def main():
         print(f"{INFO_HEADER} total time = {end_time - start_time}")
 
     except Exception as ex:
-        print(str(ex))
+        print(f"{EXCEPTION_HEADER} {str(ex)}")
         if isinstance(ex, SystemExit):
             sys.exit(1)

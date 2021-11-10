@@ -7,7 +7,6 @@
 #################################################
 import abc
 import datetime as dt
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 THINGSPK_FMT = "%Y-%m-%dT%H:%M:%SZ"
 ATMOTUBE_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
@@ -38,7 +37,7 @@ class SQLTimestamp(Timestamp):
 
     def is_after(self, other) -> bool:
         if not isinstance(other, SQLTimestamp):
-            raise SystemExit(f"{EXCEPTION_HEADER} {SQLTimestamp.__name__} bad type => cannot compare with object "
+            raise SystemExit(f"{SQLTimestamp.__name__} bad type => cannot compare with object "
                              f"of type='{other.__class__.__name__}'")
         my_dt = dt.datetime.strptime(self.ts, self.fmt)
         other_dt = dt.datetime.strptime(other.ts, other.fmt)

@@ -8,7 +8,6 @@
 #################################################
 from typing import Dict, Any, List
 import airquality.data.builder.sql as sb
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
 class QueryPicker:
@@ -110,6 +109,4 @@ class QueryPicker:
     ################################ METHOD THAT RAISES EXCEPTION ################################
     def search_query_id(self, query_id: str):
         if query_id not in self.parsed_query_data.keys():
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {QueryPicker.__name__} bad 'query.json' file structure => missing key='{query_id}'."
-            )
+            raise SystemExit(f"{QueryPicker.__name__} bad 'query.json' file structure => missing key='{query_id}'.")

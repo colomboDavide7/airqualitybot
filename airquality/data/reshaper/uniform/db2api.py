@@ -8,7 +8,6 @@
 ######################################################
 import abc
 from typing import Dict, Any, List
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 CH_ID = 'channel_id'
 CH_NM = 'channel_name'
@@ -41,7 +40,7 @@ class ThingspeakUniformReshaper(UniformReshaper):
                                     KEY: api_param['secondary_key_b'],
                                     CH_NM: "2B"})
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakUniformReshaper.__name__} missing key={ke!s}.")
+            raise SystemExit(f"{ThingspeakUniformReshaper.__name__} missing key={ke!s}.")
         return uniform_packets
 
 
@@ -54,5 +53,5 @@ class AtmotubeUniformReshaper(UniformReshaper):
                                     KEY: api_param['api_key'],
                                     CH_NM: "Main"})
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {AtmotubeUniformReshaper.__name__} missing key={ke!s}.")
+            raise SystemExit(f"{AtmotubeUniformReshaper.__name__} missing key={ke!s}.")
         return uniform_packets

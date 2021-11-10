@@ -8,7 +8,6 @@
 ######################################################
 import abc
 from typing import Dict, Any
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 TS = 'timestamp'
 NAME = 'name'
@@ -54,8 +53,7 @@ class PurpleairUniformReshaper(UniformReshaper):
                                          packet['secondary_key_b']]
         except KeyError as ke:
             # Raise Exception if any key is missing from the 'packet' dictionary
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {PurpleairUniformReshaper.__name__} is missing the key={ke!s}.")
+            raise SystemExit(f"{PurpleairUniformReshaper.__name__} is missing the key={ke!s}.")
         return universal_packet
 
 
@@ -84,8 +82,7 @@ class AtmotubeUniformReshaper(UniformReshaper):
                                          packet.get('p')]
         except KeyError as ke:
             # Raise Exception if any key is missing from the 'packet' dictionary
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {PurpleairUniformReshaper.__name__} is missing the key={ke!s}.")
+            raise SystemExit(f"{PurpleairUniformReshaper.__name__} is missing the key={ke!s}.")
         return universal_packet
 
 
@@ -105,5 +102,5 @@ class ThingspeakUniformReshaper(UniformReshaper):
 
         except KeyError as ke:
             # Raise Exception if any key is missing from the 'packet' dictionary
-            raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakUniformReshaper.__name__} is missing the key={ke!s}.")
+            raise SystemExit(f"{ThingspeakUniformReshaper.__name__} is missing the key={ke!s}.")
         return universal_packet

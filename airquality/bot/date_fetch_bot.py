@@ -10,7 +10,8 @@
 from typing import Dict, Any, List
 
 # IMPORT MODULES
-import logging
+import airquality.core.logger.log as log
+import airquality.core.logger.decorator as log_decorator
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
@@ -24,14 +25,6 @@ import airquality.data.reshaper.uniform.db2api as d2a
 import airquality.core.constants.system_constants as sc
 from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
-################################ DATE FETCH LOGGER ################################
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler(filename='log/fetchdate.log', mode='a')
-formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - %(message)s')
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-
 
 ################################ DATE FETCH BOT ################################
 class DateFetchBot:
@@ -44,7 +37,9 @@ class DateFetchBot:
                  packet_reshaper: rshp.PacketReshaper,
                  api2db_reshaper: a2d.UniformReshaper,
                  db2api_reshaper: d2a.UniformReshaper,
-                 url_builder_class=None):
+                 url_builder_class=None,
+                 log_filename='fetchdate.log',
+                 log_sub_dir='log'):
 
         self.dbconn = dbconn
         self.timest_fmt = timest_fmt
@@ -54,10 +49,13 @@ class DateFetchBot:
         self.db2api_reshaper = db2api_reshaper
         self.api2db_reshaper = api2db_reshaper
         self.url_builder_class = url_builder_class
+        self.log_filename = log_filename
+        self.log_sub_dir = log_sub_dir
+        self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
 
     ################################ RUN METHOD ################################
+    @log_decorator.log_decorator()
     def run(self, api_address: str, url_param: Dict[str, Any], sensor_ids: List[int]):
-        logger.info('bot is running => start')
 
         last_acquisition_ts = ts.SQLTimestamp("2021-11-10 01:00:00")
 
@@ -86,7 +84,7 @@ class DateFetchBot:
                 if not reshaped_packets:
                     msg = f"empty API answer for id={sensor_id}"
                     print(f"{INFO_HEADER} {msg}")
-                    logger.info(msg)
+                    self.logger.info(msg)
                     continue
 
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
@@ -106,7 +104,7 @@ class DateFetchBot:
                 if not filtered_packets:
                     msg = f"no new measurements for id={sensor_id}"
                     print(f"{INFO_HEADER} {msg}")
-                    logger.info(msg)
+                    self.logger.info(msg)
                     continue
 
                 ############################# PRINT ONLY NEW MEASUREMENTS ##############################
@@ -116,7 +114,7 @@ class DateFetchBot:
                         print(f"{DEBUG_HEADER} timestamp={packet['timestamp']}")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
-        logger.info("new measurement(s) successfully fetched => done")
+        self.logger.info("new measurement(s) successfully fetched => done")
         self.dbconn.close_conn()
 
 # from_datetime = DatetimeParser.string2datetime("2018-01-01 00:00:00")  # [ONLY FOR NOW]

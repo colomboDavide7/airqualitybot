@@ -7,7 +7,6 @@
 #################################################
 import abc
 from typing import Dict, Any
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 EQ = '='
 AND = '&'
@@ -33,15 +32,11 @@ class PurpleairURLBuilder(URLBuilder):
             self.fields = parameters.pop('fields')
             self.opt_param = parameters
         except KeyError as ke:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {PurpleairURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}"
-            )
+            raise SystemExit(f"{PurpleairURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}")
 
     def url(self) -> str:
         if not self.fields:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {PurpleairURLBuilder.__name__} bad 'api.json' file structure => empty fields."
-            )
+            raise SystemExit(f"{PurpleairURLBuilder.__name__} bad 'api.json' file structure => empty fields.")
 
         url = self.api_address + QU
         url += 'api_key' + EQ + self.api_key + AND
@@ -65,9 +60,7 @@ class AtmotubeURLBuilder(URLBuilder):
             self.mac = parameters.pop('mac')
             self.opt_param = parameters
         except KeyError as ke:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {AtmotubeURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}"
-            )
+            raise SystemExit(f"{AtmotubeURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}")
 
     def url(self) -> str:
         url = self.api_address + QU
@@ -88,9 +81,7 @@ class ThingspeakURLBuilder(URLBuilder):
             self.id = parameters.pop('channel_id')
             self.opt_param = parameters
         except KeyError as ke:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {ThingspeakURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}"
-            )
+            raise SystemExit(f"{ThingspeakURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}")
 
     def url(self) -> str:
         url = self.api_address + '/' + self.id + '/'

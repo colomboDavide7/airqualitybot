@@ -7,7 +7,6 @@
 #
 #################################################
 import urllib.request as req
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
 class UrllibAdapter:
@@ -17,7 +16,7 @@ class UrllibAdapter:
         try:
             answer = req.urlopen(url).read()
         except Exception as ex:
-            raise SystemExit(f"{EXCEPTION_HEADER} {UrllibAdapter.__name__} bad url => {ex!s}")
+            raise SystemExit(f"{UrllibAdapter.__name__} bad url => {ex!s}")
         finally:
             req.urlcleanup()
         return answer

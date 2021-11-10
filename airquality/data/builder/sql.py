@@ -8,7 +8,6 @@
 ######################################################
 import abc
 from typing import Dict, Any
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
 class SQLValueBuilder(abc.ABC):
@@ -40,7 +39,7 @@ class APIParamSQLValueBuilder(SQLValueBuilder):
             self.param_name = packet['param_name']
             self.param_value = packet['param_value']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {APIParamSQLValueBuilder.__name__} bad parameters => missing key={ke!s}.")
+            raise SystemExit(f"{APIParamSQLValueBuilder.__name__} bad parameters => missing key={ke!s}.")
 
     def values(self) -> str:
         values = ','.join(f"({self.sensor_id}, '{n}', '{v}')" for n, v in zip(self.param_name, self.param_value))
@@ -55,7 +54,7 @@ class SensorSQLValueBuilder(SQLValueBuilder):
             self.sensor_name = packet['name']
             self.sensor_type = packet['type']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {SensorSQLValueBuilder.__name__} bad parameters => missing key={ke!s}.")
+            raise SystemExit(f"{SensorSQLValueBuilder.__name__} bad parameters => missing key={ke!s}.")
 
     def values(self) -> str:
         return f"('{self.sensor_type}', '{self.sensor_name}')"

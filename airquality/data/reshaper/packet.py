@@ -7,7 +7,6 @@
 #################################################
 import abc
 from typing import Dict, Any, List
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A = {"field1": "pm1.0_atm_a", "field2": "pm2.5_atm_a",
                                              "field3": "pm10.0_atm_a", "field6": "temperature_a",
@@ -66,8 +65,7 @@ class ThingspeakPacketReshaper(PacketReshaper):
         elif self.channel_name == '2B':
             field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
         else:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {ThingspeakPacketReshaper.__name__} bad parameters => channel_name='{self.channel_name}'")
+            raise SystemExit(f"{ThingspeakPacketReshaper.__name__} bad parameters => channel_name='{self.channel_name}'")
 
         reshaped_packets = []
         for feed in api_answer['feeds']:

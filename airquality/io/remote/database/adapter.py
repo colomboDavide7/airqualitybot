@@ -9,7 +9,6 @@
 import abc
 import psycopg2
 from typing import Dict, Any
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
 class DatabaseAdapter(abc.ABC):
@@ -38,12 +37,11 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
             self.username = settings['username']
             self.password = settings['password']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} bad 'server.json' file structure => missing key={ke!s}.")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad 'server.json' file structure => missing key={ke!s}.")
 
     def open_conn(self):
         if self.conn is not None:
-            raise SystemExit(f"{EXCEPTION_HEADER} {Psycopg2DatabaseAdapter.__name__} bad 'open' operation => "
-                             f"connection is already open.")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad 'open' operation => connection is already open.")
         try:
             self.conn = psycopg2.connect(database=self.dbname,
                                          port=self.port,
@@ -51,12 +49,11 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
                                          user=self.username,
                                          password=self.password)
         except Exception as ex:
-            raise SystemExit(f"{EXCEPTION_HEADER} {Psycopg2DatabaseAdapter.__name__} bad connection => {ex!s}.")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad connection => {ex!s}.")
 
     def send(self, query: str):
         if self.conn is None:
-            raise SystemExit(f"{EXCEPTION_HEADER} {Psycopg2DatabaseAdapter.__name__} bad 'send' operation => "
-                             f"connection is not open.")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad 'send' operation => connection is not open.")
         try:
             answer = ""
             cursor = self.conn.cursor()
@@ -65,12 +62,11 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
             if query.startswith("SELECT"):
                 answer = cursor.fetchall()
         except Exception as err:
-            raise SystemExit(f"{EXCEPTION_HEADER} {Psycopg2DatabaseAdapter.__name__} bad query => {err!s}")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad query => {err!s}")
         return answer
 
     def close_conn(self):
         if self.conn is None:
-            raise SystemExit(f"{EXCEPTION_HEADER} {Psycopg2DatabaseAdapter.__name__} bad 'close' operation => "
-                             f"connection is not open.")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad 'close' operation => connection is not open.")
         self.conn.close()
         self.conn = None

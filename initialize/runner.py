@@ -117,7 +117,7 @@ def main():
             api_address = parsed_api_data[sc.PERSONALITY]['api_address']
             url_param = parsed_api_data[sc.PERSONALITY]['url_param']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s}.")
+            raise SystemExit(f"bad 'api.json' file structure => missing key={ke!s}.")
 
         ################################ GET THE API ADDRESS ################################
         current_ts = ts.CurrentTimestamp()
@@ -137,8 +137,7 @@ def main():
                                                api2db_uniform_reshaper=api2db_uniform_reshaper,
                                                geom_builder_class=gb.PointBuilder)
         else:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} bad personality => init bot is not implemented for personality='{sc.PERSONALITY}'.")
+            raise SystemExit(f"bad personality => init bot is not implemented for personality='{sc.PERSONALITY}'.")
 
         ################################ RUN THE BOT ################################
         initialize_bot.run(first_sensor_id=first_sensor_id, sensor_names=sensor_names)
@@ -148,6 +147,6 @@ def main():
         print(f"{INFO_HEADER} total time = {end_time - start_time}")
 
     except Exception as ex:
-        print(str(ex))
+        print(f"{EXCEPTION_HEADER} {str(ex)}")
         if isinstance(ex, SystemExit):
             sys.exit(1)

@@ -8,7 +8,8 @@
 from typing import Dict, Any
 
 # IMPORT MODULES
-import logging
+import airquality.core.logger.log as log
+import airquality.core.logger.decorator as log_decorator
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 import airquality.data.builder.timest as ts
@@ -23,16 +24,8 @@ import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.core.constants.system_constants as sc
 from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
-################################ INITIALIZE LOGGER ################################
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler(filename='log/update.log', mode='a')
-formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - %(message)s')
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
 
-
-################################ GEO BOT CLASS ################################
+################################ UPDATE BOT CLASS ################################
 class UpdateBot:
 
     def __init__(self,
@@ -43,7 +36,9 @@ class UpdateBot:
                  url_builder: ub.URLBuilder,
                  packet_reshaper: rshp.PacketReshaper,
                  api2db_uniform_reshaper: a2d.UniformReshaper,
-                 geom_builder_class=None):
+                 geom_builder_class=None,
+                 log_filename='update.log',
+                 log_sub_dir='log'):
         self.dbconn = dbconn
         self.timestamp = timestamp
         self.url_builder = url_builder
@@ -52,8 +47,12 @@ class UpdateBot:
         self.packet_reshaper = packet_reshaper
         self.geom_builder_class = geom_builder_class
         self.a2d_uniform_reshaper = api2db_uniform_reshaper
+        self.log_filename = log_filename
+        self.log_sub_dir = log_sub_dir
+        self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
 
     ################################ RUN METHOD ################################
+    @log_decorator.log_decorator()
     def run(self, active_locations: Dict[str, Any], name2id_map: Dict[str, Any]):
 
         url = self.url_builder.url()
@@ -64,7 +63,7 @@ class UpdateBot:
         if not reshaped_packets:
             msg = "empty API answer"
             print(f"{INFO_HEADER} {msg}")
-            logger.info(msg)
+            self.logger.info(msg)
             self.dbconn.close_conn()
             return
 
@@ -83,7 +82,7 @@ class UpdateBot:
         if not filtered_packets:
             msg = "no active locations found => done"
             print(f"{INFO_HEADER} {msg}")
-            logger.info(msg)
+            self.logger.info(msg)
             self.dbconn.close_conn()
             return
 
@@ -101,8 +100,9 @@ class UpdateBot:
             name = packet['name']
             geometry = self.geom_builder_class(packet)
             if geometry.as_text() != active_locations[name]:
-                if sc.DEBUG_MODE:
-                    print(f"{INFO_HEADER} '{name}' => update location")
+                msg = f"'{name}' => update location"
+                print(f"{INFO_HEADER} {msg}")
+                self.logger.info(msg)
                 sensor_id = name2id_map[name]
                 geom = geometry.geom_from_text()
                 value = sb.LocationSQLValueBuilder(sensor_id=sensor_id, valid_from=self.timestamp.ts, geom=geom)
@@ -111,13 +111,13 @@ class UpdateBot:
         if not location_values:
             msg = "all sensor have the same location => done"
             print(f"{INFO_HEADER} {msg}")
-            logger.info(msg)
+            self.logger.info(msg)
             self.dbconn.close_conn()
             return
 
         ############################## BUILD THE QUERY FROM VALUES #############################
         query = self.query_picker.update_location_values(location_values)
         self.dbconn.send(query)
-        logger.info("location(s) successfully updated => done")
+        self.logger.info("location(s) successfully updated => done")
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()

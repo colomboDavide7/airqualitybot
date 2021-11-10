@@ -94,8 +94,7 @@ def main():
             api_address = parsed_api_data[sc.PERSONALITY]['api_address']
             url_param = parsed_api_data[sc.PERSONALITY]['url_param']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} "
-                             f"for personality='{sc.PERSONALITY}'.")
+            raise SystemExit(f"bad 'api.json' file structure => missing key={ke!s} for personality='{sc.PERSONALITY}'.")
 
         ################################ DATABASE SENSOR ID ASSOCIATED TO PERSONALITY ################################
         query = query_picker.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
@@ -127,7 +126,7 @@ def main():
         ############################# CREATE THE PROPER BOT OBJECT ###########################
         if sc.PERSONALITY == 'atmotube':
             if url_param.get('format') is None:
-                raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing 'format' key.")
+                raise SystemExit("bad 'api.json' file structure => missing 'format' key.")
             if url_param.get('date'):
                 bot_class = dfb.DateFetchBot
             file_parser = fp.FileParserFactory().make_parser(url_param['format'])
@@ -139,7 +138,7 @@ def main():
         # *****************************************************************
         elif sc.PERSONALITY == 'thingspeak':
             if url_param.get('format') is None:
-                raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing 'format' key.")
+                raise SystemExit("bad 'api.json' file structure => missing 'format' key.")
             if url_param.get('start') or url_param.get('end'):
                 bot_class = dfb.DateFetchBot
             file_parser = fp.FileParserFactory().make_parser(url_param['format'])
@@ -149,8 +148,7 @@ def main():
             url_builder_class = url.ThingspeakURLBuilder
             timest_fmt = ts.THINGSPK_FMT
         else:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} bad personality => fetch bot is not implemented for personality='{sc.PERSONALITY}'.")
+            raise SystemExit(f"bad personality => fetch bot is not implemented for personality='{sc.PERSONALITY}'.")
 
         ############################# BOT SETTINGS ###########################
         print(f"{INFO_HEADER} using '{file_parser.__class__.__name__}' file parser.")
@@ -174,5 +172,5 @@ def main():
         print(f"{INFO_HEADER} elapsed time: {end_time - start_time}")
 
     except SystemExit as ex:
-        print(str(ex))
+        print(f"{EXCEPTION_HEADER} {str(ex)}")
         sys.exit(1)

@@ -8,7 +8,6 @@
 import abc
 import json
 from typing import Dict, Any
-from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
 class FileParser(abc.ABC):
@@ -24,7 +23,7 @@ class JSONFileParser(FileParser):
         try:
             return json.loads(text)
         except json.decoder.JSONDecodeError as je:
-            raise SystemExit(f"{EXCEPTION_HEADER} {JSONFileParser.__name__} bad json schema => {je!s}")
+            raise SystemExit(f"{JSONFileParser.__name__} bad json schema => {je!s}")
 
 
 class FileParserFactory(object):
@@ -34,6 +33,4 @@ class FileParserFactory(object):
         if file_extension == 'json':
             return JSONFileParser()
         else:
-            raise SystemExit(
-                f"{EXCEPTION_HEADER} {FileParserFactory.__name__} bad file extension => '{file_extension}' is not supported"
-            )
+            raise SystemExit(f"{FileParserFactory.__name__} bad file extension => '{file_extension}' is not supported")
