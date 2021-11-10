@@ -14,15 +14,14 @@ from typing import List
 # IMPORT MODULES
 import airquality.bot.initialize_bot as bot
 import airquality.io.local.io as io
-import airquality.data.builder.timest as ts
+import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
+import airquality.utility.parser.file as fp
+import airquality.data.builder.timest as ts
 import airquality.data.builder.geom as gb
 import airquality.data.builder.url as url
 import airquality.data.reshaper.packet as rshp
-import airquality.io.remote.database.adapter as db
-import airquality.utility.parser.file as fp
 import airquality.data.reshaper.uniform.api2db as a2d
-import airquality.data.builder.sql as sql
 
 # IMPORT CONSTANTS
 import airquality.core.constants.system_constants as sc
@@ -105,8 +104,8 @@ def main():
         ####################### DEFINE THE FIRST SENSOR ID FROM WHERE TO START ########################
         first_sensor_id = 1
         if max_sensor_id[0] is not None:
-            print(f"{INFO_HEADER} max sensor_id found in the database is => {str(max_sensor_id[0])}.")
             first_sensor_id = max_sensor_id[0] + 1
+            print(f"{INFO_HEADER} found sensor with id={max_sensor_id[0]!s} => new insertion starts with id={first_sensor_id!s}")
 
         ################################ READ API FILE ################################
         raw_api_data = io.IOManager.open_read_close_file(path=API_FILE)
@@ -136,9 +135,6 @@ def main():
                                                query_picker=query_picker,
                                                url_builder=url_builder,
                                                api2db_uniform_reshaper=api2db_uniform_reshaper,
-                                               sens_at_loc_builder_class=sql.SensorAtLocationSQLBuilder,
-                                               sensor_builder_class=sql.SensorSQLBuilder,
-                                               api_param_builder_class=sql.APIParamSQLBuilder,
                                                geom_builder_class=gb.PointBuilder)
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for initialize bot.")

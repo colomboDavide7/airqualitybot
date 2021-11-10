@@ -87,7 +87,7 @@ class FetchBot:
                     print(f"{DEBUG_HEADER} {url}")
 
                 ################################ RESHAPED PACKETS ################################
-                reshaped_packets = packet_reshaper.reshape_packet(parsed_api_packets)
+                reshaped_packets = packet_reshaper.reshape(parsed_api_packets)
 
                 if reshaped_packets:
 

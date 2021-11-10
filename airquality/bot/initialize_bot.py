@@ -54,27 +54,27 @@ class InitializeBot:
     ################################ RUN METHOD ################################
     def run(self, first_sensor_id: int, sensor_names: List[str]):
 
-        url = self.url_builder.url()                                                # build URL
-        raw_packets = api.UrllibAdapter.fetch(url)                                  # fetch data from API
-        parsed_packets = self.file_parser.parse(raw_packets)                        # parse API answer
-        reshaped_packets = self.packet_reshaper.reshape_packet(parsed_packets)      # reshape API packets
+        url = self.url_builder.url()
+        raw_packets = api.UrllibAdapter.fetch(url)
+        parsed_packets = self.file_parser.parse(raw_packets)
+        reshaped_packets = self.packet_reshaper.reshape(parsed_packets)
 
         if not reshaped_packets:
             print(f"{INFO_HEADER} empty API answer")
             self.dbconn.close_conn()
             return
 
-        uniformed_packets = []                                                      # uniformed packets list
-        for packet in reshaped_packets:                                             # for each packet...
-            uniformed_packets.append(self.a2d_reshaper.api2db(packet))              # ... uniform the packet
+        uniformed_packets = []
+        for packet in reshaped_packets:
+            uniformed_packets.append(self.a2d_reshaper.api2db(packet))
 
         if sc.DEBUG_MODE:
             print(20 * "=" + " FILTER SENSORS " + 20 * '=')
 
-        filtered_packets = []                                                       # filtered packets list
-        for uniformed_packet in uniformed_packets:                                  # for each packet...
-            if uniformed_packet['name'] not in sensor_names:                        # ...if is not presents into DB...
-                filtered_packets.append(uniformed_packet)                           # ...add to the list
+        filtered_packets = []
+        for uniformed_packet in uniformed_packets:
+            if uniformed_packet['name'] not in sensor_names:
+                filtered_packets.append(uniformed_packet)
             else:
                 print(f"{WARNING_HEADER} '{uniformed_packet['name']}' => already present")
 

@@ -107,7 +107,7 @@ class DateFetchBot:
                     print(f"{DEBUG_HEADER} {url}")
 
                 ################################ RESHAPE PACKETS ################################
-                reshaped_packets = packet_reshaper.reshape_packet(parsed_api_packets)
+                reshaped_packets = packet_reshaper.reshape(parsed_api_packets)
 
                 if reshaped_packets:
                     if sc.DEBUG_MODE:

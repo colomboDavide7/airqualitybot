@@ -26,14 +26,14 @@ THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B = {"0.3um": "0.3_um_count_b", "0.5um":
 class PacketReshaper(abc.ABC):
 
     @abc.abstractmethod
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
         pass
 
 
 ################################ PURPLEAIR PACKET RESHAPER ################################
 class PurpleairPacketReshaper(PacketReshaper):
 
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         fields = api_answer['fields']
         n_fields = len(fields)
@@ -53,7 +53,7 @@ class PurpleairPacketReshaper(PacketReshaper):
 ################################ THINGSPEAK PACKET RESHAPER ################################
 class ThingspeakPacketReshaper(PacketReshaper):
 
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         feeds: List[Dict[str, Any]] = api_answer['feeds']
         if not feeds:
@@ -100,7 +100,7 @@ class ThingspeakPacketReshaper(PacketReshaper):
 
 class AtmotubePacketReshaper(PacketReshaper):
 
-    def reshape_packet(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def reshape(self, api_answer: Dict[str, Any]) -> List[Dict[str, Any]]:
 
         items = api_answer['data']['items']
         if not items:

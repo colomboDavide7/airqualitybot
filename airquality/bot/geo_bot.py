@@ -7,129 +7,110 @@
 #################################################
 from typing import Dict, Any
 
-# IMPORT GLOBAL VARIABLE FROM FETCH MODULE
-import core.constants.system_constants as sc
+# IMPORT MODULES
+import airquality.io.remote.api.adapter as api
+import airquality.io.remote.database.adapter as db
+import airquality.data.builder.timest as ts
+import airquality.data.builder.url as ub
+import airquality.data.builder.sql as sb
+import airquality.utility.parser.file as fp
+import airquality.utility.picker.query as pk
+import airquality.data.reshaper.packet as rshp
+import airquality.data.reshaper.uniform.api2db as a2d
 
-# IMPORT CLASSES FROM AIRQUALITY MODULE
-from data.builder.url import URLBuilder
-from utility.picker.query import QueryPicker
-from io.remote.api.adapter import UrllibAdapter
-from data.builder.geom import GeometryBuilder
-from data.builder.timest import DatetimeParser
-from data.reshaper.packet import PacketReshaper
-from data.reshaper.uniform.api2db import UniformReshaper
-from data.builder.sql import SensorAtLocationSQLBuilder, SQLCompositionBuilder
-
-# IMPORT SHARED CONSTANTS
-from core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
+# IMPORT CONSTANTS
+import airquality.core.constants.system_constants as sc
+from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
 
-################################ GEO BOT ABSTRACT BASE CLASS ################################
+################################ GEO BOT CLASS ################################
 class GeoBot:
 
     def __init__(self,
-                 dbconn,
-                 file_parser_class,
-                 query_picker_instance: QueryPicker,
-                 url_builder_class=URLBuilder,
-                 reshaper_class=PacketReshaper,
-                 universal_db_adapter_class=UniformReshaper,
-                 geom_sqlcontainer_class=SensorAtLocationSQLBuilder,
-                 composition_class=SQLCompositionBuilder,
-                 postgis_geom_class=GeometryBuilder):
+                 dbconn: db.DatabaseAdapter,
+                 current_ts: ts.CurrentTimestamp,
+                 file_parser: fp.FileParser,
+                 query_picker: pk.QueryPicker,
+                 url_builder: ub.URLBuilder,
+                 packet_reshaper: rshp.PacketReshaper,
+                 api2db_uniform_reshaper: a2d.UniformReshaper,
+                 sens_at_loc_builder_class=sb.SensorAtLocationSQLBuilder,
+                 geom_builder_class=None):
         self.dbconn = dbconn
-        self.url_builder_class = url_builder_class
-        self.file_parser_class = file_parser_class
-        self.reshaper_class = reshaper_class
-        self.universal_db_adapter_class = universal_db_adapter_class
-        self.geo_sqlcontainer_class = geom_sqlcontainer_class
-        self.composition_class = composition_class
-        self.postgis_geom_class = postgis_geom_class
-        self.query_picker_instance = query_picker_instance
+        self.current_ts = current_ts
+        self.url_builder = url_builder
+        self.file_parser = file_parser
+        self.query_picker = query_picker
+        self.packet_reshaper = packet_reshaper
+        self.geom_builder_class = geom_builder_class
+        self.a2d_uniform_reshaper = api2db_uniform_reshaper
+        self.sens_at_loc_builder_class = sens_at_loc_builder_class
 
-    def run(self,
-            api_address: str,
-            url_param: Dict[str, Any],
-            active_locations: Dict[str, Any],
-            name2id_map: Dict[str, Any]):
+    ################################ RUN METHOD ################################
+    def run(self, active_locations: Dict[str, Any], name2id_map: Dict[str, Any]):
 
-        ################################ API DATA FETCHING ################################
-        url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
-        url = url_builder.url()
-        raw_packets = UrllibAdapter.fetch(url)
-        parser = self.file_parser_class()
-        parsed_packets = parser.parse(raw_packets)
+        url = self.url_builder.url()
+        raw_packets = api.UrllibAdapter.fetch(url)
+        parsed_packets = self.file_parser.parse(raw_packets)
+        reshaped_packets = self.packet_reshaper.reshape(parsed_packets)
 
-        ################################ RESHAPE PACKETS ################################
-        packet_reshaper = self.reshaper_class()
-        reshaped_packets = packet_reshaper.reshape_packet(parsed_packets)
+        if not reshaped_packets:
+            print(f"{INFO_HEADER} empty API answer")
+            self.dbconn.close_conn()
+            return
 
-        if reshaped_packets:
+        uniformed_packets = []
+        for packet in reshaped_packets:
+            uniformed_packets.append(self.a2d_uniform_reshaper.api2db(packet))
 
-            ############################## UNIVERSAL ADAPTER #############################
-            universal_db_adapter = self.universal_db_adapter_class()
-
-            ############################## ADAPT PACKETS TO THE UNIVERSAL INTERFACE #############################
-            universal_packets = []
-            for packet in reshaped_packets:
-                universal_packets.append(universal_db_adapter.api2db(packet))
-
-            ############################## KEEP ONLY DATABASE SENSORS #############################
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " FILTER SENSORS " + 20 * '=')
-            filtered_universal_packets = []
-            for universal_packet in universal_packets:
-                if universal_packet['name'] in name2id_map.keys():
-                    filtered_universal_packets.append(universal_packet)
-                else:
-                    print(f"{WARNING_HEADER} '{universal_packet['name']}' => not active")
-
-            ############################## STOP PROGRAM IF NO LOCATION FOUND #############################
-            if not filtered_universal_packets:
-                print(f"{INFO_HEADER} no active locations found.")
-                self.dbconn.close_conn()
-                return
-
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " ACTIVE SENSORS FOUND " + 20 * '=')
-                for universal_packet in filtered_universal_packets:
-                    print(f"{DEBUG_HEADER} '{universal_packet['name']}'")
-
-            ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " UPDATE LOCATIONS " + 20 * '=')
-
-            update_statements = ""
-            geo_containers = []
-            for universal_packet in filtered_universal_packets:
-                name = universal_packet['name']
-                geometry = self.postgis_geom_class()
-                if geometry.as_text(universal_packet) != active_locations[name]:
-                    if sc.DEBUG_MODE:
-                        print(f"{INFO_HEADER} '{universal_packet['name']}' => update location")
-                    sensor_id = name2id_map[name]
-                    # ***************************
-                    timestamp = DatetimeParser.current_sqltimestamp()
-                    update_statements += self.query_picker_instance.update_valid_to_timestamp_location(sensor_id=sensor_id,
-                                                                                                       ts=timestamp)
-                    # ***************************
-                    geom = geometry.geom_from_text(universal_packet)
-                    geo_containers.append(self.geo_sqlcontainer_class(sensor_id=sensor_id, valid_from=timestamp, geom=geom))
-
-            if geo_containers:
-                ############################## COMPOSITION CONTAINERS #############################
-                geo_container_composition = self.composition_class(geo_containers)
-
-                ############################## BUILD THE QUERY FROM CONTAINERS #############################
-                query_statement = self.query_picker_instance.insert_into_sensor_at_location()
-                insert_statement = geo_container_composition.sql(query_statement)
-                self.dbconn.send(query=update_statements)
-                self.dbconn.send(query=insert_statement)
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " FILTER FETCHED SENSORS " + 20 * '=')
+        filtered_packets = []
+        for uniformed_packet in uniformed_packets:
+            if uniformed_packet['name'] in name2id_map.keys():
+                filtered_packets.append(uniformed_packet)
             else:
-                print(f"{INFO_HEADER} all sensor have the same location => no location updated.")
+                print(f"{WARNING_HEADER} '{uniformed_packet['name']}' => not active")
 
-        else:
-            print(f"{INFO_HEADER} empty packets.")
+        if not filtered_packets:
+            print(f"{INFO_HEADER} no active locations found.")
+            self.dbconn.close_conn()
+            return
+
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " FETCHED ACTIVE SENSORS " + 20 * '=')
+            for packet in filtered_packets:
+                print(f"{DEBUG_HEADER} '{packet['name']}'")
+
+        ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
+        if sc.DEBUG_MODE:
+            print(20 * "=" + " UPDATE LOCATIONS " + 20 * '=')
+
+        update = ""
+        sens_at_loc_values = []
+        for packet in filtered_packets:
+            name = packet['name']
+            geometry = self.geom_builder_class(srid=26918, packet=packet)
+            if geometry.as_text() != active_locations[name]:
+                if sc.DEBUG_MODE:
+                    print(f"{INFO_HEADER} '{name}' => update location")
+                # ***************************
+                sensor_id = name2id_map[name]
+                update += self.query_picker.update_valid_to_location_timestamp(sensor_id=sensor_id, ts=self.current_ts.ts)
+                # ***************************
+                geom = geometry.geom_from_text()
+                value = self.sens_at_loc_builder_class(sensor_id=sensor_id, valid_from=self.current_ts.ts, geom=geom)
+                sens_at_loc_values.append(value)
+
+        if not sens_at_loc_values:
+            print(f"{INFO_HEADER} all sensor have the same location => no location updated.")
+            self.dbconn.close_conn()
+            return
+
+        ############################## BUILD THE QUERY FROM CONTAINERS #############################
+        insert = self.query_picker.insert_into_sensor_at_location(sens_at_loc_values)
+        self.dbconn.send(update)
+        self.dbconn.send(insert)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()

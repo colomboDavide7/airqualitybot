@@ -42,7 +42,7 @@ class QueryPicker:
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
 
-    def select_sensor_valid_name_geom_mapping_from_personality(self, personality: str) -> str:
+    def select_active_sensor_location(self, personality: str) -> str:
         query_id = "s6"
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
@@ -96,7 +96,7 @@ class QueryPicker:
         query = self.parsed_query_data[query_id].format(par_val=ts, sens_id=sensor_id, par_name="date")
         return query
 
-    def update_valid_to_timestamp_location(self, sensor_id: int, ts: str) -> str:
+    def update_valid_to_location_timestamp(self, sensor_id: int, ts: str) -> str:
         query_id = "u2"
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id].format(ts=ts, sens_id=sensor_id)
