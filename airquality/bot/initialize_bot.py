@@ -8,7 +8,8 @@
 from typing import List
 
 # IMPORT MODULES
-import logging
+import airquality.core.logger.log as log
+import airquality.core.logger.decorator as log_decorator
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
@@ -24,12 +25,12 @@ import airquality.core.constants.system_constants as sc
 from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
 ################################ INITIALIZE LOGGER ################################
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler(filename='log/initialize.log', mode='a')
-formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - %(message)s')
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
+# file_handler = logging.FileHandler(filename='log/initialize.log', mode='a')
+# formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - %(message)s')
+# file_handler.setFormatter(formatter)
+# logger.addHandler(file_handler)
 
 
 ################################ INITIALIZE BOT ################################
@@ -43,7 +44,9 @@ class InitializeBot:
                  query_picker: pk.QueryPicker,
                  url_builder: ub.URLBuilder,
                  api2db_uniform_reshaper: a2d.UniformReshaper,
-                 geom_builder_class=None):
+                 geom_builder_class=None,
+                 log_filename='initialize.log',
+                 log_sub_dir='log'):
 
         self.dbconn = dbconn
         self.timestamp = timestamp
@@ -53,8 +56,12 @@ class InitializeBot:
         self.url_builder = url_builder
         self.a2d_reshaper = api2db_uniform_reshaper
         self.geom_builder_class = geom_builder_class
+        self.log_filename = log_filename
+        self.log_sub_dir = log_sub_dir
+        self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
 
     ################################ RUN METHOD ################################
+    @log_decorator.log_decorator()
     def run(self, first_sensor_id: int, sensor_names: List[str]):
 
         url = self.url_builder.url()
@@ -65,7 +72,7 @@ class InitializeBot:
         if not reshaped_packets:
             msg = "empty API answer"
             print(f"{INFO_HEADER} {msg}")
-            logger.info(msg)
+            self.logger.info(msg)
             self.dbconn.close_conn()
             return
 
@@ -84,7 +91,7 @@ class InitializeBot:
         if not filtered_packets:
             msg = "all sensors are already present into the database => done"
             print(f"{INFO_HEADER} {msg}")
-            logger.info(msg)
+            self.logger.info(msg)
             self.dbconn.close_conn()
             return
 
@@ -121,6 +128,6 @@ class InitializeBot:
             location_values=location_values
         )
         self.dbconn.send(query)
-        logger.info("new sensor(s) successfully inserted => done")
+        self.logger.info("new sensor(s) successfully inserted => done")
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()

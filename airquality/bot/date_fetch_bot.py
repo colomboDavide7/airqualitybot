@@ -10,6 +10,7 @@
 from typing import Dict, Any, List
 
 # IMPORT MODULES
+import logging
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
@@ -23,7 +24,16 @@ import airquality.data.reshaper.uniform.db2api as d2a
 import airquality.core.constants.system_constants as sc
 from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
 
+################################ DATE FETCH LOGGER ################################
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler(filename='log/fetchdate.log', mode='a')
+formatter = logging.Formatter('[%(levelname)s] - %(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
 
+
+################################ DATE FETCH BOT ################################
 class DateFetchBot:
 
     def __init__(self,
@@ -35,6 +45,7 @@ class DateFetchBot:
                  api2db_reshaper: a2d.UniformReshaper,
                  db2api_reshaper: d2a.UniformReshaper,
                  url_builder_class=None):
+
         self.dbconn = dbconn
         self.timest_fmt = timest_fmt
         self.file_parser = file_parser
@@ -46,6 +57,7 @@ class DateFetchBot:
 
     ################################ RUN METHOD ################################
     def run(self, api_address: str, url_param: Dict[str, Any], sensor_ids: List[int]):
+        logger.info('bot is running => start')
 
         last_acquisition_ts = ts.SQLTimestamp("2021-11-10 01:00:00")
 
@@ -59,23 +71,22 @@ class DateFetchBot:
 
             ############################# CYCLE ON UNIVERSAL API PARAM OF A SINGLE SENSOR ##############################
             for param in uniformed_param:
-                if sc.DEBUG_MODE:
-                    print(f"{INFO_HEADER} channel={param['channel_name']}")
+                print(f"{INFO_HEADER} channel={param['channel_name']}")
                 self.packet_reshaper.ch_name = param.pop('channel_name')
                 tmp_url_param = url_param.copy()
                 tmp_url_param.update(param)
                 url_builder = self.url_builder_class(api_address=api_address, parameters=tmp_url_param)
                 url = url_builder.url()
-
-                if sc.DEBUG_MODE:
-                    print(f"{DEBUG_HEADER} {url}")
+                print(f"{INFO_HEADER} {url}")
 
                 ############################# RESHAPE PACKETS ##############################
                 raw_api_packets = api.UrllibAdapter.fetch(url)
                 parsed_api_packets = self.file_parser.parse(raw_api_packets)
                 reshaped_packets = self.packet_reshaper.reshape(parsed_api_packets)
                 if not reshaped_packets:
-                    print(f"{INFO_HEADER} empty API answer for id={sensor_id}")
+                    msg = f"empty API answer for id={sensor_id}"
+                    print(f"{INFO_HEADER} {msg}")
+                    logger.info(msg)
                     continue
 
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
@@ -83,8 +94,7 @@ class DateFetchBot:
                 for packet in reshaped_packets:
                     uniformed_packets.append(self.api2db_reshaper.api2db(packet))
 
-                if sc.DEBUG_MODE:
-                    print(20 * "=" + " FILTER FETCHED MEASUREMENTS " + 20 * '=')
+                print(20 * "=" + " FILTER FETCHED MEASUREMENTS " + 20 * '=')
                 filtered_packets = []
                 for packet in uniformed_packets:
                     timestamp = ts.SQLTimestamp(packet['timestamp'], fmt=self.timest_fmt)
@@ -94,16 +104,19 @@ class DateFetchBot:
                         print(f"{WARNING_HEADER} '{packet['timestamp']}' => old measure")
 
                 if not filtered_packets:
-                    print(f"{INFO_HEADER} no new measurements for id={sensor_id}")
+                    msg = f"no new measurements for id={sensor_id}"
+                    print(f"{INFO_HEADER} {msg}")
+                    logger.info(msg)
                     continue
 
                 ############################# PRINT ONLY NEW MEASUREMENTS ##############################
+                print(20 * "=" + " NEW MEASUREMENTS FETCHED " + 20 * '=')
                 if sc.DEBUG_MODE:
-                    print(20 * "=" + " FETCHED NEW MEASUREMENTS " + 20 * '=')
                     for packet in filtered_packets:
                         print(f"{DEBUG_HEADER} timestamp={packet['timestamp']}")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
+        logger.info("new measurement(s) successfully fetched => done")
         self.dbconn.close_conn()
 
 # from_datetime = DatetimeParser.string2datetime("2018-01-01 00:00:00")  # [ONLY FOR NOW]
