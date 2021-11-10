@@ -8,7 +8,6 @@
 ######################################################
 import abc
 from typing import Dict, Any
-import airquality.data.builder.timest as dtp
 from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 TS = 'timestamp'
@@ -68,7 +67,7 @@ class AtmotubeUniformReshaper(UniformReshaper):
             if packet.get('coords') is not None:
                 universal_packet[LAT] = packet['coords']['lat']
                 universal_packet[LNG] = packet['coords']['lon']
-            universal_packet[TS] = dtp.DatetimeParser.atmotube_to_sqltimestamp(packet['time'])
+            universal_packet[TS] = packet['time']
             universal_packet[PAR_NAME] = ['voc',
                                           'pm1',
                                           'pm25',
@@ -95,7 +94,7 @@ class ThingspeakUniformReshaper(UniformReshaper):
     def api2db(self, packet: Dict[str, Any]) -> Dict[str, Any]:
         universal_packet = {}
         try:
-            universal_packet[TS] = dtp.DatetimeParser.thingspeak_to_sqltimestamp(packet['created_at'])
+            universal_packet[TS] = packet['created_at']
             param_name = []
             param_value = []
             for field in packet['fields']:

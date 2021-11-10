@@ -24,7 +24,7 @@ class Timestamp(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def is_before(self, other) -> bool:
+    def is_after(self, other) -> bool:
         pass
 
 
@@ -37,7 +37,7 @@ class CurrentTimestamp(Timestamp):
     def add_days(self, days: int):
         raise NotImplementedError(f"{EXCEPTION_HEADER} {CurrentTimestamp.__name__} bad operation => cannot add days")
 
-    def is_before(self, other):
+    def is_after(self, other):
         raise NotImplementedError(f"{EXCEPTION_HEADER} {CurrentTimestamp.__name__} bad operation => cannot compare ts")
 
 
@@ -57,13 +57,13 @@ class AtmotubeTimestamp(Timestamp):
         my_dt = my_dt + dt.timedelta(days=days)
         return AtmotubeTimestamp(timestamp=my_dt.strftime(ATMOTUBE_FMT))
 
-    def is_before(self, other) -> bool:
+    def is_after(self, other) -> bool:
         if not isinstance(other, AtmotubeTimestamp):
             raise SystemExit(f"{EXCEPTION_HEADER} {AtmotubeTimestamp.__name__} bad type => cannot compare with object "
                              f"of type='{other.__class__.__name__}'")
         my_dt = dt.datetime.strptime(self.ts, SQL_TIMEST_FMT)
         other_dt = dt.datetime.strptime(other.ts, SQL_TIMEST_FMT)
-        return (my_dt - other_dt).total_seconds() < 0
+        return (my_dt - other_dt).total_seconds() > 0
 
 
 class ThingspeakTimestamp(Timestamp):
@@ -81,10 +81,10 @@ class ThingspeakTimestamp(Timestamp):
         my_dt = my_dt + dt.timedelta(days=days)
         return ThingspeakTimestamp(timestamp=my_dt.strftime(THINGSPK_FMT))
 
-    def is_before(self, other) -> bool:
+    def is_after(self, other) -> bool:
         if not isinstance(other, ThingspeakTimestamp):
             raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakTimestamp.__name__} bad type => cannot compare with object "
                              f"of type='{other.__class__.__name__}'")
         my_dt = dt.datetime.strptime(self.ts, SQL_TIMEST_FMT)
         other_dt = dt.datetime.strptime(other.ts, SQL_TIMEST_FMT)
-        return (my_dt - other_dt).total_seconds() < 0
+        return (my_dt - other_dt).total_seconds() > 0

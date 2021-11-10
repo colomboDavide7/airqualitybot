@@ -22,10 +22,10 @@ class QueryPicker:
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id]
 
-    def select_api_param_from_sensor_id(self) -> str:
+    def select_api_param_from_sensor_id(self, sensor_id) -> str:
         query_id = "s2"
         self.search_query_id(query_id)
-        return self.parsed_query_data[query_id]
+        return self.parsed_query_data[query_id].format(sensor_id=sensor_id)
 
     def select_sensor_ids_from_personality(self, personality: str) -> str:
         query_id = "s3"

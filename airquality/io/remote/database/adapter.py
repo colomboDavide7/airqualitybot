@@ -23,7 +23,7 @@ class DatabaseAdapter(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def send(self, executable_sql_query: str):
+    def send(self, query: str):
         pass
 
 

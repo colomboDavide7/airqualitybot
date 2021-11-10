@@ -10,15 +10,14 @@
 from typing import Dict, Any, List
 
 # IMPORT GLOBAL VARIABLE FROM FETCH MODULE
-import core.constants.system_constants as sc
+import airquality.core.constants.system_constants as sc
 
 
 # IMPORT CLASSES FROM AIRQUALITY MODULE
-from data.builder.url import URLBuilder
-from io.remote.api.adapter import UrllibAdapter
-from data.builder.timest import DatetimeParser
-from data.reshaper.packet import PacketReshaper
-from data.reshaper.uniform.db2api import UniformReshaper
+from airquality.data.builder.url import URLBuilder
+from airquality.io.remote.api.adapter import UrllibAdapter
+from airquality.data.reshaper.packet import PacketReshaper
+from airquality.data.reshaper.uniform.db2api import UniformReshaper
 
 
 # IMPORT SHARED CONSTANTS

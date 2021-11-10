@@ -9,25 +9,24 @@ import sys
 import time
 from typing import List
 
-import core.constants.system_constants as sc
+# IMPORT MODULES
+import airquality.bot.date_fetch_bot as dfb
+import airquality.bot.fetch_bot as fb
+import airquality.io.local.io as io
+import airquality.io.remote.database.adapter as db
+import airquality.utility.picker.query as pk
+import airquality.utility.parser.file as fp
+import airquality.data.builder.timest as ts
+import airquality.data.builder.url as url
+import airquality.data.reshaper.packet as rshp
+import airquality.data.reshaper.uniform.api2db as a2d
+import airquality.data.reshaper.uniform.db2api as d2a
 
-# IMPORT CLASSES FROM AIRQUALITY MODULE
-from io.local.io import IOManager
-from airquality.bot.fetch_bot import FetchBot
-from utility.picker.query import QueryPicker
-from airquality.bot.date_fetch_bot import DateFetchBot
-from io.remote.database.adapter import Psycopg2DatabaseAdapter
-from utility.parser.file import FileParserFactory, JSONFileParser
-from data.builder.url import ThingspeakURLBuilder, AtmotubeURLBuilder
-from data.reshaper.packet import ThingspeakPacketReshaper, AtmotubePacketReshaper
-from data.reshaper.uniform.db2api import AtmotubeUniformReshaper, ThingspeakUniformReshaper
-from data.reshaper.uniform.api2db import AtmotubeUniformReshaper, ThingspeakUniformReshaper
-
-
-# IMPORT SHARED CONSTANTS
-from core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
+# IMPORT CONSTANTS
+import airquality.core.constants.system_constants as sc
+from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
     DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
-    FETCH_USAGE, VALID_PERSONALITIES
+    VALID_PERSONALITIES, FETCH_USAGE
 
 
 def parse_sys_argv(args: List[str]):
@@ -68,33 +67,32 @@ def main():
         start_time = time.perf_counter()
 
         ################################ READ SERVER FILE ################################
-        raw_server_data = IOManager.open_read_close_file(path=SERVER_FILE)
-        parser = FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
+        raw_server_data = io.IOManager.open_read_close_file(path=SERVER_FILE)
+        parser = fp.FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
         parsed_server_data = parser.parse(text=raw_server_data)
         server_settings = parsed_server_data[sc.PERSONALITY]
 
         ################################ DATABASE CONNECTION ADAPTER ################################
-        dbconn = Psycopg2DatabaseAdapter(server_settings)
+        dbconn = db.Psycopg2DatabaseAdapter(server_settings)
         dbconn.open_conn()
 
         ################################ READ QUERY FILE ###############################
-        raw_query_data = IOManager.open_read_close_file(path=QUERY_FILE)
-        parser = FileParserFactory.make_parser(file_extension=QUERY_FILE.split('.')[-1])
+        raw_query_data = io.IOManager.open_read_close_file(path=QUERY_FILE)
+        parser = fp.FileParserFactory.make_parser(file_extension=QUERY_FILE.split('.')[-1])
         parsed_query_data = parser.parse(text=raw_query_data)
 
         ################################ CREATE QUERY PICKER ###############################
-        query_picker = QueryPicker(parsed_query_data)
+        query_picker = pk.QueryPicker(parsed_query_data)
 
         ################################ READ API FILE ################################
-        raw_api_data = IOManager.open_read_close_file(path=API_FILE)
-        parser = FileParserFactory.make_parser(file_extension=API_FILE.split('.')[-1])
+        raw_api_data = io.IOManager.open_read_close_file(path=API_FILE)
+        parser = fp.FileParserFactory.make_parser(file_extension=API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(text=raw_api_data)
 
         ################################ GET THE API ADDRESS ################################
         try:
             api_address = parsed_api_data[sc.PERSONALITY]['api_address']
             url_param = parsed_api_data[sc.PERSONALITY]['url_param']
-            use_date = parsed_api_data[sc.PERSONALITY]['use_date']
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing key={ke!s} "
                              f"for personality='{sc.PERSONALITY}'.")
@@ -123,86 +121,52 @@ def main():
             for param_code, param_id in measure_param_map.items():
                 print(f"{DEBUG_HEADER} {param_code}={param_id}")
 
-        ################################ QUERY STATEMENT ################################
-        select_apiparam_query = query_picker.select_api_param_from_sensor_id()
+        ################################ CHECK IF FORMAT EXISTS ################################
 
-        ################################ DYNAMICALLY DEFINE BOT CLASS ################################
-        bot_class = FetchBot
-        if use_date:
-            bot_class = DateFetchBot
-        print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
-
+        bot_class = fb.FetchBot
         ############################# CREATE THE PROPER BOT OBJECT ###########################
         if sc.PERSONALITY == 'atmotube':
-
-            # Check if the format argument exists
             if url_param.get('format') is None:
                 raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing 'format' key.")
-
-            # Decide the format to use
-            if url_param['format'] == 'json':
-                file_parser_class = JSONFileParser
-            else:
-                raise SystemExit(f"{EXCEPTION_HEADER} format='{url_param['format']}' is unsupported for "
-                                 f"personality='{sc.PERSONALITY}'.")
-            print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
-
-            # URLBuilder class
-            url_builder_class = AtmotubeURLBuilder
-
-            # PacketReshaper class
-            packet_reshaper_class = AtmotubePacketReshaper
-
-            # UniversalAPIAdapter class
-            universal_api_adapter_class = AtmotubeUniformReshaper
-
-            # UniversalDatabaseAdapter class
-            universal_db_adapter_class = AtmotubeUniformReshaper
-
+            if url_param.get('date') is not None:
+                bot_class = dfb.DateFetchBot
+            file_parser = fp.FileParserFactory().make_parser(url_param['format'])
+            packet_reshaper = rshp.AtmotubePacketReshaper()
+            api2db_reshaper = a2d.AtmotubeUniformReshaper()
+            db2api_reshaper = d2a.AtmotubeUniformReshaper()
+            url_builder_class = url.AtmotubeURLBuilder
+            timest_builder_class = ts.AtmotubeTimestamp
         # *****************************************************************
         elif sc.PERSONALITY == 'thingspeak':
-
-            # Check if the format argument exists
             if url_param.get('format') is None:
                 raise SystemExit(f"{EXCEPTION_HEADER} bad 'api.json' file structure => missing 'format' key.")
-
-            # Decide the format to use
-            if url_param['format'] == 'json':
-                file_parser_class = JSONFileParser
-            else:
-                raise SystemExit(f"{EXCEPTION_HEADER} format='{url_param['format']}' is unsupported for "
-                                 f"personality='{sc.PERSONALITY}'.")
-            print(f"{INFO_HEADER} using '{file_parser_class.__name__}' file parser.")
-
-            # PacketReshaper class
-            packet_reshaper_class = ThingspeakPacketReshaper
-
-            # URLBuilder class
-            url_builder_class = ThingspeakURLBuilder
-
-            # UniversalAPIAdapter class
-            universal_api_adapter_class = ThingspeakUniformReshaper
-
-            # UniversalDatabaseAdapter class
-            universal_db_adapter_class = ThingspeakUniformReshaper
-
+            if url_param.get('start') is not None or url_param.get('end') is not None:
+                bot_class = dfb.DateFetchBot
+            file_parser = fp.FileParserFactory().make_parser(url_param['format'])
+            packet_reshaper = rshp.ThingspeakPacketReshaper()
+            api2db_reshaper = a2d.ThingspeakUniformReshaper()
+            db2api_reshaper = d2a.ThingspeakUniformReshaper()
+            url_builder_class = url.ThingspeakURLBuilder
+            timest_builder_class = ts.ThingspeakTimestamp
         # *****************************************************************
         else:
             raise SystemExit(f"{EXCEPTION_HEADER} personality='{sc.PERSONALITY}' is invalid for fetch bot.")
 
+        print(f"{INFO_HEADER} using '{file_parser.__class__.__name__}' file parser.")
+        print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
+
         ############################# BUILD THE BOT ###########################
         fetch_bot = bot_class(dbconn=dbconn,
-                              file_parser_class=file_parser_class,
+                              file_parser=file_parser,
+                              query_picker=query_picker,
+                              packet_reshaper=packet_reshaper,
+                              api2db_reshaper=api2db_reshaper,
+                              db2api_reshaper=db2api_reshaper,
                               url_builder_class=url_builder_class,
-                              packet_reshaper_class=packet_reshaper_class,
-                              universal_api_adapter_class=universal_api_adapter_class,
-                              universal_db_adapter_class=universal_db_adapter_class)
+                              timest_builder_class=timest_builder_class)
 
         ############################# RUN THE BOT ###########################
-        fetch_bot.run(api_address=api_address,
-                      url_param=url_param,
-                      sensor_ids=sensor_ids,
-                      select_apiparam_query=select_apiparam_query)
+        fetch_bot.run(api_address=api_address, url_param=url_param, sensor_ids=sensor_ids)
 
         end_time = time.perf_counter()
         print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')

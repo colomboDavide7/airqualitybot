@@ -23,13 +23,13 @@ class TestTimestampBuilder(unittest.TestCase):
         expected_output = "2021-10-12 09:44:00"
         self.assertEqual(actual_output, expected_output)
 
-    def test_is_before_atmotube_timestamp(self):
-        self.assertTrue(self.atmotube_ts2.is_before(self.atmotube_ts1))
-        self.assertFalse(self.atmotube_ts1.is_before(self.atmotube_ts2))
+    def test_is_after_atmotube_timestamp(self):
+        self.assertFalse(self.atmotube_ts2.is_after(self.atmotube_ts1))
+        self.assertTrue(self.atmotube_ts1.is_after(self.atmotube_ts2))
 
     def test_system_exit_when_comparing_bad_type(self):
         with self.assertRaises(SystemExit):
-            self.atmotube_ts1.is_before(self.thingspk_ts1)
+            self.atmotube_ts1.is_after(self.thingspk_ts1)
 
     def test_system_exit_when_using_wrong_atmotube_timestamp_fmt(self):
         with self.assertRaises(SystemExit):
@@ -42,8 +42,8 @@ class TestTimestampBuilder(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
     def test_is_before_thingspeak_timestamp(self):
-        self.assertTrue(self.thingspk_ts2.is_before(self.thingspk_ts1))
-        self.assertFalse(self.thingspk_ts1.is_before(self.thingspk_ts2))
+        self.assertFalse(self.thingspk_ts2.is_after(self.thingspk_ts1))
+        self.assertTrue(self.thingspk_ts1.is_after(self.thingspk_ts2))
 
     def test_system_exit_when_using_wrong_thingspeak_timestamp_fmt(self):
         with self.assertRaises(SystemExit):
@@ -51,14 +51,14 @@ class TestTimestampBuilder(unittest.TestCase):
 
     def test_system_exit_when_comparing_thingspeak_timestamp_to_invalid_type(self):
         with self.assertRaises(SystemExit):
-            self.thingspk_ts1.is_before(self.atmotube_ts1)
+            self.thingspk_ts1.is_after(self.atmotube_ts1)
 
     def test_not_implemented_error_on_current_timestamp(self):
         with self.assertRaises(NotImplementedError):
             tsmp.CurrentTimestamp().add_days(days=1)
 
         with self.assertRaises(NotImplementedError):
-            tsmp.CurrentTimestamp().is_before(self.atmotube_ts1)
+            tsmp.CurrentTimestamp().is_after(self.atmotube_ts1)
 
 
 if __name__ == '__main__':
