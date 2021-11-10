@@ -27,7 +27,7 @@ class URLBuilder(abc.ABC):
 class PurpleairURLBuilder(URLBuilder):
 
     def __init__(self, api_address: str, parameters: Dict[str, Any]):
-        super().__init__(api_address=api_address)
+        super().__init__(api_address)
         try:
             self.api_key = parameters.pop('api_key')
             self.fields = parameters.pop('fields')
@@ -59,7 +59,7 @@ class PurpleairURLBuilder(URLBuilder):
 class AtmotubeURLBuilder(URLBuilder):
 
     def __init__(self, api_address: str, parameters: Dict[str, Any]):
-        super().__init__(api_address=api_address)
+        super().__init__(api_address)
         try:
             self.api_key = parameters.pop('api_key')
             self.mac = parameters.pop('mac')
@@ -81,7 +81,7 @@ class AtmotubeURLBuilder(URLBuilder):
 class ThingspeakURLBuilder(URLBuilder):
 
     def __init__(self, api_address: str, parameters: Dict[str, Any]):
-        super().__init__(api_address=api_address)
+        super().__init__(api_address)
         try:
             self.api_key = parameters.pop('api_key')
             self.format = parameters.pop('format')

@@ -10,7 +10,8 @@ import abc
 from typing import Dict, Any, List
 from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
-CH = 'channel_id'
+CH_ID = 'channel_id'
+CH_NM = 'channel_name'
 KEY = 'api_key'
 MAC = 'mac'
 
@@ -27,14 +28,18 @@ class ThingspeakUniformReshaper(UniformReshaper):
     def db2api(self, api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
         uniform_packets = []
         try:
-            uniform_packets.append({CH: api_param['primary_id_a'],
-                                    KEY: api_param['primary_key_a']})
-            uniform_packets.append({CH: api_param['primary_id_b'],
-                                    KEY: api_param['primary_key_b']})
-            uniform_packets.append({CH: api_param['secondary_id_a'],
-                                    KEY: api_param['secondary_key_a']})
-            uniform_packets.append({CH: api_param['secondary_id_b'],
-                                    KEY: api_param['secondary_key_b']})
+            uniform_packets.append({CH_ID: api_param['primary_id_a'],
+                                    KEY: api_param['primary_key_a'],
+                                    CH_NM: "1A"})
+            uniform_packets.append({CH_ID: api_param['primary_id_b'],
+                                    KEY: api_param['primary_key_b'],
+                                    CH_NM: "1B"})
+            uniform_packets.append({CH_ID: api_param['secondary_id_a'],
+                                    KEY: api_param['secondary_key_a'],
+                                    CH_NM: "2A"})
+            uniform_packets.append({CH_ID: api_param['secondary_id_b'],
+                                    KEY: api_param['secondary_key_b'],
+                                    CH_NM: "2B"})
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} {ThingspeakUniformReshaper.__name__} missing key={ke!s}.")
         return uniform_packets
@@ -46,7 +51,8 @@ class AtmotubeUniformReshaper(UniformReshaper):
         uniform_packets = []
         try:
             uniform_packets.append({MAC: api_param['mac'],
-                                    KEY: api_param['api_key']})
+                                    KEY: api_param['api_key'],
+                                    CH_NM: "Main"})
         except KeyError as ke:
             raise SystemExit(f"{EXCEPTION_HEADER} {AtmotubeUniformReshaper.__name__} missing key={ke!s}.")
         return uniform_packets

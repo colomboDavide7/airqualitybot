@@ -58,6 +58,9 @@ class FetchBot:
 
             ############################# BUILD URL AND FETCH DATA ##############################
             for param in uniformed_param:
+                if sc.DEBUG_MODE:
+                    print(f"{INFO_HEADER} channel=cl{param['channel_name']}")
+                self.packet_reshaper.ch_name = param.pop('channel_name')
                 tmp_url_param = url_param.copy()
                 tmp_url_param.update(param)
                 url_builder = self.url_builder_class(api_address=api_address, parameters=tmp_url_param)
