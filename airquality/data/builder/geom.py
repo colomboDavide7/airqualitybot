@@ -16,7 +16,7 @@ POINT_GEOMETRY = "POINT({lng} {lat})"
 
 class GeometryBuilder(abc.ABC):
 
-    def __init__(self, srid: int):
+    def __init__(self, srid: int = 26918):
         self.srid = srid
 
     @abc.abstractmethod
@@ -30,13 +30,13 @@ class GeometryBuilder(abc.ABC):
 
 class PointBuilder(GeometryBuilder):
 
-    def __init__(self, srid: int, packet: Dict[str, Any]):
+    def __init__(self, packet: Dict[str, Any], srid: int = 26918):
         super().__init__(srid)
         try:
             self.lat = packet['lat']
             self.lng = packet['lng']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER} {PointBuilder.__name__} missing required key={ke!s}")
+            raise SystemExit(f"{EXCEPTION_HEADER} {PointBuilder.__name__} bad parameters => missing required key={ke!s}")
 
     def geom_from_text(self) -> str:
         geom = POINT_GEOMETRY.format(lng=self.lng, lat=self.lat)

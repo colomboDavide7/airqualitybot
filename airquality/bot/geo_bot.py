@@ -28,23 +28,21 @@ class GeoBot:
 
     def __init__(self,
                  dbconn: db.DatabaseAdapter,
-                 current_ts: ts.CurrentTimestamp,
+                 timestamp: ts.CurrentTimestamp,
                  file_parser: fp.FileParser,
                  query_picker: pk.QueryPicker,
                  url_builder: ub.URLBuilder,
                  packet_reshaper: rshp.PacketReshaper,
                  api2db_uniform_reshaper: a2d.UniformReshaper,
-                 sens_at_loc_builder_class=sb.SensorAtLocationSQLBuilder,
                  geom_builder_class=None):
         self.dbconn = dbconn
-        self.current_ts = current_ts
+        self.timestamp = timestamp
         self.url_builder = url_builder
         self.file_parser = file_parser
         self.query_picker = query_picker
         self.packet_reshaper = packet_reshaper
         self.geom_builder_class = geom_builder_class
         self.a2d_uniform_reshaper = api2db_uniform_reshaper
-        self.sens_at_loc_builder_class = sens_at_loc_builder_class
 
     ################################ RUN METHOD ################################
     def run(self, active_locations: Dict[str, Any], name2id_map: Dict[str, Any]):
@@ -86,31 +84,26 @@ class GeoBot:
         if sc.DEBUG_MODE:
             print(20 * "=" + " UPDATE LOCATIONS " + 20 * '=')
 
-        update = ""
-        sens_at_loc_values = []
+        location_values = []
         for packet in filtered_packets:
             name = packet['name']
-            geometry = self.geom_builder_class(srid=26918, packet=packet)
+            geometry = self.geom_builder_class(packet)
             if geometry.as_text() != active_locations[name]:
                 if sc.DEBUG_MODE:
                     print(f"{INFO_HEADER} '{name}' => update location")
-                # ***************************
                 sensor_id = name2id_map[name]
-                update += self.query_picker.update_valid_to_location_timestamp(sensor_id=sensor_id, ts=self.current_ts.ts)
-                # ***************************
                 geom = geometry.geom_from_text()
-                value = self.sens_at_loc_builder_class(sensor_id=sensor_id, valid_from=self.current_ts.ts, geom=geom)
-                sens_at_loc_values.append(value)
+                value = sb.LocationSQLValueBuilder(sensor_id=sensor_id, valid_from=self.timestamp.ts, geom=geom)
+                location_values.append(value)
 
-        if not sens_at_loc_values:
+        if not location_values:
             print(f"{INFO_HEADER} all sensor have the same location => no location updated.")
             self.dbconn.close_conn()
             return
 
-        ############################## BUILD THE QUERY FROM CONTAINERS #############################
-        insert = self.query_picker.insert_into_sensor_at_location(sens_at_loc_values)
-        self.dbconn.send(update)
-        self.dbconn.send(insert)
+        ############################## BUILD THE QUERY FROM VALUES #############################
+        query = self.query_picker.update_location_values(location_values)
+        self.dbconn.send(query)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()

@@ -11,31 +11,28 @@ from typing import Dict, Any
 from airquality.core.constants.shared_constants import EXCEPTION_HEADER
 
 
-class SQLBuilder(abc.ABC):
+class SQLValueBuilder(abc.ABC):
 
     def __init__(self, sensor_id: int):
         self.sensor_id = sensor_id
 
     @abc.abstractmethod
-    def sql(self) -> str:
+    def values(self) -> str:
         pass
 
 
-class SensorAtLocationSQLBuilder(SQLBuilder):
+class LocationSQLValueBuilder(SQLValueBuilder):
 
     def __init__(self, sensor_id: int, valid_from: str, geom: str):
         super().__init__(sensor_id)
         self.valid_from = valid_from
         self.geom = geom
 
-    def sql(self) -> str:
+    def values(self) -> str:
         return f"({self.sensor_id}, '{self.valid_from}', {self.geom})"
 
-    def __str__(self):
-        return f"sensor_id={self.sensor_id}, valid_from={self.valid_from}, geom={self.geom}"
 
-
-class APIParamSQLBuilder(SQLBuilder):
+class APIParamSQLValueBuilder(SQLValueBuilder):
 
     def __init__(self, sensor_id: int, packet: Dict[str, Any]):
         super().__init__(sensor_id)
@@ -43,21 +40,14 @@ class APIParamSQLBuilder(SQLBuilder):
             self.param_name = packet['param_name']
             self.param_value = packet['param_value']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER}{APIParamSQLBuilder.__name__} bad parameters => missing key={ke!s}.")
+            raise SystemExit(f"{EXCEPTION_HEADER} {APIParamSQLValueBuilder.__name__} bad parameters => missing key={ke!s}.")
 
-    def sql(self) -> str:
-        values = ""
-        for i in range(len(self.param_name)):
-            values += f"({self.sensor_id}, '{self.param_name[i]}', '{self.param_value[i]}'),"
+    def values(self) -> str:
+        values = ','.join(f"({self.sensor_id}, '{n}', '{v}')" for n, v in zip(self.param_name, self.param_value))
         return values.strip(',')
 
-    def __str__(self):
-        s = f"sensor_id={self.sensor_id}, "
-        s += ', '.join(f'{name}={val}' for name, val in zip(self.param_name, self.param_value))
-        return s
 
-
-class SensorSQLBuilder(SQLBuilder):
+class SensorSQLValueBuilder(SQLValueBuilder):
 
     def __init__(self, sensor_id: int, packet: Dict[str, Any]):
         super().__init__(sensor_id)
@@ -65,13 +55,10 @@ class SensorSQLBuilder(SQLBuilder):
             self.sensor_name = packet['name']
             self.sensor_type = packet['type']
         except KeyError as ke:
-            raise SystemExit(f"{EXCEPTION_HEADER}{APIParamSQLBuilder.__name__} bad parameters => missing key={ke!s}.")
+            raise SystemExit(f"{EXCEPTION_HEADER} {SensorSQLValueBuilder.__name__} bad parameters => missing key={ke!s}.")
 
-    def sql(self) -> str:
+    def values(self) -> str:
         return f"('{self.sensor_type}', '{self.sensor_name}')"
-
-    def __str__(self):
-        return f"name={self.sensor_name}, type={self.sensor_type}"
 
 
 # class MobileMeasurementSQLContainer(SQLBuilder):
@@ -118,19 +105,3 @@ class SensorSQLBuilder(SQLBuilder):
 #         s = f"sensor_id={self.sensor_id}, "
 #         s += ', '.join(f'{id_}={val}' for id_, val in zip(self.param_id, self.param_val))
 #         return s
-
-
-########################### SQL CONTAINER COMPOSITION CLASS ############################
-# class SQLCompositionBuilder(SQLBuilder):
-#
-#     def __init__(self, sensor_id: int, containers: List[SQLBuilder]):
-#         super().__init__(sensor_id)
-#         self.containers = containers
-#
-#     def sql(self, query: str) -> str:
-#         for c in self.containers:
-#             query += c.sql(query="") + ','
-#         return query.strip(',') + ';'
-#
-#     def __str__(self):
-#         return '\n'.join(f'{c!s}' for c in self.containers)

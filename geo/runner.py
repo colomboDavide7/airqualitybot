@@ -83,7 +83,7 @@ def main():
         query_picker = pk.QueryPicker(parsed_query_data)
 
         ########################## QUERY THE ACTIVE LOCATION FOR PURPLEAIR SENSORS ################################
-        query = query_picker.select_active_sensor_location(sc.PERSONALITY)
+        query = query_picker.select_active_locations(sc.PERSONALITY)
         answer = dbconn.send(query)
         active_locations = dict(answer)
 
@@ -125,7 +125,7 @@ def main():
             packet_reshaper = rshp.PurpleairPacketReshaper()
             uniform_reshaper = a2d.PurpleairUniformReshaper()
             geo_bot = bot.GeoBot(dbconn=dbconn,
-                                 current_ts=current_ts,
+                                 timestamp=current_ts,
                                  file_parser=file_parser,
                                  query_picker=query_picker,
                                  url_builder=url_builder,

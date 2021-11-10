@@ -84,7 +84,7 @@ def main():
         query_picker = pk.QueryPicker(parsed_query_data)
 
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
-        query = query_picker.select_sensor_name_from_personality(personality=sc.PERSONALITY)
+        query = query_picker.select_sensor_names_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(query=query)
         sensor_names = [t[0] for t in answer]
 
@@ -129,7 +129,7 @@ def main():
             packet_reshaper = rshp.PurpleairPacketReshaper()
             api2db_uniform_reshaper = a2d.PurpleairUniformReshaper()
             initialize_bot = bot.InitializeBot(dbconn=dbconn,
-                                               current_ts=current_ts,
+                                               timestamp=current_ts,
                                                file_parser=file_parser,
                                                packet_reshaper=packet_reshaper,
                                                query_picker=query_picker,

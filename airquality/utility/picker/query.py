@@ -32,7 +32,7 @@ class QueryPicker:
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
 
-    def select_sensor_name_from_personality(self, personality: str) -> str:
+    def select_sensor_names_from_personality(self, personality: str) -> str:
         query_id = "s4"
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
@@ -42,7 +42,7 @@ class QueryPicker:
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
 
-    def select_active_sensor_location(self, personality: str) -> str:
+    def select_active_locations(self, personality: str) -> str:
         query_id = "s6"
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id].format(personality=personality)
@@ -64,47 +64,48 @@ class QueryPicker:
         self.search_query_id(query_id)
         return self.parsed_query_data[query_id]
 
-    def insert_into_sensor(self, values: List[sb.SensorSQLBuilder]) -> str:
+    def update_location_values(self, values: List[sb.LocationSQLValueBuilder]) -> str:
+        query_id = "u2"
+        self.search_query_id(query_id)
+        query = ""
+        for value in values:
+            query += self.parsed_query_data[query_id].format(ts=value.valid_from, sens_id=value.sensor_id)
+        query += self.__insert_location_values(values)
+        return query
+
+    def initialize_sensors(self,
+                           sensor_values: List[sb.SensorSQLValueBuilder],
+                           api_param_values: List[sb.APIParamSQLValueBuilder],
+                           location_values: List[sb.LocationSQLValueBuilder]):
+        query = self.__insert_into_sensor(sensor_values)
+        query += self.__insert_into_api_param(api_param_values)
+        query += self.__insert_location_values(location_values)
+        return query
+
+    ################################ PRIVATE METHODS ################################
+    def __insert_into_sensor(self, values: List[sb.SensorSQLValueBuilder]) -> str:
         query_id = "i3"
         self.search_query_id(query_id)
         query = self.parsed_query_data[query_id]
         for value in values:
-            query += value.sql() + ','
+            query += value.values() + ','
         return query.strip(',') + ';'
 
-    def insert_into_api_param(self, values: List[sb.APIParamSQLBuilder]) -> str:
+    def __insert_into_api_param(self, values: List[sb.APIParamSQLValueBuilder]) -> str:
         query_id = "i4"
         self.search_query_id(query_id)
         query = self.parsed_query_data[query_id]
         for value in values:
-            query += value.sql() + ','
+            query += value.values() + ','
         return query.strip(',') + ';'
 
-    def insert_into_sensor_at_location(self, values: List[sb.SensorAtLocationSQLBuilder]) -> str:
+    def __insert_location_values(self, values: List[sb.LocationSQLValueBuilder]) -> str:
         query_id = "i5"
         self.search_query_id(query_id)
         query = self.parsed_query_data[query_id]
         for value in values:
-            query += value.sql() + ','
+            query += value.values() + ','
         return query.strip(',') + ';'
-
-    ################################ METHODS THAT RETURN UPDATE QUERY ################################
-
-    def update_last_packet_date_atmotube(self, ts: str, sensor_id: int) -> str:
-        query_id = "u1"
-        self.search_query_id(query_id)
-        query = self.parsed_query_data[query_id].format(par_val=ts, sens_id=sensor_id, par_name="date")
-        return query
-
-    def update_valid_to_location_timestamp(self, sensor_id: int, ts: str) -> str:
-        query_id = "u2"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id].format(ts=ts, sens_id=sensor_id)
-
-    def update_last_channel_acquisition_timestamp(self, sensor_id: str, ts: str, param2update: str) -> str:
-        query_id = "u3"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id].format(ts=ts, sens_id=sensor_id, par_name=param2update)
 
     ################################ METHOD THAT RAISES EXCEPTION ################################
     def search_query_id(self, query_id: str):
