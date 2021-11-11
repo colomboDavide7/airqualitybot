@@ -37,7 +37,7 @@ class UpdateBot:
                  packet_reshaper: rshp.PacketReshaper,
                  api2db_uniform_reshaper: a2d.UniformReshaper,
                  geom_builder_class=None,
-                 log_filename='update.log',
+                 log_filename='update',
                  log_sub_dir='log'):
         self.dbconn = dbconn
         self.timestamp = timestamp

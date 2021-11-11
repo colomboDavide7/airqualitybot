@@ -36,7 +36,7 @@ class FetchBot:
                  api2db_reshaper: a2d.UniformReshaper,
                  db2api_reshaper: d2a.UniformReshaper,
                  url_builder_class=None,
-                 log_filename='fetch.log',
+                 log_filename='fetch',
                  log_sub_dir='log'):
 
         self.dbconn = dbconn

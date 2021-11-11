@@ -45,7 +45,7 @@ class InitializeBot:
                  url_builder: ub.URLBuilder,
                  api2db_uniform_reshaper: a2d.UniformReshaper,
                  geom_builder_class=None,
-                 log_filename='initialize.log',
+                 log_filename='initialize',
                  log_sub_dir='log'):
 
         self.dbconn = dbconn

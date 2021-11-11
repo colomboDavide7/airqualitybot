@@ -9,13 +9,41 @@
 import os
 import logging
 
+GREEN = "\033[1;32m"
+BLUE = "\033[1;34m"
+YELLOW = "\033[1;33m"
+RED = "\033[1;31m"
+RESET = "\033[0m"
 
-def get_logger(log_filename: str, log_sub_dir: str = "log") -> logging.Logger:
 
-    log_path = log_filename if os.path.exists(log_filename) else os.path.join(log_sub_dir, (str(log_filename)))
-    logger = logging.Logger(log_filename)
-    handler = logging.FileHandler(log_path, 'a+')
-    formatter = CustomFormatter('[%(asctime)s - %(levelname)s]: %(filename)s - %(funcName)s - %(message)s')
+COLORED_LEVELS = {'DEBUG': GREEN,
+                  'INFO': BLUE,
+                  'WARNING': YELLOW,
+                  'ERROR': RED}
+
+
+def get_logger(log_filename: str = "", log_sub_dir: str = "", use_color=False) -> logging.Logger:
+    """Return a logger that outputs messages on the console or in a file."""
+
+    # Define the 'logger_name' equal to module name if user leave it empty, otherwise use the 'log_filename'
+    logger_name = __name__ if not log_filename else log_filename
+
+    # Create a 'logger' or get it if already exists
+    logger = logging.getLogger(logger_name)
+
+
+    # By default, logger outputs messages on the console
+    handler = logging.StreamHandler()
+
+    # If user provide a consistent path, then log to the file
+    log_path = os.path.join(log_sub_dir, (str(log_filename) + '.log'))
+    if os.path.exists(log_path):
+        handler = logging.FileHandler(log_path, 'a+')
+
+    formatter = CustomFormatter(f'[%(asctime)s - %(levelname)s]: %(filename)s - %(funcName)s - %(message)s')
+    if use_color:
+        formatter = ColoredFormatter(f'[%(asctime)s - %(levelname)s]: %(filename)s - %(funcName)s - %(message)s')
+
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
@@ -23,6 +51,7 @@ def get_logger(log_filename: str, log_sub_dir: str = "log") -> logging.Logger:
 
 
 class CustomFormatter(logging.Formatter):
+    """Custom formatter for changing the name of the file and calling function."""
 
     def format(self, record) -> str:
         if hasattr(record, 'func_name_override'):
@@ -30,3 +59,13 @@ class CustomFormatter(logging.Formatter):
         if hasattr(record, 'file_name_override'):
             record.filename = record.file_name_override
         return super(CustomFormatter, self).format(record)
+
+
+class ColoredFormatter(logging.Formatter):
+
+    def format(self, record) -> str:
+        levelname = record.levelname
+        if levelname in COLORED_LEVELS:
+            colored_levelname = COLORED_LEVELS[levelname] + levelname + RESET
+            record.levelname = colored_levelname
+        return super(ColoredFormatter, self).format(record)

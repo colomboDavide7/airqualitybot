@@ -6,8 +6,11 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import functools
 import inspect
-import os, sys, functools
+import os
+import sys
+
 import airquality.core.logger.log as log
 
 
@@ -29,7 +32,7 @@ def log_decorator(_func=None):
             try:
                 value = func(self, *args, **kwargs)
                 logger_obj.info(f"Returned: - End function {value!r}", extra=extra_args)
-            except:
+            except SystemExit:
                 logger_obj.error(f"Exception: {str(sys.exc_info()[1])}", extra=extra_args)
                 raise
             return value

@@ -21,10 +21,6 @@ import airquality.data.reshaper.packet as rshp
 import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.data.reshaper.uniform.db2api as d2a
 
-# IMPORT CONSTANTS
-import airquality.core.constants.system_constants as sc
-from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
-
 
 ################################ DATE FETCH BOT ################################
 class DateFetchBot:
@@ -38,7 +34,7 @@ class DateFetchBot:
                  api2db_reshaper: a2d.UniformReshaper,
                  db2api_reshaper: d2a.UniformReshaper,
                  url_builder_class=None,
-                 log_filename='fetchdate.log',
+                 log_filename='fetchdate',
                  log_sub_dir='log'):
 
         self.dbconn = dbconn
@@ -52,6 +48,7 @@ class DateFetchBot:
         self.log_filename = log_filename
         self.log_sub_dir = log_sub_dir
         self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
+        self.debugger = log.get_logger(use_color=True)
 
     ################################ RUN METHOD ################################
     @log_decorator.log_decorator()
@@ -69,22 +66,32 @@ class DateFetchBot:
 
             ############################# CYCLE ON UNIVERSAL API PARAM OF A SINGLE SENSOR ##############################
             for param in uniformed_param:
-                print(f"{INFO_HEADER} channel={param['channel_name']}")
-                self.packet_reshaper.ch_name = param.pop('channel_name')
+
+                # Pop the channel name from the uniformed api param of the given sensor_id
+                ch_name = param.pop('channel_name')
+                self.debugger.info(f"channel_name='{ch_name}'")
+                self.logger.info(f"channel_name='{ch_name}'")
+
+                # Set the packet_reshaper 'ch_name' property
+                self.packet_reshaper.ch_name = ch_name
+
+                # Merge bot 'url_param' (coming from API file) and 'param' (coming from database)
                 tmp_url_param = url_param.copy()
                 tmp_url_param.update(param)
+                self.debugger.debug(', '.join(f"{k}={v!r}" for k, v in tmp_url_param.items()))
+
+                # Make 'url_builder' and build 'url'
                 url_builder = self.url_builder_class(api_address=api_address, parameters=tmp_url_param)
                 url = url_builder.url()
-                print(f"{INFO_HEADER} {url}")
+                self.debugger.info(f"{url}")
 
                 ############################# RESHAPE PACKETS ##############################
                 raw_api_packets = api.UrllibAdapter.fetch(url)
                 parsed_api_packets = self.file_parser.parse(raw_api_packets)
                 reshaped_packets = self.packet_reshaper.reshape(parsed_api_packets)
                 if not reshaped_packets:
-                    msg = f"empty API answer for id={sensor_id}"
-                    print(f"{INFO_HEADER} {msg}")
-                    self.logger.info(msg)
+                    self.debugger.info(f"empty API answer for sensor_id={sensor_id}")
+                    self.logger.info(f"empty API answer for sensor_id={sensor_id}")
                     continue
 
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
@@ -99,21 +106,20 @@ class DateFetchBot:
                     if timestamp.is_after(last_acquisition_ts):
                         filtered_packets.append(packet)
                     else:
-                        print(f"{WARNING_HEADER} '{packet['timestamp']}' => old measure")
+                        self.debugger.warning(f"'{packet['timestamp']}' => old measure")
 
                 if not filtered_packets:
-                    msg = f"no new measurements for id={sensor_id}"
-                    print(f"{INFO_HEADER} {msg}")
-                    self.logger.info(msg)
+                    self.debugger.debug(f"no new measurements for sensor_id={sensor_id}")
+                    self.logger.info(f"no new measurements for sensor_id={sensor_id}")
                     continue
 
                 ############################# PRINT ONLY NEW MEASUREMENTS ##############################
                 print(20 * "=" + " NEW MEASUREMENTS FETCHED " + 20 * '=')
-                if sc.DEBUG_MODE:
-                    for packet in filtered_packets:
-                        print(f"{DEBUG_HEADER} timestamp={packet['timestamp']}")
+                for packet in filtered_packets:
+                    self.debugger.debug(f"timestamp={packet['timestamp']}")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
+        self.debugger.info("new measurement(s) successfully fetched => done")
         self.logger.info("new measurement(s) successfully fetched => done")
         self.dbconn.close_conn()
 
