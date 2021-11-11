@@ -29,6 +29,7 @@ from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SER
     FETCH_USAGE
 
 
+################################ SYSTEM ARGS PARSER FUNCTION ################################
 def parse_sys_argv(args: List[str]):
     if args[0] in ("--help", "-h"):
         print(FETCH_USAGE)
@@ -149,7 +150,6 @@ def main():
 
         ############################# BOT SETTINGS ###########################
         bot_settings_msg = f"personality={sc.PERSONALITY}, " \
-                           f"debug={sc.DEBUG_MODE}, " \
                            f"file_parser={file_parser.__class__.__name__}," \
                            f" bot_class={bot_class.__name__}"
         debugger.info(bot_settings_msg)

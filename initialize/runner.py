@@ -137,6 +137,13 @@ def main():
         else:
             raise SystemExit(f"bad personality => init bot is not implemented for personality='{sc.PERSONALITY}'.")
 
+        ############################# BOT SETTINGS ###########################
+        bot_settings_msg = f"personality={sc.PERSONALITY}, " \
+                           f"file_parser={file_parser.__class__.__name__}," \
+                           f" bot_class={initialize_bot.__name__}"
+        debugger.info(bot_settings_msg)
+        logger.info(bot_settings_msg)
+
         ################################ RUN THE BOT ################################
         initialize_bot.run(first_sensor_id=first_sensor_id, database_sensor_names=sensor_names)
 

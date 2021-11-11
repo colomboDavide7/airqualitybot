@@ -28,11 +28,6 @@ import airquality.core.constants.system_constants as sc
 from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, VALID_PERSONALITIES, GEO_USAGE
 
 
-################################ DEBUGGER AND LOGGER VARIABLES ################################
-debugger = log.get_logger(use_color=True)
-logger = log.get_logger(log_filename="update", log_sub_dir="log")
-
-
 ################################ SYSTEM ARGS PARSER FUNCTION ################################
 def parse_sys_argv(args: List[str]):
     if args[0] in ("--help", "-h"):
@@ -52,6 +47,11 @@ def parse_sys_argv(args: List[str]):
 
     if not is_personality_set:
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{GEO_USAGE}")
+
+
+################################ DEBUGGER AND LOGGER VARIABLES ################################
+debugger = log.get_logger(use_color=True)
+logger = log.get_logger(log_filename="update", log_sub_dir="log")
 
 
 ################################ MAIN FUNCTION ################################
@@ -130,7 +130,6 @@ def main():
 
         ############################# BOT SETTINGS ###########################
         bot_settings_msg = f"personality={sc.PERSONALITY}, " \
-                           f"debug={sc.DEBUG_MODE}, " \
                            f"file_parser={file_parser.__class__.__name__},"\
                            f" bot_class={geo_bot.__class__.__name__}"
         debugger.info(bot_settings_msg)
