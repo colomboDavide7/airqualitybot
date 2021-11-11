@@ -11,6 +11,7 @@ import time
 from typing import List
 
 # IMPORT MODULES
+import airquality.core.logger.log as log
 import airquality.bot.update_bot as bot
 import airquality.io.local.io as io
 import airquality.io.remote.database.adapter as db
@@ -24,9 +25,12 @@ import airquality.data.reshaper.uniform.api2db as a2d
 
 # IMPORT CONSTANTS
 import airquality.core.constants.system_constants as sc
-from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
-    DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
-    VALID_PERSONALITIES, GEO_USAGE
+from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, VALID_PERSONALITIES, GEO_USAGE
+
+
+################################ DEBUGGER AND LOGGER VARIABLES ################################
+debugger = log.get_logger(use_color=True)
+logger = log.get_logger(log_filename="update", log_sub_dir="log")
 
 
 ################################ SYSTEM ARGS PARSER FUNCTION ################################
@@ -55,15 +59,10 @@ def main():
     args = sys.argv[1:]
     if not args:
         raise SystemExit(f"{main.__name__}: missing required arguments.\n {GEO_USAGE}")
-
     parse_sys_argv(args)
-    print(f"{INFO_HEADER} personality = {sc.PERSONALITY}")
-    print(f"{INFO_HEADER} debug       = {sc.DEBUG_MODE}")
 
     try:
         start_time = time.perf_counter()
-        print(20 * '-' + " START THE PROGRAM " + 20 * '-')
-
         ################################ READ SERVER FILE ################################
         raw_server_data = io.IOManager.open_read_close_file(SERVER_FILE)
         parser = fp.FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
@@ -88,14 +87,10 @@ def main():
         active_locations = dict(answer)
 
         if not active_locations:
-            print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'.")
+            debugger.warning(f"no sensor found for personality='{sc.PERSONALITY}' => done")
+            logger.warning(f"no sensor found for personality='{sc.PERSONALITY}' => done")
             dbconn.close_conn()
             return
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " SENSORS FOUND INTO THE DATABASE " + 20 * '=')
-            for key, val in active_locations.items():
-                print(f"{DEBUG_HEADER} {key}={val}")
 
         ####################### QUERY THE (SENSOR_NAME, SENSOR_ID) MAPPING FROM PERSONALITY ############################
         query = query_picker.select_sensor_name_id_mapping_from_personality(sc.PERSONALITY)
@@ -133,14 +128,22 @@ def main():
         else:
             raise SystemExit(f"bad personality => geo bot is not implemented for personality='{sc.PERSONALITY}'.")
 
+        ############################# BOT SETTINGS ###########################
+        bot_settings_msg = f"personality={sc.PERSONALITY}, " \
+                           f"debug={sc.DEBUG_MODE}, " \
+                           f"file_parser={file_parser.__class__.__name__},"\
+                           f" bot_class={geo_bot.__class__.__name__}"
+        debugger.info(bot_settings_msg)
+        logger.info(bot_settings_msg)
+
         ################################ RUN THE BOT ################################
-        geo_bot.run(active_locations=active_locations, name2id_map=name2id_map)
+        geo_bot.run(database_active_locations=active_locations, name2id_map=name2id_map)
 
-        print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
-        print(f"{INFO_HEADER} total time = {end_time - start_time}")
+        debugger.info(f"program successfully complete in {(end_time - start_time):0.04} seconds")
+        logger.info(f"program successfully complete in {(end_time - start_time):0.04} seconds")
 
-    except Exception as ex:
-        print(f"{EXCEPTION_HEADER} {str(ex)}")
-        if isinstance(ex, SystemExit):
-            sys.exit(1)
+    except SystemExit as ex:
+        debugger.error(str(ex))
+        logger.error(str(ex))
+        sys.exit(1)

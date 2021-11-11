@@ -12,6 +12,7 @@ import time
 from typing import List
 
 # IMPORT MODULES
+import airquality.core.logger.log as log
 import airquality.bot.initialize_bot as bot
 import airquality.io.local.io as io
 import airquality.io.remote.database.adapter as db
@@ -25,9 +26,7 @@ import airquality.data.reshaper.uniform.api2db as a2d
 
 # IMPORT CONSTANTS
 import airquality.core.constants.system_constants as sc
-from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
-    DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
-    VALID_PERSONALITIES, INITIALIZE_USAGE
+from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, VALID_PERSONALITIES, INITIALIZE_USAGE
 
 
 ################################ SYSTEM ARGS PARSER FUNCTION ################################
@@ -51,6 +50,11 @@ def parse_sys_argv(args: List[str]):
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing personality argument. \n{INITIALIZE_USAGE}")
 
 
+################################ DEBUGGER AND LOGGER VARIABLES ################################
+debugger = log.get_logger(use_color=True)
+logger = log.get_logger(log_filename="initialize", log_sub_dir="log")
+
+
 ################################ MAIN FUNCTION ################################
 def main():
     args = sys.argv[1:]
@@ -58,13 +62,9 @@ def main():
         raise SystemExit(f"{main.__name__}: missing required arguments. {INITIALIZE_USAGE}")
 
     parse_sys_argv(args)
-    print(f"{INFO_HEADER} personality = {sc.PERSONALITY}")
-    print(f"{INFO_HEADER} debug       = {sc.DEBUG_MODE}")
 
     try:
         start_time = time.perf_counter()
-        print(20 * '-' + " START THE PROGRAM " + 20 * '-')
-
         ################################ READ SERVER FILE ################################
         raw_server_data = io.IOManager.open_read_close_file(path=SERVER_FILE)
         parser = fp.FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
@@ -89,12 +89,8 @@ def main():
         sensor_names = [t[0] for t in answer]
 
         if not sensor_names:
-            print(f"{INFO_HEADER} no sensor found into the database for personality='{sc.PERSONALITY}'.")
-        else:
-            if sc.DEBUG_MODE:
-                print(20 * "=" + " SENSORS FOUND INTO THE DATABASE " + 20 * '=')
-                for name in sensor_names:
-                    print(f"{DEBUG_HEADER} name='{name}'.")
+            debugger.info(f"no sensor found into the database for personality='{sc.PERSONALITY}'")
+            logger.info(f"no sensor found into the database for personality='{sc.PERSONALITY}'")
 
         ####################### SELECT THE MAX SENSOR ID PRESENT INTO THE DATABASE ########################
         query = query_picker.select_max_sensor_id()
@@ -105,7 +101,9 @@ def main():
         first_sensor_id = 1
         if max_sensor_id[0] is not None:
             first_sensor_id = max_sensor_id[0] + 1
-            print(f"{INFO_HEADER} found sensor with id={max_sensor_id[0]!s} => new insertion starts with id={first_sensor_id!s}")
+            msg = f"database max sensor_id found is: {max_sensor_id[0]!s} => new insertion starts at: {first_sensor_id!s}"
+            debugger.info(msg)
+            logger.info(msg)
 
         ################################ READ API FILE ################################
         raw_api_data = io.IOManager.open_read_close_file(path=API_FILE)
@@ -140,13 +138,13 @@ def main():
             raise SystemExit(f"bad personality => init bot is not implemented for personality='{sc.PERSONALITY}'.")
 
         ################################ RUN THE BOT ################################
-        initialize_bot.run(first_sensor_id=first_sensor_id, sensor_names=sensor_names)
+        initialize_bot.run(first_sensor_id=first_sensor_id, database_sensor_names=sensor_names)
 
-        print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
         end_time = time.perf_counter()
-        print(f"{INFO_HEADER} total time = {end_time - start_time}")
+        debugger.info(f"program successfully complete in {(end_time - start_time):0.04} seconds")
+        logger.info(f"program successfully complete in {(end_time - start_time):0.04} seconds")
 
-    except Exception as ex:
-        print(f"{EXCEPTION_HEADER} {str(ex)}")
-        if isinstance(ex, SystemExit):
-            sys.exit(1)
+    except SystemExit as ex:
+        debugger.error(str(ex))
+        logger.error(str(ex))
+        sys.exit(1)

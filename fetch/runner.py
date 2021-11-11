@@ -10,6 +10,7 @@ import time
 from typing import List
 
 # IMPORT MODULES
+import airquality.core.logger.log as log
 import airquality.bot.date_fetch_bot as dfb
 import airquality.bot.fetch_bot as fb
 import airquality.io.local.io as io
@@ -24,13 +25,11 @@ import airquality.data.reshaper.uniform.db2api as d2a
 
 # IMPORT CONSTANTS
 import airquality.core.constants.system_constants as sc
-from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, \
-    DEBUG_HEADER, INFO_HEADER, EXCEPTION_HEADER, \
-    VALID_PERSONALITIES, FETCH_USAGE
+from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, VALID_PERSONALITIES, \
+    FETCH_USAGE
 
 
 def parse_sys_argv(args: List[str]):
-
     if args[0] in ("--help", "-h"):
         print(FETCH_USAGE)
         sys.exit(0)
@@ -50,22 +49,22 @@ def parse_sys_argv(args: List[str]):
         raise SystemExit(f"{parse_sys_argv.__name__}(): missing required bot personality.")
 
 
+################################ DEBUGGER AND LOGGER VARIABLES ################################
+debugger = log.get_logger(use_color=True)
+logger = log.get_logger(log_filename="fetch", log_sub_dir="log")
+
+
 ################################ MAIN FUNCTION ################################
 def main():
-
     args = sys.argv[1:]
     if not args:
-        print(FETCH_USAGE)
+        debugger.warning(FETCH_USAGE)
         sys.exit(1)
 
     parse_sys_argv(args)
-    print(f"{INFO_HEADER} personality = {sc.PERSONALITY}")
-    print(f"{INFO_HEADER} debug       = {sc.DEBUG_MODE}")
 
     try:
-        print(20 * '-' + " START THE PROGRAM " + 20 * '-')
         start_time = time.perf_counter()
-
         ################################ READ SERVER FILE ################################
         raw_server_data = io.IOManager.open_read_close_file(path=SERVER_FILE)
         parser = fp.FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
@@ -102,23 +101,21 @@ def main():
         sensor_ids = [t[0] for t in answer]
 
         if not sensor_ids:
-            print(f"{INFO_HEADER} no sensor found for personality='{sc.PERSONALITY}'.")
+            debugger.warning(f"no sensor found for personality='{sc.PERSONALITY}' => done")
+            logger.warning(f"no sensor found for personality='{sc.PERSONALITY}' => done")
             dbconn.close_conn()
             return
-
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " DATABASE SENSORS ID " + 20 * '=')
-            for sensor_id in sensor_ids:
-                print(f"{DEBUG_HEADER} {sensor_id}")
 
         ################################ SELECT MEASURE PARAM FROM PERSONALITY ################################
         query = query_picker.select_measure_param_from_personality(personality=sc.PERSONALITY)
         answer = dbconn.send(query=query)
         measure_param_map = dict(answer)
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " MEASURE PARAM MAPPING " + 20 * '=')
-            for param_code, param_id in measure_param_map.items():
-                print(f"{DEBUG_HEADER} {param_code}={param_id}")
+
+        if not measure_param_map:
+            debugger.warning(f"no measure param found for personality='{sc.PERSONALITY}' => done")
+            logger.info(f"no measure param found for personality='{sc.PERSONALITY}' => done")
+            dbconn.close_conn()
+            return
 
         ################################ CHECK IF FORMAT EXISTS ################################
 
@@ -148,11 +145,15 @@ def main():
             url_builder_class = url.ThingspeakURLBuilder
             timest_fmt = ts.THINGSPK_FMT
         else:
-            raise SystemExit(f"bad personality => fetch bot is not implemented for personality='{sc.PERSONALITY}'.")
+            raise SystemExit(f"bad personality => fetch bot is not implemented for personality='{sc.PERSONALITY}'")
 
         ############################# BOT SETTINGS ###########################
-        print(f"{INFO_HEADER} using '{file_parser.__class__.__name__}' file parser.")
-        print(f"{INFO_HEADER} using '{bot_class.__name__}' bot.")
+        bot_settings_msg = f"personality={sc.PERSONALITY}, " \
+                           f"debug={sc.DEBUG_MODE}, " \
+                           f"file_parser={file_parser.__class__.__name__}," \
+                           f" bot_class={bot_class.__name__}"
+        debugger.info(bot_settings_msg)
+        logger.info(bot_settings_msg)
 
         ############################# BUILD THE BOT ###########################
         fetch_bot = bot_class(dbconn=dbconn,
@@ -165,12 +166,13 @@ def main():
                               url_builder_class=url_builder_class)
 
         ############################# RUN THE BOT ###########################
-        fetch_bot.run(api_address=api_address, url_param=url_param, sensor_ids=sensor_ids)
+        fetch_bot.run(api_address=api_address, opt_url_param=url_param, sensor_ids=sensor_ids)
 
         end_time = time.perf_counter()
-        print(20 * '-' + " PROGRAMS END SUCCESSFULLY " + 20 * '-')
-        print(f"{INFO_HEADER} elapsed time: {end_time - start_time}")
+        debugger.info(f"program successfully complete in {(end_time - start_time):0.04} seconds")
+        logger.info(f"program successfully complete in {(end_time - start_time):0.04} seconds")
 
     except SystemExit as ex:
-        print(f"{EXCEPTION_HEADER} {str(ex)}")
+        debugger.error(str(ex))
+        logger.error(str(ex))
         sys.exit(1)

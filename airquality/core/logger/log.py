@@ -15,7 +15,6 @@ YELLOW = "\033[1;33m"
 RED = "\033[1;31m"
 RESET = "\033[0m"
 
-
 COLORED_LEVELS = {'DEBUG': GREEN,
                   'INFO': BLUE,
                   'WARNING': YELLOW,
@@ -28,21 +27,20 @@ def get_logger(log_filename: str = "", log_sub_dir: str = "", use_color=False) -
     # Define the 'logger_name' equal to module name if user leave it empty, otherwise use the 'log_filename'
     logger_name = __name__ if not log_filename else log_filename
 
-    # Create a 'logger' or get it if already exists
-    logger = logging.getLogger(logger_name)
-
+    # Create a new 'logger'
+    logger = logging.Logger(logger_name)
 
     # By default, logger outputs messages on the console
     handler = logging.StreamHandler()
 
     # If user provide a consistent path, then log to the file
-    log_path = os.path.join(log_sub_dir, (str(log_filename) + '.log'))
-    if os.path.exists(log_path):
+    if log_filename:
+        log_path = os.path.join(log_sub_dir, (str(log_filename) + '.log'))
         handler = logging.FileHandler(log_path, 'a+')
 
-    formatter = CustomFormatter(f'[%(asctime)s - %(levelname)s]: %(filename)s - %(funcName)s - %(message)s')
+    formatter = CustomFormatter(f'[%(levelname)s] %(asctime)-30s %(filename)-25s %(funcName)-15s %(message)s')
     if use_color:
-        formatter = ColoredFormatter(f'[%(asctime)s - %(levelname)s]: %(filename)s - %(funcName)s - %(message)s')
+        formatter = ColoredFormatter(f'[%(levelname)s] %(asctime)-30s %(filename)-25s %(funcName)-15s %(message)s')
 
     handler.setFormatter(formatter)
     logger.addHandler(handler)

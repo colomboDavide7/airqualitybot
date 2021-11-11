@@ -19,10 +19,6 @@ import airquality.data.reshaper.packet as rshp
 import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.data.reshaper.uniform.db2api as d2a
 
-# IMPORT CONSTANTS
-import airquality.core.constants.system_constants as sc
-from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
-
 
 ################################ FETCH BOT ################################
 class FetchBot:
@@ -50,39 +46,51 @@ class FetchBot:
         self.log_filename = log_filename
         self.log_sub_dir = log_sub_dir
         self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
+        self.debugger = log.get_logger(use_color=True)
 
     ################################ RUN METHOD ################################
     @log_decorator.log_decorator()
-    def run(self, api_address: str, url_param: Dict[str, Any], sensor_ids: List[int]):
+    def run(self, api_address: str, opt_url_param: Dict[str, Any], sensor_ids: List[int]):
 
-        last_acquisition_ts = ts.SQLTimestamp("2021-11-08 20:00:00")
+        last_acquisition_ts = ts.SQLTimestamp("2021-11-10 01:00:00")
 
         for sensor_id in sensor_ids:
-            print(20 * "=" + f" {sensor_id} " + 20 * '=')
-
+            # Select api param from database
             query = self.query_picker.select_api_param_from_sensor_id(sensor_id)
             answer = self.dbconn.send(query)
-            api_param = dict(answer)
-            uniformed_param = self.db2api_reshaper.db2api(api_param)
+            db_api_param = dict(answer)
+            uniformed_param = self.db2api_reshaper.db2api(db_api_param)
 
-            ############################# BUILD URL AND FETCH DATA ##############################
-            for param in uniformed_param:
-                print(f"{INFO_HEADER} channel={param['channel_name']}")
-                self.packet_reshaper.ch_name = param.pop('channel_name')
-                tmp_url_param = url_param.copy()
-                tmp_url_param.update(param)
-                url_builder = self.url_builder_class(api_address=api_address, parameters=tmp_url_param)
+            ############################# CYCLE ON UNIFORMED API PARAM OF A SINGLE SENSOR ##############################
+            for api_param in uniformed_param:
+
+                # Pop the channel name from the uniformed api param of the given sensor_id
+                ch_name = api_param.pop('channel_name')
+                self.debugger.info(f"start fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+                self.logger.info(f"start fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+
+                # Set the packet_reshaper 'ch_name' property
+                self.packet_reshaper.ch_name = ch_name
+
+                # Merge bot 'url_param' (coming from API file) and 'param' (coming from database)
+                url_param = opt_url_param.copy()
+                url_param.update(api_param)
+                self.debugger.debug(', '.join(f"{k}={v!r}" for k, v in url_param.items()))
+                self.logger.debug(', '.join(f"{k}={v!r}" for k, v in url_param.items()))
+
+                # Make 'url_builder' and build 'url'
+                url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
                 url = url_builder.url()
-                print(f"{INFO_HEADER} {url}")
+                self.debugger.info(url)
+                self.logger.info(url)
 
                 ############################# RESHAPE PACKETS ##############################
                 raw_api_packets = api.UrllibAdapter.fetch(url)
                 parsed_api_packets = self.file_parser.parse(raw_api_packets)
                 reshaped_packets = self.packet_reshaper.reshape(parsed_api_packets)
                 if not reshaped_packets:
-                    msg = f"empty API answer for id={sensor_id}"
-                    print(f"{INFO_HEADER} msg")
-                    self.logger.info(msg)
+                    self.debugger.info(f"empty API answer for sensor_id={sensor_id}")
+                    self.logger.info(f"empty API answer for sensor_id={sensor_id}")
                     continue
 
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
@@ -90,27 +98,33 @@ class FetchBot:
                 for packet in reshaped_packets:
                     uniformed_packets.append(self.api2db_reshaper.api2db(packet))
 
-                print(20 * "=" + " FILTER FETCHED MEASUREMENTS " + 20 * '=')
-                filtered_packets = []
+                # Remove packets already present into the database
+                fetched_new_measures = []
                 for packet in uniformed_packets:
                     timestamp = ts.SQLTimestamp(packet['timestamp'], fmt=self.timest_fmt)
                     if timestamp.is_after(last_acquisition_ts):
-                        filtered_packets.append(packet)
-                    else:
-                        print(f"{WARNING_HEADER} '{packet['timestamp']}' => old measure")
+                        fetched_new_measures.append(packet)
 
-                if not filtered_packets:
-                    msg = f"no new measurements for id={sensor_id}"
-                    print(f"{INFO_HEADER} {msg}")
-                    self.logger.info(msg)
+                # Continue to the next 'sensor_id' if there are no new measurements
+                if not fetched_new_measures:
+                    self.debugger.debug(f"no new measurements for sensor_id={sensor_id}")
+                    self.logger.info(f"no new measurements for sensor_id={sensor_id}")
                     continue
 
-                ############################# PRINT ONLY NEW MEASUREMENTS ##############################
-                print(20 * "=" + " NEW MEASUREMENTS FETCHED " + 20 * '=')
-                if sc.DEBUG_MODE:
-                    for packet in filtered_packets:
-                        print(f"{DEBUG_HEADER} timestamp={packet['timestamp']}")
+                # Debug and log new measurement timestamp range
+                first_timestamp = fetched_new_measures[0]['timestamp']
+                last_timestamp = fetched_new_measures[-1]['timestamp']
+                self.debugger.info(f"found new measurements from {first_timestamp} to {last_timestamp}")
+                self.logger.info(f"found new measurements from {first_timestamp} to {last_timestamp}")
+
+                # Add new measurements
+                for fetched_new_measure in fetched_new_measures:
+                    pass
+
+                self.debugger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+                self.logger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
+        self.debugger.info("new measurement(s) successfully fetched => done")
         self.logger.info("new measurement(s) successfully fetched => done")
         self.dbconn.close_conn()

@@ -20,10 +20,6 @@ import airquality.utility.picker.query as pk
 import airquality.data.reshaper.packet as rshp
 import airquality.data.reshaper.uniform.api2db as a2d
 
-# IMPORT CONSTANTS
-import airquality.core.constants.system_constants as sc
-from airquality.core.constants.shared_constants import DEBUG_HEADER, INFO_HEADER, WARNING_HEADER
-
 
 ################################ UPDATE BOT CLASS ################################
 class UpdateBot:
@@ -50,74 +46,75 @@ class UpdateBot:
         self.log_filename = log_filename
         self.log_sub_dir = log_sub_dir
         self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
+        self.debugger = log.get_logger(use_color=True)
 
     ################################ RUN METHOD ################################
     @log_decorator.log_decorator()
-    def run(self, active_locations: Dict[str, Any], name2id_map: Dict[str, Any]):
+    def run(self, database_active_locations: Dict[str, Any], name2id_map: Dict[str, Any]):
 
+        # Build url
         url = self.url_builder.url()
+        self.debugger.info(url)
+        self.logger.info(url)
+
+        # Fetching data from api
         raw_packets = api.UrllibAdapter.fetch(url)
         parsed_packets = self.file_parser.parse(raw_packets)
         reshaped_packets = self.packet_reshaper.reshape(parsed_packets)
 
         if not reshaped_packets:
-            msg = "empty API answer"
-            print(f"{INFO_HEADER} {msg}")
-            self.logger.info(msg)
+            self.debugger.warning("empty API answer => done")
+            self.logger.warning("empty API answer => done")
             self.dbconn.close_conn()
             return
 
+        # Reshape packets such that there is not distinction between packets coming from different sensors
         uniformed_packets = []
         for packet in reshaped_packets:
             uniformed_packets.append(self.a2d_uniform_reshaper.api2db(packet))
 
-        print(20 * "=" + " FILTER FETCHED SENSORS " + 20 * '=')
-        filtered_packets = []
-        for uniformed_packet in uniformed_packets:
-            if uniformed_packet['name'] in name2id_map.keys():
-                filtered_packets.append(uniformed_packet)
+        # Filter out all the sensors which name is not in the 'active_locations' keys
+        fetched_active_locations = []
+        for packet in uniformed_packets:
+            if packet['name'] in database_active_locations:
+                fetched_active_locations.append(packet)
+                self.debugger.info(f"found active location '{packet['name']}'")
+                self.logger.info(f"found active location '{packet['name']}'")
             else:
-                print(f"{WARNING_HEADER} '{uniformed_packet['name']}' => not active")
+                self.debugger.warning(f"skip location '{packet['name']}' => unknown")
+                self.logger.warning(f"skip location '{packet['name']}' => unknown")
 
-        if not filtered_packets:
-            msg = "no active locations found => done"
-            print(f"{INFO_HEADER} {msg}")
-            self.logger.info(msg)
+        # If no active locations were fetched, stop the program
+        if not fetched_active_locations:
+            self.debugger.warning("all the locations fetched are unknown => done")
+            self.logger.warning("all the locations fetched are unknown => done")
             self.dbconn.close_conn()
             return
 
-        print(20 * "=" + " ACTIVE SENSORS FETCHED " + 20 * '=')
-        if sc.DEBUG_MODE:
-            for packet in filtered_packets:
-                print(f"{DEBUG_HEADER} '{packet['name']}'")
-
-        ############## COMPARE THE OLD LOCATIONS WITH THE NEW DOWNLOADED FROM THE API ###################
-        if sc.DEBUG_MODE:
-            print(20 * "=" + " UPDATE LOCATIONS " + 20 * '=')
-
+        # Update locations
         location_values = []
-        for packet in filtered_packets:
-            name = packet['name']
-            geometry = self.geom_builder_class(packet)
-            if geometry.as_text() != active_locations[name]:
-                msg = f"'{name}' => update location"
-                print(f"{INFO_HEADER} {msg}")
-                self.logger.info(msg)
+        for fetched_active_location in fetched_active_locations:
+            name = fetched_active_location['name']
+            geometry = self.geom_builder_class(fetched_active_location)
+            if geometry.as_text() != database_active_locations[name]:
+                self.debugger.info(f"found new location={geometry.as_text()} for name='{name}' => update location")
+                self.logger.info(f"found new location={geometry.as_text()} for name='{name}' => update location")
                 sensor_id = name2id_map[name]
                 geom = geometry.geom_from_text()
                 value = sb.LocationSQLValueBuilder(sensor_id=sensor_id, valid_from=self.timestamp.ts, geom=geom)
                 location_values.append(value)
 
         if not location_values:
-            msg = "all sensor have the same location => done"
-            print(f"{INFO_HEADER} {msg}")
-            self.logger.info(msg)
+            self.debugger.info("all sensor have the same location => done")
+            self.logger.info("all sensor have the same location => done")
             self.dbconn.close_conn()
             return
 
         ############################## BUILD THE QUERY FROM VALUES #############################
         query = self.query_picker.update_location_values(location_values)
         self.dbconn.send(query)
+
+        self.debugger.info("location(s) successfully updated => done")
         self.logger.info("location(s) successfully updated => done")
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.dbconn.close_conn()
