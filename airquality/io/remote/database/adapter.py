@@ -27,7 +27,7 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
         try:
             self.conn = psycopg2.connect(connection_string)
         except psycopg2.Error as err:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad connection string => {err!s}")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad connection string => {err!s}")
 
     def send(self, query: str):
         try:
@@ -38,11 +38,11 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
             if query.startswith("SELECT"):
                 answer = cursor.fetchall()
         except psycopg2.Error as err:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad execution => {err!s}")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad query => {err!s}")
         return answer
 
     def close_conn(self):
         try:
             self.conn.close()
         except psycopg2.InterfaceError as err:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__} bad operation => {err!s}")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => {err!s}")

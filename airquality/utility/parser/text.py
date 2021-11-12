@@ -15,7 +15,7 @@ def get_parser_class(file_ext: str):
     if file_ext == 'json':
         return JSONParser
     else:
-        raise SystemExit(f"{get_parser_class.__name__}: bad file extension => '{file_ext}' is not supported")
+        raise SystemExit(f"'{get_parser_class.__name__}()': bad file extension => '{file_ext}' is not supported")
 
 
 class TextParser(abc.ABC):

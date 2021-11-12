@@ -29,4 +29,4 @@ class JSONFile:
         if item in self.content:
             return self.content[item]
         else:
-            raise AttributeError(f"{JSONFile.__name__} bad attribute => {item}")
+            raise AttributeError(f"{JSONFile.__name__}: bad 'api.json' file structure => missing item='{item}'")

@@ -20,7 +20,7 @@ def get_timest_fmt(sensor_type: str):
     elif sensor_type == 'thingspeak':
         return THINGSPK_FMT
     else:
-        raise SystemExit(f"{get_timest_fmt.__name__}: bad type => timestamp format is not defined for '{sensor_type}'")
+        raise SystemExit(f"'{get_timest_fmt.__name__}()': bad type => timestamp format is not defined for '{sensor_type}'")
 
 
 class Timestamp(abc.ABC):
@@ -50,7 +50,7 @@ class SQLTimestamp(Timestamp):
 
     def is_after(self, other) -> bool:
         if not isinstance(other, SQLTimestamp):
-            raise SystemExit(f"{SQLTimestamp.__name__} bad type => cannot compare with object "
+            raise SystemExit(f"{SQLTimestamp.__name__}: bad type => cannot make comparison with object "
                              f"of type='{other.__class__.__name__}'")
         my_dt = dt.datetime.strptime(self.ts, self.fmt)
         other_dt = dt.datetime.strptime(other.ts, other.fmt)

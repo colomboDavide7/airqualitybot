@@ -15,10 +15,13 @@ def fetch(url: str) -> str:
     try:
         return r.urlopen(req).read()
     except e.URLError as err:
+        err_msg = f"'{fetch.__name__}()':"
         if hasattr(err, 'reason'):
-            err_msg = f"'{fetch.__name__}()': failed to reach the server => {err.reason}"
+            if err.reason == 'Bad Request':
+                err_msg += f" bad URL => please check your parameters"
+            else:
+                err_msg += f" failed to reach the server => {err.reason}"
         elif hasattr(err, 'code'):
-            err_msg = f"The server couldn't fulfill the {fetch.__name__} request => code={err.code}"
-        else:
-            err_msg = f"'{fetch.__name__}()': bad request => {err!s}"
+            err_msg = f"The server couldn't fulfill the request => error code={err.code}"
+
         raise SystemExit(err_msg)

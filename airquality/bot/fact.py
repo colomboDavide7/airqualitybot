@@ -16,22 +16,22 @@ VALID_TYPES = ('purpleair', 'thingspeak', 'atmotube')
 
 def get_bot_class(bot_name: str, sensor_type: str):
 
-    err_msg = f"'{get_bot_class.__name__}()': bad '{sensor_type}' type for '{bot_name}' bot => "
+    err_msg = f"'{get_bot_class.__name__}()': '{sensor_type}' type is bad for '{bot_name}' bot => "
     if bot_name == 'init':
         if sensor_type in ('purpleair', ):
             return init.InitializeBot
         else:
-            err_msg += f"the only valid type for '{bot_name}' bot is: ['purpleair']"
+            err_msg += f"'{bot_name}' bot valid type is: ['purpleair']"
     elif bot_name == 'update':
         if sensor_type in ('purpleair', ):
             return update.UpdateBot
         else:
-            err_msg += f"the only valid type for '{bot_name}' bot is: ['purpleair']"
+            err_msg += f"'{bot_name}' bot valid type is: ['purpleair']"
     elif bot_name == 'fetch':
         if sensor_type in ('atmotube', 'thingspeak', ):
             return fetch.FetchBot
         else:
-            err_msg += f"the valid types for '{bot_name}' bot are: ['atmotube', 'thingspeak']"
+            err_msg += f"'{bot_name}' bot valid types are: ['atmotube', 'thingspeak']"
 
     # If the interpreter arrive here, it means that the combination of 'bot_name' and 'sensor_type' is wrong
     raise SystemExit(err_msg)

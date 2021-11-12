@@ -26,10 +26,11 @@ import airquality.data.reshaper.uniform.measure as meas
 import airquality.bot.fact as fact
 
 ################################ GLOBAL VARIABLES ################################
-USAGE = "python(version) -m airquality bot_name sensor_type"
+USAGE = "USAGE: python(version) -m airquality bot_name sensor_type"
 API_FILE = "properties/api.json"
-SERVER_FILE = "properties/server.json"
 QUERY_FILE = "properties/query.json"
+
+error_logger = log.get_logger(log_filename='errors', log_sub_dir='log')
 
 
 ################################ ENTRY POINT OF THE PROGRAM ################################
@@ -37,7 +38,8 @@ def main():
 
     args = sys.argv[1:]
     if not args:
-        print(f"bad usage => {USAGE}")
+        error_logger.error(f"'{main.__name__}()': bad usage => missing required arguments")
+        print(f"{USAGE}")
         sys.exit(1)
 
     settings_string = ""
@@ -59,6 +61,8 @@ def main():
         dotenv.load_dotenv(dotenv_path="./properties/.env")
 
         # Open database connection
+        if not os.environ.get('DBCONN'):
+            raise SystemExit(f"'{main.__name__}()': bad '.env' file structure => missing param='DBCONN'")
         dbconn = db.Psycopg2DatabaseAdapter(os.environ['DBCONN'])
 
         # Query file object
@@ -72,6 +76,8 @@ def main():
 
         # Append secret 'api_key' for purpleair sensors
         if sensor_type == 'purpleair':
+            if not os.environ.get('PURPLEAIR_API_KEY'):
+                raise SystemExit(f"'{main.__name__}()': bad '.env' file structure => missing param='PURPLEAIR_API_KEY'")
             url_param['api_key'] = os.environ['PURPLEAIR_API_KEY']
 
         # TextParser class
@@ -79,7 +85,7 @@ def main():
             text_parser_class = txt.JSONParser
         else:
             if not url_param.get('format'):
-                raise KeyError("bad 'api.json' file structure => missing key='format'")
+                raise SystemExit(f"'{main.__name__}()': bad 'api.json' file structure => missing param='format'")
             text_parser_class = txt.get_parser_class(url_param['format'])
 
         # Update settings string
@@ -150,5 +156,6 @@ def main():
 
     ################################ HANDLE EXCEPTIONS ################################
     except (SystemExit, AttributeError, KeyError) as ex:
-        debugger.error(str(ex))
+        debugger.error(f"{ex!s}")
+        error_logger.error(f"{ex!s}")
         sys.exit(1)

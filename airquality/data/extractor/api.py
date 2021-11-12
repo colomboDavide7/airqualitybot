@@ -70,7 +70,7 @@ class ThingspeakAPIExtractor(APIExtractor):
         elif self.channel_name == '2B':
             self.field_to_use = THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
         else:
-            raise SystemExit(f"{ThingspeakAPIExtractor.__name__} bad parameters => channel_name='{self.channel_name}'")
+            raise SystemExit(f"{ThingspeakAPIExtractor.__name__}: bad parameter => invalid channel_name='{self.channel_name}'")
 
     def extract(self) -> List[Dict[str, Any]]:
         data_packets = []

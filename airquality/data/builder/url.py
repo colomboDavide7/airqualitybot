@@ -46,11 +46,11 @@ class PurpleairURL(URLBuilder):
 
     def url(self) -> str:
         if 'api_key' not in self.url_param:
-            raise SystemExit(f"{PurpleairURL.__name__} bad 'api.json' file structure => missing key='api_key'")
+            raise SystemExit(f"{PurpleairURL.__name__}: bad 'api.json' file structure => missing key='api_key'")
         elif 'fields' not in self.url_param:
-            raise SystemExit(f"{PurpleairURL.__name__} bad 'api.json' file structure => missing key='fields'")
+            raise SystemExit(f"{PurpleairURL.__name__}: bad 'api.json' file structure => missing key='fields'")
         elif not self.url_param['fields']:
-            raise SystemExit(f"{PurpleairURL.__name__} bad 'api.json' file structure => empty fields.")
+            raise SystemExit(f"{PurpleairURL.__name__}: bad 'api.json' file structure => empty fields.")
 
         url = self.address + QU
         for param_name, param_value in self.url_param.items():
@@ -71,9 +71,9 @@ class AtmotubeURL(URLBuilder):
 
     def url(self) -> str:
         if 'api_key' not in self.url_param:
-            raise SystemExit(f"{AtmotubeURL.__name__} bad 'api.json' file structure => missing key='api_key'")
+            raise SystemExit(f"{AtmotubeURL.__name__}: bad 'api.json' file structure => missing key='api_key'")
         elif 'mac' not in self.url_param:
-            raise SystemExit(f"{AtmotubeURL.__name__} bad 'api.json' file structure => missing key='mac'")
+            raise SystemExit(f"{AtmotubeURL.__name__}: bad 'api.json' file structure => missing key='mac'")
 
         url = self.address + QU
         for param_name, param_value in self.url_param.items():
@@ -86,14 +86,14 @@ class ThingspeakURL(URLBuilder):
     def __init__(self, address: str, url_param: Dict[str, Any]):
         super(ThingspeakURL, self).__init__(address=address, url_param=url_param)
         if 'format' not in self.url_param:
-            raise SystemExit(f"{ThingspeakURL.__name__} bad 'api.json' file structure => missing key='format'")
+            raise SystemExit(f"{ThingspeakURL.__name__}: bad 'api.json' file structure => missing key='format'")
         self.address_fmt = 'feeds.' + self.url_param.pop('format')
 
     def url(self) -> str:
         if 'api_key' not in self.url_param:
-            raise SystemExit(f"{ThingspeakURL.__name__} bad 'api.json' file structure => missing key='api_key'")
+            raise SystemExit(f"{ThingspeakURL.__name__}: bad 'api.json' file structure => missing key='api_key'")
         elif 'channel_id' not in self.url_param:
-            raise SystemExit(f"{ThingspeakURL.__name__} bad 'api.json' file structure => missing key='channel_id'")
+            raise SystemExit(f"{ThingspeakURL.__name__}: bad 'api.json' file structure => missing key='channel_id'")
 
         url = self.address + '/' + self.url_param.pop('channel_id') + '/'
         url += self.address_fmt + QU
