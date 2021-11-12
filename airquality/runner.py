@@ -103,7 +103,7 @@ def main():
         bot.add_query_picker(query_picker)
         bot.add_text_parser_class(text_parser_class)
 
-        if bot_name == 'init':
+        if bot_name in ('init', 'update'):
             sensor_rshp_class = sens.get_sensor_reshaper_class(sensor_type)
             bot.add_sensor_rshp_class(sensor_rshp_class)
             settings_string += f"sensor_rshp_class={sensor_rshp_class.__name__}, "

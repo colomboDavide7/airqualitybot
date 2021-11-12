@@ -39,7 +39,7 @@ class PointBuilder(GeometryBuilder):
         elif 'lng' not in self.packet:
             raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lng'")
 
-        geom = POINT_GEOMETRY.format(lng=self.packet['lat'], lat=self.packet['lng'])
+        geom = POINT_GEOMETRY.format(lng=self.packet['lng'], lat=self.packet['lat'])
         return ST_GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
 
     def as_text(self) -> str:
