@@ -12,14 +12,14 @@ from typing import List
 # IMPORT MODULES
 import airquality.core.logger.log as log
 import airquality.bot.date_fetch_bot as dfb
-import airquality.bot.fetch_bot as fb
+import airquality.bot.fetch as fb
 import airquality.io.local.io as io
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
-import airquality.utility.parser.file as fp
+import airquality.utility.parser.text as fp
 import airquality.data.builder.timest as ts
 import airquality.data.builder.url as url
-import airquality.data.reshaper.packet as rshp
+import data.extractor.api as rshp
 import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.data.reshaper.uniform.db2api as d2a
 
@@ -68,7 +68,7 @@ def main():
         start_time = time.perf_counter()
         ################################ READ SERVER FILE ################################
         raw_server_data = io.IOManager.open_read_close_file(path=SERVER_FILE)
-        parser = fp.FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
+        parser = fp.FileParserFactory.make_parser(file_ext=SERVER_FILE.split('.')[-1])
         parsed_server_data = parser.parse(text=raw_server_data)
         server_settings = parsed_server_data[sc.PERSONALITY]
 
@@ -78,7 +78,7 @@ def main():
 
         ################################ READ QUERY FILE ###############################
         raw_query_data = io.IOManager.open_read_close_file(path=QUERY_FILE)
-        parser = fp.FileParserFactory.make_parser(file_extension=QUERY_FILE.split('.')[-1])
+        parser = fp.FileParserFactory.make_parser(file_ext=QUERY_FILE.split('.')[-1])
         parsed_query_data = parser.parse(text=raw_query_data)
 
         ################################ CREATE QUERY PICKER ###############################
@@ -86,7 +86,7 @@ def main():
 
         ################################ READ API FILE ################################
         raw_api_data = io.IOManager.open_read_close_file(path=API_FILE)
-        parser = fp.FileParserFactory.make_parser(file_extension=API_FILE.split('.')[-1])
+        parser = fp.FileParserFactory.make_parser(file_ext=API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(text=raw_api_data)
 
         ################################ GET THE API ADDRESS ################################
@@ -96,19 +96,10 @@ def main():
         except KeyError as ke:
             raise SystemExit(f"bad 'api.json' file structure => missing key={ke!s} for personality='{sc.PERSONALITY}'.")
 
-        ################################ DATABASE SENSOR ID ASSOCIATED TO PERSONALITY ################################
-        query = query_picker.select_sensor_ids_from_personality(personality=sc.PERSONALITY)
-        answer = dbconn.send(query=query)
-        sensor_ids = [t[0] for t in answer]
 
-        if not sensor_ids:
-            debugger.warning(f"no sensor found for personality='{sc.PERSONALITY}' => done")
-            logger.warning(f"no sensor found for personality='{sc.PERSONALITY}' => done")
-            dbconn.close_conn()
-            return
 
         ################################ SELECT MEASURE PARAM FROM PERSONALITY ################################
-        query = query_picker.select_measure_param_from_personality(personality=sc.PERSONALITY)
+        query = query_picker.select_measure_param_from_sensor_type(sensor_type=sc.PERSONALITY)
         answer = dbconn.send(query=query)
         measure_param_map = dict(answer)
 
@@ -128,10 +119,10 @@ def main():
             if url_param.get('date'):
                 bot_class = dfb.DateFetchBot
             file_parser = fp.FileParserFactory().make_parser(url_param['format'])
-            packet_reshaper = rshp.AtmotubePacketReshaper()
+            packet_reshaper = rshp.AtmotubeAPIExtractor()
             api2db_reshaper = a2d.AtmotubeUniformReshaper()
             db2api_reshaper = d2a.AtmotubeUniformReshaper()
-            url_builder_class = url.AtmotubeURLBuilder
+            url_builder_class = url.AtmotubeURL
             timest_fmt = ts.ATMOTUBE_FMT
         # *****************************************************************
         elif sc.PERSONALITY == 'thingspeak':
@@ -140,10 +131,10 @@ def main():
             if url_param.get('start') or url_param.get('end'):
                 bot_class = dfb.DateFetchBot
             file_parser = fp.FileParserFactory().make_parser(url_param['format'])
-            packet_reshaper = rshp.ThingspeakPacketReshaper()
+            packet_reshaper = rshp.ThingspeakAPIExtractor()
             api2db_reshaper = a2d.ThingspeakUniformReshaper()
             db2api_reshaper = d2a.ThingspeakUniformReshaper()
-            url_builder_class = url.ThingspeakURLBuilder
+            url_builder_class = url.ThingspeakURL
             timest_fmt = ts.THINGSPK_FMT
         else:
             raise SystemExit(f"bad personality => fetch bot is not implemented for personality='{sc.PERSONALITY}'")

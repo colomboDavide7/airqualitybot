@@ -6,13 +6,13 @@
 #
 #################################################
 import unittest
-import airquality.data.reshaper.packet as pck
+import data.extractor.api as pck
 
 
 class TestAPIPacketReshaper(unittest.TestCase):
 
     def test_reshape_purpleair_packets(self):
-        purpleair_reshaper = pck.PurpleairPacketReshaper()
+        purpleair_reshaper = pck.PurpleairAPIExtractor()
         test_api_answer = {
             'fields': ["name", "sensor_index"],
             'data': [
@@ -22,17 +22,17 @@ class TestAPIPacketReshaper(unittest.TestCase):
         }
 
         expected_answer = [{"name": "n1", "sensor_index": "idx1"}, {"name": "n2", "sensor_index": "idx2"}]
-        actual_answer = purpleair_reshaper.reshape(api_answer=test_api_answer)
+        actual_answer = purpleair_reshaper.extract(api_answer=test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
     def test_empty_list_value_when_empty_data_reshape_purpleair_packets(self):
-        purpleair_reshaper = pck.PurpleairPacketReshaper()
+        purpleair_reshaper = pck.PurpleairAPIExtractor()
         test_api_answer = {
             'fields': ["f1", "f2"],
             'data': []
         }
         expected_answer = []
-        actual_answer = purpleair_reshaper.reshape(api_answer=test_api_answer)
+        actual_answer = purpleair_reshaper.extract(api_answer=test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
     ################################ TEST RESHAPE THINGSPEAK API PACKET ################################
@@ -69,18 +69,18 @@ class TestAPIPacketReshaper(unittest.TestCase):
                         {'name': 'humidity_a', 'value': '60'}],
              }]
 
-        thingspeak_reshaper = pck.ThingspeakPacketReshaper()
+        thingspeak_reshaper = pck.ThingspeakAPIExtractor()
         thingspeak_reshaper.ch_name = '1A'
-        actual_output = thingspeak_reshaper.reshape(api_answer=test_api_answer)
+        actual_output = thingspeak_reshaper.extract(api_answer=test_api_answer)
         self.assertEqual(actual_output, expected_answer)
 
     def test_empty_packets_when_feeds_is_empty(self):
         test_api_answer = {"channel": {'param1': 'val1'},
                            "feeds": []}
         expected_answer = []
-        thingspeak_reshaper = pck.ThingspeakPacketReshaper()
+        thingspeak_reshaper = pck.ThingspeakAPIExtractor()
         thingspeak_reshaper.ch_name = '1A'
-        actual_output = thingspeak_reshaper.reshape(api_answer=test_api_answer)
+        actual_output = thingspeak_reshaper.extract(api_answer=test_api_answer)
         self.assertEqual(actual_output, expected_answer)
 
     ################################ TEST RESHAPE ATMOTUBE API PACKET ################################
@@ -93,16 +93,16 @@ class TestAPIPacketReshaper(unittest.TestCase):
                            }
 
         expected_output = [{'time': "2021-10-02T00:00:00.000Z"}, {'time': "2021-10-02T00:01:00.000Z"}]
-        atmotube_reshaper = pck.AtmotubePacketReshaper()
-        actual_output = atmotube_reshaper.reshape(api_answer=test_api_answer)
+        atmotube_reshaper = pck.AtmotubeAPIExtractor()
+        actual_output = atmotube_reshaper.extract(api_answer=test_api_answer)
         self.assertEqual(actual_output, expected_output)
 
     def test_empty_list_when_items_is_empty(self):
         test_api_answer = {"data": {"items": []}}
 
         expected_output = []
-        atmotube_reshaper = pck.AtmotubePacketReshaper()
-        actual_output = atmotube_reshaper.reshape(api_answer=test_api_answer)
+        atmotube_reshaper = pck.AtmotubeAPIExtractor()
+        actual_output = atmotube_reshaper.extract(api_answer=test_api_answer)
         self.assertEqual(actual_output, expected_output)
 
 

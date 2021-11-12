@@ -6,69 +6,50 @@
 #               'properties/query.json' file.
 #
 #################################################
-from typing import Dict, Any, List
+from typing import List
 import airquality.data.builder.sql as sb
+import airquality.io.local.structured.json as struct
 
 
 class QueryPicker:
 
-    def __init__(self, parsed_query_data: Dict[str, Any]):
-        self.parsed_query_data = parsed_query_data
+    def __init__(self, query_file: struct.JSONFile):
+        self.query_file = query_file
 
     ################################ METHODS THAT RETURN SELECT QUERY ################################
     def select_max_sensor_id(self) -> str:
-        query_id = "s1"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id]
+        return self.query_file.s1
 
     def select_api_param_from_sensor_id(self, sensor_id) -> str:
-        query_id = "s2"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id].format(sensor_id=sensor_id)
+        return self.query_file.s2.format(sensor_id=sensor_id)
 
-    def select_sensor_ids_from_personality(self, personality: str) -> str:
-        query_id = "s3"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id].format(personality=personality)
+    def select_sensor_ids_from_sensor_type(self, sensor_type: str) -> str:
+        return self.query_file.s3.format(personality=sensor_type)
 
-    def select_sensor_names_from_personality(self, personality: str) -> str:
-        query_id = "s4"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id].format(personality=personality)
+    def select_sensor_names_from_sensor_type(self, sensor_type: str) -> str:
+        return self.query_file.s4.format(personality=sensor_type)
 
-    def select_measure_param_from_personality(self, personality: str) -> str:
-        query_id = "s5"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id].format(personality=personality)
+    def select_measure_param_from_sensor_type(self, sensor_type: str) -> str:
+        return self.query_file.s5.format(personality=sensor_type)
 
     def select_active_locations(self, personality: str) -> str:
-        query_id = "s6"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id].format(personality=personality)
+        return self.query_file.s6.format(personality=personality)
 
-    def select_sensor_name_id_mapping_from_personality(self, personality: str) -> str:
-        query_id = "s7"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id].format(personality=personality)
+    def select_sensor_name_id_mapping_from_sensor_type(self, sensor_type: str) -> str:
+        return self.query_file.s7.format(personality=sensor_type)
 
     ################################ METHODS THAT RETURN INSERT QUERY ################################
 
     def insert_into_mobile_measurements(self) -> str:
-        query_id = "i1"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id]
+        return self.query_file.i1
 
     def insert_into_station_measurements(self) -> str:
-        query_id = "i2"
-        self.search_query_id(query_id)
-        return self.parsed_query_data[query_id]
+        return self.query_file.i2
 
     def update_location_values(self, values: List[sb.LocationSQLValueBuilder]) -> str:
-        query_id = "u2"
-        self.search_query_id(query_id)
         query = ""
         for value in values:
-            query += self.parsed_query_data[query_id].format(ts=value.valid_from, sens_id=value.sensor_id)
+            query += self.query_file.u2.format(ts=value.valid_from, sens_id=value.sensor_id)
         query += self.__insert_location_values(values)
         return query
 
@@ -83,30 +64,19 @@ class QueryPicker:
 
     ################################ PRIVATE METHODS ################################
     def __insert_into_sensor(self, values: List[sb.SensorSQLValueBuilder]) -> str:
-        query_id = "i3"
-        self.search_query_id(query_id)
-        query = self.parsed_query_data[query_id]
+        query = self.query_file.i3
         for value in values:
             query += value.values() + ','
         return query.strip(',') + ';'
 
     def __insert_into_api_param(self, values: List[sb.APIParamSQLValueBuilder]) -> str:
-        query_id = "i4"
-        self.search_query_id(query_id)
-        query = self.parsed_query_data[query_id]
+        query = self.query_file.i4
         for value in values:
             query += value.values() + ','
         return query.strip(',') + ';'
 
     def __insert_location_values(self, values: List[sb.LocationSQLValueBuilder]) -> str:
-        query_id = "i5"
-        self.search_query_id(query_id)
-        query = self.parsed_query_data[query_id]
+        query = self.query_file.i5
         for value in values:
             query += value.values() + ','
         return query.strip(',') + ';'
-
-    ################################ METHOD THAT RAISES EXCEPTION ################################
-    def search_query_id(self, query_id: str):
-        if query_id not in self.parsed_query_data.keys():
-            raise SystemExit(f"{QueryPicker.__name__} bad 'query.json' file structure => missing key='{query_id}'.")

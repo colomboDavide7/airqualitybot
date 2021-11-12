@@ -5,44 +5,21 @@
 # @Description: this script defines the bot classes for the fetch module
 #
 #################################################
-from typing import Dict, Any, List
 
 # IMPORT MODULES
+import airquality.bot.base as base
 import airquality.core.logger.log as log
 import airquality.core.logger.decorator as log_decorator
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
-import airquality.utility.picker.query as pk
-import airquality.utility.parser.file as fp
 import airquality.data.builder.timest as ts
-import airquality.data.reshaper.packet as rshp
-import airquality.data.reshaper.uniform.api2db as a2d
-import airquality.data.reshaper.uniform.db2api as d2a
 
 
 ################################ FETCH BOT ################################
-class FetchBot:
+class FetchBot(base.BaseBot):
 
-    def __init__(self,
-                 timest_fmt: str,
-                 dbconn: db.DatabaseAdapter,
-                 file_parser: fp.FileParser,
-                 query_picker: pk.QueryPicker,
-                 packet_reshaper: rshp.PacketReshaper,
-                 api2db_reshaper: a2d.UniformReshaper,
-                 db2api_reshaper: d2a.UniformReshaper,
-                 url_builder_class=None,
-                 log_filename='fetch',
-                 log_sub_dir='log'):
-
-        self.dbconn = dbconn
-        self.timest_fmt = timest_fmt
-        self.file_parser = file_parser
-        self.query_picker = query_picker
-        self.packet_reshaper = packet_reshaper
-        self.db2api_reshaper = db2api_reshaper
-        self.api2db_reshaper = api2db_reshaper
-        self.url_builder_class = url_builder_class
+    def __init__(self, sensor_type: str, dbconn: db.DatabaseAdapter, log_filename='fetch', log_sub_dir='log'):
+        super(FetchBot, self).__init__(sensor_type=sensor_type, dbconn=dbconn)
         self.log_filename = log_filename
         self.log_sub_dir = log_sub_dir
         self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
@@ -50,7 +27,17 @@ class FetchBot:
 
     ################################ RUN METHOD ################################
     @log_decorator.log_decorator()
-    def run(self, api_address: str, opt_url_param: Dict[str, Any], sensor_ids: List[int]):
+    def run(self):
+
+        # Query 'sensor_ids' of the given 'sensor_type'
+        query = self.query_picker.select_sensor_ids_from_sensor_type(self.sensor_type)
+        answer = self.dbconn.send(query=query)
+        sensor_ids = [t[0] for t in answer]
+
+        if not sensor_ids:
+            self.debugger.warning(f"no sensor found for type='{self.sensor_type}' => done")
+            self.logger.warning(f"no sensor found for type='{self.sensor_type}' => done")
+            return
 
         last_acquisition_ts = ts.SQLTimestamp("2021-11-10 01:00:00")
 
@@ -59,7 +46,7 @@ class FetchBot:
             query = self.query_picker.select_api_param_from_sensor_id(sensor_id)
             answer = self.dbconn.send(query)
             db_api_param = dict(answer)
-            uniformed_param = self.db2api_reshaper.db2api(db_api_param)
+            uniformed_param = self.db2api_rshp_class(db_api_param).reshape()
 
             ############################# CYCLE ON UNIFORMED API PARAM OF A SINGLE SENSOR ##############################
             for api_param in uniformed_param:
@@ -69,34 +56,27 @@ class FetchBot:
                 self.debugger.info(f"start fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
                 self.logger.info(f"start fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
 
-                # Set the packet_reshaper 'ch_name' property
-                self.packet_reshaper.ch_name = ch_name
+                # Update URLBuilder parameters
+                self.url_builder.update_param(api_param)
 
-                # Merge bot 'url_param' (coming from API file) and 'param' (coming from database)
-                url_param = opt_url_param.copy()
-                url_param.update(api_param)
-                self.debugger.debug(', '.join(f"{k}={v!r}" for k, v in url_param.items()))
-                self.logger.debug(', '.join(f"{k}={v!r}" for k, v in url_param.items()))
-
-                # Make 'url_builder' and build 'url'
-                url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
-                url = url_builder.url()
+                # Build URL
+                url = self.url_builder.url()
                 self.debugger.info(url)
                 self.logger.info(url)
 
-                ############################# RESHAPE PACKETS ##############################
-                raw_api_packets = api.UrllibAdapter.fetch(url)
-                parsed_api_packets = self.file_parser.parse(raw_api_packets)
-                reshaped_packets = self.packet_reshaper.reshape(parsed_api_packets)
-                if not reshaped_packets:
+                # Fetch API data
+                raw_api_packets = api.fetch(url)
+                parsed_api_packets = self.text_parser_class(raw_api_packets).parse()
+                api_data = self.api_extr_class(parsed_api_packets, channel_name=ch_name).extract()
+                if not api_data:
                     self.debugger.info(f"empty API answer for sensor_id={sensor_id}")
                     self.logger.info(f"empty API answer for sensor_id={sensor_id}")
                     continue
 
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
                 uniformed_packets = []
-                for packet in reshaped_packets:
-                    uniformed_packets.append(self.api2db_reshaper.api2db(packet))
+                for data in api_data:
+                    uniformed_packets.append(self.api2db_rshp_class(data).reshape())
 
                 # Remove packets already present into the database
                 fetched_new_measures = []
@@ -127,4 +107,3 @@ class FetchBot:
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.debugger.info("new measurement(s) successfully fetched => done")
         self.logger.info("new measurement(s) successfully fetched => done")
-        self.dbconn.close_conn()

@@ -10,44 +10,34 @@
 from typing import Dict, Any, List
 
 # IMPORT MODULES
+import airquality.bot.base as base
+import airquality.data.builder.url as u
+import airquality.data.extractor.api as extr
 import airquality.core.logger.log as log
 import airquality.core.logger.decorator as log_decorator
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
-import airquality.utility.parser.file as fp
+import airquality.utility.parser.text as fp
 import airquality.data.builder.timest as ts
-import airquality.data.reshaper.packet as rshp
+import airquality.data.extractor.api as rshp
 import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.data.reshaper.uniform.db2api as d2a
 
 
 ################################ DATE FETCH BOT ################################
-class DateFetchBot:
+class DateFetchBot(base.BaseBot):
 
     def __init__(self,
-                 timest_fmt: str,
+                 sensor_type: str,
                  dbconn: db.DatabaseAdapter,
-                 file_parser: fp.FileParser,
-                 query_picker: pk.QueryPicker,
-                 packet_reshaper: rshp.PacketReshaper,
-                 api2db_reshaper: a2d.UniformReshaper,
-                 db2api_reshaper: d2a.UniformReshaper,
-                 url_builder_class=None,
-                 log_filename='fetch',
-                 log_sub_dir='log'):
+                 timest_format: str, logger_filename='fetch', logger_sub_dir='log'):
+        super(DateFetchBot, self).__init__(sensor_type=sensor_type, dbconn=dbconn)
+        # file_parser: fp.FileParser,
+        # query_picker: pk.QueryPicker,
 
-        self.dbconn = dbconn
-        self.timest_fmt = timest_fmt
-        self.file_parser = file_parser
-        self.query_picker = query_picker
-        self.packet_reshaper = packet_reshaper
-        self.db2api_reshaper = db2api_reshaper
-        self.api2db_reshaper = api2db_reshaper
-        self.url_builder_class = url_builder_class
-        self.log_filename = log_filename
-        self.log_sub_dir = log_sub_dir
-        self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
+        self.timest_fmt = timest_format
+        self.logger = log.get_logger(log_filename=logger_filename, log_sub_dir=logger_sub_dir)
         self.debugger = log.get_logger(use_color=True)
 
     ################################ RUN METHOD ################################
@@ -61,7 +51,7 @@ class DateFetchBot:
             query = self.query_picker.select_api_param_from_sensor_id(sensor_id)
             answer = self.dbconn.send(query)
             db_api_param = dict(answer)
-            uniformed_param = self.db2api_reshaper.db2api(db_api_param)
+            uniformed_param = self.db2api_reshaper.reshape(db_api_param)
 
             ############################# CYCLE ON UNIVERSAL API PARAM OF A SINGLE SENSOR ##############################
             for api_param in uniformed_param:
@@ -81,15 +71,16 @@ class DateFetchBot:
                 self.logger.debug(', '.join(f"{k}={v!r}" for k, v in url_param.items()))
 
                 # Make 'url_builder' and build 'url'
-                url_builder = self.url_builder_class(api_address=api_address, parameters=url_param)
+                url_builder = self.url_class(api_address=api_address, parameters=url_param)
                 url = url_builder.url()
                 self.debugger.info(url)
                 self.logger.info(url)
 
                 ############################# RESHAPE PACKETS ##############################
-                raw_api_packets = api.UrllibAdapter.fetch(url)
+                raw_api_packets = api.fetch(url)
                 parsed_api_packets = self.file_parser.parse(raw_api_packets)
-                reshaped_packets = self.packet_reshaper.reshape(parsed_api_packets)
+                api_extractor = self.api_extractor_class(parsed_api_packets, ch_name)
+                reshaped_packets = api_extractor.extract()
                 if not reshaped_packets:
                     self.debugger.info(f"empty API answer for sensor_id={sensor_id}")
                     self.logger.info(f"empty API answer for sensor_id={sensor_id}")
@@ -98,7 +89,7 @@ class DateFetchBot:
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
                 uniformed_packets = []
                 for packet in reshaped_packets:
-                    uniformed_packets.append(self.api2db_reshaper.api2db(packet))
+                    uniformed_packets.append(self.api2db_reshaper.reshape(packet))
 
                 # Remove packets already present into the database
                 fetched_new_measures = []

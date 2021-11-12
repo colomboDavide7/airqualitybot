@@ -6,70 +6,138 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import os
 import sys
-import time
-from typing import List
+import dotenv
 
 # IMPORT MODULES
 import airquality.core.logger.log as log
-import airquality.bot.date_fetch_bot as dfb
-import airquality.bot.fetch_bot as fb
-import airquality.io.local.io as io
+import airquality.core.factory.bot as fact
+import airquality.io.local.structured.json as struct
 import airquality.io.remote.database.adapter as db
-import airquality.utility.picker.query as pk
-import airquality.utility.parser.file as fp
 import airquality.data.builder.timest as ts
 import airquality.data.builder.url as url
-import airquality.data.reshaper.packet as rshp
+import airquality.data.builder.geom as geom
+import airquality.utility.picker.query as pk
+import airquality.utility.parser.text as txt
+import airquality.data.extractor.api as ext
 import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.data.reshaper.uniform.db2api as d2a
 
-# IMPORT CONSTANTS
-import airquality.core.constants.system_constants as sc
-from airquality.core.constants.shared_constants import QUERY_FILE, API_FILE, SERVER_FILE, VALID_PERSONALITIES
-
+################################ GLOBAL VARIABLES ################################
 USAGE = "python(version) -m airquality bot_name sensor_type"
-VALID_NAMES = ("init", "update", "fetch")
-VALID_TYPES = ('purpleair', 'thingspeak', 'atmotube')
-
-################################ DEBUGGER AND LOGGER VARIABLES ################################
-debugger = log.get_logger(use_color=True)
-logger = log.get_logger(log_filename=f"{__name__}", log_sub_dir="log")
+API_FILE = "properties/api.json"
+SERVER_FILE = "properties/server.json"
+QUERY_FILE = "properties/query.json"
 
 
 ################################ ENTRY POINT OF THE PROGRAM ################################
 def main():
 
+    args = sys.argv[1:]
+    if not args:
+        print(f"bad usage => {USAGE}")
+        sys.exit(1)
+
+    settings_string = ""
+    # Extract arguments
+    bot_name = args[0]
+    sensor_type = args[1]
+
+    # Create 'logger' and 'debugger' associated to 'bot_name'
+    debugger = log.get_logger(use_color=True)
+    logger = log.get_logger(log_filename=bot_name, log_sub_dir="log")
+
     try:
-        args = sys.argv[1:]
-        if not args:
-            raise SystemExit(f"wrong usage => {USAGE}")
 
-        # Retrieve 'bot_name' and 'sensor_type' arguments
-        bot_name = args[0] if args[0] in VALID_NAMES else ""
-        sensor_type = args[1] if args[1] in VALID_TYPES else ""
-        main_settings_msg = f"bot_name={bot_name}, sensor_type={sensor_type}"
+        # Get the 'bot_class' to use in the program
+        bot_class = fact.get_bot_class(bot_name=bot_name, sensor_type=sensor_type)
+        settings_string += f"success => bot_class={bot_class.__name__}, sensor_type={sensor_type}, "
 
-        # Arguments checking
-        if not bot_name or not sensor_type:
-            raise SystemExit(f"bad arguments => valid names: {VALID_NAMES!s}, valid_types: {VALID_TYPES!s}")
+        # Load '.env' file
+        dotenv.load_dotenv(dotenv_path="./properties/.env")
 
-        # Bot checking
+        # Open database connection
+        dbconn = db.Psycopg2DatabaseAdapter(os.environ['DBCONN'])
+
+        # Query file object
+        query_file = struct.JSONFile(QUERY_FILE)
+        query_picker = pk.QueryPicker(query_file)
+
+        # API file object
+        api_file = struct.JSONFile(API_FILE, path_to_object=[sensor_type])
+        address = api_file.api_address
+        url_param = api_file.opt_url_param
+
+        # Append secret 'api_key' for purpleair sensors
+        if sensor_type == 'purpleair':
+            url_param['api_key'] = os.environ['PURPLEAIR_API_KEY']
+
+        # TextParser class
+        if sensor_type == 'purpleair':
+            text_parser_class = txt.JSONParser
+        else:
+            if not url_param.get('format'):
+                raise KeyError("bad 'api.json' file structure => missing key='format'")
+            text_parser_class = txt.get_parser_class(url_param['format'])
+
+        # Update settings string
+        settings_string += f"text_parser_class={text_parser_class.__name__}, "
+
+        # URLBuilder class
+        url_class = url.get_url_class(sensor_type)
+        url_builder = url_class(address=address, url_param=url_param)
+        settings_string += f"url_class={url_class.__name__}, "
+
+        # APIExtractor class
+        extractor_class = ext.get_api_extractor_class(sensor_type)
+        settings_string += f"extractor_class={extractor_class.__name__}, "
+
+        # API to Database UniformReshaper
+        api2db_rshp_class = a2d.get_api2db_reshaper_class(sensor_type)
+        settings_string += f"api2db_rshp_class={api2db_rshp_class.__name__}, "
+
+        # Create the bot instance
+        bot = bot_class(sensor_type=sensor_type, dbconn=dbconn)
+
+        # Add external dependencies
+        bot.add_url_builder(url_builder)
+        bot.add_api_extractor_class(extractor_class)
+        bot.add_api2db_rshp_class(api2db_rshp_class)
+        bot.add_query_picker(query_picker)
+        bot.add_text_parser_class(text_parser_class)
+
         if bot_name == 'init':
-            if sensor_type not in ('purpleair', ):
-                raise SystemExit(f"bad personality => '{bot_name}' bot is not available for '{sensor_type}' sensors")
-        elif bot_name == 'update':
-            if sensor_type not in ('purpleair',):
-                raise SystemExit(f"bad personality => '{bot_name}' bot is not available for '{sensor_type}' sensors")
-        elif bot_name == 'fetch':
-            if sensor_type not in ('atmotube', 'thingspeak', ):
-                raise SystemExit(f"bad personality => '{bot_name}' bot is not available for '{sensor_type}' sensors")
+            bot.add_geom_builder_class(geom.PointBuilder)
+            bot.add_current_ts(ts.CurrentTimestamp())
 
-        # Logging when it's all right
-        debugger.info(main_settings_msg)
-        logger.info(main_settings_msg)
+        # Database to API UniformReshaper
+        if bot_name == 'fetch':
+            db2api_rshp_class = d2a.get_db2api_reshaper_class(sensor_type)
+            bot.add_db2api_rshp_class(db2api_rshp_class)
+            settings_string += f"db2api_rshp_class={db2api_rshp_class.__name__}, "
 
-    except SystemExit as ex:
+        # Add timestamp format dependency
+        if bot_name == 'fetch':
+            fmt = ts.get_timest_fmt(sensor_type)
+            bot.set_timest_fmt(fmt)
+            settings_string += f"timest_fmt={fmt}, "
+
+        # Debug and log the program settings
+        settings_string = settings_string.strip(', ')
+        debugger.info(settings_string)
+        logger.info(settings_string)
+
+        # Run the bot
+        bot.run()
+
+        # Close database connection
+        dbconn.close_conn()
+        debugger.info("success => database connection closed")
+        logger.info("success => database connection closed")
+
+    ################################ HANDLE EXCEPTIONS ################################
+    except (SystemExit, AttributeError, KeyError) as ex:
         debugger.error(str(ex))
         logger.error(str(ex))
         sys.exit(1)

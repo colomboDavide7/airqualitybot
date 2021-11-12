@@ -13,15 +13,15 @@ from typing import List
 
 # IMPORT MODULES
 import airquality.core.logger.log as log
-import airquality.bot.initialize_bot as bot
+import airquality.bot.init as bot
 import airquality.io.local.io as io
 import airquality.io.remote.database.adapter as db
 import airquality.utility.picker.query as pk
-import airquality.utility.parser.file as fp
+import airquality.utility.parser.text as fp
 import airquality.data.builder.timest as ts
 import airquality.data.builder.geom as gb
 import airquality.data.builder.url as url
-import airquality.data.reshaper.packet as rshp
+import data.extractor.api as rshp
 import airquality.data.reshaper.uniform.api2db as a2d
 
 # IMPORT CONSTANTS
@@ -67,7 +67,7 @@ def main():
         start_time = time.perf_counter()
         ################################ READ SERVER FILE ################################
         raw_server_data = io.IOManager.open_read_close_file(path=SERVER_FILE)
-        parser = fp.FileParserFactory.make_parser(file_extension=SERVER_FILE.split('.')[-1])
+        parser = fp.FileParserFactory.make_parser(file_ext=SERVER_FILE.split('.')[-1])
         parsed_server_data = parser.parse(text=raw_server_data)
         server_settings = parsed_server_data[sc.PERSONALITY]
 
@@ -77,14 +77,14 @@ def main():
 
         ################################ READ QUERY FILE ###############################
         raw_query_data = io.IOManager.open_read_close_file(path=QUERY_FILE)
-        parser = fp.FileParserFactory.make_parser(file_extension=QUERY_FILE.split('.')[-1])
+        parser = fp.FileParserFactory.make_parser(file_ext=QUERY_FILE.split('.')[-1])
         parsed_query_data = parser.parse(text=raw_query_data)
 
         ################################ CREATE QUERY PICKER ###############################
         query_picker = pk.QueryPicker(parsed_query_data)
 
         ################################ SELECT SENSOR NAME FROM DATABASE ################################
-        query = query_picker.select_sensor_names_from_personality(personality=sc.PERSONALITY)
+        query = query_picker.select_sensor_names_from_sensor_type(sensor_type=sc.PERSONALITY)
         answer = dbconn.send(query=query)
         sensor_names = [t[0] for t in answer]
 
@@ -107,7 +107,7 @@ def main():
 
         ################################ READ API FILE ################################
         raw_api_data = io.IOManager.open_read_close_file(path=API_FILE)
-        parser = fp.FileParserFactory.make_parser(file_extension=API_FILE.split('.')[-1])
+        parser = fp.FileParserFactory.make_parser(file_ext=API_FILE.split('.')[-1])
         parsed_api_data = parser.parse(text=raw_api_data)
 
         ################################ GET THE API ADDRESS ################################
@@ -119,12 +119,12 @@ def main():
 
         ################################ GET THE API ADDRESS ################################
         current_ts = ts.CurrentTimestamp()
-        file_parser = fp.JSONFileParser()
+        file_parser = fp.JSONParser()
 
         ###################### INSTANTIATE THE BOT WITH THE PROPER CLASSES BASED ON PERSONALITY ########################
         if sc.PERSONALITY == 'purpleair':
-            url_builder = url.PurpleairURLBuilder(api_address=api_address, parameters=url_param)
-            packet_reshaper = rshp.PurpleairPacketReshaper()
+            url_builder = url.PurpleairURL(address=api_address, querystr_param=url_param)
+            packet_reshaper = rshp.PurpleairAPIExtractor()
             api2db_uniform_reshaper = a2d.PurpleairUniformReshaper()
             initialize_bot = bot.InitializeBot(dbconn=dbconn,
                                                timestamp=current_ts,

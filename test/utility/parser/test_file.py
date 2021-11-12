@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-import airquality.utility.parser.file as fp
+import airquality.utility.parser.text as fp
 
 
 class TestFileParser(unittest.TestCase):

@@ -13,7 +13,21 @@ ATMOTUBE_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 SQL_TIMEST_FMT = "%Y-%m-%d %H:%M:%S"
 
 
+def get_timest_fmt(sensor_type: str):
+
+    if sensor_type == 'atmotube':
+        return ATMOTUBE_FMT
+    elif sensor_type == 'thingspeak':
+        return THINGSPK_FMT
+    else:
+        raise SystemExit(f"{get_timest_fmt.__name__}: bad type => timestamp format is not defined for '{sensor_type}'")
+
+
 class Timestamp(abc.ABC):
+
+    def __init__(self, timestamp: str, fmt: str = SQL_TIMEST_FMT):
+        self.ts = timestamp
+        self.fmt = fmt
 
     @abc.abstractmethod
     def add_days(self, days: int):
@@ -27,8 +41,7 @@ class Timestamp(abc.ABC):
 class SQLTimestamp(Timestamp):
 
     def __init__(self, timestamp: str, fmt: str = SQL_TIMEST_FMT):
-        self.ts = timestamp
-        self.fmt = fmt
+        super(SQLTimestamp, self).__init__(timestamp=timestamp, fmt=fmt)
 
     def add_days(self, days: int):
         my_dt = dt.datetime.strptime(self.ts, self.fmt)

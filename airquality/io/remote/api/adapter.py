@@ -6,17 +6,19 @@
 #               to sensor's API and fetch data.
 #
 #################################################
-import urllib.request as req
+import urllib.request as r
+import urllib.error as e
 
 
-class UrllibAdapter:
-
-    @staticmethod
-    def fetch(url: str) -> str:
-        try:
-            answer = req.urlopen(url).read()
-        except Exception as ex:
-            raise SystemExit(f"{UrllibAdapter.__name__} bad url => {ex!s}")
-        finally:
-            req.urlcleanup()
-        return answer
+def fetch(url: str) -> str:
+    req = r.Request(url)
+    try:
+        return r.urlopen(req).read()
+    except e.URLError as err:
+        if hasattr(err, 'reason'):
+            err_msg = f"'{fetch.__name__}()': failed to reach the server => {err.reason}"
+        elif hasattr(err, 'code'):
+            err_msg = f"The server couldn't fulfill the {fetch.__name__} request => code={err.code}"
+        else:
+            err_msg = f"'{fetch.__name__}()': bad request => {err!s}"
+        raise SystemExit(err_msg)

@@ -13,80 +13,90 @@ AND = '&'
 QU = '?'
 
 
+def get_url_class(sensor_type: str):
+
+    if sensor_type == 'purpleair':
+        return PurpleairURL
+    elif sensor_type == 'atmotube':
+        return AtmotubeURL
+    elif sensor_type == 'thingspeak':
+        return ThingspeakURL
+
+
 class URLBuilder(abc.ABC):
 
-    def __init__(self, api_address: str):
-        self.api_address = api_address
+    def __init__(self, address: str, url_param: Dict[str, Any]):
+        self.address = address
+        self.url_param = url_param
 
     @abc.abstractmethod
     def url(self) -> str:
         pass
 
+    def update_param(self, sensor_param: Dict[str, Any]):
+        tmp = self.url_param
+        tmp.update(sensor_param)
+        self.url_param = tmp
 
-class PurpleairURLBuilder(URLBuilder):
 
-    def __init__(self, api_address: str, parameters: Dict[str, Any]):
-        super().__init__(api_address)
-        try:
-            self.api_key = parameters.pop('api_key')
-            self.fields = parameters.pop('fields')
-            self.opt_param = parameters
-        except KeyError as ke:
-            raise SystemExit(f"{PurpleairURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}")
+class PurpleairURL(URLBuilder):
+
+    def __init__(self, address: str, url_param: Dict[str, Any]):
+        super(PurpleairURL, self).__init__(address=address, url_param=url_param)
 
     def url(self) -> str:
-        if not self.fields:
-            raise SystemExit(f"{PurpleairURLBuilder.__name__} bad 'api.json' file structure => empty fields.")
+        if 'api_key' not in self.url_param:
+            raise SystemExit(f"{PurpleairURL.__name__} bad 'api.json' file structure => missing key='api_key'")
+        elif 'fields' not in self.url_param:
+            raise SystemExit(f"{PurpleairURL.__name__} bad 'api.json' file structure => missing key='fields'")
+        elif not self.url_param['fields']:
+            raise SystemExit(f"{PurpleairURL.__name__} bad 'api.json' file structure => empty fields.")
 
-        url = self.api_address + QU
-        url += 'api_key' + EQ + self.api_key + AND
-        url += 'fields' + EQ
+        url = self.address + QU
+        for param_name, param_value in self.url_param.items():
+            if param_name == 'fields':
+                url += 'fields='
+                for field in param_value:
+                    url += f"{field},"
+                url = url.strip(',') + AND
+            else:
+                url += f"{param_name}={param_value}&"
+        return url.strip(AND)
 
-        for field in self.fields:
-            url += f"{field},"
-        url = url.strip(',') + AND
 
-        for param_name, param_value in self.opt_param.items():
+class AtmotubeURL(URLBuilder):
+
+    def __init__(self, address: str, url_param: Dict[str, Any]):
+        super(AtmotubeURL, self).__init__(address=address, url_param=url_param)
+
+    def url(self) -> str:
+        if 'api_key' not in self.url_param:
+            raise SystemExit(f"{AtmotubeURL.__name__} bad 'api.json' file structure => missing key='api_key'")
+        elif 'mac' not in self.url_param:
+            raise SystemExit(f"{AtmotubeURL.__name__} bad 'api.json' file structure => missing key='mac'")
+
+        url = self.address + QU
+        for param_name, param_value in self.url_param.items():
             url += f"{param_name}={param_value}&"
         return url.strip(AND)
 
 
-class AtmotubeURLBuilder(URLBuilder):
+class ThingspeakURL(URLBuilder):
 
-    def __init__(self, api_address: str, parameters: Dict[str, Any]):
-        super().__init__(api_address)
-        try:
-            self.api_key = parameters.pop('api_key')
-            self.mac = parameters.pop('mac')
-            self.opt_param = parameters
-        except KeyError as ke:
-            raise SystemExit(f"{AtmotubeURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}")
+    def __init__(self, address: str, url_param: Dict[str, Any]):
+        super(ThingspeakURL, self).__init__(address=address, url_param=url_param)
+        if 'format' not in self.url_param:
+            raise SystemExit(f"{ThingspeakURL.__name__} bad 'api.json' file structure => missing key='format'")
+        self.address_fmt = 'feeds.' + self.url_param.pop('format')
 
     def url(self) -> str:
-        url = self.api_address + QU
-        url += 'api_key' + EQ + self.api_key + AND
-        url += 'mac' + EQ + self.mac + AND
-        for param_name, param_value in self.opt_param.items():
-            url += f"{param_name}={param_value}&"
-        return url.strip(AND)
+        if 'api_key' not in self.url_param:
+            raise SystemExit(f"{ThingspeakURL.__name__} bad 'api.json' file structure => missing key='api_key'")
+        elif 'channel_id' not in self.url_param:
+            raise SystemExit(f"{ThingspeakURL.__name__} bad 'api.json' file structure => missing key='channel_id'")
 
-
-class ThingspeakURLBuilder(URLBuilder):
-
-    def __init__(self, api_address: str, parameters: Dict[str, Any]):
-        super().__init__(api_address)
-        try:
-            self.api_key = parameters.pop('api_key')
-            self.format = parameters.pop('format')
-            self.id = parameters.pop('channel_id')
-            self.opt_param = parameters
-        except KeyError as ke:
-            raise SystemExit(f"{ThingspeakURLBuilder.__name__} bad 'api.json' file structure => missing key={ke!s}")
-
-    def url(self) -> str:
-        url = self.api_address + '/' + self.id + '/'
-        url += 'feeds.' + self.format + QU
-        url += 'api_key' + EQ + self.api_key + AND
-        for param_name, param_value in self.opt_param.items():
+        url = self.address + '/' + self.url_param.pop('channel_id') + '/'
+        url += self.address_fmt + QU
+        for param_name, param_value in self.url_param.items():
             url += f"{param_name}={param_value}&"
         return url.strip(AND)
