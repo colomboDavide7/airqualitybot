@@ -5,7 +5,6 @@
 # @Description: this script defines the classes for running the update bot
 #
 #################################################
-from typing import Dict, Any
 
 # IMPORT MODULES
 import airquality.core.logger.log as log
@@ -18,7 +17,6 @@ import airquality.data.builder.sql as sb
 import airquality.utility.parser.text as fp
 import airquality.utility.picker.query as pk
 import airquality.data.extractor.api as rshp
-import airquality.data.reshaper.uniform.api2db as a2d
 
 
 ################################ UPDATE BOT CLASS ################################
@@ -32,7 +30,7 @@ class UpdateBot:
                  query_picker: pk.QueryPicker,
                  url_builder: ub.URLBuilder,
                  packet_reshaper: rshp.APIExtractor,
-                 api2db_uniform_reshaper: a2d.UniformReshaper,
+                 api2db_uniform_reshaper,
                  geom_builder_class=None,
                  log_filename='update',
                  log_sub_dir='log'):

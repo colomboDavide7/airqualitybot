@@ -20,8 +20,9 @@ import airquality.data.builder.geom as geom
 import airquality.utility.picker.query as pk
 import airquality.utility.parser.text as txt
 import airquality.data.extractor.api as ext
-import airquality.data.reshaper.uniform.api2db as a2d
-import airquality.data.reshaper.uniform.db2api as d2a
+import airquality.data.reshaper.uniform.sensor as sens
+import airquality.data.reshaper.uniform.param as par
+import airquality.data.reshaper.uniform.measure as meas
 import airquality.bot.fact as fact
 
 ################################ GLOBAL VARIABLES ################################
@@ -93,29 +94,34 @@ def main():
         extractor_class = ext.get_api_extractor_class(sensor_type)
         settings_string += f"extractor_class={extractor_class.__name__}, "
 
-        # API to Database UniformReshaper
-        api2db_rshp_class = a2d.get_api2db_reshaper_class(sensor_type)
-        settings_string += f"api2db_rshp_class={api2db_rshp_class.__name__}, "
-
         # Create the bot instance
         bot = bot_class(sensor_type=sensor_type, dbconn=dbconn)
 
         # Add external dependencies
         bot.add_url_builder(url_builder)
         bot.add_api_extractor_class(extractor_class)
-        bot.add_api2db_rshp_class(api2db_rshp_class)
         bot.add_query_picker(query_picker)
         bot.add_text_parser_class(text_parser_class)
 
         if bot_name == 'init':
+            sensor_rshp_class = sens.get_sensor_reshaper_class(sensor_type)
+            bot.add_sensor_rshp_class(sensor_rshp_class)
+            settings_string += f"sensor_rshp_class={sensor_rshp_class.__name__}, "
             bot.add_geom_builder_class(geom.PointBuilder)
+            settings_string += f"geom_builder_class={geom.PointBuilder.__name__}, "
             bot.add_current_ts(ts.CurrentTimestamp())
 
-        # Database to API UniformReshaper
+        # ParamReshaper class
         if bot_name == 'fetch':
-            db2api_rshp_class = d2a.get_db2api_reshaper_class(sensor_type)
-            bot.add_db2api_rshp_class(db2api_rshp_class)
-            settings_string += f"db2api_rshp_class={db2api_rshp_class.__name__}, "
+            param_rshp_class = par.get_param_reshaper_class(sensor_type)
+            bot.add_param_rshp_class(param_rshp_class)
+            settings_string += f"param_rshp_class={param_rshp_class.__name__}, "
+
+        if bot_name == 'fetch':
+            # MeasureReshaper class
+            measure_rshp_class = meas.get_measure_reshaper_class(sensor_type)
+            bot.add_measure_rshp_class(measure_rshp_class)
+            settings_string += f"measure_rshp_class={measure_rshp_class.__name__}, "
 
         # Add timestamp format dependency
         if bot_name == 'fetch':

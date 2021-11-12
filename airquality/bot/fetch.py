@@ -48,7 +48,7 @@ class FetchBot(base.BaseBot):
             query = self.query_picker.select_api_param_from_sensor_id(sensor_id)
             answer = self.dbconn.send(query)
             db_api_param = dict(answer)
-            uniformed_param = self.db2api_rshp_class(db_api_param).reshape()
+            uniformed_param = self.param_rshp_class(db_api_param).reshape()
 
             ############################# CYCLE ON UNIFORMED API PARAM OF A SINGLE SENSOR ##############################
             for api_param in uniformed_param:
@@ -72,7 +72,7 @@ class FetchBot(base.BaseBot):
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
                 uniformed_packets = []
                 for data in api_data:
-                    uniformed_packets.append(self.api2db_rshp_class(data).reshape())
+                    uniformed_packets.append(self.measure_rshp_class(data).reshape())
 
                 # Remove packets already present into the database
                 fetched_new_measures = []

@@ -42,7 +42,7 @@ class InitializeBot(base.BaseBot):
         # Reshape API data
         uniformed_packets = []
         for fetched_new_sensor in api_data:
-            uniformed_packets.append(self.api2db_rshp_class(fetched_new_sensor).reshape())
+            uniformed_packets.append(self.sensor_rshp_class(fetched_new_sensor).reshape())
 
         # Remove fetched sensors that are already present into the database
         fetched_new_sensors = []

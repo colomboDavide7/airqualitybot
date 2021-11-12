@@ -11,8 +11,9 @@ import airquality.io.remote.database.adapter as db
 import airquality.data.extractor.api as extr
 import airquality.utility.picker.query as pk
 import airquality.utility.parser.text as txt
-import airquality.data.reshaper.uniform.api2db as a2d
-import airquality.data.reshaper.uniform.db2api as d2a
+import airquality.data.reshaper.uniform.sensor as sens
+import airquality.data.reshaper.uniform.param as par
+import airquality.data.reshaper.uniform.measure as meas
 import airquality.data.builder.url as u
 import airquality.data.builder.geom as gb
 import airquality.data.builder.timest as ts
@@ -33,9 +34,10 @@ class BaseBot(abc.ABC):
         self.url_builder = None
         self.query_picker = None
         self.api_extr_class = None
+        self.param_rshp_class = None
+        self.sensor_rshp_class = None
+        self.measure_rshp_class = None
         self.text_parser_class = None
-        self.api2db_rshp_class = None
-        self.db2api_rshp_class = None
         self.geom_builder_class = None
         self.log_filename = log_filename
         self.log_sub_dir = log_sub_dir
@@ -55,11 +57,14 @@ class BaseBot(abc.ABC):
     def add_api_extractor_class(self, api_extr_class=extr.APIExtractor):
         self.api_extr_class = api_extr_class
 
-    def add_api2db_rshp_class(self, api2db_rshp_class=a2d.UniformReshaper):
-        self.api2db_rshp_class = api2db_rshp_class
+    def add_sensor_rshp_class(self, sensor_rshp_class=sens.SensorReshaper):
+        self.sensor_rshp_class = sensor_rshp_class
 
-    def add_db2api_rshp_class(self, db2api_rshp_class=d2a.UniformReshaper):
-        self.db2api_rshp_class = db2api_rshp_class
+    def add_measure_rshp_class(self, measure_rshp_class=meas.MeasureReshaper):
+        self.measure_rshp_class = measure_rshp_class
+
+    def add_param_rshp_class(self, param_rshp_class=par.ParamReshaper):
+        self.param_rshp_class = param_rshp_class
 
     def set_timest_fmt(self, fmt: str):
         self.timest_fmt = fmt
