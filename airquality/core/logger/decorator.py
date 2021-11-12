@@ -21,14 +21,14 @@ def log_decorator(_func=None):
 
             logger_obj = log.get_logger(log_filename=self.log_filename, log_sub_dir=self.log_sub_dir)
 
-            # args_passed_in_function = [repr(arg) for arg in args]
-            # kwargs_passed_in_function = [f"{k}={v!r}" for k, v in kwargs.items()]
-            # formatted_arguments = ', '.join(args_passed_in_function + kwargs_passed_in_function)
+            args_passed_in_function = [repr(arg) for arg in args]
+            kwargs_passed_in_function = [f"{k}={v!r}" for k, v in kwargs.items()]
+            formatted_arguments = ', '.join(args_passed_in_function + kwargs_passed_in_function)
 
             py_file_caller = inspect.getframeinfo(inspect.stack()[1][0])
             extra_args = {'func_name_override': func.__name__,
                           'file_name_override': os.path.basename(py_file_caller.filename)}
-            logger_obj.info(f"Begin function", extra=extra_args)
+            logger_obj.info(f"Arguments: {formatted_arguments} - Begin function", extra=extra_args)
             try:
                 value = func(self, *args, **kwargs)
                 logger_obj.info(f"Returned: - End function {value!r}", extra=extra_args)

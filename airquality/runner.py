@@ -12,7 +12,6 @@ import dotenv
 
 # IMPORT MODULES
 import airquality.core.logger.log as log
-import airquality.core.factory.bot as fact
 import airquality.io.local.structured.json as struct
 import airquality.io.remote.database.adapter as db
 import airquality.data.builder.timest as ts
@@ -23,6 +22,7 @@ import airquality.utility.parser.text as txt
 import airquality.data.extractor.api as ext
 import airquality.data.reshaper.uniform.api2db as a2d
 import airquality.data.reshaper.uniform.db2api as d2a
+import airquality.bot.fact as fact
 
 ################################ GLOBAL VARIABLES ################################
 USAGE = "python(version) -m airquality bot_name sensor_type"
@@ -67,7 +67,7 @@ def main():
         # API file object
         api_file = struct.JSONFile(API_FILE, path_to_object=[sensor_type])
         address = api_file.api_address
-        url_param = api_file.opt_url_param
+        url_param = api_file.url_param
 
         # Append secret 'api_key' for purpleair sensors
         if sensor_type == 'purpleair':
@@ -128,6 +128,12 @@ def main():
         debugger.info(settings_string)
         logger.info(settings_string)
 
+        # Add debugger and logger to bot
+        bot.add_debugger(debugger)
+        bot.add_logger(logger)
+        bot.log_filename = bot_name
+        bot.log_sub_dir = 'log'
+
         # Run the bot
         bot.run()
 
@@ -139,5 +145,4 @@ def main():
     ################################ HANDLE EXCEPTIONS ################################
     except (SystemExit, AttributeError, KeyError) as ex:
         debugger.error(str(ex))
-        logger.error(str(ex))
         sys.exit(1)

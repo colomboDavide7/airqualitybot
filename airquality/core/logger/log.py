@@ -25,7 +25,7 @@ def get_logger(log_filename: str = "", log_sub_dir: str = "", use_color=False) -
     """Return a logger that outputs messages on the console or in a file."""
 
     # Define the 'logger_name' equal to module name if user leave it empty, otherwise use the 'log_filename'
-    logger_name = __name__ if not log_filename else log_filename
+    logger_name = "debugger" if not log_filename else log_filename
 
     # Create a new 'logger'
     logger = logging.Logger(logger_name)

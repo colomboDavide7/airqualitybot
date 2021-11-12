@@ -15,8 +15,9 @@ POINT_GEOMETRY = "POINT({lng} {lat})"
 
 class GeometryBuilder(abc.ABC):
 
-    def __init__(self, srid: int = 26918):
+    def __init__(self, packet: Dict[str, Any], srid: int = 26918):
         self.srid = srid
+        self.packet = packet
 
     @abc.abstractmethod
     def geom_from_text(self) -> str:
@@ -30,16 +31,16 @@ class GeometryBuilder(abc.ABC):
 class PointBuilder(GeometryBuilder):
 
     def __init__(self, packet: Dict[str, Any], srid: int = 26918):
-        super().__init__(srid)
-        try:
-            self.lat = packet['lat']
-            self.lng = packet['lng']
-        except KeyError as ke:
-            raise SystemExit(f"{PointBuilder.__name__} bad parameters => missing required key={ke!s}")
+        super(PointBuilder, self).__init__(packet=packet, srid=srid)
 
     def geom_from_text(self) -> str:
-        geom = POINT_GEOMETRY.format(lng=self.lng, lat=self.lat)
+        if 'lat' not in self.packet:
+            raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lat'")
+        elif 'lng' not in self.packet:
+            raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lng'")
+
+        geom = POINT_GEOMETRY.format(lng=self.packet['lat'], lat=self.packet['lng'])
         return ST_GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
 
     def as_text(self) -> str:
-        return POINT_GEOMETRY.format(lng=self.lng, lat=self.lat)
+        return POINT_GEOMETRY.format(lng=self.packet['lng'], lat=self.packet['lat'])

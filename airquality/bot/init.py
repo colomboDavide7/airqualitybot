@@ -8,7 +8,6 @@
 
 # IMPORT MODULES
 import airquality.bot.base as base
-import airquality.core.logger.log as log
 import airquality.core.logger.decorator as log_decorator
 import airquality.io.remote.api.adapter as api
 import airquality.io.remote.database.adapter as db
@@ -18,14 +17,9 @@ import airquality.data.builder.sql as sb
 ################################ INITIALIZE BOT ################################
 class InitializeBot(base.BaseBot):
 
-    def __init__(self, sensor_type: str, dbconn: db.DatabaseAdapter, log_filename='init', log_sub_dir='log'):
+    def __init__(self, sensor_type: str, dbconn: db.DatabaseAdapter):
         super(InitializeBot, self).__init__(sensor_type=sensor_type, dbconn=dbconn)
-        self.log_filename = log_filename
-        self.log_sub_dir = log_sub_dir
-        self.logger = log.get_logger(log_filename=log_filename, log_sub_dir=log_sub_dir)
-        self.debugger = log.get_logger(use_color=True)
 
-    ################################ RUN METHOD ################################
     @log_decorator.log_decorator()
     def run(self):
 
@@ -33,11 +27,6 @@ class InitializeBot(base.BaseBot):
         query = self.query_picker.select_sensor_names_from_sensor_type(self.sensor_type)
         answer = self.dbconn.send(query=query)
         database_sensor_names = [t[0] for t in answer]
-
-        if not database_sensor_names:
-            self.debugger.warning(f"no sensor found into the database for type='{self.sensor_type}'")
-            self.logger.warning(f"no sensor found into the database for type='{self.sensor_type}'")
-            return
 
         # Build URL
         url = self.url_builder.url()
@@ -93,7 +82,7 @@ class InitializeBot(base.BaseBot):
             sensor_value = sb.SensorSQLValueBuilder(sensor_id=starting_new_sensor_id, packet=fetched_new_sensor)
             sensor_values.append(sensor_value)
             # **************************
-            geometry = self.geom_builder_class(fetched_new_sensor)
+            geometry = self.geom_builder_class(packet=fetched_new_sensor)
             valid_from = self.current_ts.ts
             geom = geometry.geom_from_text()
             geom_value = sb.LocationSQLValueBuilder(sensor_id=starting_new_sensor_id, valid_from=valid_from, geom=geom)
