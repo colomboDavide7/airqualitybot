@@ -9,7 +9,7 @@ import airquality.bot.base as base
 import airquality.logger.decorator as log_decorator
 import airquality.api.fetch as api
 import airquality.database.conn as db
-import airquality.database.util.timest as ts
+import airquality.database.util.datatype.timestamp as ts
 
 
 class FetchBot(base.BaseBot):

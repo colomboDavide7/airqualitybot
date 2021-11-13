@@ -15,7 +15,7 @@ class TestSQLBuilder(unittest.TestCase):
     def test_sql_from_sensor_values(self):
         test_packet = {'name': 'n1', 'type': 't1'}
         sensor_values = sql.SensorSQLValueBuilder(sensor_id=1, packet=test_packet)
-        actual_output = sensor_values.values()
+        actual_output = sensor_values.record()
         expected_output = "('t1', 'n1')"
         self.assertEqual(actual_output, expected_output)
 
@@ -31,7 +31,7 @@ class TestSQLBuilder(unittest.TestCase):
     def test_sql_from_api_values(self):
         test_packet = {'param_name': ['n1', 'n2'], 'param_value': ['v1', 'v2']}
         api_container = sql.APIParamSQLValueBuilder(sensor_id=1, packet=test_packet)
-        actual_output = api_container.values()
+        actual_output = api_container.record()
         expected_output = "(1, 'n1', 'v1'),(1, 'n2', 'v2')"
         self.assertEqual(actual_output, expected_output)
 
@@ -46,7 +46,7 @@ class TestSQLBuilder(unittest.TestCase):
 
     def test_sql_sensor_at_location_values(self):
         geo_container = sql.LocationSQLValueBuilder(sensor_id=1, valid_from='ts', geom='g')
-        actual_output = geo_container.values()
+        actual_output = geo_container.record()
         expected_output = "(1, 'ts', g)"
         self.assertEqual(actual_output, expected_output)
 

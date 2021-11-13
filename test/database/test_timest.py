@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-import airquality.database.util.timest as tsmp
+import database.util.datatype.timestamp as tsmp
 
 
 class TestTimestampBuilder(unittest.TestCase):

@@ -10,28 +10,28 @@ import abc
 from typing import Dict, Any
 
 
-class SQLValueBuilder(abc.ABC):
+class RecordBuilder(abc.ABC):
 
     def __init__(self, sensor_id: int):
         self.sensor_id = sensor_id
 
     @abc.abstractmethod
-    def values(self) -> str:
+    def record(self) -> str:
         pass
 
 
-class LocationSQLValueBuilder(SQLValueBuilder):
+class LocationRecord(RecordBuilder):
 
     def __init__(self, sensor_id: int, valid_from: str, geom: str):
         super().__init__(sensor_id)
         self.valid_from = valid_from
         self.geom = geom
 
-    def values(self) -> str:
+    def record(self) -> str:
         return f"({self.sensor_id}, '{self.valid_from}', {self.geom})"
 
 
-class APIParamSQLValueBuilder(SQLValueBuilder):
+class APIParamRecord(RecordBuilder):
 
     def __init__(self, sensor_id: int, packet: Dict[str, Any]):
         super().__init__(sensor_id)
@@ -39,14 +39,14 @@ class APIParamSQLValueBuilder(SQLValueBuilder):
             self.param_name = packet['param_name']
             self.param_value = packet['param_value']
         except KeyError as ke:
-            raise SystemExit(f"{APIParamSQLValueBuilder.__name__} bad parameters => missing key={ke!s}.")
+            raise SystemExit(f"{APIParamRecord.__name__} bad parameters => missing key={ke!s}.")
 
-    def values(self) -> str:
+    def record(self) -> str:
         values = ','.join(f"({self.sensor_id}, '{n}', '{v}')" for n, v in zip(self.param_name, self.param_value))
         return values.strip(',')
 
 
-class SensorSQLValueBuilder(SQLValueBuilder):
+class SensorRecord(RecordBuilder):
 
     def __init__(self, sensor_id: int, packet: Dict[str, Any]):
         super().__init__(sensor_id)
@@ -54,9 +54,9 @@ class SensorSQLValueBuilder(SQLValueBuilder):
             self.sensor_name = packet['name']
             self.sensor_type = packet['type']
         except KeyError as ke:
-            raise SystemExit(f"{SensorSQLValueBuilder.__name__} bad parameters => missing key={ke!s}.")
+            raise SystemExit(f"{SensorRecord.__name__} bad parameters => missing key={ke!s}.")
 
-    def values(self) -> str:
+    def record(self) -> str:
         return f"('{self.sensor_type}', '{self.sensor_name}')"
 
 

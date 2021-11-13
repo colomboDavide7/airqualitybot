@@ -17,9 +17,9 @@ import airquality.bot.util.fact as fact
 import airquality.file.structured.json as struct
 import airquality.file.util.parser as txt
 import airquality.database.conn as db
-import airquality.database.util.timest as ts
+import airquality.database.util.datatype.timestamp as ts
 import airquality.database.util.postgis.geom as geom
-import airquality.database.util.query as pk
+import airquality.database.util.sql.query as pk
 import airquality.api.util.extractor as ext
 import airquality.api.util.url as url
 import airquality.adapter.api2db.sensor as sens
@@ -82,7 +82,7 @@ def main():
 
         # Query file object
         query_file = struct.JSONFile(QUERY_FILE)
-        query_picker = pk.QueryPicker(query_file)
+        query_picker = pk.QueryBuilder(query_file)
 
         # API file object
         api_file = struct.JSONFile(API_FILE, path_to_object=[sensor_type])

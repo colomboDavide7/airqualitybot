@@ -9,14 +9,14 @@
 import abc
 import airquality.database.conn as db
 import airquality.api.util.extractor as extr
-import airquality.database.util.query as pk
+import airquality.database.util.sql.query as pk
 import airquality.file.util.parser as txt
 import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.db2api.param as par
 import airquality.adapter.api2db.measure as meas
 import airquality.api.util.url as u
 import airquality.database.util.postgis.geom as gb
-import airquality.database.util.timest as ts
+import airquality.database.util.datatype.timestamp as ts
 
 
 class BaseBot(abc.ABC):
@@ -48,7 +48,7 @@ class BaseBot(abc.ABC):
     def add_text_parser_class(self, text_parser_class: txt.TextParser):
         self.text_parser_class = text_parser_class
 
-    def add_query_picker(self, query_picker: pk.QueryPicker):
+    def add_query_picker(self, query_picker: pk.QueryBuilder):
         self.query_picker = query_picker
 
     def add_url_builder(self, url_builder: u.URLBuilder):

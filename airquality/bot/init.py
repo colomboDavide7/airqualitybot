@@ -9,7 +9,7 @@ import airquality.bot.base as base
 import airquality.logger.decorator as log_decorator
 import airquality.api.fetch as api
 import airquality.database.conn as db
-import airquality.database.util.sql as sb
+import airquality.database.util.sql.record as rec
 
 
 ################################ INITIALIZE BOT ################################
@@ -77,16 +77,16 @@ class InitializeBot(base.BaseBot):
         sensor_values = []
         for fetched_new_sensor in fetched_new_sensors:
             # **************************
-            sensor_value = sb.SensorSQLValueBuilder(sensor_id=starting_new_sensor_id, packet=fetched_new_sensor)
+            sensor_value = rec.SensorRecord(sensor_id=starting_new_sensor_id, packet=fetched_new_sensor)
             sensor_values.append(sensor_value)
             # **************************
             geometry = self.geom_builder_class(packet=fetched_new_sensor)
             valid_from = self.current_ts.ts
             geom = geometry.geom_from_text()
-            geom_value = sb.LocationSQLValueBuilder(sensor_id=starting_new_sensor_id, valid_from=valid_from, geom=geom)
+            geom_value = rec.LocationRecord(sensor_id=starting_new_sensor_id, valid_from=valid_from, geom=geom)
             location_values.append(geom_value)
             # **************************
-            api_param_value = sb.APIParamSQLValueBuilder(sensor_id=starting_new_sensor_id, packet=fetched_new_sensor)
+            api_param_value = rec.APIParamRecord(sensor_id=starting_new_sensor_id, packet=fetched_new_sensor)
             api_param_values.append(api_param_value)
             # **************************
             starting_new_sensor_id += 1

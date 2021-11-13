@@ -9,7 +9,7 @@ import airquality.bot.base as base
 import airquality.logger.decorator as log_decorator
 import airquality.api.fetch as api
 import airquality.database.conn as db
-import airquality.database.util.sql as sb
+import airquality.database.util.sql.record as rec
 
 
 ################################ UPDATE BOT CLASS ################################
@@ -70,7 +70,7 @@ class UpdateBot(base.BaseBot):
             return
 
         # Update locations
-        location_values = []
+        location_records = []
         for fetched_active_location in fetched_active_locations:
             name = fetched_active_location['name']
             geometry = self.geom_builder_class(fetched_active_location)
@@ -79,16 +79,16 @@ class UpdateBot(base.BaseBot):
                 self.logger.info(f"found new location={geometry.as_text()} for name='{name}' => update location")
                 sensor_id = name2id_map[name]
                 geom = geometry.geom_from_text()
-                value = sb.LocationSQLValueBuilder(sensor_id=sensor_id, valid_from=self.current_ts.ts, geom=geom)
-                location_values.append(value)
+                record = rec.LocationRecord(sensor_id=sensor_id, valid_from=self.current_ts.ts, geom=geom)
+                location_records.append(record)
 
-        if not location_values:
+        if not location_records:
             self.debugger.info("all sensor have the same location => done")
             self.logger.info("all sensor have the same location => done")
             return
 
         ############################## BUILD THE QUERY FROM VALUES #############################
-        query = self.query_picker.update_location_values(location_values)
+        query = self.query_picker.update_locations(location_records)
         self.dbconn.send(query)
 
         self.debugger.info("location(s) successfully updated => done")
