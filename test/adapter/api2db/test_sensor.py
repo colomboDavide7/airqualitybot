@@ -7,17 +7,17 @@
 #
 ######################################################
 import unittest
-import adapter as sens
+import airquality.adapter.api2db.sensor as sens
 
 
 class TestSensorReshaper(unittest.TestCase):
 
     def test_get_sensor_reshaper_class(self):
-        obj_cls = sens.get_sensor_reshaper_class('purpleair')
-        self.assertEqual(obj_cls, sens.PurpleairSensorReshaper)
+        obj_cls = sens.get_sensor_adapter_class('purpleair')
+        self.assertEqual(obj_cls, sens.PurpleairSensorAdapter)
 
         with self.assertRaises(SystemExit):
-            sens.get_sensor_reshaper_class('bad sensor type')
+            sens.get_sensor_adapter_class('bad sensor type')
 
     def test_successfully_reshape_purpleair_sensor_data(self):
         test_packet = {'name': 'n1', 'sensor_index': 'idx1', 'latitude': 'lat_val', 'longitude': 'lng_val',
@@ -33,7 +33,7 @@ class TestSensorReshaper(unittest.TestCase):
                                           'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b'],
                            'param_value': ['id1A', 'id1B', 'key1A', 'key1B', 'id2A', 'id2B', 'key2A', 'key2B']}
 
-        actual_output = sens.PurpleairSensorReshaper(test_packet).reshape()
+        actual_output = sens.PurpleairSensorAdapter(test_packet).reshape()
         self.assertEqual(actual_output, expected_output)
 
     def test_system_exit_on_key_error_purpleair(self):
@@ -41,7 +41,7 @@ class TestSensorReshaper(unittest.TestCase):
                        'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
                        'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A'}
         with self.assertRaises(SystemExit):
-            sens.PurpleairSensorReshaper(test_packet).reshape()
+            sens.PurpleairSensorAdapter(test_packet).reshape()
 
 
 if __name__ == '__main__':

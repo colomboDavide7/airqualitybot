@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-import api.util.url as url
+import airquality.api.util.url as url
 
 
 class TestURLBuilder(unittest.TestCase):

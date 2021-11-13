@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import database.util.postgis.geom as g
+import airquality.database.util.postgis.geom as g
 
 
 class TestGeometryBuilder(unittest.TestCase):

@@ -7,8 +7,8 @@
 #
 ######################################################
 import unittest
-import logger.fmt as formt
-import logger.log as log
+import airquality.logger.fmt as formt
+import airquality.logger.log as log
 
 
 class TestFormatter(unittest.TestCase):
