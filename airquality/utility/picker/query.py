@@ -16,7 +16,7 @@ class QueryPicker:
     def __init__(self, query_file: struct.JSONFile):
         self.query_file = query_file
 
-    ################################ METHODS THAT RETURN SELECT QUERY ################################
+    ################################ METHODS THAT RETURN SELECT QUERY STATEMENT ################################
     def select_max_sensor_id(self) -> str:
         return self.query_file.s1
 
@@ -38,7 +38,7 @@ class QueryPicker:
     def select_sensor_name_id_mapping_from_sensor_type(self, sensor_type: str) -> str:
         return self.query_file.s7.format(personality=sensor_type)
 
-    ################################ METHODS THAT RETURN INSERT QUERY ################################
+    ################################ METHODS THAT RETURN INSERT INTO QUERY STATEMENT ################################
 
     def insert_into_mobile_measurements(self) -> str:
         return self.query_file.i1

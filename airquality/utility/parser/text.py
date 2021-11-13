@@ -37,4 +37,4 @@ class JSONParser(TextParser):
         try:
             return json.loads(self.text)
         except json.decoder.JSONDecodeError as je:
-            raise SystemExit(f"{JSONParser.__name__} bad json schema => {je!s}")
+            raise SystemExit(f"{JSONParser.__name__}: bad json schema => {je!s}")

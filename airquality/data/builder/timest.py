@@ -50,17 +50,18 @@ class SQLTimestamp(Timestamp):
 
     def is_after(self, other) -> bool:
         if not isinstance(other, SQLTimestamp):
-            raise SystemExit(f"{SQLTimestamp.__name__}: bad type => cannot make comparison with object "
-                             f"of type='{other.__class__.__name__}'")
-        my_dt = dt.datetime.strptime(self.ts, self.fmt)
+            raise SystemExit(
+                f"{SQLTimestamp.__name__}: bad type => cannot compare with object of type='{other.__class__.__name__}'"
+            )
+        self_dt = dt.datetime.strptime(self.ts, self.fmt)
         other_dt = dt.datetime.strptime(other.ts, other.fmt)
-        return (my_dt - other_dt).total_seconds() > 0
+        return (self_dt - other_dt).total_seconds() > 0
 
 
 class CurrentTimestamp(SQLTimestamp):
 
     def __init__(self):
-        super().__init__(dt.datetime.now().strftime(SQL_TIMEST_FMT), SQL_TIMEST_FMT)
+        super().__init__(timestamp=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
 
     def add_days(self, days: int):
         return super().add_days(days)

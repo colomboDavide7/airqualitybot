@@ -6,24 +6,22 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import json
 from typing import List
-import airquality.io.local.io as io
+import airquality.io.reader as read
+import airquality.utility.parser.text as txt
 
 
 class JSONFile:
 
-    def __init__(self, file: str, path_to_object: List[str] = ()):
-        """Initialize a JSONFile object by reading the content of the 'file' and by parsing it. In addition, if the
-        'path_to_object' argument is not empty, it is recursively searched (and saved) only the required object."""
+    def __init__(self, file_path: str, path_to_object: List[str] = ()):
+        raw = read.open_read_close_file(file_path)          # read raw file content
+        text_parser_cls = txt.get_parser_class('json')      # get text parser class
+        self.content = text_parser_cls(raw).parse()         # parse the raw content
 
-        raw = io.open_read_close_file(file)
-        self.content = json.loads(raw)
-
-        if path_to_object:
-            self.content = self.content[path_to_object.pop()]
-            for obj_name in path_to_object:
-                self.content = self.content[obj_name]
+        if path_to_object:                                      # search JSON object from 'path_to_object'
+            self.content = self.content[path_to_object.pop()]   # get the content associated to the first object name
+            for obj_name in path_to_object:                     # for each name in the 'path_to_object' argument
+                self.content = self.content[obj_name]           # apply a recursive search
 
     def __getattr__(self, item):
         if item in self.content:

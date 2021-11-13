@@ -34,7 +34,7 @@ class URLBuilder(abc.ABC):
         pass
 
     def update_param(self, sensor_param: Dict[str, Any]):
-        tmp = self.url_param
+        tmp = self.url_param.copy()
         tmp.update(sensor_param)
         self.url_param = tmp
 
