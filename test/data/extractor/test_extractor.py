@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-import airquality.data.extractor.api as extr
+import api.util.extractor as extr
 
 
 class TestAPIExtractor(unittest.TestCase):

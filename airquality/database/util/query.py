@@ -7,8 +7,8 @@
 #
 #################################################
 from typing import List
-import airquality.data.builder.sql as sb
-import airquality.stream.local.structured.json as struct
+import airquality.database.util.sql as sb
+import airquality.file.structured.json as struct
 
 
 class QueryPicker:

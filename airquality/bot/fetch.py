@@ -6,10 +6,10 @@
 #
 #################################################
 import airquality.bot.base as base
-import airquality.core.logger.decorator as log_decorator
-import airquality.stream.remote.api.adapter as api
-import airquality.stream.remote.database.adapter as db
-import airquality.data.builder.timest as ts
+import airquality.logger.decorator as log_decorator
+import airquality.api.fetch as api
+import airquality.database.conn as db
+import airquality.database.util.timest as ts
 
 
 class FetchBot(base.BaseBot):

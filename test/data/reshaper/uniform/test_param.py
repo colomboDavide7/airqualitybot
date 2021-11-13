@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.data.reshaper.uniform.param as par
+import adapter as par
 
 
 class TestParamReshaper(unittest.TestCase):

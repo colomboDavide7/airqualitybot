@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.data.reshaper.uniform.measure as msr
+import adapter as msr
 
 
 class TestMeasureReshaper(unittest.TestCase):

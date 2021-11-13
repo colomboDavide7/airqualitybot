@@ -18,16 +18,16 @@ PAR_NAME = 'param_name'
 PAR_VAL = 'param_value'
 
 
-def get_sensor_reshaper_class(sensor_type: str):
+def get_sensor_adapter_class(sensor_type: str):
 
     if sensor_type == 'purpleair':
-        return PurpleairSensorReshaper
+        return PurpleairSensorAdapter
     else:
-        raise SystemExit(f"'{get_sensor_reshaper_class.__name__}()': "
-                         f"bad type => {SensorReshaper.__name__} undefined for type='{sensor_type}'")
+        raise SystemExit(f"'{get_sensor_adapter_class.__name__}()': "
+                         f"bad type => {SensorAdapter.__name__} undefined for type='{sensor_type}'")
 
 
-class SensorReshaper(abc.ABC):
+class SensorAdapter(abc.ABC):
 
     def __init__(self, sensor_data: Dict[str, Any]):
         self.packet = sensor_data
@@ -37,10 +37,10 @@ class SensorReshaper(abc.ABC):
         pass
 
 
-class PurpleairSensorReshaper(SensorReshaper):
+class PurpleairSensorAdapter(SensorAdapter):
 
     def __init__(self, sensor_data: Dict[str, Any]):
-        super(PurpleairSensorReshaper, self).__init__(sensor_data)
+        super(PurpleairSensorAdapter, self).__init__(sensor_data)
 
     def reshape(self) -> Dict[str, Any]:
         universal_packet = {}
@@ -57,5 +57,5 @@ class PurpleairSensorReshaper(SensorReshaper):
                                          self.packet['secondary_id_a'], self.packet['secondary_id_b'],
                                          self.packet['secondary_key_a'], self.packet['secondary_key_b']]
         except KeyError as ke:
-            raise SystemExit(f"{PurpleairSensorReshaper.__name__}: bad sensor data => missing key={ke!s}")
+            raise SystemExit(f"{PurpleairSensorAdapter.__name__}: bad sensor data => missing key={ke!s}")
         return universal_packet

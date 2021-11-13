@@ -18,18 +18,18 @@ PAR_NAME = 'param_name'
 PAR_VAL = 'param_value'
 
 
-def get_measure_reshaper_class(sensor_type: str):
+def get_measure_adapter_class(sensor_type: str):
 
     if sensor_type == 'atmotube':
-        return AtmotubeMeasureReshaper
+        return AtmotubeMeasureAdapter
     elif sensor_type == 'thingspeak':
-        return ThingspeakMeasureReshaper
+        return ThingspeakMeasureAdapter
     else:
-        raise SystemExit(f"'{get_measure_reshaper_class.__name__}()': "
-                         f"bad type => {MeasureReshaper.__name__} undefined for type='{sensor_type}'")
+        raise SystemExit(f"'{get_measure_adapter_class.__name__}()': "
+                         f"bad type => {MeasureAdapter.__name__} undefined for type='{sensor_type}'")
 
 
-class MeasureReshaper(abc.ABC):
+class MeasureAdapter(abc.ABC):
 
     def __init__(self, data_packet: Dict[str, Any]):
         self.packet = data_packet
@@ -39,10 +39,10 @@ class MeasureReshaper(abc.ABC):
         pass
 
 
-class AtmotubeMeasureReshaper(MeasureReshaper):
+class AtmotubeMeasureAdapter(MeasureAdapter):
 
     def __init__(self, data_packet: Dict[str, Any]):
-        super(AtmotubeMeasureReshaper, self).__init__(data_packet)
+        super(AtmotubeMeasureAdapter, self).__init__(data_packet)
 
     def reshape(self) -> Dict[str, Any]:
         uniformed_packet = {}
@@ -56,14 +56,14 @@ class AtmotubeMeasureReshaper(MeasureReshaper):
                                          self.packet.get('pm10'), self.packet.get('t'), self.packet.get('h'),
                                          self.packet.get('p')]
         except KeyError as ke:
-            raise SystemExit(f"{AtmotubeMeasureReshaper.__name__}: bad data packet => missing key={ke!s}")
+            raise SystemExit(f"{AtmotubeMeasureAdapter.__name__}: bad data packet => missing key={ke!s}")
         return uniformed_packet
 
 
-class ThingspeakMeasureReshaper(MeasureReshaper):
+class ThingspeakMeasureAdapter(MeasureAdapter):
 
     def __init__(self, data_packet: Dict[str, Any]):
-        super(ThingspeakMeasureReshaper, self).__init__(data_packet)
+        super(ThingspeakMeasureAdapter, self).__init__(data_packet)
 
     def reshape(self) -> Dict[str, Any]:
         uniformed_packet = {}
@@ -78,5 +78,5 @@ class ThingspeakMeasureReshaper(MeasureReshaper):
             uniformed_packet[PAR_VAL] = param_value
 
         except KeyError as ke:
-            raise SystemExit(f"{ThingspeakMeasureReshaper.__name__}: bad data packet => missing key={ke!s}")
+            raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad data packet => missing key={ke!s}")
         return uniformed_packet

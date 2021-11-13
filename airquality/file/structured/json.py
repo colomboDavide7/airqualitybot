@@ -7,8 +7,8 @@
 #
 ######################################################
 from typing import List
-import airquality.stream.reader as read
-import airquality.utility.parser.text as txt
+import airquality.file.util.parser as txt
+import airquality.file.util.reader as read
 
 
 class JSONFile:

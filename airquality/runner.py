@@ -11,20 +11,20 @@ import sys
 import dotenv
 
 # IMPORT MODULES
-import airquality.core.logger.log as log
-import airquality.core.logger.fmt as formt
-import airquality.stream.local.structured.json as struct
-import airquality.stream.remote.database.adapter as db
-import airquality.data.builder.timest as ts
-import airquality.data.builder.url as url
-import airquality.data.builder.geom as geom
-import airquality.utility.picker.query as pk
-import airquality.utility.parser.text as txt
-import airquality.data.extractor.api as ext
-import airquality.data.reshaper.uniform.sensor as sens
-import airquality.data.reshaper.uniform.param as par
-import airquality.data.reshaper.uniform.measure as meas
-import airquality.bot.fact as fact
+import airquality.logger.log as log
+import airquality.logger.fmt as formt
+import airquality.bot.util.fact as fact
+import airquality.file.structured.json as struct
+import airquality.file.util.parser as txt
+import airquality.database.conn as db
+import airquality.database.util.timest as ts
+import airquality.database.util.postgis.geom as geom
+import airquality.database.util.query as pk
+import airquality.api.util.extractor as ext
+import airquality.api.util.url as url
+import airquality.adapter.api2db.sensor as sens
+import airquality.adapter.db2api.param as par
+import airquality.adapter.api2db.measure as meas
 
 ################################ GLOBAL VARIABLES ################################
 USAGE = "USAGE: python(version) -m airquality bot_name sensor_type"
@@ -125,7 +125,7 @@ def main():
         bot.add_text_parser_class(text_parser_class)
 
         if bot_name in ('init', 'update'):
-            sensor_rshp_class = sens.get_sensor_reshaper_class(sensor_type)
+            sensor_rshp_class = sens.get_sensor_adapter_class(sensor_type)
             bot.add_sensor_rshp_class(sensor_rshp_class)
             settings_string += f"sensor_rshp_class={sensor_rshp_class.__name__}, "
             bot.add_geom_builder_class(geom.PointBuilder)
@@ -134,13 +134,13 @@ def main():
 
         # ParamReshaper class
         if bot_name == 'fetch':
-            param_rshp_class = par.get_param_reshaper_class(sensor_type)
+            param_rshp_class = par.get_param_adapter_class(sensor_type)
             bot.add_param_rshp_class(param_rshp_class)
             settings_string += f"param_rshp_class={param_rshp_class.__name__}, "
 
         if bot_name == 'fetch':
             # MeasureReshaper class
-            measure_rshp_class = meas.get_measure_reshaper_class(sensor_type)
+            measure_rshp_class = meas.get_measure_adapter_class(sensor_type)
             bot.add_measure_rshp_class(measure_rshp_class)
             settings_string += f"measure_rshp_class={measure_rshp_class.__name__}, "
 

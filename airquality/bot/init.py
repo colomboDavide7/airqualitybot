@@ -5,13 +5,11 @@
 # @Description: this script contains the classes for initializing the database with different sensor's data.
 #
 #################################################
-
-# IMPORT MODULES
 import airquality.bot.base as base
-import airquality.core.logger.decorator as log_decorator
-import airquality.stream.remote.api.adapter as api
-import airquality.stream.remote.database.adapter as db
-import airquality.data.builder.sql as sb
+import airquality.logger.decorator as log_decorator
+import airquality.api.fetch as api
+import airquality.database.conn as db
+import airquality.database.util.sql as sb
 
 
 ################################ INITIALIZE BOT ################################

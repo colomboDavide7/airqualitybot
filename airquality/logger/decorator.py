@@ -11,8 +11,8 @@ import inspect
 import os
 import sys
 
-import airquality.core.logger.log as log
-import airquality.core.logger.fmt as formt
+import airquality.logger.log as log
+import airquality.logger.fmt as formt
 
 
 def log_decorator(_func=None):
@@ -24,7 +24,7 @@ def log_decorator(_func=None):
             handler_cls = log.get_handler_cls(use_file=True)
             handler = handler_cls(f'log/{self.log_filename}.log', 'a+')
             fmt_cls = formt.get_formatter_cls(use_color=False)
-            fmt = fmt_cls()
+            fmt = fmt_cls(formt.FMT_STR)
             logger_obj = log.get_logger(handler=handler, formatter=fmt)
 
             args_passed_in_function = [repr(arg) for arg in args]

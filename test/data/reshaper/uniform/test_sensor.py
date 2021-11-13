@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.data.reshaper.uniform.sensor as sens
+import adapter as sens
 
 
 class TestSensorReshaper(unittest.TestCase):

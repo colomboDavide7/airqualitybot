@@ -7,16 +7,16 @@
 #
 ######################################################
 import abc
-import airquality.stream.remote.database.adapter as db
-import airquality.data.extractor.api as extr
-import airquality.utility.picker.query as pk
-import airquality.utility.parser.text as txt
-import airquality.data.reshaper.uniform.sensor as sens
-import airquality.data.reshaper.uniform.param as par
-import airquality.data.reshaper.uniform.measure as meas
-import airquality.data.builder.url as u
-import airquality.data.builder.geom as gb
-import airquality.data.builder.timest as ts
+import airquality.database.conn as db
+import airquality.api.util.extractor as extr
+import airquality.database.util.query as pk
+import airquality.file.util.parser as txt
+import airquality.adapter.api2db.sensor as sens
+import airquality.adapter.db2api.param as par
+import airquality.adapter.api2db.measure as meas
+import airquality.api.util.url as u
+import airquality.database.util.postgis.geom as gb
+import airquality.database.util.timest as ts
 
 
 class BaseBot(abc.ABC):
@@ -57,13 +57,13 @@ class BaseBot(abc.ABC):
     def add_api_extractor_class(self, api_extr_class=extr.APIExtractor):
         self.api_extr_class = api_extr_class
 
-    def add_sensor_rshp_class(self, sensor_rshp_class=sens.SensorReshaper):
+    def add_sensor_rshp_class(self, sensor_rshp_class=sens.SensorAdapter):
         self.sensor_rshp_class = sensor_rshp_class
 
-    def add_measure_rshp_class(self, measure_rshp_class=meas.MeasureReshaper):
+    def add_measure_rshp_class(self, measure_rshp_class=meas.MeasureAdapter):
         self.measure_rshp_class = measure_rshp_class
 
-    def add_param_rshp_class(self, param_rshp_class=par.ParamReshaper):
+    def add_param_rshp_class(self, param_rshp_class=par.ParamAdapter):
         self.param_rshp_class = param_rshp_class
 
     def set_timest_fmt(self, fmt: str):

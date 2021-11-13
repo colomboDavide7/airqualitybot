@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.data.builder.sql as sql
+import database.util.sql as sql
 
 
 class TestSQLBuilder(unittest.TestCase):

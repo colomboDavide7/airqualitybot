@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-import airquality.stream.remote.api.adapter as adpt
+import api as adpt
 
 
 class TestAPIRequestAdapter(unittest.TestCase):
