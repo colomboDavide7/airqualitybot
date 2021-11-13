@@ -13,7 +13,7 @@ class TestAPIRequestAdapter(unittest.TestCase):
 
     def test_system_exit_when_invalid_url_is_used(self):
         with self.assertRaises(SystemExit):
-            adpt.UrllibAdapter.fetch("bad url")
+            adpt.fetch("https://bad_address.com?bad_param")
 
 
 if __name__ == '__main__':
