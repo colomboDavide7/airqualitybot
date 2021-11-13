@@ -7,7 +7,7 @@
 #
 ######################################################
 from typing import List
-import airquality.io.reader as read
+import airquality.stream.reader as read
 import airquality.utility.parser.text as txt
 
 

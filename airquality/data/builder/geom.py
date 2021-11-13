@@ -32,13 +32,12 @@ class PointBuilder(GeometryBuilder):
 
     def __init__(self, packet: Dict[str, Any], srid: int = 26918):
         super(PointBuilder, self).__init__(packet=packet, srid=srid)
-
-    def geom_from_text(self) -> str:
         if 'lat' not in self.packet:
             raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lat'")
         elif 'lng' not in self.packet:
             raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lng'")
 
+    def geom_from_text(self) -> str:
         geom = POINT_GEOMETRY.format(lng=self.packet['lng'], lat=self.packet['lat'])
         return ST_GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
 

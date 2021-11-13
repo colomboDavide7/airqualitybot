@@ -12,8 +12,9 @@ import dotenv
 
 # IMPORT MODULES
 import airquality.core.logger.log as log
-import airquality.io.local.structured.json as struct
-import airquality.io.remote.database.adapter as db
+import airquality.core.logger.fmt as formt
+import airquality.stream.local.structured.json as struct
+import airquality.stream.remote.database.adapter as db
 import airquality.data.builder.timest as ts
 import airquality.data.builder.url as url
 import airquality.data.builder.geom as geom
@@ -30,11 +31,15 @@ USAGE = "USAGE: python(version) -m airquality bot_name sensor_type"
 API_FILE = "properties/api.json"
 QUERY_FILE = "properties/query.json"
 
-error_logger = log.get_logger(log_filename='errors', log_sub_dir='log')
-
 
 ################################ ENTRY POINT OF THE PROGRAM ################################
 def main():
+
+    handler_cls = log.get_handler_cls(use_file=True)
+    handler = handler_cls('log/errors.log', 'a+')
+    fmt_cls = formt.get_formatter_cls()
+    fmt = fmt_cls(formt.FMT_STR)
+    error_logger = log.get_logger(handler=handler, formatter=fmt)
 
     args = sys.argv[1:]
     if not args:
@@ -47,9 +52,19 @@ def main():
     bot_name = args[0]
     sensor_type = args[1]
 
-    # Create 'logger' and 'debugger' associated to 'bot_name'
-    debugger = log.get_logger(use_color=True)
-    logger = log.get_logger(log_filename=bot_name, log_sub_dir="log")
+    # Create 'logger'
+    handler_cls = log.get_handler_cls(use_file=True)
+    handler = handler_cls(f'log/{bot_name}.log', 'a+')
+    fmt_cls = formt.get_formatter_cls()
+    fmt = fmt_cls(formt.FMT_STR)
+    logger = log.get_logger(handler=handler, formatter=fmt)
+
+    # Create 'debugger'
+    handler_cls = log.get_handler_cls(use_file=False)
+    handler = handler_cls()
+    fmt_cls = formt.get_formatter_cls(use_color=True)
+    fmt = fmt_cls(formt.FMT_STR)
+    debugger = log.get_logger(handler=handler, formatter=fmt)
 
     try:
 

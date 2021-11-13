@@ -12,6 +12,7 @@ import os
 import sys
 
 import airquality.core.logger.log as log
+import airquality.core.logger.fmt as formt
 
 
 def log_decorator(_func=None):
@@ -19,7 +20,12 @@ def log_decorator(_func=None):
         @functools.wraps(func)
         def log_decorator_wrapper(self, *args, **kwargs):
 
-            logger_obj = log.get_logger(log_filename=self.log_filename, log_sub_dir=self.log_sub_dir)
+            # Create 'logger'
+            handler_cls = log.get_handler_cls(use_file=True)
+            handler = handler_cls(f'log/{self.log_filename}.log', 'a+')
+            fmt_cls = formt.get_formatter_cls(use_color=False)
+            fmt = fmt_cls()
+            logger_obj = log.get_logger(handler=handler, formatter=fmt)
 
             args_passed_in_function = [repr(arg) for arg in args]
             kwargs_passed_in_function = [f"{k}={v!r}" for k, v in kwargs.items()]

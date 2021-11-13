@@ -7,7 +7,7 @@
 #
 ######################################################
 import abc
-import airquality.io.remote.database.adapter as db
+import airquality.stream.remote.database.adapter as db
 import airquality.data.extractor.api as extr
 import airquality.utility.picker.query as pk
 import airquality.utility.parser.text as txt

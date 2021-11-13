@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-import airquality.io.remote.database.adapter as adpt
+import airquality.stream.remote.database.adapter as adpt
 
 
 class TestDatabaseConnectionAdapter(unittest.TestCase):
