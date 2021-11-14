@@ -6,17 +6,18 @@
 #
 #################################################
 import unittest
-import database.util.datatype.timestamp as tsmp
+import airquality.database.util.datatype.timestamp as ts
 
 
 class TestTimestampBuilder(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.atmotube_ts1 = tsmp.SQLTimestamp("2021-10-11T09:44:00.000Z", fmt=tsmp.ATMOTUBE_FMT)
-        self.atmotube_ts2 = tsmp.SQLTimestamp("2018-01-01T00:00:00.000Z", fmt=tsmp.ATMOTUBE_FMT)
-        self.thingspk_ts1 = tsmp.SQLTimestamp("2021-09-04T17:35:44Z", fmt=tsmp.THINGSPK_FMT)
-        self.thingspk_ts2 = tsmp.SQLTimestamp("2020-07-14T14:05:09Z", fmt=tsmp.THINGSPK_FMT)
-        self.current_ts = tsmp.CurrentTimestamp()
+        self.atmotube_ts1 = ts.SQLTimestamp("2021-10-11T09:44:00.000Z", fmt=ts.ATMOTUBE_FMT)
+        self.atmotube_ts2 = ts.SQLTimestamp("2018-01-01T00:00:00.000Z", fmt=ts.ATMOTUBE_FMT)
+        self.thingspk_ts1 = ts.SQLTimestamp("2021-09-04T17:35:44Z", fmt=ts.THINGSPK_FMT)
+        self.thingspk_ts2 = ts.SQLTimestamp("2020-07-14T14:05:09Z", fmt=ts.THINGSPK_FMT)
+        self.current_ts = ts.CurrentTimestamp()
+        self.unix_ts = ts.UnixTimestamp(unixts=1531432748)
 
     def test_successfully_add_days_to_atmotube_timestamp(self):
         new_timest = self.atmotube_ts1.add_days(days=1)
@@ -44,6 +45,19 @@ class TestTimestampBuilder(unittest.TestCase):
 
     def test_is_after_current_timestamp(self):
         self.assertTrue(self.current_ts.is_after(self.atmotube_ts1))
+
+    def test_unix_timestamp(self):
+        self.assertEqual(self.unix_ts.ts, '2018-07-12 23:59:08')
+
+    def test_unix_timestamp_is_after(self):
+        self.assertFalse(self.unix_ts.is_after(self.atmotube_ts1))
+        self.assertTrue(self.atmotube_ts1.is_after(self.unix_ts))
+
+    def test_add_day_to_unix_timestamp(self):
+        new_timest = self.unix_ts.add_days(days=10)
+        actual_output = new_timest.ts
+        expected_output = "2018-07-22 23:59:08"
+        self.assertEqual(actual_output, expected_output)
 
 
 if __name__ == '__main__':

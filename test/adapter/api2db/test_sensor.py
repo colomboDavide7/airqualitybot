@@ -23,7 +23,7 @@ class TestSensorReshaper(unittest.TestCase):
         test_packet = {'name': 'n1', 'sensor_index': 'idx1', 'latitude': 'lat_val', 'longitude': 'lng_val',
                        'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A', 'primary_key_b': 'key1B',
                        'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A',
-                       'secondary_key_b': 'key2B'}
+                       'secondary_key_b': 'key2B', 'date_created': 'd'}
 
         expected_output = {'name': 'n1 (idx1)',
                            'type': 'PurpleAir/ThingSpeak',
@@ -31,7 +31,9 @@ class TestSensorReshaper(unittest.TestCase):
                            'lng': 'lng_val',
                            'param_name': ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
                                           'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b'],
-                           'param_value': ['id1A', 'id1B', 'key1A', 'key1B', 'id2A', 'id2B', 'key2A', 'key2B']}
+                           'param_value': ['id1A', 'id1B', 'key1A', 'key1B', 'id2A', 'id2B', 'key2A', 'key2B'],
+                           'channel': ['1A', '1B', '2A', '2B'],
+                           'last_acquisition': ['d', 'd', 'd', 'd']}
 
         actual_output = sens.PurpleairSensorAdapter(test_packet).reshape()
         self.assertEqual(actual_output, expected_output)

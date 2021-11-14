@@ -29,7 +29,7 @@ class BaseBot(abc.ABC):
 
         self.sensor_type = sensor_type
         self.dbconn = dbconn
-        self.timest_fmt = None
+        self.timest_cls = None
         self.current_ts = None
         self.url_builder = None
         self.query_picker = None
@@ -66,8 +66,8 @@ class BaseBot(abc.ABC):
     def add_param_rshp_class(self, param_rshp_class=par.ParamAdapter):
         self.param_rshp_class = param_rshp_class
 
-    def set_timest_fmt(self, fmt: str):
-        self.timest_fmt = fmt
+    def add_timest_cls(self, timest_cls: ts.SQLTimestamp):
+        self.timest_cls = timest_cls
 
     def add_geom_builder_class(self, geom_builder_class: gb.GeometryBuilder):
         self.geom_builder_class = geom_builder_class

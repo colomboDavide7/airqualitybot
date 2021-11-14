@@ -16,10 +16,11 @@ LAT = 'lat'
 LNG = 'lng'
 PAR_NAME = 'param_name'
 PAR_VAL = 'param_value'
+CHANNEL = 'channel'
+LAST = 'last_acquisition'
 
 
 def get_sensor_adapter_class(sensor_type: str):
-
     if sensor_type == 'purpleair':
         return PurpleairSensorAdapter
     else:
@@ -56,6 +57,9 @@ class PurpleairSensorAdapter(SensorAdapter):
                                          self.packet['primary_key_a'], self.packet['primary_key_b'],
                                          self.packet['secondary_id_a'], self.packet['secondary_id_b'],
                                          self.packet['secondary_key_a'], self.packet['secondary_key_b']]
+            universal_packet[CHANNEL] = ["1A", "1B", "2A", "2B"]
+            universal_packet[LAST] = [self.packet['date_created'], self.packet['date_created'],
+                                      self.packet['date_created'], self.packet['date_created']]
         except KeyError as ke:
             raise SystemExit(f"{PurpleairSensorAdapter.__name__}: bad sensor data => missing key={ke!s}")
         return universal_packet

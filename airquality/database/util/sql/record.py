@@ -35,11 +35,15 @@ class APIParamRecord(RecordBuilder):
 
     def __init__(self, sensor_id: int, packet: Dict[str, Any]):
         super().__init__(sensor_id)
-        try:
-            self.param_name = packet['param_name']
-            self.param_value = packet['param_value']
-        except KeyError as ke:
-            raise SystemExit(f"{APIParamRecord.__name__} bad parameters => missing key={ke!s}.")
+
+        self.param_name = packet.get('param_name')
+        self.param_value = packet.get('param_value')
+        if not self.param_value or not self.param_name:
+            raise SystemExit(f"{APIParamRecord.__name__}: bad packet => please check you packet has a non-empty list"
+                             f"of param name(s) and a non-empty list of param value(s), one for each name(s).")
+        if len(self.param_name) != len(self.param_value):
+            raise SystemExit(f"{APIParamRecord.__name__}: bad packet => number of param name(s) does not match the "
+                             f"number of param value(s)")
 
     def record(self) -> str:
         values = ','.join(f"({self.sensor_id}, '{n}', '{v}')" for n, v in zip(self.param_name, self.param_value))
@@ -58,6 +62,31 @@ class SensorRecord(RecordBuilder):
 
     def record(self) -> str:
         return f"('{self.sensor_type}', '{self.sensor_name}')"
+
+
+class SensorInfoRecord(RecordBuilder):
+
+    def __init__(self, sensor_id: int, packet: Dict[str, Any]):
+        super(SensorInfoRecord, self).__init__(sensor_id)
+
+        self.timest_class = None
+        self.last_acquisition = packet.get('last_acquisition')
+        self.channel = packet.get('channel')
+
+        if not self.channel or not self.last_acquisition:
+            raise SystemExit(f"{SensorInfoRecord.__name__}: bad packet => please check you packet has a non-empty list"
+                             f"of channel name(s) and a non-empty list of last acquisition, one for each channel(s).")
+        if len(self.channel) != len(self.last_acquisition):
+            raise SystemExit(f"{SensorInfoRecord.__name__}: bad packet => number of channel(s) does not match the "
+                             f"number of last acquisition value(s)")
+
+    def record(self) -> str:
+        records = ','.join(f"({self.sensor_id}, '{ch}', '{self.timest_class(ts).ts}')"
+                           for ch, ts in zip(self.channel, self.last_acquisition))
+        return records.strip(',')
+
+    def add_timest_class(self, timest_cls):
+        self.timest_class = timest_cls
 
 
 # class MobileMeasurementSQLContainer(SQLBuilder):

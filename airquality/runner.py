@@ -145,10 +145,9 @@ def main():
             settings_string += f"measure_rshp_class={measure_rshp_class.__name__}, "
 
         # Add timestamp format dependency
-        if bot_name == 'fetch':
-            fmt = ts.get_timest_fmt(sensor_type)
-            bot.set_timest_fmt(fmt)
-            settings_string += f"timest_fmt={fmt}, "
+        timest_cls = ts.get_timest_class(sensor_type)
+        bot.add_timest_cls(timest_cls)
+        settings_string += f"timest_cls={timest_cls.__name__}, "
 
         # Debug and log the program settings
         settings_string = settings_string.strip(', ')

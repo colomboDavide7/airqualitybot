@@ -13,14 +13,14 @@ ATMOTUBE_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 SQL_TIMEST_FMT = "%Y-%m-%d %H:%M:%S"
 
 
-def get_timest_fmt(sensor_type: str):
+def get_timest_class(sensor_type: str):
 
     if sensor_type == 'atmotube':
-        return ATMOTUBE_FMT
+        return AtmotubeTimestamp
     elif sensor_type == 'thingspeak':
-        return THINGSPK_FMT
-    else:
-        raise SystemExit(f"'{get_timest_fmt.__name__}()': bad type => timestamp format is not defined for '{sensor_type}'")
+        return ThingspeakTimestamp
+    elif sensor_type == 'purpleair':
+        return UnixTimestamp
 
 
 class Timestamp(abc.ABC):
@@ -58,6 +58,30 @@ class SQLTimestamp(Timestamp):
         return (self_dt - other_dt).total_seconds() > 0
 
 
+class AtmotubeTimestamp(SQLTimestamp):
+
+    def __init__(self, timestamp: str, fmt: str = ATMOTUBE_FMT):
+        super(AtmotubeTimestamp, self).__init__(timestamp=dt.datetime.strptime(timestamp, fmt).strftime(SQL_TIMEST_FMT))
+
+    def add_days(self, days: int):
+        super().add_days(days)
+
+    def is_after(self, other) -> bool:
+        return super().is_after(other)
+
+
+class ThingspeakTimestamp(SQLTimestamp):
+
+    def __init__(self, timestamp: str, fmt: str = THINGSPK_FMT):
+        super(ThingspeakTimestamp, self).__init__(timestamp=dt.datetime.strptime(timestamp, fmt).strftime(SQL_TIMEST_FMT))
+
+    def add_days(self, days: int):
+        super().add_days(days)
+
+    def is_after(self, other) -> bool:
+        return super().is_after(other)
+
+
 class CurrentTimestamp(SQLTimestamp):
 
     def __init__(self):
@@ -67,4 +91,17 @@ class CurrentTimestamp(SQLTimestamp):
         return super().add_days(days)
 
     def is_after(self, other):
+        return super().is_after(other)
+
+
+class UnixTimestamp(SQLTimestamp):
+
+    def __init__(self, unixts: int, fmt: str = SQL_TIMEST_FMT):
+        super(UnixTimestamp, self).__init__(timestamp=dt.datetime.fromtimestamp(unixts).strftime(SQL_TIMEST_FMT),
+                                            fmt=fmt)
+
+    def add_days(self, days: int):
+        return super().add_days(days)
+
+    def is_after(self, other) -> bool:
         return super().is_after(other)

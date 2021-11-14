@@ -75,6 +75,7 @@ class InitializeBot(base.BaseBot):
         location_values = []
         api_param_values = []
         sensor_values = []
+        sensor_info_values = []
         for fetched_new_sensor in fetched_new_sensors:
             # **************************
             sensor_value = rec.SensorRecord(sensor_id=starting_new_sensor_id, packet=fetched_new_sensor)
@@ -89,13 +90,18 @@ class InitializeBot(base.BaseBot):
             api_param_value = rec.APIParamRecord(sensor_id=starting_new_sensor_id, packet=fetched_new_sensor)
             api_param_values.append(api_param_value)
             # **************************
+            sensor_info_value = rec.SensorInfoRecord(sensor_id=starting_new_sensor_id, packet=fetched_new_sensor)
+            sensor_info_value.add_timest_class(timest_cls=self.timest_cls)
+            sensor_info_values.append(sensor_info_value)
+            # **************************
             starting_new_sensor_id += 1
 
         ################################ BUILD + EXECUTE QUERIES ################################
         query = self.query_picker.initialize_sensors(
             sensor_values=sensor_values,
             api_param_values=api_param_values,
-            location_values=location_values
+            location_values=location_values,
+            sensor_info_values=sensor_info_values
         )
         self.dbconn.send(query)
 

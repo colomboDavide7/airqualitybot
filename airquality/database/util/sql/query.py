@@ -56,10 +56,12 @@ class QueryBuilder:
     def initialize_sensors(self,
                            sensor_values: List[rec.SensorRecord],
                            api_param_values: List[rec.APIParamRecord],
-                           location_values: List[rec.LocationRecord]):
+                           location_values: List[rec.LocationRecord],
+                           sensor_info_values: List[rec.SensorInfoRecord]):
         query = self.__insert_into_sensor(sensor_values)
         query += self.__insert_into_api_param(api_param_values)
         query += self.__insert_location_values(location_values)
+        query += self.__insert_sensor_info_values(sensor_info_values)
         return query
 
     ################################ PRIVATE METHODS ################################
@@ -77,6 +79,12 @@ class QueryBuilder:
 
     def __insert_location_values(self, values: List[rec.LocationRecord]) -> str:
         query = self.query_file.i5
+        for value in values:
+            query += value.record() + ','
+        return query.strip(',') + ';'
+
+    def __insert_sensor_info_values(self, values: List[rec.SensorInfoRecord]) -> str:
+        query = self.query_file.i6
         for value in values:
             query += value.record() + ','
         return query.strip(',') + ';'
