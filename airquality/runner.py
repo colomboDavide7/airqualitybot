@@ -26,10 +26,10 @@ import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.db2api.param as par
 import airquality.adapter.api2db.measure as meas
 import airquality.adapter.file2db.param as fadapt
-import airquality.bot.util.executor as exc
+import airquality.bot.util.executor.insert as ins
+import airquality.bot.util.executor.select as sel
 import airquality.bot.util.datelooper as loop
 import airquality.bot.util.filter as filt
-
 
 ################################ GLOBAL VARIABLES ################################
 USAGE = "USAGE: python(version) -m airquality bot_name sensor_type"
@@ -39,7 +39,6 @@ QUERY_FILE = "properties/query.json"
 
 ################################ ENTRY POINT OF THE PROGRAM ################################
 def main():
-
     handler_cls = log.get_handler_cls(use_file=True)
     handler = handler_cls('log/errors.log', 'a+')
     fmt_cls = formt.get_formatter_cls()
@@ -148,11 +147,13 @@ def main():
 
         # Add timestamp format + PacketQueryExecutor dependencies
         if bot_name in ('init', 'update'):
-            packet_executor = exc.PacketQueryExecutor(query_builder=query_builder, conn=dbconn,
-                                                      timest_cls=timest_cls, geom_builder_cls=geom.PointBuilder)
-            packet_executor.set_debugger(debugger)
-            packet_executor.set_logger(logger)
-            bot.add_packet_query_executor(packet_executor)
+            packet_executor = ins.PurpleairInsertionQueryExecutor(query_builder=query_builder,
+                                                                  conn=dbconn,
+                                                                  timest_cls=timest_cls,
+                                                                  geom_builder_cls=geom.PointBuilder)
+            packet_executor.set_debugger(debugger)                # set debugger
+            packet_executor.set_logger(logger)                    # set logger
+            bot.add_insertion_executor(packet_executor)
             settings_string += f"packet_query_executor_class={packet_executor.__class__.__name__}, "
 
         if bot_name in ('init', 'update'):
@@ -180,17 +181,16 @@ def main():
 
         # Add SensorQueryExecutor dependency
         if bot_name == 'fetch':
-            sensor_query_executor = exc.SensorQueryExecutor(conn=dbconn, query_builder=query_builder)
+            sensor_query_executor = sel.SensorQueryExecutor(conn=dbconn, query_builder=query_builder)
             bot.add_sensor_query_executor(sensor_query_executor)
             settings_string += f"sensor_query_executor={sensor_query_executor.__class__.__name__}, "
 
         # Add BotQueryExecutor dependency
-        if bot_name in ('fetch', 'init', 'update'):
-            bot_query_executor = exc.BotQueryExecutor(conn=dbconn, query_builder=query_builder, sensor_type=sensor_type)
-            bot_query_executor.set_logger(logger)
-            bot_query_executor.set_debugger(debugger)
-            bot.add_bot_query_executor(bot_query_executor)
-            settings_string += f"bot_query_executor={bot_query_executor.__class__.__name__}, "
+        bot_query_executor = sel.BotQueryExecutor(conn=dbconn, query_builder=query_builder, sensor_type=sensor_type)
+        bot_query_executor.set_logger(logger)
+        bot_query_executor.set_debugger(debugger)
+        bot.add_bot_query_executor(bot_query_executor)
+        settings_string += f"bot_query_executor={bot_query_executor.__class__.__name__}, "
 
         # Debug and log the program settings
         settings_string = settings_string.strip(', ')

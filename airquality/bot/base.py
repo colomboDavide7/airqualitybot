@@ -13,7 +13,8 @@ import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.db2api.param as par
 import airquality.adapter.api2db.measure as meas
 import airquality.api.util.url as u
-import airquality.bot.util.executor as ex
+import airquality.bot.util.executor.select as sel
+import airquality.bot.util.executor.base as base_exec
 import airquality.bot.util.filter as filt
 
 
@@ -28,7 +29,7 @@ class BaseBot(abc.ABC):
         self.measure_rshp_class = None
         self.text_parser_class = None
         self.bot_query_executor = None
-        self.packet_executor = None
+        self.insertion_executor = None
         self.packet_filter = None
         self.log_filename = log_filename
         self.log_sub_dir = log_sub_dir
@@ -42,11 +43,11 @@ class BaseBot(abc.ABC):
     def add_packet_filter(self, pck_filter: filt.PacketFilter):
         self.packet_filter = pck_filter
 
-    def add_bot_query_executor(self, executor: ex.BotQueryExecutor):
+    def add_bot_query_executor(self, executor: sel.BotQueryExecutor):
         self.bot_query_executor = executor
 
-    def add_packet_query_executor(self, executor: ex.PacketQueryExecutor):
-        self.packet_executor = executor
+    def add_insertion_executor(self, executor: base_exec.QueryExecutor):
+        self.insertion_executor = executor
 
     def add_url_builder(self, url_builder: u.URLBuilder):
         self.url_builder = url_builder

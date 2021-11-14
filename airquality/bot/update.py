@@ -64,9 +64,9 @@ class UpdateBot(base.BaseBot):
             return
 
         # Update locations
-        self.packet_executor.update_locations(fetched_locations = fetched_active_locations,
-                                              database_locations = database_active_locations,
-                                              name2id_map = name2id_map)
+        self.insertion_executor.update_locations(fetched_locations = fetched_active_locations,
+                                                 database_locations = database_active_locations,
+                                                 name2id_map = name2id_map)
 
         self.debugger.info("location(s) successfully updated => done")
         self.logger.info("location(s) successfully updated => done")

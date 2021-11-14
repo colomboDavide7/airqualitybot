@@ -10,7 +10,7 @@ import airquality.logger.decorator as log_decorator
 import airquality.api.fetch as api
 import airquality.database.util.datatype.timestamp as ts
 import airquality.bot.util.datelooper as loop
-import airquality.bot.util.executor as exe
+import airquality.bot.util.executor.select as sel
 
 
 ################################ FETCH BOT ################################
@@ -24,7 +24,7 @@ class FetchBot(base.BaseBot):
     def add_date_looper_class(self, date_looper_class: loop.DateLooper):
         self.date_looper_cls = date_looper_class
 
-    def add_sensor_query_executor(self, executor: exe.SensorQueryExecutor):
+    def add_sensor_query_executor(self, executor: sel.SensorQueryExecutor):
         self.sensor_query_executor = executor
 
     ################################ RUN METHO ################################
@@ -97,7 +97,7 @@ class FetchBot(base.BaseBot):
                         continue
 
                     # Add new measurements
-                    # self.packet_executor.insert_measurements(fetched_new_measurements)
+                    # self.insertion_executor.insert_measurements(fetched_new_measurements)
 
                     self.debugger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
                     self.logger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")

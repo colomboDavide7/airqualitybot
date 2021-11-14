@@ -54,4 +54,4 @@ class InitializeBot(base.BaseBot):
         start_id = self.bot_query_executor.get_max_sensor_id()
 
         # Execute queries on sensors
-        self.packet_executor.initialize_sensors(fetched_new_sensors, start_id)
+        self.insertion_executor.initialize_sensors(fetched_new_sensors, start_id)
