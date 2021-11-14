@@ -95,8 +95,10 @@ class ThingspeakURL(URLBuilder):
         elif 'channel_id' not in self.url_param:
             raise SystemExit(f"{ThingspeakURL.__name__}: bad 'api.json' file structure => missing key='channel_id'")
 
-        url = self.address + '/' + self.url_param.pop('channel_id') + '/'
+        channel_id = self.url_param.pop('channel_id')
+        url = self.address + '/' + channel_id + '/'
         url += self.address_fmt + QU
         for param_name, param_value in self.url_param.items():
             url += f"{param_name}={param_value}&"
+        self.url_param['channel_id'] = channel_id
         return url.strip(AND)

@@ -24,7 +24,7 @@ class TestParamReshaper(unittest.TestCase):
 
     def test_successfully_uniform_reshape_atmotube_api_param(self):
         test_api_param = {'mac': 'some_mac', 'api_key': 'some_key'}
-        expected_output = [{'mac': 'some_mac', 'api_key': 'some_key', 'channel_name': 'Main'}]
+        expected_output = [{'mac': 'some_mac', 'api_key': 'some_key', 'channel_name': 'main'}]
         actual_output = par.AtmotubeParamAdapter(test_api_param).reshape()
         self.assertEqual(actual_output, expected_output)
 

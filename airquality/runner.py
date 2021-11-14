@@ -26,7 +26,8 @@ import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.db2api.param as par
 import airquality.adapter.api2db.measure as meas
 import airquality.adapter.file2db.param as fadapt
-
+import airquality.bot.util.executor as execut
+import airquality.bot.util.datelooper as loop
 
 ################################ GLOBAL VARIABLES ################################
 USAGE = "USAGE: python(version) -m airquality bot_name sensor_type"
@@ -84,7 +85,7 @@ def main():
 
         # Query file object
         query_file = struct.JSONFile(QUERY_FILE)
-        query_picker = pk.QueryBuilder(query_file)
+        query_builder = pk.QueryBuilder(query_file)
 
         # API file object
         api_file = struct.JSONFile(API_FILE, path_to_object=[sensor_type])
@@ -123,7 +124,7 @@ def main():
         # Add external dependencies
         bot.add_url_builder(url_builder)
         bot.add_api_extractor_class(extractor_class)
-        bot.add_query_picker(query_picker)
+        bot.add_query_picker(query_builder)
         bot.add_text_parser_class(text_parser_class)
 
         if bot_name in ('init', 'update'):
@@ -145,6 +146,23 @@ def main():
             measure_rshp_class = meas.get_measure_adapter_class(sensor_type)
             bot.add_measure_rshp_class(measure_rshp_class)
             settings_string += f"measure_rshp_class={measure_rshp_class.__name__}, "
+
+        # Add DateLooper dependency
+        if bot_name == 'fetch':
+            date_looper_cls = loop.get_date_looper_class(sensor_type)
+            bot.add_date_looper_class(date_looper_cls)
+            settings_string += f"date_looper_class={date_looper_cls.__name__}, "
+
+        # Add SensorQueryExecutor dependency
+        if bot_name == 'fetch':
+            sensor_query_executor = execut.SensorQueryExecutor(conn=dbconn, query_builder=query_builder)
+            bot.add_sensor_query_executor(sensor_query_executor)
+            settings_string += f"sensor_query_executor={sensor_query_executor.__class__.__name__}, "
+
+        if bot_name == 'fetch':
+            bot_query_executor = execut.BotQueryExecutor(conn=dbconn, query_builder=query_builder, sensor_type=sensor_type)
+            bot.add_bot_query_executor(bot_query_executor)
+            settings_string += f"bot_query_executor={bot_query_executor.__class__.__name__}, "
 
         # Add timestamp format dependency
         timest_cls = ts.get_timest_class(sensor_type)
