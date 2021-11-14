@@ -12,6 +12,7 @@ import airquality.database.conn as db
 import airquality.database.util.sql.query as query
 import airquality.database.util.sql.record as rec
 import airquality.database.util.datatype.timestamp as ts
+import airquality.logger.log as log
 
 
 class QueryExecutor(abc.ABC):
@@ -19,8 +20,17 @@ class QueryExecutor(abc.ABC):
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         self.conn = conn
         self.builder = query_builder
+        self.logger = None
+        self.debugger = None
+
+    def set_logger(self, logger: log.logging.Logger):
+        self.logger = logger
+
+    def set_debugger(self, debugger: log.logging.Logger):
+        self.debugger = debugger
 
 
+################################ BOT QUERY EXECUTOR ################################
 class BotQueryExecutor(QueryExecutor):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, sensor_type: str):
@@ -59,9 +69,17 @@ class BotQueryExecutor(QueryExecutor):
         sensor_id = 1
         if unfolded[0] is not None:
             sensor_id = unfolded[0] + 1
+
+        msg = f"new insertion starts at sensor_id={sensor_id!s}"
+        if self.debugger:
+            self.debugger.info(msg)
+        if self.logger:
+            self.logger.info(msg)
+
         return sensor_id
 
 
+################################ SENSOR QUERY EXECUTOR ################################
 class SensorQueryExecutor(QueryExecutor):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
@@ -79,6 +97,7 @@ class SensorQueryExecutor(QueryExecutor):
         return unfolded[0]
 
 
+################################ PACKET QUERY EXECUTOR ################################
 class PacketQueryExecutor(QueryExecutor):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, geom_builder_cls, timest_cls):
@@ -86,12 +105,16 @@ class PacketQueryExecutor(QueryExecutor):
         self.geom_builder_class = geom_builder_cls
         self.timest_cls = timest_cls
 
+    ################################ METHOD FOR INITIALIZE SENSORS AND THEIR INFO ################################
     def initialize_sensors(self, fetched_sensors: List[Dict[str, Any]], start_id: int):
         location_values = []
         api_param_values = []
         sensor_values = []
         sensor_info_values = []
+
+        logging_msg = []
         for fetched_new_sensor in fetched_sensors:
+            logging_msg.append(f"adding sensor '{fetched_new_sensor['name']}' with id={start_id}")
             # **************************
             sensor_value = rec.SensorRecord(sensor_id=start_id, packet=fetched_new_sensor)
             sensor_values.append(sensor_value)
@@ -111,7 +134,7 @@ class PacketQueryExecutor(QueryExecutor):
             # **************************
             start_id += 1
 
-        ################################ BUILD + EXECUTE QUERIES ################################
+        # Execute queries
         exec_query = self.builder.initialize_sensors(
             sensor_values=sensor_values,
             api_param_values=api_param_values,
@@ -120,25 +143,55 @@ class PacketQueryExecutor(QueryExecutor):
         )
         self.conn.send(exec_query)
 
-    def update_locations(self, fetched_locations: List[Dict[str, Any]], database_locations: Dict[str, Any], name2id_map: Dict[str, Any]):
+        # Log messages
+        if self.logger:
+            for msg in logging_msg:
+                self.logger.info(msg)
+        # Debug messages
+        if self.debugger:
+            for msg in logging_msg:
+                self.debugger.info(msg)
+
+    ################################ METHOD FOR UPDATE LOCATIONS ################################
+    def update_locations(self,
+                         fetched_locations: List[Dict[str, Any]],
+                         database_locations: Dict[str, Any],
+                         name2id_map: Dict[str, Any]):
+
         location_records = []
+        logging_msg = []
         for fetched_active_location in fetched_locations:
             name = fetched_active_location['name']
             geometry = self.geom_builder_class(fetched_active_location)
+            # **************************
             if geometry.as_text() != database_locations[name]:
-                # self.debugger.info(f"found new location={geometry.as_text()} for name='{name}' => update location")
-                # self.logger.info(f"found new location={geometry.as_text()} for name='{name}' => update location")
+                logging_msg.append(f"found new location={geometry.as_text()} for name='{name}' => update location")
+                # **************************
                 sensor_id = name2id_map[name]
                 geom = geometry.geom_from_text()
                 valid_from = ts.CurrentTimestamp().ts
+                # **************************
                 record = rec.LocationRecord(sensor_id=sensor_id, valid_from=valid_from, geom=geom)
                 location_records.append(record)
 
+        # Log message when no location has been updated
         if not location_records:
-            # self.debugger.info("all sensor have the same location => done")
-            # self.logger.info("all sensor have the same location => done")
+            if self.logger:
+                self.logger.warning("all sensor have the same location => done")
+            if self.debugger:
+                self.debugger.warning("all sensor have the same location => done")
             return
 
-        ############################## BUILD THE QUERY FROM VALUES #############################
+        # Execute the queries
         exec_query = self.builder.update_locations(location_records)
         self.conn.send(exec_query)
+
+        # Log messages
+        if self.logger:
+            for msg in logging_msg:
+                self.logger.info(msg)
+
+        # Debug messages
+        if self.debugger:
+            for msg in logging_msg:
+                self.debugger.info(msg)

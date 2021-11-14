@@ -43,7 +43,7 @@ class NameFilter(PacketFilter):
     def filter(self,  packets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
         # Check if external dependency was set
-        if not self.database_sensor_names:
+        if self.database_sensor_names is None:
             raise SystemExit(f"{NameFilter.__name__}: bad setup => missing external dependency 'database_sensor_names'")
 
         # Filter packets: keep only those packets which name is inside the 'database_sensor_names'

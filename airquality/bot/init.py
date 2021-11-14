@@ -22,6 +22,8 @@ class InitializeBot(base.BaseBot):
 
         # Query database sensor names
         database_sensor_names = self.bot_query_executor.get_sensor_names()
+        if not database_sensor_names:
+            self.debugger.warning(f"no sensor found")
 
         # Build URL
         url = self.url_builder.url()
@@ -50,13 +52,7 @@ class InitializeBot(base.BaseBot):
             return
 
         # Query the max 'sensor_id' for knowing the 'sensor_id' during the insertion
-        starting_new_sensor_id = self.bot_query_executor.get_max_sensor_id()
-        msg = f"new insertion starts at sensor_id={starting_new_sensor_id!s}"
-        self.debugger.info(msg)
-        self.logger.info(msg)
+        start_id = self.bot_query_executor.get_max_sensor_id()
 
-        ############################## BUILD SQL FROM FILTERED UNIFORMED PACKETS #############################
-        self.packet_executor.initialize_sensors()
-
-        self.debugger.info("new sensor(s) successfully inserted => done")
-        self.logger.info("new sensor(s) successfully inserted => done")
+        # Execute queries on sensors
+        self.packet_executor.initialize_sensors(fetched_new_sensors, start_id)

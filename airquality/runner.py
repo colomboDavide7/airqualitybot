@@ -150,6 +150,8 @@ def main():
         if bot_name in ('init', 'update'):
             packet_executor = exc.PacketQueryExecutor(query_builder=query_builder, conn=dbconn,
                                                       timest_cls=timest_cls, geom_builder_cls=geom.PointBuilder)
+            packet_executor.set_debugger(debugger)
+            packet_executor.set_logger(logger)
             bot.add_packet_query_executor(packet_executor)
             settings_string += f"packet_query_executor_class={packet_executor.__class__.__name__}, "
 
@@ -185,6 +187,8 @@ def main():
         # Add BotQueryExecutor dependency
         if bot_name in ('fetch', 'init', 'update'):
             bot_query_executor = exc.BotQueryExecutor(conn=dbconn, query_builder=query_builder, sensor_type=sensor_type)
+            bot_query_executor.set_logger(logger)
+            bot_query_executor.set_debugger(debugger)
             bot.add_bot_query_executor(bot_query_executor)
             settings_string += f"bot_query_executor={bot_query_executor.__class__.__name__}, "
 
