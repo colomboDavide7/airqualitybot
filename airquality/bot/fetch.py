@@ -65,47 +65,74 @@ class FetchBot(base.BaseBot):
                 # Extract last acquisition timestamp
                 last_acquisition_ts = ts.SQLTimestamp(str(answer[0][0]))
 
-                # Update URLBuilder parameters
-                self.url_builder.update_param(api_param)
-                url = self.url_builder.url()
-                raw_api_packets = api.fetch(url)
-                parsed_api_packets = self.text_parser_class(raw_api_packets).parse()
-                api_data = self.api_extr_class(parsed_api_packets, channel_name=ch_name).extract()
-                if not api_data:
-                    self.debugger.info(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
-                    self.logger.info(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
-                    continue
+                # Define stop timestamp as the moment in which the program is ran
+                stop_ts = ts.CurrentTimestamp()
 
-                ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
-                uniformed_packets = []
-                for data in api_data:
-                    uniformed_packets.append(self.measure_rshp_class(data).reshape())
+                while stop_ts.is_after(last_acquisition_ts):
 
-                # Remove packets already present into the database
-                fetched_new_measures = []
-                for packet in uniformed_packets:
-                    timestamp = self.timest_cls(packet['timestamp'])
-                    if timestamp.is_after(last_acquisition_ts):
-                        fetched_new_measures.append(packet)
+                    date_param = {}
+                    if self.sensor_type == 'thingspeak':
+                        date_param['start'] = last_acquisition_ts.ts.replace(" ", "%20")
+                        date_param['end'] = last_acquisition_ts.add_days(days=7).ts.replace(" ", "%20")
+                        self.debugger.info(f"start_at={date_param['start']} - end_at={date_param['end']}")
+                    elif self.sensor_type == 'atmotube':
+                        timestamp = last_acquisition_ts.ts
+                        date, time = timestamp.split(" ")
+                        date_param['date'] = date
+                        self.debugger.info(f"start_at={date_param['date']}")
 
-                # Continue to the next 'sensor_id' if there are no new measurements
-                if not fetched_new_measures:
-                    self.debugger.warning(f"no new measurements for sensor_id={sensor_id}")
-                    self.logger.warning(f"no new measurements for sensor_id={sensor_id}")
-                    continue
+                    # Update URLBuilder parameters
+                    self.url_builder.update_param(api_param)                # add database api param
+                    self.url_builder.update_param(date_param)               # add date api param
+                    url = self.url_builder.url()
+                    raw_api_packets = api.fetch(url)
+                    parsed_api_packets = self.text_parser_class(raw_api_packets).parse()
+                    api_data = self.api_extr_class(parsed_api_packets, channel_name=ch_name).extract()
+                    if not api_data:
+                        self.debugger.info(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
+                        self.logger.info(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
 
-                # Debug and log new measurement timestamp range
-                first_timestamp = fetched_new_measures[0]['timestamp']
-                last_timestamp = fetched_new_measures[-1]['timestamp']
-                self.debugger.info(f"found new measurements from {first_timestamp} to {last_timestamp}")
-                self.logger.info(f"found new measurements from {first_timestamp} to {last_timestamp}")
+                        if self.sensor_type == 'thingspeak':
+                            last_acquisition_ts = last_acquisition_ts.add_days(7)
+                        elif self.sensor_type == 'atmotube':
+                            last_acquisition_ts = last_acquisition_ts.add_days(1)
+                        continue
 
-                # Add new measurements
-                for fetched_new_measure in fetched_new_measures:
-                    pass
+                    ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
+                    uniformed_packets = []
+                    for data in api_data:
+                        uniformed_packets.append(self.measure_rshp_class(data).reshape())
 
-                self.debugger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
-                self.logger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+                    # Remove packets already present into the database
+                    fetched_new_measures = []
+                    for packet in uniformed_packets:
+                        timestamp = self.timest_cls(packet['timestamp'])
+                        if timestamp.is_after(last_acquisition_ts):
+                            fetched_new_measures.append(packet)
+
+                    # Continue to the next 'sensor_id' if there are no new measurements
+                    if not fetched_new_measures:
+                        self.debugger.warning(f"no new measurements for sensor_id={sensor_id}")
+                        self.logger.warning(f"no new measurements for sensor_id={sensor_id}")
+                        continue
+
+                    # Debug and log new measurement timestamp range
+                    first_timestamp = fetched_new_measures[0]['timestamp']
+                    last_timestamp = fetched_new_measures[-1]['timestamp']
+                    self.debugger.info(f"found new measurements from {first_timestamp} to {last_timestamp}")
+                    self.logger.info(f"found new measurements from {first_timestamp} to {last_timestamp}")
+
+                    # Add new measurements
+                    for fetched_new_measure in fetched_new_measures:
+                        pass
+
+                    self.debugger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+                    self.logger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+
+                    if self.sensor_type == 'thingspeak':
+                        last_acquisition_ts = last_acquisition_ts.add_days(7)
+                    elif self.sensor_type == 'atmotube':
+                        last_acquisition_ts = last_acquisition_ts.add_days(1)
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
         self.debugger.info("new measurement(s) successfully fetched => done")

@@ -63,7 +63,7 @@ class AtmotubeTimestamp(SQLTimestamp):
     def __init__(self, timestamp: str, fmt: str = ATMOTUBE_FMT):
         super(AtmotubeTimestamp, self).__init__(timestamp=dt.datetime.strptime(timestamp, fmt).strftime(SQL_TIMEST_FMT))
 
-    def add_days(self, days: int):
+    def add_days(self, days: int = 1):
         super().add_days(days)
 
     def is_after(self, other) -> bool:
@@ -75,7 +75,7 @@ class ThingspeakTimestamp(SQLTimestamp):
     def __init__(self, timestamp: str, fmt: str = THINGSPK_FMT):
         super(ThingspeakTimestamp, self).__init__(timestamp=dt.datetime.strptime(timestamp, fmt).strftime(SQL_TIMEST_FMT))
 
-    def add_days(self, days: int):
+    def add_days(self, days: int = 7):
         super().add_days(days)
 
     def is_after(self, other) -> bool:

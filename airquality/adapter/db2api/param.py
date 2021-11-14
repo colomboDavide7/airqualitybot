@@ -74,4 +74,4 @@ class AtmotubeParamAdapter(ParamAdapter):
 
         return [{MAC: self.api_param['mac'],
                  KEY: self.api_param['api_key'],
-                 CH_NM: "Main"}]
+                 CH_NM: "main"}]
