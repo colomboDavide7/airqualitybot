@@ -63,3 +63,18 @@ class PurpleairSensorAdapter(SensorAdapter):
         except KeyError as ke:
             raise SystemExit(f"{PurpleairSensorAdapter.__name__}: bad sensor data => missing key={ke!s}")
         return universal_packet
+
+
+class AtmotubeSensorAdapter(SensorAdapter):
+
+    def __init__(self, sensor_data: Dict[str, Any]):
+        super(AtmotubeSensorAdapter, self).__init__(sensor_data)
+
+    def reshape(self) -> Dict[str, Any]:
+        adapted_packet = {}
+        try:
+            adapted_packet[CHANNEL] = ['main']
+            adapted_packet[LAST] = [self.packet['time']]
+        except KeyError as ke:
+            raise SystemExit(f"{AtmotubeSensorAdapter.__name__}: bad sensor data => missing key={ke!s}")
+        return adapted_packet

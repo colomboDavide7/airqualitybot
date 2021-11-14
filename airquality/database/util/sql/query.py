@@ -38,6 +38,9 @@ class QueryBuilder:
     def select_sensor_name_id_mapping_from_sensor_type(self, sensor_type: str) -> str:
         return self.query_file.s7.format(personality=sensor_type)
 
+    def select_last_acquisition(self, channel: str, sensor_id: int):
+        return self.query_file.s8.format(sensor_id=sensor_id, channel=channel)
+
     ################################ METHODS THAT RETURN INSERT INTO QUERY STATEMENT ################################
 
     def insert_into_mobile_measurements(self) -> str:

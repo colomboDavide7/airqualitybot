@@ -25,6 +25,8 @@ import airquality.api.util.url as url
 import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.db2api.param as par
 import airquality.adapter.api2db.measure as meas
+import airquality.adapter.file2db.param as fadapt
+
 
 ################################ GLOBAL VARIABLES ################################
 USAGE = "USAGE: python(version) -m airquality bot_name sensor_type"
@@ -91,9 +93,9 @@ def main():
 
         # Append secret 'api_key' for purpleair sensors
         if sensor_type == 'purpleair':
-            if not os.environ.get('PURPLEAIR_API_KEY'):
-                raise SystemExit(f"'{main.__name__}()': bad '.env' file structure => missing param='PURPLEAIR_API_KEY'")
-            url_param['api_key'] = os.environ['PURPLEAIR_API_KEY']
+            file_adapt_class = fadapt.get_file_adapter_class(sensor_type)
+            env_param = file_adapt_class().adapt()
+            url_param.update(env_param)
 
         # TextParser class
         if sensor_type == 'purpleair':

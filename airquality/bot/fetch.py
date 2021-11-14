@@ -38,9 +38,6 @@ class FetchBot(base.BaseBot):
         if not measure_param_map:
             raise SystemExit(f"bad database answer => empty 'measure_param' for type='{self.sensor_type}'")
 
-        # Get last acquisition timestamp to filter out old measurements
-        last_acquisition_ts = ts.SQLTimestamp("2021-11-10 01:00:00")
-
         ############################# CYCLE ON ALL SENSOR IDS FOUND ##############################
         for sensor_id in sensor_ids:
 
@@ -57,6 +54,16 @@ class FetchBot(base.BaseBot):
                 ch_name = api_param.pop('channel_name')
                 self.debugger.info(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
                 self.logger.info(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
+
+                # Get last acquisition timestamp to filter out old measurements
+                query = self.query_picker.select_last_acquisition(channel=ch_name, sensor_id=sensor_id)
+                answer = self.dbconn.send(query)
+                if not answer:
+                    raise SystemExit(f"bad database answer => empty 'last_acquisition' for sensor_id={sensor_id} and"
+                                     f" channel_name='{ch_name}'")
+
+                # Extract last acquisition timestamp
+                last_acquisition_ts = ts.SQLTimestamp(str(answer[0][0]))
 
                 # Update URLBuilder parameters
                 self.url_builder.update_param(api_param)
@@ -77,7 +84,7 @@ class FetchBot(base.BaseBot):
                 # Remove packets already present into the database
                 fetched_new_measures = []
                 for packet in uniformed_packets:
-                    timestamp = ts.SQLTimestamp(packet['timestamp'], fmt=self.timest_fmt)
+                    timestamp = self.timest_cls(packet['timestamp'])
                     if timestamp.is_after(last_acquisition_ts):
                         fetched_new_measures.append(packet)
 
