@@ -44,6 +44,7 @@ class FetchBot(base.BaseBot):
         ############################# CYCLE ON ALL SENSOR IDS FOUND ##############################
         for sensor_id in sensor_ids:
 
+            # Extract database API parameters
             db_api_param = self.sensor_query_executor.get_sensor_api_param(sensor_id)
             uniformed_param = self.param_rshp_class(db_api_param).reshape()
 
@@ -70,6 +71,7 @@ class FetchBot(base.BaseBot):
                 # Cycle until looper has no more URL
                 while looper.has_next():
 
+                    # Fetch data from API
                     url = looper.get_next_url()
                     raw_api_packets = api.fetch(url)
                     parsed_api_packets = self.text_parser_class(raw_api_packets).parse()

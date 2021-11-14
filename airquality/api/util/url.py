@@ -33,11 +33,6 @@ class URLBuilder(abc.ABC):
     def url(self) -> str:
         pass
 
-    def update_param(self, sensor_param: Dict[str, Any]):
-        tmp = self.url_param.copy()
-        tmp.update(sensor_param)
-        self.url_param = tmp
-
 
 class PurpleairURL(URLBuilder):
 

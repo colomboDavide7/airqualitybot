@@ -25,12 +25,11 @@ class InitializeBot(base.BaseBot):
         if not database_sensor_names:
             self.debugger.warning(f"no sensor found")
 
-        # Build URL
+        # Fetch API data
         url = self.url_builder.url()
         raw_packets = api.fetch(url)
         parsed_packets = self.text_parser_class(raw_packets).parse()
         api_data = self.api_extr_class(parsed_packets).extract()
-
         if not api_data:
             self.debugger.warning("empty API answer => done")
             self.logger.warning("empty API answer => done")

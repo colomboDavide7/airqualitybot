@@ -10,6 +10,7 @@ import unittest
 import airquality.database.util.sql.record as rec
 import airquality.database.util.datatype.timestamp as ts
 
+
 class TestSQLBuilder(unittest.TestCase):
 
     def test_sensor_record(self):
@@ -63,10 +64,11 @@ class TestSQLBuilder(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
     def test_sensor_info_record(self):
-        test_packet = {'channel': ['ch1', 'ch2'], 'last_acquisition': ['ts1', 'ts2']}
+        test_packet = {'channel': ['ch1', 'ch2'], 'last_acquisition': ['2021-10-11T06:45:00.000Z', '2021-10-11T06:46:00.000Z']}
         record = rec.SensorInfoRecord(sensor_id=1, packet=test_packet)
+        record.add_timest_class(ts.AtmotubeTimestamp)
         actual_output = record.record()
-        expected_output = "(1, 'ch1', 'ts1'),(1, 'ch2', 'ts2')"
+        expected_output = "(1, 'ch1', '2021-10-11 06:45:00'),(1, 'ch2', '2021-10-11 06:46:00')"
         self.assertEqual(actual_output, expected_output)
 
     def test_system_exit_when_key_error_is_raised_sensor_info_record(self):
@@ -89,8 +91,6 @@ class TestSQLBuilder(unittest.TestCase):
         test_empty_channel = {'channel': [], 'last_acquisition': []}
         with self.assertRaises(SystemExit):
             rec.SensorInfoRecord(sensor_id=1, packet=test_empty_channel)
-
-
 
 
 if __name__ == '__main__':
