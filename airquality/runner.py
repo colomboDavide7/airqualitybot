@@ -26,8 +26,10 @@ import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.db2api.param as par
 import airquality.adapter.api2db.measure as meas
 import airquality.adapter.file2db.param as fadapt
-import airquality.bot.util.executor as execut
+import airquality.bot.util.executor as exc
 import airquality.bot.util.datelooper as loop
+import airquality.bot.util.filter as filt
+
 
 ################################ GLOBAL VARIABLES ################################
 USAGE = "USAGE: python(version) -m airquality bot_name sensor_type"
@@ -119,21 +121,42 @@ def main():
         settings_string += f"extractor_class={extractor_class.__name__}, "
 
         # Create the bot instance
-        bot = bot_class(sensor_type=sensor_type, dbconn=dbconn)
+        bot = bot_class()
 
         # Add external dependencies
         bot.add_url_builder(url_builder)
         bot.add_api_extractor_class(extractor_class)
-        bot.add_query_picker(query_builder)
         bot.add_text_parser_class(text_parser_class)
+
+        # Define timest_class
+        timest_cls = ts.get_timest_class(sensor_type)
+        settings_string += f"timest_cls={timest_cls.__name__}, "
+
+        # Add DateFilter dependency
+        if bot_name == 'fetch':
+            date_filter = filt.DateFilter(timest_cls=timest_cls)
+            date_filter.set_debugger(debugger)
+            date_filter.set_logger(logger)
+            bot.add_packet_filter(date_filter)
+            settings_string += f"packet_filter_class={date_filter.__class__.__name__}, "
+        elif bot_name == 'init':
+            name_filter = filt.NameFilter()
+            name_filter.set_logger(logger)
+            name_filter.set_debugger(debugger)
+            bot.add_packet_filter(name_filter)
+            settings_string += f"packet_filter_class={name_filter.__class__.__name__}, "
+
+        # Add timestamp format + PacketQueryExecutor dependencies
+        if bot_name in ('init', 'update'):
+            packet_executor = exc.PacketQueryExecutor(query_builder=query_builder, conn=dbconn,
+                                                      timest_cls=timest_cls, geom_builder_cls=geom.PointBuilder)
+            bot.add_packet_query_executor(packet_executor)
+            settings_string += f"packet_query_executor_class={packet_executor.__class__.__name__}, "
 
         if bot_name in ('init', 'update'):
             sensor_rshp_class = sens.get_sensor_adapter_class(sensor_type)
             bot.add_sensor_rshp_class(sensor_rshp_class)
             settings_string += f"sensor_rshp_class={sensor_rshp_class.__name__}, "
-            bot.add_geom_builder_class(geom.PointBuilder)
-            settings_string += f"geom_builder_class={geom.PointBuilder.__name__}, "
-            bot.add_current_ts(ts.CurrentTimestamp())
 
         # ParamReshaper class
         if bot_name == 'fetch':
@@ -155,19 +178,15 @@ def main():
 
         # Add SensorQueryExecutor dependency
         if bot_name == 'fetch':
-            sensor_query_executor = execut.SensorQueryExecutor(conn=dbconn, query_builder=query_builder)
+            sensor_query_executor = exc.SensorQueryExecutor(conn=dbconn, query_builder=query_builder)
             bot.add_sensor_query_executor(sensor_query_executor)
             settings_string += f"sensor_query_executor={sensor_query_executor.__class__.__name__}, "
 
-        if bot_name == 'fetch':
-            bot_query_executor = execut.BotQueryExecutor(conn=dbconn, query_builder=query_builder, sensor_type=sensor_type)
+        # Add BotQueryExecutor dependency
+        if bot_name in ('fetch', 'init', 'update'):
+            bot_query_executor = exc.BotQueryExecutor(conn=dbconn, query_builder=query_builder, sensor_type=sensor_type)
             bot.add_bot_query_executor(bot_query_executor)
             settings_string += f"bot_query_executor={bot_query_executor.__class__.__name__}, "
-
-        # Add timestamp format dependency
-        timest_cls = ts.get_timest_class(sensor_type)
-        bot.add_timest_cls(timest_cls)
-        settings_string += f"timest_cls={timest_cls.__name__}, "
 
         # Debug and log the program settings
         settings_string = settings_string.strip(', ')

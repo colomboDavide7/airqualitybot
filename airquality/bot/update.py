@@ -8,33 +8,27 @@
 import airquality.bot.base as base
 import airquality.logger.decorator as log_decorator
 import airquality.api.fetch as api
-import airquality.database.conn as db
-import airquality.database.util.sql.record as rec
 
 
 ################################ UPDATE BOT CLASS ################################
 class UpdateBot(base.BaseBot):
 
-    def __init__(self, sensor_type: str, dbconn: db.DatabaseAdapter):
-        super(UpdateBot, self).__init__(sensor_type=sensor_type, dbconn=dbconn)
+    def __init__(self):
+        super(UpdateBot, self).__init__()
 
+    ################################ RUN METHOD ################################
     @log_decorator.log_decorator()
     def run(self):
 
         # Query the active locations
-        query = self.query_picker.select_active_locations(self.sensor_type)
-        answer = self.dbconn.send(query)
-        database_active_locations = dict(answer)
-
+        database_active_locations = self.bot_query_executor.get_active_locations()
         if not database_active_locations:
-            self.debugger.warning(f"no sensor found for type='{self.sensor_type}' => done")
-            self.logger.warning(f"no sensor found for type='{self.sensor_type}' => done")
+            self.debugger.warning(f"no sensor found => done")
+            self.logger.warning(f"no sensor found => done")
             return
 
         # Query the (sensor_name, sensor_id) tuples
-        query = self.query_picker.select_sensor_name_id_mapping_from_sensor_type(self.sensor_type)
-        answer = self.dbconn.send(query)
-        name2id_map = dict(answer)
+        name2id_map = self.bot_query_executor.get_name_id_map()
 
         # Fetch API data
         url = self.url_builder.url()
@@ -70,26 +64,9 @@ class UpdateBot(base.BaseBot):
             return
 
         # Update locations
-        location_records = []
-        for fetched_active_location in fetched_active_locations:
-            name = fetched_active_location['name']
-            geometry = self.geom_builder_class(fetched_active_location)
-            if geometry.as_text() != database_active_locations[name]:
-                self.debugger.info(f"found new location={geometry.as_text()} for name='{name}' => update location")
-                self.logger.info(f"found new location={geometry.as_text()} for name='{name}' => update location")
-                sensor_id = name2id_map[name]
-                geom = geometry.geom_from_text()
-                record = rec.LocationRecord(sensor_id=sensor_id, valid_from=self.current_ts.ts, geom=geom)
-                location_records.append(record)
-
-        if not location_records:
-            self.debugger.info("all sensor have the same location => done")
-            self.logger.info("all sensor have the same location => done")
-            return
-
-        ############################## BUILD THE QUERY FROM VALUES #############################
-        query = self.query_picker.update_locations(location_records)
-        self.dbconn.send(query)
+        self.packet_executor.update_locations(fetched_locations = fetched_active_locations,
+                                              database_locations = database_active_locations,
+                                              name2id_map = name2id_map)
 
         self.debugger.info("location(s) successfully updated => done")
         self.logger.info("location(s) successfully updated => done")

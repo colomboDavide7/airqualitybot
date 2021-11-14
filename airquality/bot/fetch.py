@@ -8,41 +8,38 @@
 import airquality.bot.base as base
 import airquality.logger.decorator as log_decorator
 import airquality.api.fetch as api
-import airquality.database.conn as db
 import airquality.database.util.datatype.timestamp as ts
 import airquality.bot.util.datelooper as loop
-import airquality.bot.util.executor as ex
+import airquality.bot.util.executor as exe
 
 
+################################ FETCH BOT ################################
 class FetchBot(base.BaseBot):
 
-    def __init__(self, sensor_type: str, dbconn: db.DatabaseAdapter):
-        super(FetchBot, self).__init__(sensor_type=sensor_type, dbconn=dbconn)
+    def __init__(self):
+        super(FetchBot, self).__init__()
         self.date_looper_cls = None
         self.sensor_query_executor = None
-        self.bot_query_executor = None
 
     def add_date_looper_class(self, date_looper_class: loop.DateLooper):
         self.date_looper_cls = date_looper_class
 
-    def add_sensor_query_executor(self, executor: ex.SensorQueryExecutor):
+    def add_sensor_query_executor(self, executor: exe.SensorQueryExecutor):
         self.sensor_query_executor = executor
 
-    def add_bot_query_executor(self, executor: ex.BotQueryExecutor):
-        self.bot_query_executor = executor
-
+    ################################ RUN METHO ################################
     @log_decorator.log_decorator()
     def run(self):
 
         sensor_ids = self.bot_query_executor.get_sensor_id()
         if not sensor_ids:
-            self.debugger.warning(f"no sensor found for type='{self.sensor_type}' => done")
-            self.logger.warning(f"no sensor found for type='{self.sensor_type}' => done")
+            self.debugger.warning(f"no sensor found => done")
+            self.logger.warning(f"no sensor found => done")
             return
 
         measure_param_map = self.bot_query_executor.get_measure_param()
         if not measure_param_map:
-            raise SystemExit(f"bad database answer => empty 'measure_param' for type='{self.sensor_type}'")
+            raise SystemExit(f"bad database answer => empty 'measure_param'")
 
         ############################# CYCLE ON ALL SENSOR IDS FOUND ##############################
         for sensor_id in sensor_ids:
@@ -87,28 +84,18 @@ class FetchBot(base.BaseBot):
                     for data in api_data:
                         uniformed_packets.append(self.measure_rshp_class(data).reshape())
 
-                    # Remove packets already present into the database
-                    fetched_new_measures = []
-                    for packet in uniformed_packets:
-                        timestamp = self.timest_cls(packet['timestamp'])
-                        if timestamp.is_after(filter_timestamp):
-                            fetched_new_measures.append(packet)
+                    # Set 'filter_ts' dependency
+                    self.packet_filter.set_filter_ts(filter_timestamp)
 
-                    # Continue to the next 'sensor_id' if there are no new measurements
-                    if not fetched_new_measures:
+                    # Filter measure to keep only new measurements
+                    fetched_new_measurements = self.packet_filter.filter(uniformed_packets)
+                    if not fetched_new_measurements:
                         self.debugger.warning(f"no new measurements for sensor_id={sensor_id}")
                         self.logger.warning(f"no new measurements for sensor_id={sensor_id}")
                         continue
 
-                    # Debug and log new measurement timestamp range
-                    first_timestamp = fetched_new_measures[0]['timestamp']
-                    last_timestamp = fetched_new_measures[-1]['timestamp']
-                    self.debugger.info(f"found new measurements from {first_timestamp} to {last_timestamp}")
-                    self.logger.info(f"found new measurements from {first_timestamp} to {last_timestamp}")
-
                     # Add new measurements
-                    for fetched_new_measure in fetched_new_measures:
-                        pass
+                    # self.packet_executor.insert_measurements(fetched_new_measurements)
 
                     self.debugger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
                     self.logger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
