@@ -14,16 +14,33 @@ import airquality.database.util.sql.record as rec
 import airquality.database.util.datatype.timestamp as ts
 
 
+def get_insertion_executor_class(sensor_type: str):
+    if sensor_type == 'purpleair':
+        return PurpleairInsertionQueryExecutor
+    elif sensor_type == 'atmotube':
+        return AtmotubeInsertionQueryExecutor
+    elif sensor_type == 'thingspeak':
+        return ThingspeakInsertionQueryExecutor
+
+
 ################################ PURPLEAIR EXECUTOR CLASS ################################
 class PurpleairInsertionQueryExecutor(base.QueryExecutor):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, geom_builder_cls, timest_cls):
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, timest_cls):
         super(PurpleairInsertionQueryExecutor, self).__init__(conn=conn, query_builder=query_builder)
-        self.geom_builder_class = geom_builder_cls
+        self.postgis_cls = None
         self.timest_cls = timest_cls
+
+    def set_postgis_class(self, postgis_cls):
+        self.postgis_cls = postgis_cls
 
     ################################ METHOD FOR INITIALIZE SENSORS AND THEIR INFO ################################
     def initialize_sensors(self, fetched_sensors: List[Dict[str, Any]], start_id: int):
+
+        if self.postgis_cls is None:
+            raise SystemExit(f"{PurpleairInsertionQueryExecutor.__name__}: "
+                             f"bad setup => missing external dependency 'postgis_class'")
+
         location_values = []
         api_param_values = []
         sensor_values = []
@@ -36,7 +53,7 @@ class PurpleairInsertionQueryExecutor(base.QueryExecutor):
             sensor_value = rec.SensorRecord(sensor_id=start_id, packet=fetched_new_sensor)
             sensor_values.append(sensor_value)
             # **************************
-            geometry = self.geom_builder_class(packet=fetched_new_sensor)
+            geometry = self.postgis_cls(packet=fetched_new_sensor)
             valid_from = ts.CurrentTimestamp().ts
             geom = geometry.geom_from_text()
             geom_value = rec.LocationRecord(sensor_id=start_id, valid_from=valid_from, geom=geom)
@@ -73,7 +90,7 @@ class PurpleairInsertionQueryExecutor(base.QueryExecutor):
         logging_msg = []
         for fetched_active_location in fetched_locations:
             name = fetched_active_location['name']
-            geometry = self.geom_builder_class(fetched_active_location)
+            geometry = self.postgis_cls(fetched_active_location)
             # **************************
             if geometry.as_text() != database_locations[name]:
                 logging_msg.append(f"found new location={geometry.as_text()} for name='{name}' => update location")
@@ -101,8 +118,9 @@ class PurpleairInsertionQueryExecutor(base.QueryExecutor):
 ################################ ATMOTUBE EXECUTOR CLASS ################################
 class AtmotubeInsertionQueryExecutor(base.QueryExecutor):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, timest_cls):
         super(AtmotubeInsertionQueryExecutor, self).__init__(conn=conn, query_builder=query_builder)
+        self.timest_cls = timest_cls
 
     def insert_measurements(self, fetched_measurements: List[Dict[str, Any]]):
         pass
@@ -111,8 +129,9 @@ class AtmotubeInsertionQueryExecutor(base.QueryExecutor):
 ################################ THINGSPEAK EXECUTOR CLASS ################################
 class ThingspeakInsertionQueryExecutor(base.QueryExecutor):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, timest_cls):
         super(ThingspeakInsertionQueryExecutor, self).__init__(conn=conn, query_builder=query_builder)
+        self.timest_cls = timest_cls
 
     def insert_measurements(self, fetched_measurements: List[Dict[str, Any]]):
         pass
