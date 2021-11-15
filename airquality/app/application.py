@@ -84,7 +84,6 @@ class Application(log.Loggable):
         # file extension for building the TextParser
         file_extension = "json"
         if self.sensor_type in ('atmotube', 'thingspeak',):
-            print(url_param)
             file_extension = url_param['format']
 
         # TextParser
@@ -101,7 +100,8 @@ class Application(log.Loggable):
         self.info_messages.append(f"data_extractor_class={data_extractor.__class__.__name__}")
 
         # Sensor's API FetchWrapper
-        fetch_wrapper = api_op.FetchWrapper(url_builder=url_builder, data_extractor=data_extractor, response_parser=text_parser)
+        fetch_wrapper = api_op.FetchWrapper(url_builder=url_builder, data_extractor=data_extractor,
+                                            response_parser=text_parser)
         bot.add_fetch_wrapper(fetch_wrapper)
 
         ################################ INJECT DATABASE DEPENDENCIES ################################
@@ -121,9 +121,11 @@ class Application(log.Loggable):
 
         # SelectFromSensorID operation dependency
         if self.bot_name == 'fetch':
-            select_from_sensor_id_operation = select_op.SensorIDSelectWrapper(conn=db_adapter, query_builder=query_builder)
+            select_from_sensor_id_operation = select_op.SensorIDSelectWrapper(conn=db_adapter,
+                                                                              query_builder=query_builder)
             bot.add_sensor_id_select_wrapper(select_from_sensor_id_operation)
-            self.info_messages.append(f"sensor_id_select_wrapper_class={select_from_sensor_id_operation.__class__.__name__}")
+            self.info_messages.append(
+                f"sensor_id_select_wrapper_class={select_from_sensor_id_operation.__class__.__name__}")
 
         # SelectFromSensorType operation dependency
         sensor_type_select_wrapper = select_op.SensorTypeSelectWrapper(
@@ -163,8 +165,27 @@ class Application(log.Loggable):
             timest_cls = ts.get_timest_class(self.sensor_type)
             self.info_messages.append(f"timestamp_class={timest_cls.__name__}")
 
+            # Get the start measure id
+            start_measure_id = select_op.get_max_measure_id(
+                sensor_type=self.sensor_type,
+                sensor_type_select_wrapper=sensor_type_select_wrapper
+            )
+
             # MeasureAdapter
-            measure_adapter = meas.get_measure_adapter(sensor_type=self.sensor_type, timestamp_class=timest_cls)
+            measure_adapter = meas.get_measure_adapter(
+                sensor_type=self.sensor_type,
+                timestamp_class=timest_cls,
+                start_id=start_measure_id
+            )
+
+            # Inject 'postgis_class' dependency for Atmotube
+            if self.sensor_type == 'atmotube':
+                # PostGISGeometry class
+                postgis_geom_cls = geom.get_postgis_class(self.sensor_type)
+                self.info_messages.append(f"postgis_geom_class={postgis_geom_cls.__name__}")
+
+                measure_adapter.set_postgis_class(postgis_geom_cls)
+
             bot.add_api2database_adapter(measure_adapter)
             self.info_messages.append(f"measure_adapter_class={measure_adapter.__class__.__name__}")
 

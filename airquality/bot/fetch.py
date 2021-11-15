@@ -95,7 +95,11 @@ class FetchBot(base.BaseBot):
                         continue
 
                     # Add new measurements
-                    # self.insertion_executor.insert_measurements(fetched_new_measurements)
+                    self.insert_wrapper.insert_measurements(
+                        fetched_measurements=fetched_new_measurements,
+                        measure_param_map=measure_param_map,
+                        sensor_id=sensor_id
+                    )
 
                     self.debugger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
                     self.logger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")

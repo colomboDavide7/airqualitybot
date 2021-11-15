@@ -30,7 +30,7 @@ class BaseBot(log.Loggable):
     def add_fetch_wrapper(self, op: api_op.FetchWrapper):
         self.fetch_wrapper = op
 
-    def add_packet_filter(self, pck_filter: filt.PacketFilter):
+    def add_packet_filter(self, pck_filter: filt.SensorDataFilter):
         self.packet_filter = pck_filter
 
     ################################ INJECT EXECUTOR DEPENDENCIES ################################

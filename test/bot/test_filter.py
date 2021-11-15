@@ -22,7 +22,7 @@ class TestFilter(unittest.TestCase):
     def test_filter_atmotube_packets(self):
         test_packets = [{'timestamp': '2021-11-11T08:43:45.000Z'},
                         {'timestamp': '2021-11-11T08:45:45.000Z'}]
-        packet_filter = filt.DateFilter(timest_cls=self.atmotube_ts_cls)
+        packet_filter = filt.TimestampFilter(timest_cls=self.atmotube_ts_cls)
         packet_filter.set_filter_ts(self.filter_ts)
         actual_output = packet_filter.filter(test_packets)
         expected_output = [{'timestamp': '2021-11-11T08:45:45.000Z'}]
@@ -31,7 +31,7 @@ class TestFilter(unittest.TestCase):
     def test_filter_thingspeak_packets(self):
         test_packets = [{'timestamp': '2021-11-11T08:43:45Z'},
                         {'timestamp': '2021-11-11T08:45:45Z'}]
-        packet_filter = filt.DateFilter(timest_cls=self.thingspeak_ts_cls)
+        packet_filter = filt.TimestampFilter(timest_cls=self.thingspeak_ts_cls)
         packet_filter.set_filter_ts(self.filter_ts)
         actual_output = packet_filter.filter(test_packets)
         expected_output = [{'timestamp': '2021-11-11T08:45:45Z'}]
@@ -39,7 +39,7 @@ class TestFilter(unittest.TestCase):
 
     def test_system_exit_when_missing_filter_ts_dependency(self):
         test_packets = []
-        packet_filter = filt.DateFilter(timest_cls=self.thingspeak_ts_cls)
+        packet_filter = filt.TimestampFilter(timest_cls=self.thingspeak_ts_cls)
         with self.assertRaises(SystemExit):
             packet_filter.filter(test_packets)
 

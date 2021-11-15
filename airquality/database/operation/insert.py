@@ -79,7 +79,8 @@ class PurpleairInsertWrapper(base.DatabaseOperationWrapper):
             geometry = fetched_active_location['geom']
             # **************************
             if geometry.as_text() != database_locations[name]:
-                self.info_messages.append(f"found new location={geometry.as_text()} for name='{name}' => update location")
+                self.info_messages.append(
+                    f"found new location={geometry.as_text()} for name='{name}' => update location")
                 # **************************
                 sensor_id = name2id_map[name]
                 geom = geometry.geom_from_text()
@@ -108,8 +109,21 @@ class AtmotubeInsertWrapper(base.DatabaseOperationWrapper):
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(AtmotubeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
-    def insert_measurements(self, fetched_measurements: List[Dict[str, Any]]):
-        pass
+    def insert_measurements(self, fetched_measurements: List[Dict[str, Any]], measure_param_map: Dict[str, Any], sensor_id=None):
+        measure_records = []
+        for measure in fetched_measurements:
+            record = rec.MobileMeasureRecord(packet=measure)
+            record.set_measure_param_map(measure_param_map)
+            measure_records.append(record)
+
+        first_measure_id = fetched_measurements[0]['record_id']
+        last_measure_id = fetched_measurements[-1]['record_id']
+        self.info_messages.append(f"fetched measurements from id={first_measure_id} to id={last_measure_id}")
+        self.log_messages()
+
+        # Build the query for inserting all the measurements
+        exec_query = self.builder.insert_into_mobile_measurements(measure_records)
+        # self.conn.send(exec_query)
 
 
 ################################ THINGSPEAK INSERT OPERATION CLASS ################################
@@ -118,5 +132,18 @@ class ThingspeakInsertWrapper(base.DatabaseOperationWrapper):
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(ThingspeakInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
-    def insert_measurements(self, fetched_measurements: List[Dict[str, Any]]):
-        pass
+    def insert_measurements(self, fetched_measurements: List[Dict[str, Any]], measure_param_map: Dict[str, Any], sensor_id):
+        measure_records = []
+        for measure in fetched_measurements:
+            record = rec.StationMeasureRecord(packet=measure, sensor_id=sensor_id)
+            record.set_measure_param_map(measure_param_map)
+            measure_records.append(record)
+
+        first_measure_id = fetched_measurements[0]['record_id']
+        last_measure_id = fetched_measurements[-1]['record_id']
+        self.info_messages.append(f"fetched measurements from id={first_measure_id} to id={last_measure_id}")
+        self.log_messages()
+
+        # Build the query for inserting all the measurements
+        exec_query = self.builder.insert_into_station_measurements(measure_records)
+        # self.conn.send(exec_query)

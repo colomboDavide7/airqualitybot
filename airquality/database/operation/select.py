@@ -11,7 +11,16 @@ import airquality.database.util.conn as db
 import airquality.database.util.sql.query as query
 
 
-################################ SELECT FROM SENSOR TYPE - DATABASE OPERATION ################################
+def get_max_measure_id(sensor_type: str, sensor_type_select_wrapper):
+    if sensor_type == 'atmotube':
+        return sensor_type_select_wrapper.get_max_mobile_measure_id()
+    elif sensor_type == 'thingspeak':
+        return sensor_type_select_wrapper.get_max_station_measure_id()
+    else:
+        raise SystemExit(f"'{get_max_measure_id.__name__}()': bad type '{sensor_type}'")
+
+
+################################ SENSOR TYPE SELECT WRAPPER ################################
 class SensorTypeSelectWrapper(base.DatabaseOperationWrapper):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, sensor_type: str):
@@ -47,6 +56,34 @@ class SensorTypeSelectWrapper(base.DatabaseOperationWrapper):
         answer = self.conn.send(exec_query)
         return dict(answer)
 
+    def get_max_station_measure_id(self) -> int:
+        exec_query = self.builder.select_max_station_measure_id()
+        answer = self.conn.send(exec_query)
+        unfolded = [t[0] for t in answer]
+
+        measure_id = 1
+        if unfolded[0] is not None:
+            measure_id = unfolded[0] + 1
+
+        self.info_messages.append(f"new station measurements insertion start at id={measure_id!s}")
+        self.log_messages()
+
+        return measure_id
+
+    def get_max_mobile_measure_id(self):
+        exec_query = self.builder.select_max_mobile_measure_id()
+        answer = self.conn.send(exec_query)
+        unfolded = [t[0] for t in answer]
+
+        measure_id = 1
+        if unfolded[0] is not None:
+            measure_id = unfolded[0] + 1
+
+        self.info_messages.append(f"new mobile measurements insertion start at id={measure_id!s}")
+        self.log_messages()
+
+        return measure_id
+
     def get_max_sensor_id(self) -> int:
         exec_query = self.builder.select_max_sensor_id()
         answer = self.conn.send(exec_query)
@@ -58,13 +95,13 @@ class SensorTypeSelectWrapper(base.DatabaseOperationWrapper):
             sensor_id = unfolded[0] + 1
 
         # Log messages
-        self.info_messages.append(f"found database sensor_id={unfolded[0]} => new insertion starts at sensor_id={sensor_id!s}")
+        self.info_messages.append(f"new insertion starts at sensor_id={sensor_id!s}")
         self.log_messages()
 
         return sensor_id
 
 
-################################ SELECT FROM SENSOR ID - DATABASE OPERATION ################################
+################################ SENSOR ID SELECT WRAPPER ################################
 class SensorIDSelectWrapper(base.DatabaseOperationWrapper):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):

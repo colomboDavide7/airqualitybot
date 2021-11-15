@@ -14,7 +14,7 @@ import airquality.logger.loggable as log
 def get_packet_filter(bot_name: str):
 
     if bot_name == 'fetch':
-        return DateFilter()
+        return TimestampFilter()
     elif bot_name == 'init':
         return NameFilter()
     elif bot_name == 'update':
@@ -22,7 +22,7 @@ def get_packet_filter(bot_name: str):
 
 
 ################################ PACKET FILTER BASE CLASS ################################
-class PacketFilter(log.Loggable):
+class SensorDataFilter(log.Loggable):
 
     @abc.abstractmethod
     def filter(self, sensor_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -30,7 +30,7 @@ class PacketFilter(log.Loggable):
 
 
 ################################ NAME FILTER ################################
-class NameFilter(PacketFilter):
+class NameFilter(SensorDataFilter):
 
     def __init__(self):
         super(NameFilter, self).__init__()
@@ -60,7 +60,7 @@ class NameFilter(PacketFilter):
         return filtered_packets
 
 
-class NameKeeper(PacketFilter):
+class NameKeeper(SensorDataFilter):
 
     def __init__(self):
         super(NameKeeper, self).__init__()
@@ -88,10 +88,10 @@ class NameKeeper(PacketFilter):
 
 
 ################################ DATE FILTER ################################
-class DateFilter(PacketFilter):
+class TimestampFilter(SensorDataFilter):
 
     def __init__(self):
-        super(DateFilter, self).__init__()
+        super(TimestampFilter, self).__init__()
         self.filter_ts = None
 
     def set_filter_ts(self, filter_ts=ts.SQLTimestamp):
@@ -101,7 +101,7 @@ class DateFilter(PacketFilter):
 
         # Raise SystemExit if 'filter_ts' external dependency is missing
         if not self.filter_ts:
-            raise SystemExit(f"{DateFilter.__name__}: bad setup => missing external dependency 'filter_ts'")
+            raise SystemExit(f"{TimestampFilter.__name__}: bad setup => missing external dependency 'filter_ts'")
 
         # Filter the measurements: keep only those packets that came after the 'filter_ts'
         fetched_new_measures = []

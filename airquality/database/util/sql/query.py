@@ -41,13 +41,25 @@ class QueryBuilder:
     def select_last_acquisition(self, channel: str, sensor_id: int):
         return self.query_file.s8.format(sensor_id=sensor_id, channel=channel)
 
+    def select_max_mobile_measure_id(self):
+        return self.query_file.s9
+
+    def select_max_station_measure_id(self):
+        return self.query_file.s10
+
     ################################ METHODS THAT RETURN INSERT INTO QUERY STATEMENT ################################
 
-    def insert_into_mobile_measurements(self) -> str:
-        return self.query_file.i1
+    def insert_into_mobile_measurements(self, values: List[rec.MobileMeasureRecord]) -> str:
+        query = self.query_file.i1
+        for value in values:
+            query += value.record()
+        return query.strip(',') + ';'
 
-    def insert_into_station_measurements(self) -> str:
-        return self.query_file.i2
+    def insert_into_station_measurements(self, values: List[rec.StationMeasureRecord]) -> str:
+        query = self.query_file.i2
+        for value in values:
+            query += value.record()
+        return query.strip(',') + ';'
 
     def update_locations(self, values: List[rec.LocationRecord]) -> str:
         query = ""

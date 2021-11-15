@@ -14,7 +14,7 @@ POINT_GEOMETRY = "POINT({lng} {lat})"
 
 def get_postgis_class(sensor_type: str):
 
-    if sensor_type == 'purpleair':
+    if sensor_type in ('purpleair', 'atmotube'):
         return PointBuilder
     else:
         return None
