@@ -12,11 +12,11 @@ import airquality.file.util.parser as txt
 class TestFileParser(unittest.TestCase):
 
     def test_get_parser_class(self):
-        obj_cls = txt.get_parser_class('json')
+        obj_cls = txt.get_text_parser('json')
         self.assertEqual(obj_cls, txt.JSONParser)
 
         with self.assertRaises(SystemExit):
-            txt.get_parser_class('bad file extension')
+            txt.get_text_parser('bad file extension')
 
     def test_successfully_parse_json_file(self):
         test_raw = '{"hello": "world"}'

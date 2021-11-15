@@ -1,7 +1,6 @@
 ######################################################
 #
-# Owner: Davide Colombo
-# User: davidecolombo
+# Author: Davide Colombo
 # Date: 14/11/21 16:40
 # Description: INSERT HERE THE DESCRIPTION
 #

@@ -13,14 +13,14 @@ import airquality.adapter.api2db.measure as msr
 class TestMeasureReshaper(unittest.TestCase):
 
     def test_get_measure_reshaper_class(self):
-        obj_cls = msr.get_measure_adapter_class(sensor_type='atmotube')
+        obj_cls = msr.get_measure_adapter(sensor_type='atmotube')
         self.assertEqual(obj_cls, msr.AtmotubeMeasureAdapter)
 
-        obj_cls = msr.get_measure_adapter_class(sensor_type='thingspeak')
+        obj_cls = msr.get_measure_adapter(sensor_type='thingspeak')
         self.assertEqual(obj_cls, msr.ThingspeakMeasureAdapter)
 
         with self.assertRaises(SystemExit):
-            msr.get_measure_adapter_class(sensor_type='bad sensor type')
+            msr.get_measure_adapter(sensor_type='bad sensor type')
 
     ############################## TEST ATMOTUBE MEASURE RESHAPER #############################
     def test_successfully_reshape_atmotube_measurements(self):

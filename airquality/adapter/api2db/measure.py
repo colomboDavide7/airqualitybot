@@ -17,65 +17,63 @@ PAR_NAME = 'param_name'
 PAR_VAL = 'param_value'
 
 
-def get_measure_adapter_class(sensor_type: str):
-
+def get_measure_adapter(sensor_type: str, timestamp_class):
     if sensor_type == 'atmotube':
-        return AtmotubeMeasureAdapter
+        return AtmotubeMeasureAdapter(timestamp_class)
     elif sensor_type == 'thingspeak':
-        return ThingspeakMeasureAdapter
+        return ThingspeakMeasureAdapter(timestamp_class)
     else:
-        raise SystemExit(f"'{get_measure_adapter_class.__name__}()': "
-                         f"bad type => {MeasureAdapter.__name__} undefined for type='{sensor_type}'")
+        return None
 
 
 class MeasureAdapter(abc.ABC):
 
-    def __init__(self, data_packet: Dict[str, Any]):
-        self.packet = data_packet
+    def __init__(self, timestamp_cls):
+        self.timestamp_cls = timestamp_cls
 
     @abc.abstractmethod
-    def reshape(self) -> Dict[str, Any]:
+    def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
 
 class AtmotubeMeasureAdapter(MeasureAdapter):
 
-    def __init__(self, data_packet: Dict[str, Any]):
-        super(AtmotubeMeasureAdapter, self).__init__(data_packet)
+    def __init__(self, timestamp_cls):
+        super(AtmotubeMeasureAdapter, self).__init__(timestamp_cls=timestamp_cls)
 
-    def reshape(self) -> Dict[str, Any]:
-        uniformed_packet = {}
+    def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        uniformed_data = {}
         try:
-            if self.packet.get('coords') is not None:
-                uniformed_packet[LAT] = self.packet['coords']['lat']
-                uniformed_packet[LNG] = self.packet['coords']['lon']
-            uniformed_packet[TS] = self.packet['time']
-            uniformed_packet[PAR_NAME] = ['voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p']
-            uniformed_packet[PAR_VAL] = [self.packet.get('voc'), self.packet.get('pm1'), self.packet.get('pm25'),
-                                         self.packet.get('pm10'), self.packet.get('t'), self.packet.get('h'),
-                                         self.packet.get('p')]
+            if data.get('coords') is not None:
+                uniformed_data[LAT] = data['coords']['lat']
+                uniformed_data[LNG] = data['coords']['lon']
+            uniformed_data[TS] = self.timestamp_cls(data['time'])
+            uniformed_data[PAR_NAME] = ['voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p']
+            uniformed_data[PAR_VAL] = [data.get('voc'), data.get('pm1'), data.get('pm25'),
+                                       data.get('pm10'), data.get('t'), data.get('h'),
+                                       data.get('p')]
         except KeyError as ke:
             raise SystemExit(f"{AtmotubeMeasureAdapter.__name__}: bad data packet => missing key={ke!s}")
-        return uniformed_packet
+        return uniformed_data
 
 
 class ThingspeakMeasureAdapter(MeasureAdapter):
 
-    def __init__(self, data_packet: Dict[str, Any]):
-        super(ThingspeakMeasureAdapter, self).__init__(data_packet)
+    def __init__(self, timestamp_cls):
+        super(ThingspeakMeasureAdapter, self).__init__(timestamp_cls=timestamp_cls)
 
-    def reshape(self) -> Dict[str, Any]:
-        uniformed_packet = {}
+    def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        uniformed_data = {}
         try:
-            uniformed_packet[TS] = self.packet['created_at']
+            uniformed_data[TS] = self.timestamp_cls(data['created_at'])
             param_name = []
             param_value = []
-            for field in self.packet['fields']:
+            for field in data['fields']:
                 param_name.append(field['name'])
                 param_value.append(field['value'])
-            uniformed_packet[PAR_NAME] = param_name
-            uniformed_packet[PAR_VAL] = param_value
+            uniformed_data[PAR_NAME] = param_name
+            uniformed_data[PAR_VAL] = param_value
 
         except KeyError as ke:
             raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad data packet => missing key={ke!s}")
-        return uniformed_packet
+        return uniformed_data

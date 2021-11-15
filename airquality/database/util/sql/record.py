@@ -68,8 +68,6 @@ class SensorInfoRecord(RecordBuilder):
 
     def __init__(self, sensor_id: int, packet: Dict[str, Any]):
         super(SensorInfoRecord, self).__init__(sensor_id)
-
-        self.timest_class = None
         self.last_acquisition = packet.get('last_acquisition')
         self.channel = packet.get('channel')
 
@@ -81,12 +79,8 @@ class SensorInfoRecord(RecordBuilder):
                              f"number of last acquisition value(s)")
 
     def record(self) -> str:
-        records = ','.join(f"({self.sensor_id}, '{ch}', '{self.timest_class(ts).ts}')"
-                           for ch, ts in zip(self.channel, self.last_acquisition))
+        records = ','.join(f"({self.sensor_id}, '{ch}', '{tsmp.ts}')" for ch, tsmp in zip(self.channel, self.last_acquisition))
         return records.strip(',')
-
-    def add_timest_class(self, timest_cls):
-        self.timest_class = timest_cls
 
 
 # class MobileMeasurementSQLContainer(SQLBuilder):

@@ -6,52 +6,44 @@
 #
 #################################################
 import airquality.bot.base as base
-import airquality.logger.decorator as log_decorator
-import airquality.api.fetch as api
+import airquality.logger.util.decorator as log_decorator
 
 
 ################################ INITIALIZE BOT ################################
 class InitializeBot(base.BaseBot):
 
-    def __init__(self):
-        super(InitializeBot, self).__init__()
+    def __init__(self, log_filename: str, log_sub_dir: str):
+        super(InitializeBot, self).__init__(log_filename, log_sub_dir)
 
     ################################ RUN METHOD ################################
     @log_decorator.log_decorator()
-    def run(self):
+    def execute(self):
 
         # Query database sensor names
-        database_sensor_names = self.bot_query_executor.get_sensor_names()
-        if not database_sensor_names:
-            self.debugger.warning(f"no sensor found")
+        database_sensor_names = self.sensor_type_select_wrapper.get_sensor_names()
 
         # Fetch API data
-        url = self.url_builder.url()
-        raw_packets = api.fetch(url)
-        parsed_packets = self.text_parser_class(raw_packets).parse()
-        api_data = self.api_extr_class(parsed_packets).extract()
-        if not api_data:
-            self.debugger.warning("empty API answer => done")
-            self.logger.warning("empty API answer => done")
+        sensor_data = self.fetch_wrapper.get_sensor_data()
+        if not sensor_data:
+            self.warning_messages.append("empty API answer => done")
             return
 
         # Reshape API data
         uniformed_packets = []
-        for fetched_new_sensor in api_data:
-            uniformed_packets.append(self.sensor_rshp_class(fetched_new_sensor).reshape())
+        for data in sensor_data:
+            uniformed_packets.append(self.api2db_adapter.reshape(data))
 
         # Set external dependency to NameFilter
-        self.packet_filter.set_database_sensor_names(database_sensor_names)
+        self.packet_filter.set_name_to_filter(database_sensor_names)
 
         # Apply NameFilter
-        fetched_new_sensors = self.packet_filter.filter(uniformed_packets)
-        if not fetched_new_sensors:
-            self.debugger.info("all sensors are already present into the database => done")
-            self.logger.info("all sensors are already present into the database => done")
+        new_sensor_data = self.packet_filter.filter(uniformed_packets)
+        if not new_sensor_data:
+            self.info_messages.append("all sensors are already present into the database => done")
             return
 
         # Query the max 'sensor_id' for knowing the 'sensor_id' during the insertion
-        start_id = self.bot_query_executor.get_max_sensor_id()
+        max_sensor_id = self.sensor_type_select_wrapper.get_max_sensor_id()
 
         # Execute queries on sensors
-        self.insertion_executor.initialize_sensors(fetched_new_sensors, start_id)
+        self.insert_wrapper.initialize_sensors(sensor_data=new_sensor_data, start_id=max_sensor_id)

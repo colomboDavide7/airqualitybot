@@ -10,31 +10,25 @@ import json
 from typing import Dict, Any
 
 
-def get_parser_class(file_ext: str):
+def get_text_parser(file_ext: str):
 
     if file_ext == 'json':
-        return JSONParser
+        return JSONParser()
     else:
-        raise SystemExit(f"'{get_parser_class.__name__}()': bad file extension => '{file_ext}' is not supported")
+        raise SystemExit(f"'{get_text_parser.__name__}()': bad file extension => '{file_ext}' is not supported")
 
 
 class TextParser(abc.ABC):
 
-    def __init__(self, text: str):
-        self.text = text
-
     @abc.abstractmethod
-    def parse(self) -> Dict[str, Any]:
+    def parse(self, text: str) -> Dict[str, Any]:
         pass
 
 
 class JSONParser(TextParser):
 
-    def __init__(self, text: str):
-        super(JSONParser, self).__init__(text)
-
-    def parse(self) -> Dict[str, Any]:
+    def parse(self, text: str) -> Dict[str, Any]:
         try:
-            return json.loads(self.text)
+            return json.loads(text)
         except json.decoder.JSONDecodeError as je:
             raise SystemExit(f"{JSONParser.__name__}: bad json schema => {je!s}")

@@ -13,11 +13,11 @@ import airquality.adapter.api2db.sensor as sens
 class TestSensorReshaper(unittest.TestCase):
 
     def test_get_sensor_reshaper_class(self):
-        obj_cls = sens.get_sensor_adapter_class('purpleair')
+        obj_cls = sens.get_sensor_adapter('purpleair')
         self.assertEqual(obj_cls, sens.PurpleairSensorAdapter)
 
         with self.assertRaises(SystemExit):
-            sens.get_sensor_adapter_class('bad sensor type')
+            sens.get_sensor_adapter('bad sensor type')
 
     def test_successfully_reshape_purpleair_sensor_data(self):
         test_packet = {'name': 'n1', 'sensor_index': 'idx1', 'latitude': 'lat_val', 'longitude': 'lng_val',

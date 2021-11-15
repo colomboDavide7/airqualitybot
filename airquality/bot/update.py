@@ -6,67 +6,50 @@
 #
 #################################################
 import airquality.bot.base as base
-import airquality.logger.decorator as log_decorator
-import airquality.api.fetch as api
 
 
 ################################ UPDATE BOT CLASS ################################
 class UpdateBot(base.BaseBot):
 
-    def __init__(self):
-        super(UpdateBot, self).__init__()
+    def __init__(self, log_filename: str, log_sub_dir: str):
+        super(UpdateBot, self).__init__(log_filename, log_sub_dir)
 
     ################################ RUN METHOD ################################
-    @log_decorator.log_decorator()
-    def run(self):
+    def execute(self):
 
         # Query the active locations
-        database_active_locations = self.bot_query_executor.get_active_locations()
+        database_active_locations = self.sensor_type_select_wrapper.get_active_locations()
         if not database_active_locations:
-            self.debugger.warning(f"no sensor found => done")
-            self.logger.warning(f"no sensor found => done")
+            self.warning_messages.append(f"database active locations is empty => no sensor found")
             return
 
         # Query the (sensor_name, sensor_id) tuples
-        name2id_map = self.bot_query_executor.get_name_id_map()
+        name2id_map = self.sensor_type_select_wrapper.get_name_id_map()
 
         # Fetch API data
-        url = self.url_builder.url()
-        raw_packets = api.fetch(url)
-        parsed_packets = self.text_parser_class(raw_packets).parse()
-        api_data = self.api_extr_class(parsed_packets).extract()
-
-        if not api_data:
-            self.debugger.warning("empty API answer => done")
-            self.logger.warning("empty API answer => done")
+        sensor_data = self.fetch_wrapper.get_sensor_data()
+        if not sensor_data:
+            self.warning_messages.append("no sensor data found => empty API answer")
             return
 
         # Reshape packets such that there is not distinction between packets coming from different sensors
         uniformed_packets = []
-        for sensor_data in api_data:
-            uniformed_packets.append(self.sensor_rshp_class(sensor_data).reshape())
+        for data in sensor_data:
+            uniformed_packets.append(self.api2db_adapter.reshape(data))
 
-        # Filter out all the sensors which name is not in the 'active_locations' keys
-        fetched_active_locations = []
-        for packet in uniformed_packets:
-            if packet['name'] in database_active_locations:
-                fetched_active_locations.append(packet)
-                self.debugger.info(f"found active location '{packet['name']}'")
-                self.logger.info(f"found active location '{packet['name']}'")
-            else:
-                self.debugger.warning(f"skip location '{packet['name']}' => unknown")
-                self.logger.warning(f"skip location '{packet['name']}' => unknown")
+        # Add name to keep external dependency to PacketFilter
+        location_names = database_active_locations.keys()
+        self.packet_filter.set_name_to_keep(location_names)
 
-        # If no active locations were fetched, stop the program
+        # Apply PacketFilter
+        fetched_active_locations = self.packet_filter.filter(uniformed_packets)
         if not fetched_active_locations:
-            self.debugger.warning("all the locations fetched are unknown => done")
-            self.logger.warning("all the locations fetched are unknown => done")
+            self.warning_messages.append("all the locations fetched are unknown => done")
             return
 
         # Update locations
-        self.insertion_executor.update_locations(fetched_locations = fetched_active_locations,
-                                                 database_locations = database_active_locations,
-                                                 name2id_map = name2id_map)
+        self.insert_wrapper.update_locations(fetched_locations = fetched_active_locations,
+                                             database_locations = database_active_locations,
+                                             name2id_map = name2id_map)
 
-        self.debugger.info("location(s) successfully updated => done")
-        self.logger.info("location(s) successfully updated => done")
+        self.info_messages.append("location(s) successfully updated => done")

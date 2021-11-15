@@ -21,7 +21,7 @@ class TestAPIExtractor(unittest.TestCase):
         }
 
         expected_answer = [{"name": "n1", "sensor_index": "idx1"}, {"name": "n2", "sensor_index": "idx2"}]
-        actual_answer = extr.PurpleairAPIExtractor(test_api_answer).extract()
+        actual_answer = extr.PurpleairDataExtractor(test_api_answer).extract()
         self.assertEqual(actual_answer, expected_answer)
 
     def test_extract_empty_list_purpleair(self):
@@ -30,7 +30,7 @@ class TestAPIExtractor(unittest.TestCase):
             'data': []
         }
         expected_answer = []
-        actual_answer = extr.PurpleairAPIExtractor(test_api_answer).extract()
+        actual_answer = extr.PurpleairDataExtractor(test_api_answer).extract()
         self.assertEqual(actual_answer, expected_answer)
 
     ################################ TEST THINGSPEAK EXTRACTOR ################################
@@ -67,14 +67,14 @@ class TestAPIExtractor(unittest.TestCase):
                         {'name': 'humidity_a', 'value': '60'}],
              }]
 
-        actual_output = extr.ThingspeakAPIExtractor(test_api_answer, channel_name="1A").extract()
+        actual_output = extr.ThingspeakDataExtractor(test_api_answer, channel_name="1A").extract()
         self.assertEqual(actual_output, expected_answer)
 
     def test_extract_empty_list_thingspeak(self):
         test_api_answer = {"channel": {'param1': 'val1'},
                            "feeds": []}
         expected_answer = []
-        actual_output = extr.ThingspeakAPIExtractor(test_api_answer, channel_name="1A").extract()
+        actual_output = extr.ThingspeakDataExtractor(test_api_answer, channel_name="1A").extract()
         self.assertEqual(actual_output, expected_answer)
 
     ################################ TEST ATMOTUBE EXTRACTOR ################################
@@ -87,13 +87,13 @@ class TestAPIExtractor(unittest.TestCase):
                            }
 
         expected_output = [{'time': "2021-10-02T00:00:00.000Z"}, {'time': "2021-10-02T00:01:00.000Z"}]
-        actual_output = extr.AtmotubeAPIExtractor(test_api_answer).extract()
+        actual_output = extr.AtmotubeDataExtractor(test_api_answer).extract()
         self.assertEqual(actual_output, expected_output)
 
     def test_extract_empty_list_atmotube(self):
         test_api_answer = {"data": {"items": []}}
         expected_output = []
-        actual_output = extr.AtmotubeAPIExtractor(test_api_answer).extract()
+        actual_output = extr.AtmotubeDataExtractor(test_api_answer).extract()
         self.assertEqual(actual_output, expected_output)
 
 

@@ -46,7 +46,7 @@ class TestFilter(unittest.TestCase):
     def test_purpleair_name_filter(self):
         test_fetched_sensors = [{"name": 'n1 (idx1)'}, {"name": 'n2 (idx2)'}, {"name": 'n3 (idx3)'}]
         packet_filter = filt.NameFilter()
-        packet_filter.set_database_sensor_names(self.purpleair_names)
+        packet_filter.set_name_to_filter(self.purpleair_names)
         actual_output = packet_filter.filter(test_fetched_sensors)
         expected_output = [{"name": 'n3 (idx3)'}]
         self.assertEqual(actual_output, expected_output)

@@ -1,7 +1,6 @@
 ######################################################
 #
-# Owner: Davide Colombo
-# User: davidecolombo
+# Author: Davide Colombo
 # Date: 02/11/21 12:29
 # Description: this script defines a class for building geometry type string based on API parameters
 #
@@ -11,6 +10,14 @@ from typing import Dict, Any
 
 ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 POINT_GEOMETRY = "POINT({lng} {lat})"
+
+
+def get_postgis_class(sensor_type: str):
+
+    if sensor_type == 'purpleair':
+        return PointBuilder
+    else:
+        return None
 
 
 class GeometryBuilder(abc.ABC):

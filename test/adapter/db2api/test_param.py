@@ -13,18 +13,18 @@ import airquality.adapter.db2api.param as par
 class TestParamReshaper(unittest.TestCase):
 
     def test_param_reshaper_class(self):
-        obj_cls = par.get_param_adapter_class('atmotube')
+        obj_cls = par.get_param_adapter('atmotube')
         self.assertEqual(obj_cls, par.AtmotubeParamAdapter)
 
-        obj_cls = par.get_param_adapter_class('thingspeak')
+        obj_cls = par.get_param_adapter('thingspeak')
         self.assertEqual(obj_cls, par.ThingspeakParamAdapter)
 
         with self.assertRaises(SystemExit):
-            par.get_param_adapter_class('purpleair')
+            par.get_param_adapter('purpleair')
 
     def test_successfully_uniform_reshape_atmotube_api_param(self):
         test_api_param = {'mac': 'some_mac', 'api_key': 'some_key'}
-        expected_output = [{'mac': 'some_mac', 'api_key': 'some_key', 'channel_name': 'main'}]
+        expected_output = [{'mac': 'some_mac', 'api_key': 'some_key', 'channel_name': 'app'}]
         actual_output = par.AtmotubeParamAdapter(test_api_param).reshape()
         self.assertEqual(actual_output, expected_output)
 

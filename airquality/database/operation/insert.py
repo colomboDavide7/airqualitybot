@@ -5,64 +5,52 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.bot.util.executor.base as base
 from typing import List, Dict, Any
-import airquality.database.conn as db
+import airquality.database.operation.base as base
+import airquality.database.util.conn as db
 import airquality.database.util.sql.query as query
 import airquality.database.util.sql.record as rec
 import airquality.database.util.datatype.timestamp as ts
 
 
-def get_insertion_executor_class(sensor_type: str):
+def get_insert_wrapper(sensor_type: str, conn: db.DatabaseAdapter, builder: query.QueryBuilder):
     if sensor_type == 'purpleair':
-        return PurpleairInsertionQueryExecutor
+        return PurpleairInsertWrapper(conn=conn, query_builder=builder)
     elif sensor_type == 'atmotube':
-        return AtmotubeInsertionQueryExecutor
+        return AtmotubeInsertWrapper(conn=conn, query_builder=builder)
     elif sensor_type == 'thingspeak':
-        return ThingspeakInsertionQueryExecutor
+        return ThingspeakInsertWrapper(conn=conn, query_builder=builder)
 
 
 ################################ PURPLEAIR EXECUTOR CLASS ################################
-class PurpleairInsertionQueryExecutor(base.QueryExecutor):
+class PurpleairInsertWrapper(base.DatabaseOperationWrapper):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, timest_cls):
-        super(PurpleairInsertionQueryExecutor, self).__init__(conn=conn, query_builder=query_builder)
-        self.postgis_cls = None
-        self.timest_cls = timest_cls
-
-    def set_postgis_class(self, postgis_cls):
-        self.postgis_cls = postgis_cls
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
+        super(PurpleairInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
     ################################ METHOD FOR INITIALIZE SENSORS AND THEIR INFO ################################
-    def initialize_sensors(self, fetched_sensors: List[Dict[str, Any]], start_id: int):
-
-        if self.postgis_cls is None:
-            raise SystemExit(f"{PurpleairInsertionQueryExecutor.__name__}: "
-                             f"bad setup => missing external dependency 'postgis_class'")
+    def initialize_sensors(self, sensor_data: List[Dict[str, Any]], start_id: int):
 
         location_values = []
         api_param_values = []
         sensor_values = []
         sensor_info_values = []
 
-        logging_msg = []
-        for fetched_new_sensor in fetched_sensors:
-            logging_msg.append(f"adding sensor '{fetched_new_sensor['name']}' with id={start_id}")
+        for data in sensor_data:
+            self.info_messages.append(f"adding sensor '{data['name']}' with id={start_id}")
             # **************************
-            sensor_value = rec.SensorRecord(sensor_id=start_id, packet=fetched_new_sensor)
+            sensor_value = rec.SensorRecord(sensor_id=start_id, packet=data)
             sensor_values.append(sensor_value)
             # **************************
-            geometry = self.postgis_cls(packet=fetched_new_sensor)
             valid_from = ts.CurrentTimestamp().ts
-            geom = geometry.geom_from_text()
+            geom = data['geom'].geom_from_text()
             geom_value = rec.LocationRecord(sensor_id=start_id, valid_from=valid_from, geom=geom)
             location_values.append(geom_value)
             # **************************
-            api_param_value = rec.APIParamRecord(sensor_id=start_id, packet=fetched_new_sensor)
+            api_param_value = rec.APIParamRecord(sensor_id=start_id, packet=data)
             api_param_values.append(api_param_value)
             # **************************
-            sensor_info_value = rec.SensorInfoRecord(sensor_id=start_id, packet=fetched_new_sensor)
-            sensor_info_value.add_timest_class(timest_cls=self.timest_cls)
+            sensor_info_value = rec.SensorInfoRecord(sensor_id=start_id, packet=data)
             sensor_info_values.append(sensor_info_value)
             # **************************
             start_id += 1
@@ -77,7 +65,7 @@ class PurpleairInsertionQueryExecutor(base.QueryExecutor):
         self.conn.send(exec_query)
 
         # Log messages
-        self.log_messages(logging_msg)
+        self.log_messages()
 
     ################################ METHOD FOR UPDATE LOCATIONS ################################
     def update_locations(self,
@@ -86,13 +74,12 @@ class PurpleairInsertionQueryExecutor(base.QueryExecutor):
                          name2id_map: Dict[str, Any]):
 
         location_records = []
-        logging_msg = []
         for fetched_active_location in fetched_locations:
             name = fetched_active_location['name']
-            geometry = self.postgis_cls(fetched_active_location)
+            geometry = fetched_active_location['geom']
             # **************************
             if geometry.as_text() != database_locations[name]:
-                logging_msg.append(f"found new location={geometry.as_text()} for name='{name}' => update location")
+                self.info_messages.append(f"found new location={geometry.as_text()} for name='{name}' => update location")
                 # **************************
                 sensor_id = name2id_map[name]
                 geom = geometry.geom_from_text()
@@ -103,7 +90,8 @@ class PurpleairInsertionQueryExecutor(base.QueryExecutor):
 
         # Log message when no location has been updated
         if not location_records:
-            self.log_messages(["all sensors have the same location => done"])
+            self.warning_messages.append("all sensors have the same location => done")
+            self.log_messages()
             return
 
         # Execute the queries
@@ -111,26 +99,24 @@ class PurpleairInsertionQueryExecutor(base.QueryExecutor):
         self.conn.send(exec_query)
 
         # Log messages
-        self.log_messages(logging_msg)
+        self.log_messages()
 
 
-################################ ATMOTUBE EXECUTOR CLASS ################################
-class AtmotubeInsertionQueryExecutor(base.QueryExecutor):
+################################ ATMOTUBE INSERT OPERATION CLASS ################################
+class AtmotubeInsertWrapper(base.DatabaseOperationWrapper):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, timest_cls):
-        super(AtmotubeInsertionQueryExecutor, self).__init__(conn=conn, query_builder=query_builder)
-        self.timest_cls = timest_cls
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
+        super(AtmotubeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
     def insert_measurements(self, fetched_measurements: List[Dict[str, Any]]):
         pass
 
 
-################################ THINGSPEAK EXECUTOR CLASS ################################
-class ThingspeakInsertionQueryExecutor(base.QueryExecutor):
+################################ THINGSPEAK INSERT OPERATION CLASS ################################
+class ThingspeakInsertWrapper(base.DatabaseOperationWrapper):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, timest_cls):
-        super(ThingspeakInsertionQueryExecutor, self).__init__(conn=conn, query_builder=query_builder)
-        self.timest_cls = timest_cls
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
+        super(ThingspeakInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
     def insert_measurements(self, fetched_measurements: List[Dict[str, Any]]):
         pass

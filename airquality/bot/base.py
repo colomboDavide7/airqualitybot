@@ -1,76 +1,59 @@
 ######################################################
 #
-# Owner: Davide Colombo
-# User: davidecolombo
+# Author: Davide Colombo
 # Date: 12/11/21 10:28
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
 import abc
-import airquality.api.util.extractor as extr
-import airquality.file.util.parser as txt
-import airquality.adapter.api2db.sensor as sens
-import airquality.adapter.db2api.param as par
-import airquality.adapter.api2db.measure as meas
-import airquality.api.util.url as u
-import airquality.bot.util.executor.select as sel
-import airquality.bot.util.executor.base as base_exec
+import airquality.logger.loggable as log
+import airquality.api.fetch as api_op
+import airquality.database.operation.select as select_op
+import airquality.database.operation.base as db_op_base
 import airquality.bot.util.filter as filt
 
 
-class BaseBot(abc.ABC):
+class BaseBot(log.Loggable):
 
-    def __init__(self, log_filename='', log_sub_dir=''):
-
-        self.url_builder = None
-        self.api_extr_class = None
-        self.param_rshp_class = None
-        self.sensor_rshp_class = None
-        self.measure_rshp_class = None
-        self.text_parser_class = None
-        self.bot_query_executor = None
-        self.insertion_executor = None
+    def __init__(self, log_filename: str, log_sub_dir: str):
+        super(BaseBot, self).__init__()
+        self.db2api_adapter = None
+        self.api2db_adapter = None
+        self.sensor_type_select_wrapper = None
+        self.insert_wrapper = None
         self.packet_filter = None
+        self.fetch_wrapper = None
         self.log_filename = log_filename
         self.log_sub_dir = log_sub_dir
-        self.logger = None
-        self.debugger = None
 
     ################################ METHODS FOR ADDING EXTERNAL DEPENDENCIES ################################
-    def add_text_parser_class(self, text_parser_class: txt.TextParser):
-        self.text_parser_class = text_parser_class
+    def add_fetch_wrapper(self, op: api_op.FetchWrapper):
+        self.fetch_wrapper = op
 
     def add_packet_filter(self, pck_filter: filt.PacketFilter):
         self.packet_filter = pck_filter
 
-    def add_bot_query_executor(self, executor: sel.BotQueryExecutor):
-        self.bot_query_executor = executor
+    ################################ INJECT EXECUTOR DEPENDENCIES ################################
+    def add_sensor_type_select_wrapper(self, op: select_op.SensorTypeSelectWrapper):
+        self.sensor_type_select_wrapper = op
 
-    def add_insertion_executor(self, executor: base_exec.QueryExecutor):
-        self.insertion_executor = executor
+    def add_insert_wrapper(self, op: db_op_base.DatabaseOperationWrapper):
+        self.insert_wrapper = op
 
-    def add_url_builder(self, url_builder: u.URLBuilder):
-        self.url_builder = url_builder
+    ################################ INJECT ADAPTER DEPENDENCIES ################################
+    def add_api2database_adapter(self, adapter):
+        """Adapter is one within SensorAdapter or MeasureAdapter"""
+        self.api2db_adapter = adapter
 
-    def add_api_extractor_class(self, api_extr_class=extr.APIExtractor):
-        self.api_extr_class = api_extr_class
-
-    def add_sensor_rshp_class(self, sensor_rshp_class=sens.SensorAdapter):
-        self.sensor_rshp_class = sensor_rshp_class
-
-    def add_measure_rshp_class(self, measure_rshp_class=meas.MeasureAdapter):
-        self.measure_rshp_class = measure_rshp_class
-
-    def add_param_rshp_class(self, param_rshp_class=par.ParamAdapter):
-        self.param_rshp_class = param_rshp_class
-
-    def add_logger(self, logger):
-        self.logger = logger
-
-    def add_debugger(self, debugger):
-        self.debugger = debugger
+    def add_db2api_adapter(self, adapter):
+        """Adapter argument is ParamAdapter"""
+        self.db2api_adapter = adapter
 
     ################################ ABSTRACT METHODS ################################
     @abc.abstractmethod
-    def run(self):
+    def execute(self):
+        pass
+
+    def safe_shut_down(self):
+        # TODO: shut down database connection
         pass

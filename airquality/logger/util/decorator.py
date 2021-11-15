@@ -1,7 +1,6 @@
 ######################################################
 #
-# Owner: Davide Colombo
-# User: davidecolombo
+# Author: Davide Colombo
 # Date: 10/11/21 20:07
 # Description: INSERT HERE THE DESCRIPTION
 #
@@ -11,8 +10,8 @@ import inspect
 import os
 import sys
 
-import airquality.logger.log as log
-import airquality.logger.fmt as formt
+import airquality.logger.util.log as log
+import airquality.logger.util.fmt as formt
 
 
 def log_decorator(_func=None):

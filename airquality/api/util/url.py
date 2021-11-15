@@ -1,6 +1,6 @@
 #################################################
 #
-# @Author: davidecolombo
+# Author: Davide Colombo
 # @Date: mer, 20-10-2021, 09:52
 # @Description: this script defines a simple factory class for building valid URL querystring based on sensor type.
 #
