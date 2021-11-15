@@ -6,17 +6,15 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import os
 import sys
 import dotenv
 
 # IMPORT MODULES
-import airquality.logger.log as log
-import airquality.logger.fmt as formt
+import airquality.main.util.args as arg
+import airquality.main.util.make as make
 import airquality.bot.util.fact as fact
 import airquality.file.structured.json as struct
 import airquality.file.util.parser as txt
-import airquality.database.conn as db
 import airquality.database.util.datatype.timestamp as ts
 import airquality.database.util.postgis.geom as geom
 import airquality.database.util.sql.query as qry
@@ -37,70 +35,12 @@ API_FILE = "properties/api.json"
 QUERY_FILE = "properties/query.json"
 
 
-################################ MAKE DEBUGGER FUNCTION ################################
-def make_console_debugger(use_color=True):
-    """Function that creates a Logger with a StreamHandler and a ColoredFormatter."""
-
-    handler_cls = log.get_handler_cls(use_file=False)
-    handler = handler_cls()
-    fmt_cls = formt.get_formatter_cls(use_color)
-    fmt = fmt_cls(formt.FMT_STR)
-    return log.get_logger(handler=handler, formatter=fmt)
-
-
-################################ MAKE LOGGER FUNCTION ################################
-def make_file_logger(file_path: str, mode='a+'):
-    """Function that creates a Logger instance with a FileHandler and a CustomFormatter."""
-
-    handler_cls = log.get_handler_cls(use_file=True)
-    handler = handler_cls(file_path, mode)
-    fmt_cls = formt.get_formatter_cls()
-    fmt = fmt_cls(formt.FMT_STR)
-    return log.get_logger(handler=handler, formatter=fmt)
-
-
-################################ MAKE DATABASE ADAPETR FUNCTION ################################
-def make_database_adapter():
-    """Function that checks if the 'DBCONN' key is present in the '.env' file, handles errors in case it will miss
-    and return a database adapter object."""
-
-    if not os.environ.get('DBCONN'):
-        raise SystemExit(f"'{make_database_adapter.__name__}()': bad '.env' file structure => missing param='DBCONN'")
-    return db.Psycopg2DatabaseAdapter(os.environ['DBCONN'])
-
-
-################################ COMMANDLINE ARGUMENTS EXIT FUNCTION ################################
-def exit_on_bad_commandline_arguments(bot_name: str, sensor_type: str):
-    """Function that raises SystemExit if the combination of the two command line arguments is invalid."""
-
-    err_msg = f"'{exit_on_bad_commandline_arguments.__name__}()': bad arguments => "
-    raise_error = False
-
-    if bot_name == 'init':
-        if sensor_type not in ('purpleair',):
-            err_msg += f"'{bot_name}' bot valid type is: ['purpleair']"
-            raise_error = True
-
-    elif bot_name == 'update':
-        if sensor_type not in ('purpleair',):
-            err_msg += f"'{bot_name}' bot valid type is: ['purpleair']"
-            raise_error = True
-
-    elif bot_name == 'fetch':
-        if sensor_type not in ('atmotube', 'thingspeak',):
-            err_msg += f"'{bot_name}' bot valid types are: ['atmotube', 'thingspeak']"
-            raise_error = True
-
-    if raise_error:
-        raise SystemExit(err_msg)
-
-
 ################################ LOADING '.env' FILE ################################
 dotenv.load_dotenv(dotenv_path="./properties/.env")
 
 ################################ ERROR LOGGER AND DEBUGGER VARIABLES ################################
-error_logger = make_file_logger(file_path='log/errors.log')
-debugger = make_console_debugger(use_color=True)
+error_logger = make.make_file_logger(file_path='log/errors.log')
+debugger = make.make_console_debugger(use_color=True)
 message_to_log = []
 
 
@@ -118,19 +58,20 @@ def main():
         ################################ CHECK COMMAND LINE ARGUMENTS ################################
         bot_name = args[0]
         sensor_type = args[1]
-        exit_on_bad_commandline_arguments(bot_name=bot_name, sensor_type=sensor_type)
+        arg.exit_on_bad_commandline_arguments(bot_name=bot_name, sensor_type=sensor_type)
 
         ################################ BOT SPECIFIC LOGGER ################################
-        logger = make_file_logger(file_path=f'log/{bot_name}.log')
+        logger = make.make_file_logger(file_path=f'log/{bot_name}.log')
 
-        db_adapter = make_database_adapter()                            # make database adapter for sending query
+        db_adapter = make.make_database_adapter()
 
-        query_file = struct.JSONFile(QUERY_FILE)          # read the 'query.json' file and incapsulate it in a JSONFile object
-        query_builder = qry.QueryBuilder(query_file)      # create a QueryBuilder by injecting the JSONFile object
+        ################################ LOAD PROPERTY FILES ################################
+        file_object = struct.JSONFile(QUERY_FILE)
+        query_builder = qry.QueryBuilder(file_object)
 
-        api_file = struct.JSONFile(API_FILE, path_to_object=[sensor_type])      # read 'api.json' file and make JSONFile object
-        address = api_file.api_address
-        url_param = api_file.url_param
+        api_file_object = struct.JSONFile(API_FILE, path_to_object=[sensor_type])
+        address = api_file_object.api_address
+        url_param = api_file_object.url_param
 
         # Append secret 'api_key' for purpleair sensors
         if sensor_type == 'purpleair':
@@ -157,7 +98,6 @@ def main():
         # APIExtractor class
         extractor_class = ext.get_api_extractor_class(sensor_type)
         message_to_log.append(f"extractor_class={extractor_class.__name__}")
-
 
         bot_class = fact.get_bot_class(bot_name=bot_name)
         message_to_log.append(f"bot_class={bot_class.__name__}")
