@@ -37,43 +37,48 @@ API_FILE = "properties/api.json"
 QUERY_FILE = "properties/query.json"
 
 
-################################ ENTRY POINT OF THE PROGRAM ################################
-def main():
+def make_console_debugger(use_color=True):
+    """Function that creates a Logger with a StreamHandler and a ColoredFormatter"""
+
+    handler_cls = log.get_handler_cls(use_file=False)
+    handler = handler_cls()
+    fmt_cls = formt.get_formatter_cls(use_color)
+    fmt = fmt_cls(formt.FMT_STR)
+    return log.get_logger(handler=handler, formatter=fmt)
+
+
+def make_file_logger(file_path: str, mode='a+'):
+    """Function that creates a Logger instance with a FileHandler and a CustomFormatter"""
+
     handler_cls = log.get_handler_cls(use_file=True)
-    handler = handler_cls('log/errors.log', 'a+')
+    handler = handler_cls(file_path, mode)
     fmt_cls = formt.get_formatter_cls()
     fmt = fmt_cls(formt.FMT_STR)
-    error_logger = log.get_logger(handler=handler, formatter=fmt)
+    return log.get_logger(handler=handler, formatter=fmt)
 
+
+################################ ENTRY POINT OF THE PROGRAM ################################
+def main():
+
+    # Create an 'error_logger' that keep trace only of errors
+    error_logger = make_file_logger(file_path='log/errors.log')
+
+    # Argument checking
     args = sys.argv[1:]
     if not args:
         error_logger.error(f"'{main.__name__}()': bad usage => missing required arguments")
-        print(f"{USAGE}")
+        print(USAGE)
         sys.exit(1)
 
-    # Define a list of message to log
-    messages = []
+    bot_name = args[0]              # 'bot name' identifies the broader operation of the bot
+    sensor_type = args[1]           # 'sensor_type' identifies how the operations are specifically handled
 
-    # Extract arguments
-    bot_name = args[0]
-    sensor_type = args[1]
+    logger = make_file_logger(file_path=f'log/{bot_name}.log')              # Create specific file 'logger'
+    debugger = make_console_debugger(use_color=True)                        # Create console 'debugger'
 
-    # Create 'logger'
-    handler_cls = log.get_handler_cls(use_file=True)
-    handler = handler_cls(f'log/{bot_name}.log', 'a+')
-    fmt_cls = formt.get_formatter_cls()
-    fmt = fmt_cls(formt.FMT_STR)
-    logger = log.get_logger(handler=handler, formatter=fmt)
-
-    # Create 'debugger'
-    handler_cls = log.get_handler_cls(use_file=False)
-    handler = handler_cls()
-    fmt_cls = formt.get_formatter_cls(use_color=True)
-    fmt = fmt_cls(formt.FMT_STR)
-    debugger = log.get_logger(handler=handler, formatter=fmt)
+    messages = []                   # define a list of messages to log both on file and console
 
     try:
-
         # Get the 'bot_class' to use in the program
         bot_class = fact.get_bot_class(bot_name=bot_name, sensor_type=sensor_type)
         messages.append(f"bot_class={bot_class.__name__}")
