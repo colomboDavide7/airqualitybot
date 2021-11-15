@@ -57,7 +57,7 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
         try:
             uniformed_data[REC_ID] = self.start_id
             self.start_id += 1
-            uniformed_data[GEOM] = None
+            uniformed_data[GEOM] = "NULL"
             if data.get('coords') is not None:
                 geom_data = {LAT: data['coords']['lat'], LNG: data['coords']['lon']}
                 uniformed_data[GEOM] = self.postgis_class(geom_data).geom_from_text()
@@ -66,6 +66,7 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
             uniformed_data[PAR_VAL] = [data.get('voc'), data.get('pm1'), data.get('pm25'),
                                        data.get('pm10'), data.get('t'), data.get('h'),
                                        data.get('p')]
+
         except KeyError as ke:
             raise SystemExit(f"{AtmotubeMeasureAdapter.__name__}: bad data packet => missing key={ke!s}")
         return uniformed_data

@@ -47,20 +47,23 @@ class QueryBuilder:
     def select_max_station_measure_id(self):
         return self.query_file.s10
 
-    ################################ METHODS THAT RETURN INSERT INTO QUERY STATEMENT ################################
+    ################################ INSERT MOBILE MEASUREMENTS ################################
+    def insert_mobile_measurements(self, sensor_id: int, channel_name: str, values: List[rec.MobileMeasureRecord]) -> str:
+        query = ""
+        query += self.__insert_into_mobile_measurements(values)
+        last_timestamp = values[-1].timestamp.ts
+        query += self.__update_last_acquisition(sensor_id, channel_name, last_timestamp=last_timestamp)
+        return query
 
-    def insert_into_mobile_measurements(self, values: List[rec.MobileMeasureRecord]) -> str:
-        query = self.query_file.i1
-        for value in values:
-            query += value.record()
-        return query.strip(',') + ';'
+    ################################ INSERT STATION MEASUREMENTS ################################
+    def insert_station_measurements(self, sensor_id: int, channel_name: str, values: List[rec.StationMeasureRecord]):
+        query = ""
+        query += self.__insert_into_station_measurements(values)
+        last_timestamp = values[-1].timestamp.ts
+        query += self.__update_last_acquisition(sensor_id, channel_name, last_timestamp=last_timestamp)
+        return query
 
-    def insert_into_station_measurements(self, values: List[rec.StationMeasureRecord]) -> str:
-        query = self.query_file.i2
-        for value in values:
-            query += value.record()
-        return query.strip(',') + ';'
-
+    ################################ UPDATE SENSOR AT LOCATION ################################
     def update_locations(self, values: List[rec.LocationRecord]) -> str:
         query = ""
         for value in values:
@@ -68,6 +71,7 @@ class QueryBuilder:
         query += self.__insert_location_values(values)
         return query
 
+    ################################ INITIALIZE SENSORS ################################
     def initialize_sensors(self,
                            sensor_values: List[rec.SensorRecord],
                            api_param_values: List[rec.APIParamRecord],
@@ -103,3 +107,18 @@ class QueryBuilder:
         for value in values:
             query += value.record() + ','
         return query.strip(',') + ';'
+
+    def __insert_into_station_measurements(self, values: List[rec.StationMeasureRecord]) -> str:
+        query = self.query_file.i2
+        for value in values:
+            query += value.record() + ','
+        return query.strip(',') + ';'
+
+    def __insert_into_mobile_measurements(self, values: List[rec.MobileMeasureRecord]) -> str:
+        query = self.query_file.i1
+        for value in values:
+            query += value.record() + ','
+        return query.strip(',') + ';'
+
+    def __update_last_acquisition(self, sensor_id: int, channel_name: str, last_timestamp):
+        return self.query_file.u4.format(ts=last_timestamp, sensor_id=sensor_id, channel=channel_name)

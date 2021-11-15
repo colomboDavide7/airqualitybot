@@ -154,8 +154,12 @@ class Application(log.Loggable):
             postgis_geom_cls = geom.get_postgis_class(self.sensor_type)
             self.info_messages.append(f"postgis_geom_class={postgis_geom_cls.__name__}")
 
+            # Timestamp
+            timest_cls = ts.get_timest_class(self.sensor_type)
+            self.info_messages.append(f"timestamp_class={timest_cls.__name__}")
+
             # SensorAdapter
-            sensor_adapter = sens.get_sensor_adapter(self.sensor_type, postgis_geom_cls)
+            sensor_adapter = sens.get_sensor_adapter(self.sensor_type, postgis_geom_cls, timest_cls)
             bot.add_api2database_adapter(sensor_adapter)
             self.info_messages.append(f"sensor_adapter_class={sensor_adapter.__class__.__name__}")
 

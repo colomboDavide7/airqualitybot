@@ -109,7 +109,12 @@ class AtmotubeInsertWrapper(base.DatabaseOperationWrapper):
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(AtmotubeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
-    def insert_measurements(self, fetched_measurements: List[Dict[str, Any]], measure_param_map: Dict[str, Any], sensor_id=None):
+    def insert_measurements(self,
+                            fetched_measurements: List[Dict[str, Any]],
+                            measure_param_map: Dict[str, Any],
+                            sensor_id: int,
+                            channel_name: str
+                            ):
         measure_records = []
         for measure in fetched_measurements:
             record = rec.MobileMeasureRecord(packet=measure)
@@ -122,8 +127,12 @@ class AtmotubeInsertWrapper(base.DatabaseOperationWrapper):
         self.log_messages()
 
         # Build the query for inserting all the measurements
-        exec_query = self.builder.insert_into_mobile_measurements(measure_records)
-        # self.conn.send(exec_query)
+        exec_query = self.builder.insert_mobile_measurements(
+            values=measure_records,
+            sensor_id=sensor_id,
+            channel_name=channel_name
+        )
+        self.conn.send(exec_query)
 
 
 ################################ THINGSPEAK INSERT OPERATION CLASS ################################
@@ -132,7 +141,11 @@ class ThingspeakInsertWrapper(base.DatabaseOperationWrapper):
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(ThingspeakInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
-    def insert_measurements(self, fetched_measurements: List[Dict[str, Any]], measure_param_map: Dict[str, Any], sensor_id):
+    def insert_measurements(self,
+                            fetched_measurements: List[Dict[str, Any]],
+                            measure_param_map: Dict[str, Any],
+                            sensor_id: int,
+                            channel_name: str):
         measure_records = []
         for measure in fetched_measurements:
             record = rec.StationMeasureRecord(packet=measure, sensor_id=sensor_id)
@@ -145,5 +158,9 @@ class ThingspeakInsertWrapper(base.DatabaseOperationWrapper):
         self.log_messages()
 
         # Build the query for inserting all the measurements
-        exec_query = self.builder.insert_into_station_measurements(measure_records)
-        # self.conn.send(exec_query)
+        exec_query = self.builder.insert_station_measurements(
+            values=measure_records,
+            sensor_id=sensor_id,
+            channel_name=channel_name
+        )
+        self.conn.send(exec_query)

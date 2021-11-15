@@ -20,17 +20,18 @@ CHANNEL = 'channel'
 LAST = 'last_acquisition'
 
 
-def get_sensor_adapter(sensor_type: str, postgis_class):
+def get_sensor_adapter(sensor_type: str, postgis_class, timest_class):
     if sensor_type == 'purpleair':
-        return PurpleairSensorAdapter(postgis_class)
+        return PurpleairSensorAdapter(postgis_class, timest_class)
     else:
-        return None
+        raise SystemExit(f"'{get_sensor_adapter.__name__}():' bad type '{sensor_type}'")
 
 
 class SensorAdapter(abc.ABC):
 
-    def __init__(self, postgis_class):
+    def __init__(self, postgis_class, timest_class):
         self.postgis_class = postgis_class
+        self.timest_class = timest_class
 
     @abc.abstractmethod
     def reshape(self, sensor_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -39,8 +40,8 @@ class SensorAdapter(abc.ABC):
 
 class PurpleairSensorAdapter(SensorAdapter):
 
-    def __init__(self, postgis_class):
-        super(PurpleairSensorAdapter, self).__init__(postgis_class)
+    def __init__(self, postgis_class, timest_class):
+        super(PurpleairSensorAdapter, self).__init__(postgis_class, timest_class)
 
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         uniformed_data = {}
@@ -57,8 +58,10 @@ class PurpleairSensorAdapter(SensorAdapter):
                                        data['secondary_id_a'], data['secondary_id_b'],
                                        data['secondary_key_a'], data['secondary_key_b']]
             uniformed_data[CHANNEL] = ["1A", "1B", "2A", "2B"]
-            uniformed_data[LAST] = [data['date_created'], data['date_created'],
-                                    data['date_created'], data['date_created']]
+            uniformed_data[LAST] = [self.timest_class(data['date_created']),
+                                    self.timest_class(data['date_created']),
+                                    self.timest_class(data['date_created']),
+                                    self.timest_class(data['date_created'])]
         except KeyError as ke:
             raise SystemExit(f"{PurpleairSensorAdapter.__name__}: bad sensor data => missing key={ke!s}")
         return uniformed_data
