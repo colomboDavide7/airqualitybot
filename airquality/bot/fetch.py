@@ -6,27 +6,27 @@
 #
 #################################################
 import airquality.bot.base as base
-import airquality.api.util.request as api
+import airquality.logger.util.decorator as log_decorator
 import airquality.database.util.datatype.timestamp as ts
-import airquality.bot.util.datelooper as loop
 import airquality.database.operation.select as select_op
 
 
 ################################ FETCH BOT ################################
 class FetchBot(base.BaseBot):
 
-    def __init__(self):
-        super(FetchBot, self).__init__()
-        self.date_looper_cls = None
-        self.id_executor = None
+    def __init__(self, log_filename: str, log_sub_dir: str):
+        super(FetchBot, self).__init__(log_filename, log_sub_dir)
+        self.date_looper_class = None
+        self.sensor_id_select_wrapper = None
 
-    def add_date_looper_class(self, date_looper_class: loop.DateLooper):
-        self.date_looper_cls = date_looper_class
+    def add_date_looper_class(self, looper_class):
+        self.date_looper_class = looper_class
 
-    def add_sensor_id_select_wrapper(self, op: select_op.SensorIDSelectWrapper):
-        self.id_executor = op
+    def add_sensor_id_select_wrapper(self, wrapper: select_op.SensorIDSelectWrapper):
+        self.sensor_id_select_wrapper = wrapper
 
     ################################ RUN METHOD ################################
+    @log_decorator.log_decorator()
     def execute(self):
 
         sensor_ids = self.sensor_type_select_wrapper.get_sensor_id()
@@ -43,8 +43,8 @@ class FetchBot(base.BaseBot):
         for sensor_id in sensor_ids:
 
             # Extract database API parameters
-            db_api_param = self.id_executor.get_sensor_api_param(sensor_id)
-            uniformed_param = self.db2api_adapter(db_api_param).reshape()
+            db_api_param = self.sensor_id_select_wrapper.get_sensor_api_param(sensor_id)
+            uniformed_param = self.db2api_adapter.reshape(db_api_param)
 
             ############################# CYCLE ON UNIFORMED API PARAM OF A SINGLE SENSOR ##############################
             for api_param in uniformed_param:
@@ -54,35 +54,35 @@ class FetchBot(base.BaseBot):
                 self.debugger.info(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
                 self.logger.info(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
 
-                # Add database 'api_param' to URLBuilder
-                self.url_builder.url_param.update(api_param)
+                # Update FetchWrapper parameters
+                self.fetch_wrapper.update_param(api_param)
+
+                # Set channel name
+                self.fetch_wrapper.set_channel_name(ch_name)
 
                 # Query sensor channel last acquisition
-                last_acquisition = self.id_executor.get_last_acquisition(channel=ch_name, sensor_id=sensor_id)
+                last_acquisition = self.sensor_id_select_wrapper.get_last_acquisition(channel=ch_name, sensor_id=sensor_id)
                 filter_timestamp = ts.SQLTimestamp(last_acquisition)
                 start_ts = filter_timestamp
                 stop_ts = ts.CurrentTimestamp()
 
                 # Create date looper
-                looper = self.date_looper_cls(self.url_builder, start_ts = start_ts, stop_ts = stop_ts)
+                looper = self.date_looper_class(self.fetch_wrapper, start_ts = start_ts, stop_ts = stop_ts)
 
                 # Cycle until looper has no more URL
                 while looper.has_next():
 
                     # Fetch data from API
-                    url = looper.get_next_url()
-                    raw_api_packets = api.fetch(url)
-                    parsed_api_packets = self.text_parser(raw_api_packets).parse()
-                    api_data = self.api_extr_class(parsed_api_packets, channel_name=ch_name).extract()
-                    if not api_data:
+                    sensor_data = looper.get_next_sensor_data()
+                    if not sensor_data:
                         self.debugger.info(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
                         self.logger.info(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
                         continue
 
                     ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
                     uniformed_packets = []
-                    for data in api_data:
-                        uniformed_packets.append(self.measure_adapter.reshape(data))
+                    for data in sensor_data:
+                        uniformed_packets.append(self.api2db_adapter.reshape(data))
 
                     # Set 'filter_ts' dependency
                     self.packet_filter.set_filter_ts(filter_timestamp)

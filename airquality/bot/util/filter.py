@@ -114,7 +114,7 @@ class DateFilter(PacketFilter):
         if fetched_new_measures:
             first_timestamp = fetched_new_measures[0]['timestamp']
             last_timestamp = fetched_new_measures[-1]['timestamp']
-            self.info_messages.append(f"found new measurements from {first_timestamp} to {last_timestamp}")
+            self.info_messages.append(f"found new measurements from {first_timestamp.ts} to {last_timestamp.ts}")
 
         # Log messages
         self.log_messages()

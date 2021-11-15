@@ -63,4 +63,4 @@ class AtmotubeParamAdapter(ParamAdapter):
 
         return [{MAC: database_api_param['mac'],
                  KEY: database_api_param['api_key'],
-                 CH_NM: "app"}]
+                 CH_NM: "main"}]

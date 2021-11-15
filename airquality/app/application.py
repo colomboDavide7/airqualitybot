@@ -81,6 +81,16 @@ class Application(log.Loggable):
             api_key = os.environ['PURPLEAIR_KEY1']
             url_param.update({'api_key': api_key})
 
+        # file extension for building the TextParser
+        file_extension = "json"
+        if self.sensor_type in ('atmotube', 'thingspeak',):
+            print(url_param)
+            file_extension = url_param['format']
+
+        # TextParser
+        text_parser = parser.get_text_parser(file_ext=file_extension)
+        self.info_messages.append(f"text_parser_class={text_parser.__class__.__name__}")
+
         # URLBuilder
         url_class = url.get_url_class(self.sensor_type)
         url_builder = url_class(address=address, url_param=url_param)
@@ -89,14 +99,6 @@ class Application(log.Loggable):
         # APIExtractor class
         data_extractor = ext.get_data_extractor(self.sensor_type)
         self.info_messages.append(f"data_extractor_class={data_extractor.__class__.__name__}")
-
-        file_extension = "json"
-        if self.sensor_type in ('atmotube', 'thingspeak', ):
-            file_extension = url_param['format']
-
-        # TextParser
-        text_parser = parser.get_text_parser(file_ext=file_extension)
-        self.info_messages.append(f"text_parser_class={text_parser.__class__.__name__}")
 
         # Sensor's API FetchWrapper
         fetch_wrapper = api_op.FetchWrapper(url_builder=url_builder, data_extractor=data_extractor, response_parser=text_parser)
@@ -174,9 +176,9 @@ class Application(log.Loggable):
 
         # Add DateLooper dependency
         if self.bot_name == 'fetch':
-            date_looper_cls = loop.get_date_looper_class(self.sensor_type)
-            bot.add_date_looper_class(date_looper_cls)
-            self.info_messages.append(f"date_looper_class={date_looper_cls.__name__}")
+            date_looper_class = loop.get_date_looper_class(self.sensor_type)
+            bot.add_date_looper_class(date_looper_class)
+            self.info_messages.append(f"date_looper_class={date_looper_class.__name__}")
 
         # Set logger and debugger
         bot.set_logger(logger)
