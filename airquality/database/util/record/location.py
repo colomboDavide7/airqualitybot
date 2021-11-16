@@ -17,10 +17,7 @@ class LocationRecord(base.RecordBuilder):
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
         self._exit_on_bad_sensor_data(sensor_data)
-        geom = "NULL"
-        if sensor_data.get('lat') is not None or sensor_data.get('lng') is not None:
-            geom = f"{self.postgis_builder.geom_from_text(sensor_data)}"
-        return geom
+        return f"{self.postgis_builder.geom_from_text(sensor_data)}"
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
         pass

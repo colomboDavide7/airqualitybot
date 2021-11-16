@@ -34,7 +34,7 @@ class GeometryBuilder(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def _exit_on_missing_arguments(self, sensor_data: Dict[str, Any]):
+    def _null_on_missing_arguments(self, sensor_data: Dict[str, Any]):
         pass
 
 
@@ -44,16 +44,20 @@ class PointBuilder(GeometryBuilder):
         super(PointBuilder, self).__init__(srid=srid)
 
     def geom_from_text(self, sensor_data: Dict[str, Any]) -> str:
-        self._exit_on_missing_arguments(sensor_data)
+        geom = self._null_on_missing_arguments(sensor_data)
+        if geom is not None:
+            return geom
+
         geom = POINT_GEOMETRY.format(lng=sensor_data['lng'], lat=sensor_data['lat'])
         return ST_GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
 
     def as_text(self, sensor_data: Dict[str, Any]) -> str:
-        self._exit_on_missing_arguments(sensor_data)
+        geom = self._null_on_missing_arguments(sensor_data)
+        if geom is not None:
+            return geom
+
         return POINT_GEOMETRY.format(lng=sensor_data['lng'], lat=sensor_data['lat'])
 
-    def _exit_on_missing_arguments(self, sensor_data: Dict[str, Any]):
-        if 'lat' not in sensor_data:
-            raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lat'")
-        elif 'lng' not in sensor_data:
-            raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lng'")
+    def _null_on_missing_arguments(self, sensor_data: Dict[str, Any]):
+        if 'lat' not in sensor_data or 'lng' not in sensor_data:
+            return "NULL"

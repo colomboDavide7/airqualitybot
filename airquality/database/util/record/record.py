@@ -37,7 +37,8 @@ class APIParamRecord(base.RecordBuilder):
         self._exit_on_bad_sensor_data(sensor_data)
         param_name = sensor_data['param_name']
         param_value = sensor_data['param_value']
-        values = ','.join(f"({sensor_id}, '{n}', '{v}')" for n, v in zip(param_name, param_value))
+        values = ','.join(f"({sensor_id}, '{n}', '{v}')" if v is not None else f"({sensor_id}, '{n}', NULL)"
+                          for n, v in zip(param_name, param_value))
         return values.strip(',')
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):

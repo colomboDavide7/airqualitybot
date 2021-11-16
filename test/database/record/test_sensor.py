@@ -7,8 +7,6 @@
 ######################################################
 import unittest
 import airquality.database.util.record.record as rec
-import airquality.database.util.record.location as loc
-import airquality.database.util.postgis.geom as geom
 import airquality.database.util.record.time as t
 import airquality.database.util.datatype.timestamp as ts
 
@@ -18,11 +16,8 @@ class TestSensorRecord(unittest.TestCase):
     def setUp(self) -> None:
         self.sensor_rec = rec.SensorRecord()
         self.api_param_rec = rec.APIParamRecord()
-        self.point_builder = geom.PointBuilder()
-        self.location_rec = loc.LocationRecord(self.point_builder)
         self.purpleair_ts_class = ts.UnixTimestamp
         self.time_rec = t.TimeRecord(timestamp_class=self.purpleair_ts_class)
-        self.sensor_location_rec = rec.SensorLocationRecord(location_rec=self.location_rec, time_rec=self.time_rec)
         self.sensor_info_rec = rec.SensorInfoRecord(time_rec=self.time_rec)
 
     ################################ SENSOR RECORD ################################
@@ -78,6 +73,12 @@ class TestSensorRecord(unittest.TestCase):
         test_data = {'param_name': ['n1'], 'param_value': [33]}
         with self.assertRaises(SystemExit):
             self.api_param_rec.record(test_data)
+
+    def test_null_value_api_param_record(self):
+        test_data = {'param_name': ['n1', 'n2'], 'param_value': [33, None]}
+        actual_output = self.api_param_rec.record(test_data, sensor_id=144)
+        expected_output = "(144, 'n1', '33'),(144, 'n2', NULL)"
+        self.assertEqual(actual_output, expected_output)
 
     ################################ SENSOR INFO RECORD ################################
     def test_successfully_build_sensor_info_record(self):

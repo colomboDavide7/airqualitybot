@@ -30,11 +30,11 @@ class TestGeometryBuilder(unittest.TestCase):
     def test_system_exit_when_key_error_is_raised(self):
         test_missing_lng = {'lat': '45.1234'}
         with self.assertRaises(SystemExit):
-            self.point_builder._exit_on_missing_arguments(test_missing_lng)
+            self.point_builder._null_on_missing_arguments(test_missing_lng)
 
         test_missing_lat = {'lng': '1.1234'}
         with self.assertRaises(SystemExit):
-            self.point_builder._exit_on_missing_arguments(test_missing_lng)
+            self.point_builder._null_on_missing_arguments(test_missing_lng)
 
 
 if __name__ == '__main__':

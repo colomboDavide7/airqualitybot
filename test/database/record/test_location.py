@@ -22,20 +22,14 @@ class TestLocationRecord(unittest.TestCase):
         expected_output = "ST_GeomFromText('POINT(l2 l1)', 26918)"
         self.assertEqual(actual_output, expected_output)
 
-    def test_point_geometry_record_when_missing_coords(self):
-        test_data = {'other': 'v'}
-        actual_output = self.location_rec.record(test_data)
-        expected_output = "NULL"
-        self.assertEqual(actual_output, expected_output)
-
-    def test_exit_on_partial_coords(self):
+    def test_null_value_when_coords_are_missing(self):
         test_data = {'lat': 'l1'}
-        with self.assertRaises(SystemExit):
-            self.location_rec.record(test_data)
+        actual_output = self.location_rec.record(test_data)
+        self.assertEqual(actual_output, "NULL")
 
         test_data = {'lng': 'l1'}
-        with self.assertRaises(SystemExit):
-            self.location_rec.record(test_data)
+        actual_output = self.location_rec.record(test_data)
+        self.assertEqual(actual_output, "NULL")
 
 
 if __name__ == '__main__':
