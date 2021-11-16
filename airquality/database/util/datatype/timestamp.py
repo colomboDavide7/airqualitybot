@@ -51,8 +51,8 @@ class SQLTimestamp(Timestamp):
     def is_after(self, other) -> bool:
         if not isinstance(other, SQLTimestamp):
             raise SystemExit(
-                f"{SQLTimestamp.__name__}: bad type => cannot compare with object of type='{other.__class__.__name__}'"
-            )
+                f"{SQLTimestamp.__name__}: bad type => cannot compare with object of type='{other.__class__.__name__}'")
+
         self_dt = dt.datetime.strptime(self.ts, self.fmt)
         other_dt = dt.datetime.strptime(other.ts, other.fmt)
         return (self_dt - other_dt).total_seconds() > 0

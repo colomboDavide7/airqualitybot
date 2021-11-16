@@ -35,10 +35,6 @@ class FetchBot(base.BaseBot):
             self.logger.warning(f"no sensor found => done")
             return
 
-        measure_param_map = self.sensor_type_select_wrapper.get_measure_param()
-        if not measure_param_map:
-            raise SystemExit(f"bad database answer => empty 'measure_param'")
-
         ############################# CYCLE ON ALL SENSOR IDS FOUND ##############################
         for sensor_id in sensor_ids:
 
@@ -97,7 +93,6 @@ class FetchBot(base.BaseBot):
                     # Add new measurements
                     self.insert_wrapper.insert_measurements(
                         fetched_measurements=fetched_new_measurements,
-                        measure_param_map=measure_param_map,
                         sensor_id=sensor_id,
                         channel_name=ch_name
                     )

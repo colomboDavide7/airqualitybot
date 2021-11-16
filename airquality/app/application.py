@@ -165,30 +165,20 @@ class Application(log.Loggable):
 
         elif self.bot_name == 'fetch':
 
-            # Timestamp
-            timest_cls = ts.get_timest_class(self.sensor_type)
-            self.info_messages.append(f"timestamp_class={timest_cls.__name__}")
-
             # Get the start measure id
             start_measure_id = select_op.get_max_measure_id(
                 sensor_type=self.sensor_type,
-                sensor_type_select_wrapper=sensor_type_select_wrapper
-            )
+                sensor_type_select_wrapper=sensor_type_select_wrapper)
+
+            # Query the (param_code, param_id) tuples for the measure param associated to 'sensor_type'
+            measure_param_map = sensor_type_select_wrapper.get_measure_param()
 
             # MeasureAdapter
             measure_adapter = meas.get_measure_adapter(
                 sensor_type=self.sensor_type,
-                timestamp_class=timest_cls,
-                start_id=start_measure_id
+                start_id=start_measure_id,
+                measure_param_map=measure_param_map
             )
-
-            # Inject 'postgis_class' dependency for Atmotube
-            if self.sensor_type == 'atmotube':
-                # PostGISGeometry class
-                postgis_geom_cls = geom.get_postgis_class(self.sensor_type)
-                self.info_messages.append(f"postgis_geom_class={postgis_geom_cls.__name__}")
-
-                measure_adapter.set_postgis_class(postgis_geom_cls)
 
             bot.add_api2database_adapter(measure_adapter)
             self.info_messages.append(f"measure_adapter_class={measure_adapter.__class__.__name__}")

@@ -109,17 +109,10 @@ class AtmotubeInsertWrapper(base.DatabaseOperationWrapper):
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(AtmotubeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
-    def insert_measurements(self,
-                            fetched_measurements: List[Dict[str, Any]],
-                            measure_param_map: Dict[str, Any],
-                            sensor_id: int,
-                            channel_name: str
-                            ):
+    def insert_measurements(self, fetched_measurements: List[Dict[str, Any]], sensor_id: int, channel_name: str):
         measure_records = []
         for measure in fetched_measurements:
-            record = rec.MobileMeasureRecord(packet=measure)
-            record.set_measure_param_map(measure_param_map)
-            measure_records.append(record)
+            measure_records.append(rec.MobileMeasureRecord(measure))
 
         first_measure_id = fetched_measurements[0]['record_id']
         last_measure_id = fetched_measurements[-1]['record_id']

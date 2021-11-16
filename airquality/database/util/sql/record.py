@@ -102,8 +102,7 @@ class MobileMeasureRecord(RecordBuilder):
             raise SystemExit(f"{MobileMeasureRecord.__name__}: bad packet => number of param name(s) does not match the "
                              f"number of param value(s)")
 
-    def set_measure_param_map(self, param_map: Dict[str, Any]):
-        self.measure_param_map = param_map
+
 
     def record(self) -> str:
 
