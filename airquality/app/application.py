@@ -19,13 +19,14 @@ import airquality.file.structured.json as jf
 import airquality.api.util.extractor as ext
 import airquality.api.util.url as url
 import airquality.database.util.conn as db_conn
-import database.util.query as qry
+import airquality.database.util.query as qry
 import airquality.file.util.parser as parser
 import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.db2api.param as par
 import airquality.adapter.api2db.measure as meas
 import airquality.database.operation.insert as insert_op
 import airquality.database.operation.select as select_op
+import airquality.database.operation.setup as op_setup
 import airquality.bot.util.datelooper as loop
 import airquality.bot.util.filter as filt
 
@@ -111,11 +112,18 @@ class Application(log.Loggable):
         query_builder = qry.QueryBuilder(file_object)
 
         # InsertionOperation class
-        insert_operation = insert_op.get_insert_wrapper(self.sensor_type, conn=db_adapter, builder=query_builder)
-        insert_operation.set_debugger(self.debugger)
-        insert_operation.set_logger(logger)
-        bot.add_insert_wrapper(insert_operation)
-        self.info_messages.append(f"insert_wrapper_class={insert_operation.__class__.__name__}")
+        insert_wrapper = insert_op.get_insert_wrapper(self.sensor_type, conn=db_adapter, builder=query_builder)
+        insert_wrapper.set_debugger(self.debugger)
+        insert_wrapper.set_logger(logger)
+
+        # Setup external dependencies to InsertWrapper
+        insert_wrapper = op_setup.setup_insert_wrapper(
+            bot_name=self.bot_name,
+            sensor_type=self.sensor_type,
+            insert_wrapper=insert_wrapper)
+
+        bot.add_insert_wrapper(insert_wrapper)
+        self.info_messages.append(f"insert_wrapper_class={insert_wrapper.__class__.__name__}")
 
         # SelectFromSensorID operation dependency
         if self.bot_name == 'fetch':

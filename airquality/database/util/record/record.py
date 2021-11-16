@@ -60,7 +60,7 @@ class APIParamRecord(base.RecordBuilder):
 ################################ SENSOR AT LOCATION RECORD ################################
 class SensorLocationRecord(base.RecordBuilder):
 
-    def __init__(self, location_rec: loc.LocationRecord, time_rec: t.TimeRecord):
+    def __init__(self, location_rec: loc.LocationRecord, time_rec: t.CurrentTimestampTimeRecord):
         self.location_rec = location_rec
         self.time_rec = time_rec
 

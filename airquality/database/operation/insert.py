@@ -5,11 +5,12 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import abc
 from typing import List, Dict, Any
 import airquality.database.operation.base as base
 import airquality.database.util.conn as db
 import airquality.database.util.query as query
-import airquality.database.util.record.base as rec
+import airquality.database.util.record.record as rec
 import airquality.database.util.datatype.timestamp as ts
 
 
@@ -22,8 +23,42 @@ def get_insert_wrapper(sensor_type: str, conn: db.DatabaseAdapter, builder: quer
         return ThingspeakInsertWrapper(conn=conn, query_builder=builder)
 
 
+class InsertWrapper(base.DatabaseOperationWrapper, abc.ABC):
+
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
+        super(InsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
+        self.sensor_record_builder = None
+        self.sensor_location_record_builder = None
+        self.api_param_record_builder = None
+        self.sensor_info_record_builder = None
+        self.mobile_record_builder = None
+        self.station_record_builder = None
+
+    def set_sensor_record_builder(self, builder: rec.SensorRecord):
+        self.sensor_record_builder = builder
+
+    def set_sensor_location_record_builder(self, builder: rec.SensorLocationRecord):
+        self.sensor_location_record_builder = builder
+
+    def set_sensor_info_record_builder(self, builder: rec.SensorInfoRecord):
+        self.sensor_info_record_builder = builder
+
+    def set_api_param_record_builder(self, builder: rec.APIParamRecord):
+        self.api_param_record_builder = builder
+
+    def set_mobile_record_builder(self, builder: rec.MobileMeasureRecord):
+        self.mobile_record_builder = builder
+
+    def set_station_record_builder(self, builder: rec.StationMeasureRecord):
+        self.station_record_builder = builder
+
+    @abc.abstractmethod
+    def _exit_on_missing_external_dependencies(self):
+        pass
+
+
 ################################ PURPLEAIR EXECUTOR CLASS ################################
-class PurpleairInsertWrapper(base.DatabaseOperationWrapper):
+class PurpleairInsertWrapper(InsertWrapper):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(PurpleairInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
@@ -31,37 +66,24 @@ class PurpleairInsertWrapper(base.DatabaseOperationWrapper):
     ################################ METHOD FOR INITIALIZE SENSORS AND THEIR INFO ################################
     def initialize_sensors(self, sensor_data: List[Dict[str, Any]], start_id: int):
 
+        self._exit_on_missing_external_dependencies()
+
         location_values = []
         api_param_values = []
         sensor_values = []
         sensor_info_values = []
 
         for data in sensor_data:
-            self.info_messages.append(f"adding sensor '{data['name']}' with id={start_id}")
-            # **************************
-            sensor_value = rec.SensorRecord(sensor_id=start_id, packet=data)
-            sensor_values.append(sensor_value)
-            # **************************
-            valid_from = ts.CurrentTimestamp().ts
-            geom = data['geom'].geom_from_text()
-            geom_value = rec.LocationRecord(sensor_id=start_id, valid_from=valid_from, geom=geom)
-            location_values.append(geom_value)
-            # **************************
-            api_param_value = rec.APIParamRecord(sensor_id=start_id, packet=data)
-            api_param_values.append(api_param_value)
-            # **************************
-            sensor_info_value = rec.SensorInfoRecord(sensor_id=start_id, packet=data)
-            sensor_info_values.append(sensor_info_value)
-            # **************************
+            sensor_values.append(self.sensor_record_builder.record(sensor_data=data))
+            api_param_values.append(self.api_param_record_builder.record(sensor_data=data, sensor_id=start_id))
+            location_values.append(self.sensor_location_record_builder.record(sensor_data=data, sensor_id=start_id))
+            sensor_info_values.append(self.sensor_info_record_builder.record(sensor_data=data, sensor_id=start_id))
+            self.info_messages.append(f"added sensor '{data['name']}' with id={start_id}")
             start_id += 1
 
         # Execute queries
-        exec_query = self.builder.initialize_sensors(
-            sensor_values=sensor_values,
-            api_param_values=api_param_values,
-            location_values=location_values,
-            sensor_info_values=sensor_info_values
-        )
+        exec_query = self.builder.initialize_sensors(sensor_values=sensor_values, api_param_values=api_param_values,
+                                                     location_values=location_values, sensor_info_values=sensor_info_values)
         self.conn.send(exec_query)
 
         # Log messages
@@ -72,6 +94,8 @@ class PurpleairInsertWrapper(base.DatabaseOperationWrapper):
                          fetched_locations: List[Dict[str, Any]],
                          database_locations: Dict[str, Any],
                          name2id_map: Dict[str, Any]):
+
+        self._exit_on_missing_external_dependencies()
 
         location_records = []
         for fetched_active_location in fetched_locations:
@@ -101,6 +125,17 @@ class PurpleairInsertWrapper(base.DatabaseOperationWrapper):
 
         # Log messages
         self.log_messages()
+
+    def _exit_on_missing_external_dependencies(self):
+        err_msg_header = f"{InsertWrapper.__name__}: bad setup => missing external dependency "
+        if self.sensor_info_record_builder is None:
+            raise SystemExit(err_msg_header + f"'{rec.SensorInfoRecord.__name__}'")
+        elif self.sensor_location_record_builder is None:
+            raise SystemExit(err_msg_header + f"'{rec.SensorLocationRecord.__name__}'")
+        elif self.api_param_record_builder is None:
+            raise SystemExit(err_msg_header + f"'{rec.APIParamRecord.__name__}'")
+        elif self.sensor_record_builder is None:
+            raise SystemExit(err_msg_header + f"'{rec.SensorRecord.__name__}'")
 
 
 ################################ ATMOTUBE INSERT OPERATION CLASS ################################
