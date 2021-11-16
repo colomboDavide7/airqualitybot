@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.database.util.sql.record as rec
+import airquality.database.util.record.base as rec
 import airquality.database.util.datatype.timestamp as ts
 
 

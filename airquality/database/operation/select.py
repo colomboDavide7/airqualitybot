@@ -8,7 +8,7 @@
 from typing import Dict, Any, List
 import airquality.database.operation.base as base
 import airquality.database.util.conn as db
-import airquality.database.util.sql.query as query
+import airquality.database.util.query as query
 
 
 def get_max_measure_id(sensor_type: str, sensor_type_select_wrapper):

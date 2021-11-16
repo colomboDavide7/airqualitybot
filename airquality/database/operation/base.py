@@ -6,7 +6,7 @@
 #
 ######################################################
 import airquality.database.util.conn as db
-import airquality.database.util.sql.query as query
+import airquality.database.util.query as query
 import airquality.logger.loggable as log
 
 

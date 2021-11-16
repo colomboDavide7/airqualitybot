@@ -18,10 +18,8 @@ import airquality.api.fetch as api_op
 import airquality.file.structured.json as jf
 import airquality.api.util.extractor as ext
 import airquality.api.util.url as url
-import airquality.database.util.datatype.timestamp as ts
-import airquality.database.util.postgis.geom as geom
 import airquality.database.util.conn as db_conn
-import airquality.database.util.sql.query as qry
+import database.util.query as qry
 import airquality.file.util.parser as parser
 import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.db2api.param as par
@@ -150,13 +148,6 @@ class Application(log.Loggable):
         ################################ INJECT ADAPTER DEPENDENCIES ################################
 
         if self.bot_name in ('init', 'update'):
-            # # PostGISGeometry class
-            # postgis_geom_cls = geom.get_postgis_class(self.sensor_type)
-            # self.info_messages.append(f"postgis_geom_class={postgis_geom_cls.__name__}")
-            #
-            # # Timestamp
-            # timest_cls = ts.get_timest_class(self.sensor_type)
-            # self.info_messages.append(f"timestamp_class={timest_cls.__name__}")
 
             # SensorAdapter
             sensor_adapter = sens.get_sensor_adapter(self.sensor_type)

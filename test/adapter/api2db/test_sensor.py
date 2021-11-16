@@ -36,7 +36,7 @@ class TestSensorReshaper(unittest.TestCase):
                                           'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b'],
                            'param_value': ['id1A', 'id1B', 'key1A', 'key1B', 'id2A', 'id2B', 'key2A', 'key2B'],
                            'channel': ['1A', '1B', '2A', '2B'],
-                           'last_acquisition': ['d', 'd', 'd', 'd']}
+                           'last_acquisition': [{'timestamp': 'd'}, {'timestamp': 'd'}, {'timestamp': 'd'}, {'timestamp': 'd'}]}
 
         actual_output = self.purpleair_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)

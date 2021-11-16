@@ -8,8 +8,8 @@
 from typing import List, Dict, Any
 import airquality.database.operation.base as base
 import airquality.database.util.conn as db
-import airquality.database.util.sql.query as query
-import airquality.database.util.sql.record as rec
+import airquality.database.util.query as query
+import airquality.database.util.record.base as rec
 import airquality.database.util.datatype.timestamp as ts
 
 

@@ -22,31 +22,38 @@ def get_postgis_class(sensor_type: str):
 
 class GeometryBuilder(abc.ABC):
 
-    def __init__(self, packet: Dict[str, Any], srid: int = 26918):
+    def __init__(self, srid: int = 26918):
         self.srid = srid
-        self.packet = packet
 
     @abc.abstractmethod
-    def geom_from_text(self) -> str:
+    def geom_from_text(self, sensor_data: Dict[str, Any]) -> str:
         pass
 
     @abc.abstractmethod
-    def as_text(self) -> str:
+    def as_text(self, sensor_data: Dict[str, Any]) -> str:
+        pass
+
+    @abc.abstractmethod
+    def _exit_on_missing_arguments(self, sensor_data: Dict[str, Any]):
         pass
 
 
 class PointBuilder(GeometryBuilder):
 
-    def __init__(self, packet: Dict[str, Any], srid: int = 26918):
-        super(PointBuilder, self).__init__(packet=packet, srid=srid)
-        if 'lat' not in self.packet:
-            raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lat'")
-        elif 'lng' not in self.packet:
-            raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lng'")
+    def __init__(self, srid: int = 26918):
+        super(PointBuilder, self).__init__(srid=srid)
 
-    def geom_from_text(self) -> str:
-        geom = POINT_GEOMETRY.format(lng=self.packet['lng'], lat=self.packet['lat'])
+    def geom_from_text(self, sensor_data: Dict[str, Any]) -> str:
+        self._exit_on_missing_arguments(sensor_data)
+        geom = POINT_GEOMETRY.format(lng=sensor_data['lng'], lat=sensor_data['lat'])
         return ST_GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
 
-    def as_text(self) -> str:
-        return POINT_GEOMETRY.format(lng=self.packet['lng'], lat=self.packet['lat'])
+    def as_text(self, sensor_data: Dict[str, Any]) -> str:
+        self._exit_on_missing_arguments(sensor_data)
+        return POINT_GEOMETRY.format(lng=sensor_data['lng'], lat=sensor_data['lat'])
+
+    def _exit_on_missing_arguments(self, sensor_data: Dict[str, Any]):
+        if 'lat' not in sensor_data:
+            raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lat'")
+        elif 'lng' not in sensor_data:
+            raise SystemExit(f"{PointBuilder.__name__}: bad packet => missing key='lng'")

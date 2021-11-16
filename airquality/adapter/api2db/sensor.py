@@ -70,8 +70,13 @@ class PurpleairSensorAdapter(SensorAdapter):
         return uniformed_data
 
     def _add_sensor_info(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
-        uniformed_data[CHANNEL] = PurpleairSensorAdapter.CHANNEL_NAMES
-        uniformed_data[LAST] = [data['date_created'], data['date_created'], data['date_created'], data['date_created']]
+        last_ts = []
+        ch_names = []
+        for name in PurpleairSensorAdapter.CHANNEL_NAMES:
+            ch_names.append(name)
+            last_ts.append({TS: data['date_created']})
+        uniformed_data[LAST] = last_ts
+        uniformed_data[CHANNEL] = ch_names
         return uniformed_data
 
     def _add_api_param(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:

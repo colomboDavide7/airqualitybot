@@ -67,7 +67,7 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
             uniformed_data = self._add_geometry(uniformed_data=uniformed_data, data=data)
             uniformed_data[TS] = data['time']
         except KeyError as ke:
-            raise SystemExit(f"{AtmotubeMeasureAdapter.__name__}: bad measure param map => missing param_code={ke!s}")
+            raise SystemExit(f"{AtmotubeMeasureAdapter.__name__}: bad sensor data => missing key={ke!s}")
         return uniformed_data
 
     def _add_param_id_param_value(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
@@ -100,7 +100,7 @@ class ThingspeakMeasureAdapter(MeasureAdapter):
             uniformed_data = self._add_param_id_param_value(uniformed_data=uniformed_data, data=data)
             uniformed_data[TS] = data['created_at']
         except KeyError as ke:
-            raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad data packet => missing key={ke!s}")
+            raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad sensor data => missing key={ke!s}")
         return uniformed_data
 
     def _add_param_id_param_value(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
