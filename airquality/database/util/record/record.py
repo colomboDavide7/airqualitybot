@@ -77,6 +77,9 @@ class SensorInfoRecord(base.RecordBuilder):
         self.time_rec = time_rec
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
+        if sensor_id is None:
+            raise SystemExit(f"{SensorInfoRecord.__name__}: missing sensor_id")
+
         self._exit_on_bad_sensor_data(sensor_data)
         channel_names = sensor_data['channel']
         last_timestamps = sensor_data['last_acquisition']

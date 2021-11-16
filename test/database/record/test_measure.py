@@ -24,6 +24,7 @@ class TestMeasurementRecord(unittest.TestCase):
         self.thingspeak_time_rec = t.TimeRecord(timestamp_class=ts.ThingspeakTimestamp)
         self.station_rec = rec.StationMeasureRecord(self.thingspeak_time_rec)
 
+    ################################ STATION MEASUREMENT RECORD ################################
     def test_successfully_build_station_record(self):
         test_data = {'record_id': 99, 'param_id': [1], 'param_value': [55], 'timestamp': '2018-10-11T09:44:00Z'}
         actual_output = self.station_rec.record(test_data, sensor_id=144)
@@ -35,6 +36,7 @@ class TestMeasurementRecord(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.station_rec.record(test_data)
 
+    ################################ MOBILE MEASUREMENT RECORD ################################
     def test_successfully_build_mobile_record(self):
         test_data = {'record_id': 99, 'param_id': [1], 'param_value': [55], 'timestamp': '2018-10-11T09:44:00.000Z',
                      'lat': '45', 'lng': '9'}
