@@ -34,10 +34,10 @@ class InitializeBot(base.BaseBot):
             uniformed_packets.append(self.api2db_adapter.reshape(data))
 
         # Set external dependency to NameFilter
-        self.packet_filter.set_name_to_filter(database_sensor_names)
+        self.sensor_data_filter.set_name_to_filter(database_sensor_names)
 
         # Apply NameFilter
-        new_sensor_data = self.packet_filter.filter(uniformed_packets)
+        new_sensor_data = self.sensor_data_filter.filter(uniformed_packets)
         if not new_sensor_data:
             self.info_messages.append("all sensors are already present into the database => done")
             return

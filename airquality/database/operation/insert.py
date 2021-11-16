@@ -11,7 +11,6 @@ import airquality.database.operation.base as base
 import airquality.database.util.conn as db
 import airquality.database.util.query as query
 import airquality.database.util.record.record as rec
-import airquality.database.util.datatype.timestamp as ts
 
 
 def get_insert_wrapper(sensor_type: str, conn: db.DatabaseAdapter, builder: query.QueryBuilder):
@@ -90,44 +89,25 @@ class PurpleairInsertWrapper(InsertWrapper):
         self.log_messages()
 
     ################################ METHOD FOR UPDATE LOCATIONS ################################
-    def update_locations(self,
-                         fetched_locations: List[Dict[str, Any]],
-                         database_locations: Dict[str, Any],
-                         name2id_map: Dict[str, Any]):
+    def update_locations(self, changed_sensors: List[Dict[str, Any]], name2id_map: Dict[str, Any]):
 
         self._exit_on_missing_external_dependencies()
 
-        location_records = []
-        for fetched_active_location in fetched_locations:
-            name = fetched_active_location['name']
-            geometry = fetched_active_location['geom']
-            # **************************
-            if geometry.as_text() != database_locations[name]:
-                self.info_messages.append(
-                    f"found new location={geometry.as_text()} for name='{name}' => update location")
-                # **************************
-                sensor_id = name2id_map[name]
-                geom = geometry.geom_from_text()
-                valid_from = ts.CurrentTimestamp().ts
-                # **************************
-                record = rec.LocationRecord(sensor_id=sensor_id, valid_from=valid_from, geom=geom)
-                location_records.append(record)
-
-        # Log message when no location has been updated
-        if not location_records:
-            self.warning_messages.append("all sensors have the same location => done")
-            self.log_messages()
-            return
+        location_values = []
+        for data in changed_sensors:
+            sensor_id = name2id_map[data['name']]
+            location_values.append(self.sensor_location_record_builder.record(sensor_data=data, sensor_id=sensor_id))
+            self.info_messages.append(f"updated location for sensor '{data['name']}'")
 
         # Execute the queries
-        exec_query = self.builder.update_locations(location_records)
+        exec_query = self.builder.update_locations(location_values)
         self.conn.send(exec_query)
 
         # Log messages
         self.log_messages()
 
     def _exit_on_missing_external_dependencies(self):
-        err_msg_header = f"{InsertWrapper.__name__}: bad setup => missing external dependency "
+        err_msg_header = f"{PurpleairInsertWrapper.__name__}: bad setup => missing external dependency "
         if self.sensor_info_record_builder is None:
             raise SystemExit(err_msg_header + f"'{rec.SensorInfoRecord.__name__}'")
         elif self.sensor_location_record_builder is None:
@@ -139,15 +119,17 @@ class PurpleairInsertWrapper(InsertWrapper):
 
 
 ################################ ATMOTUBE INSERT OPERATION CLASS ################################
-class AtmotubeInsertWrapper(base.DatabaseOperationWrapper):
+class AtmotubeInsertWrapper(InsertWrapper):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(AtmotubeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
     def insert_measurements(self, fetched_measurements: List[Dict[str, Any]], sensor_id: int, channel_name: str):
-        measure_records = []
+        self._exit_on_missing_external_dependencies()
+
+        measure_values = []
         for measure in fetched_measurements:
-            measure_records.append(rec.MobileMeasureRecord(measure))
+            measure_values.append(self.mobile_record_builder.record(measure))
 
         first_measure_id = fetched_measurements[0]['record_id']
         last_measure_id = fetched_measurements[-1]['record_id']
@@ -156,11 +138,16 @@ class AtmotubeInsertWrapper(base.DatabaseOperationWrapper):
 
         # Build the query for inserting all the measurements
         exec_query = self.builder.insert_mobile_measurements(
-            values=measure_records,
+            values=measure_values,
             sensor_id=sensor_id,
             channel_name=channel_name
         )
         self.conn.send(exec_query)
+
+    def _exit_on_missing_external_dependencies(self):
+        if self.mobile_record_builder is None:
+            raise SystemExit(f"{AtmotubeInsertWrapper.__name__}: bad setup => "
+                             f"missing external dependencies 'mobile_record_builder'")
 
 
 ################################ THINGSPEAK INSERT OPERATION CLASS ################################

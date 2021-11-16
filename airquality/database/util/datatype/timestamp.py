@@ -13,7 +13,7 @@ ATMOTUBE_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 SQL_TIMEST_FMT = "%Y-%m-%d %H:%M:%S"
 
 
-def get_timest_class(sensor_type: str):
+def get_timestamp_class(sensor_type: str):
 
     if sensor_type == 'atmotube':
         return AtmotubeTimestamp
@@ -23,6 +23,7 @@ def get_timest_class(sensor_type: str):
         return UnixTimestamp
 
 
+################################ TIMESTAMP CLASS ################################
 class Timestamp(abc.ABC):
 
     def __init__(self, timestamp: str, fmt: str = SQL_TIMEST_FMT):
@@ -38,6 +39,7 @@ class Timestamp(abc.ABC):
         pass
 
 
+################################ SQL TIMESTAMP CLASS ################################
 class SQLTimestamp(Timestamp):
 
     def __init__(self, timestamp: str, fmt: str = SQL_TIMEST_FMT):
@@ -58,6 +60,7 @@ class SQLTimestamp(Timestamp):
         return (self_dt - other_dt).total_seconds() > 0
 
 
+################################ ATMOTUBE TIMESTAMP CLASS ################################
 class AtmotubeTimestamp(SQLTimestamp):
 
     def __init__(self, timestamp: str, fmt: str = ATMOTUBE_FMT):
@@ -70,6 +73,7 @@ class AtmotubeTimestamp(SQLTimestamp):
         return super().is_after(other)
 
 
+################################ THINGSPEAK TIMESTAMP CLASS ################################
 class ThingspeakTimestamp(SQLTimestamp):
 
     def __init__(self, timestamp: str, fmt: str = THINGSPK_FMT):
@@ -82,6 +86,7 @@ class ThingspeakTimestamp(SQLTimestamp):
         return super().is_after(other)
 
 
+################################ CURRENT TIMESTAMP CLASS ################################
 class CurrentTimestamp(SQLTimestamp):
 
     def __init__(self):
@@ -94,6 +99,7 @@ class CurrentTimestamp(SQLTimestamp):
         return super().is_after(other)
 
 
+################################ UNIX TIMESTAMP CLASS ################################
 class UnixTimestamp(SQLTimestamp):
 
     def __init__(self, unixts: int, fmt: str = SQL_TIMEST_FMT):

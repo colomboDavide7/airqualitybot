@@ -15,13 +15,13 @@ class TestURLBuilder(unittest.TestCase):
         self.api_address = 'some_api_address'
 
     def test_get_url_class(self):
-        obj_cls = url.get_url_class(sensor_type='atmotube')
+        obj_cls = url.get_url_builder(sensor_type='atmotube')
         self.assertEqual(obj_cls, url.AtmotubeURL)
 
-        obj_cls = url.get_url_class(sensor_type='thingspeak')
+        obj_cls = url.get_url_builder(sensor_type='thingspeak')
         self.assertEqual(obj_cls, url.ThingspeakURL)
 
-        obj_cls = url.get_url_class(sensor_type='purpleair')
+        obj_cls = url.get_url_builder(sensor_type='purpleair')
         self.assertEqual(obj_cls, url.PurpleairURL)
 
     def test_successfully_build_purpleair_url(self):

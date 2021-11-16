@@ -7,14 +7,20 @@
 ######################################################
 import abc
 from typing import List, Dict, Any
+import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
 import airquality.logger.loggable as log
 
 
-def get_packet_filter(bot_name: str):
+def get_sensor_data_filter(bot_name: str, sensor_type: str):
 
     if bot_name == 'fetch':
-        return TimestampFilter()
+        if sensor_type == 'atmotube':
+            return TimestampFilter(timestamp_class=ts.AtmotubeTimestamp)
+        elif sensor_type == 'thingspeak':
+            return TimestampFilter(timestamp_class=ts.ThingspeakTimestamp)
+        else:
+            raise SystemExit(f"{get_sensor_data_filter.__name__}(): bad type '{sensor_type}' for bot '{bot_name}'")
     elif bot_name == 'init':
         return NameFilter()
     elif bot_name == 'update':
@@ -90,8 +96,9 @@ class NameKeeper(SensorDataFilter):
 ################################ DATE FILTER ################################
 class TimestampFilter(SensorDataFilter):
 
-    def __init__(self):
+    def __init__(self, timestamp_class):
         super(TimestampFilter, self).__init__()
+        self.timestamp_class = timestamp_class
         self.filter_ts = None
 
     def set_filter_ts(self, filter_ts=ts.SQLTimestamp):
@@ -106,7 +113,7 @@ class TimestampFilter(SensorDataFilter):
         # Filter the measurements: keep only those packets that came after the 'filter_ts'
         fetched_new_measures = []
         for packet in sensor_data:
-            timestamp = packet['timestamp']
+            timestamp = self.timestamp_class(packet['timestamp'])
             if timestamp.is_after(self.filter_ts):
                 fetched_new_measures.append(packet)
 
@@ -114,9 +121,35 @@ class TimestampFilter(SensorDataFilter):
         if fetched_new_measures:
             first_timestamp = fetched_new_measures[0]['timestamp']
             last_timestamp = fetched_new_measures[-1]['timestamp']
-            self.info_messages.append(f"found new measurements from {first_timestamp.ts} to {last_timestamp.ts}")
+            self.info_messages.append(f"found new measurements from {first_timestamp} to {last_timestamp}")
 
         # Log messages
         self.log_messages()
 
         return fetched_new_measures
+
+
+################################ GEO FILTER ################################
+class GeoFilter(SensorDataFilter):
+
+    def __init__(self, postgis_builder: geom.GeometryBuilder):
+        super(GeoFilter, self).__init__()
+        self.postgis_builder = postgis_builder
+        self.database_active_locations = None
+
+    def set_database_active_locations(self, locations: Dict[str, Any]):
+        self.database_active_locations = locations
+
+    def filter(self, sensor_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+
+        if self.database_active_locations is None:
+            raise SystemExit(f"{GeoFilter.__name__}: bad setup => missing external dependency 'database_active_locations'")
+
+        changed_sensors = []
+        for data in sensor_data:
+            sensor_name = data['name']
+            old_geom = self.database_active_locations[sensor_name]
+            new_geom = self.postgis_builder.as_text(sensor_data=data)
+            if new_geom != old_geom:
+                changed_sensors.append(data)
+        return changed_sensors

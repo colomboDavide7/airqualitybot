@@ -8,7 +8,7 @@
 import airquality.bot.base as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.util.datatype.timestamp as ts
-import airquality.database.operation.select as select_op
+import airquality.database.operation.select as select
 
 
 ################################ FETCH BOT ################################
@@ -22,7 +22,7 @@ class FetchBot(base.BaseBot):
     def add_date_looper_class(self, looper_class):
         self.date_looper_class = looper_class
 
-    def add_sensor_id_select_wrapper(self, wrapper: select_op.SensorIDSelectWrapper):
+    def add_sensor_id_select_wrapper(self, wrapper: select.SensorIDSelectWrapper):
         self.sensor_id_select_wrapper = wrapper
 
     ################################ RUN METHOD ################################
@@ -81,10 +81,10 @@ class FetchBot(base.BaseBot):
                         uniformed_packets.append(self.api2db_adapter.reshape(data))
 
                     # Set 'filter_ts' dependency
-                    self.packet_filter.set_filter_ts(filter_timestamp)
+                    self.sensor_data_filter.set_filter_ts(filter_timestamp)
 
                     # Filter measure to keep only new measurements
-                    fetched_new_measurements = self.packet_filter.filter(uniformed_packets)
+                    fetched_new_measurements = self.sensor_data_filter.filter(uniformed_packets)
                     if not fetched_new_measurements:
                         self.debugger.warning(f"no new measurements for sensor_id={sensor_id}")
                         self.logger.warning(f"no new measurements for sensor_id={sensor_id}")

@@ -8,7 +8,7 @@
 import abc
 from typing import List, Dict, Any
 import airquality.logger.loggable as log
-import airquality.api.fetch as api_op
+import airquality.api.fetch as fetch
 import airquality.database.util.datatype.timestamp as ts
 
 
@@ -25,7 +25,7 @@ def get_date_looper_class(sensor_type: str):
 
 class DateLooper(log.Loggable):
 
-    def __init__(self, fetch_wrapper: api_op.FetchWrapper):
+    def __init__(self, fetch_wrapper: fetch.FetchWrapper):
         super(DateLooper, self).__init__()
         self.fetch_wrapper = fetch_wrapper
 
@@ -40,7 +40,7 @@ class DateLooper(log.Loggable):
 
 class AtmotubeDateLooper(DateLooper):
 
-    def __init__(self, fetch_wrapper: api_op.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp):
+    def __init__(self, fetch_wrapper: fetch.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp):
         super(AtmotubeDateLooper, self).__init__(fetch_wrapper)
         self.start = start_ts
         self.stop = stop_ts
@@ -65,7 +65,7 @@ class AtmotubeDateLooper(DateLooper):
 
 class ThingspeakDateLooper(DateLooper):
 
-    def __init__(self, fetch_wrapper: api_op.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp):
+    def __init__(self, fetch_wrapper: fetch.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp):
         super(ThingspeakDateLooper, self).__init__(fetch_wrapper)
         self.start = start_ts
         self.stop = stop_ts

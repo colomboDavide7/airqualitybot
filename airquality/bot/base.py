@@ -7,10 +7,10 @@
 ######################################################
 import abc
 import airquality.logger.loggable as log
-import airquality.api.fetch as api_op
-import airquality.database.operation.select as select_op
-import airquality.database.operation.base as db_op_base
-import airquality.bot.util.filter as filt
+import airquality.api.fetch as fetch
+import airquality.database.operation.select as select
+import airquality.database.operation.base as base_wrp
+import airquality.filter.filter as filt
 
 
 class BaseBot(log.Loggable):
@@ -21,24 +21,24 @@ class BaseBot(log.Loggable):
         self.api2db_adapter = None
         self.sensor_type_select_wrapper = None
         self.insert_wrapper = None
-        self.packet_filter = None
+        self.sensor_data_filter = None
         self.fetch_wrapper = None
         self.log_filename = log_filename
         self.log_sub_dir = log_sub_dir
 
     ################################ METHODS FOR ADDING EXTERNAL DEPENDENCIES ################################
-    def add_fetch_wrapper(self, op: api_op.FetchWrapper):
-        self.fetch_wrapper = op
+    def add_fetch_wrapper(self, wrapper: fetch.FetchWrapper):
+        self.fetch_wrapper = wrapper
 
-    def add_packet_filter(self, pck_filter: filt.SensorDataFilter):
-        self.packet_filter = pck_filter
+    def add_sensor_data_filter(self, data_filter: filt.SensorDataFilter):
+        self.sensor_data_filter = data_filter
 
     ################################ INJECT EXECUTOR DEPENDENCIES ################################
-    def add_sensor_type_select_wrapper(self, op: select_op.SensorTypeSelectWrapper):
-        self.sensor_type_select_wrapper = op
+    def add_sensor_type_select_wrapper(self, wrapper: select.SensorTypeSelectWrapper):
+        self.sensor_type_select_wrapper = wrapper
 
-    def add_insert_wrapper(self, op: db_op_base.DatabaseOperationWrapper):
-        self.insert_wrapper = op
+    def add_insert_wrapper(self, wrapper: base_wrp.DatabaseOperationWrapper):
+        self.insert_wrapper = wrapper
 
     ################################ INJECT ADAPTER DEPENDENCIES ################################
     def add_api2database_adapter(self, adapter):

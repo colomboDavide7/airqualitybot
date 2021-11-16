@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.bot.util.filter as filt
+import filter.filter as filt
 import airquality.database.util.datatype.timestamp as ts
 
 

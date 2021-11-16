@@ -13,16 +13,17 @@ AND = '&'
 QU = '?'
 
 
-def get_url_class(sensor_type: str):
+def get_url_builder(sensor_type: str, address: str, url_param: Dict[str, Any]):
 
     if sensor_type == 'purpleair':
-        return PurpleairURL
+        return PurpleairURL(address=address, url_param=url_param)
     elif sensor_type == 'atmotube':
-        return AtmotubeURL
+        return AtmotubeURL(address=address, url_param=url_param)
     elif sensor_type == 'thingspeak':
-        return ThingspeakURL
+        return ThingspeakURL(address=address, url_param=url_param)
 
 
+################################ URL BUILDER ################################
 class URLBuilder(abc.ABC):
 
     def __init__(self, address: str, url_param: Dict[str, Any]):
@@ -34,6 +35,7 @@ class URLBuilder(abc.ABC):
         pass
 
 
+################################ PURPLEAIR URL BUILDER ################################
 class PurpleairURL(URLBuilder):
 
     def __init__(self, address: str, url_param: Dict[str, Any]):
@@ -59,6 +61,7 @@ class PurpleairURL(URLBuilder):
         return url.strip(AND)
 
 
+################################ ATMOTUBE URL BUILDER ################################
 class AtmotubeURL(URLBuilder):
 
     def __init__(self, address: str, url_param: Dict[str, Any]):
@@ -76,6 +79,7 @@ class AtmotubeURL(URLBuilder):
         return url.strip(AND)
 
 
+################################ THINGSPEAK URL BUILDER ################################
 class ThingspeakURL(URLBuilder):
 
     def __init__(self, address: str, url_param: Dict[str, Any]):

@@ -39,7 +39,7 @@ class DataExtractor(abc.ABC):
         pass
 
 
-################################ PURPLEAIR PACKET RESHAPER ################################
+################################ PURPLEAIR DATA EXTRACTOR ################################
 class PurpleairDataExtractor(DataExtractor):
 
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
@@ -49,7 +49,7 @@ class PurpleairDataExtractor(DataExtractor):
         return data_packets
 
 
-################################ THINGSPEAK PACKET RESHAPER ################################
+################################ THINGSPEAK DATA EXTRACTOR ################################
 class ThingspeakDataExtractor(DataExtractor):
 
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
@@ -74,7 +74,7 @@ class ThingspeakDataExtractor(DataExtractor):
         return data_packets
 
 
-################################ ATMOTUBE PACKET RESHAPER ################################
+################################ ATMOTUBE DATA EXTRACTOR ################################
 
 class AtmotubeDataExtractor(DataExtractor):
 

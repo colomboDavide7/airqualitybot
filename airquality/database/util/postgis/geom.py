@@ -20,6 +20,7 @@ def get_postgis_class(sensor_type: str):
         return None
 
 
+################################ GEOMETRY BUILDER CLASS ################################
 class GeometryBuilder(abc.ABC):
 
     def __init__(self, srid: int = 26918):
@@ -38,6 +39,7 @@ class GeometryBuilder(abc.ABC):
         pass
 
 
+################################ POINT BUILDER CLASS ################################
 class PointBuilder(GeometryBuilder):
 
     def __init__(self, srid: int = 26918):

@@ -5,30 +5,52 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+# --------------------- BUILTIN IMPORT ---------------------
 import os
 import dotenv
-
-# IMPORT MODULES
+# --------------------- LOGGER IMPORT ---------------------
+# log
 import airquality.logger.loggable as log
+# util
 import airquality.logger.util.decorator as log_decorator
+# --------------------- APPLICATION IMPORT ---------------------
+# util
 import airquality.app.util.args as arg
 import airquality.app.util.make as make
+# --------------------- BOT IMPORT ---------------------
+# util
 import airquality.bot.util.fact as fact
-import airquality.api.fetch as api_op
+import airquality.bot.util.datelooper as loop
+# --------------------- FILTER IMPORT ---------------------
+import airquality.filter.filter as filt
+# --------------------- FILE IMPORT ---------------------
+# structured
 import airquality.file.structured.json as jf
-import airquality.api.util.extractor as ext
+# util
+import airquality.file.util.parser as parser
+# --------------------- ADAPTER IMPORT ---------------------
+import airquality.adapter.api2db.sensor as sens
+import airquality.adapter.api2db.measure as meas
+import airquality.adapter.db2api.param as par
+# --------------------- API IMPORT ---------------------
+# fetch
+import airquality.api.fetch as fetch
+# util
 import airquality.api.util.url as url
+import airquality.api.util.extractor as ext
+# --------------------- DATABASE IMPORT ---------------------
+# operation
+import airquality.database.operation.select as select
+import airquality.database.operation.insert as insert
+# util
+import airquality.database.util.datatype.timestamp as ts
+import airquality.database.util.record.time as t
+import airquality.database.util.record.location as loc
+import airquality.database.util.record.record as rec
+import airquality.database.util.postgis.geom as geom
 import airquality.database.util.conn as db_conn
 import airquality.database.util.query as qry
-import airquality.file.util.parser as parser
-import airquality.adapter.api2db.sensor as sens
-import airquality.adapter.db2api.param as par
-import airquality.adapter.api2db.measure as meas
-import airquality.database.operation.insert as insert_op
-import airquality.database.operation.select as select_op
-import airquality.database.operation.setup as op_setup
-import airquality.bot.util.datelooper as loop
-import airquality.bot.util.filter as filt
+
 
 ################################ GLOBAL VARIABLES ################################
 
@@ -85,107 +107,125 @@ class Application(log.Loggable):
         if self.sensor_type in ('atmotube', 'thingspeak',):
             file_extension = url_param['format']
 
-        # TextParser
-        text_parser = parser.get_text_parser(file_ext=file_extension)
-        self.info_messages.append(f"text_parser_class={text_parser.__class__.__name__}")
+        ################################ INJECT API DEPENDENCIES ################################
+        # TextParser for parsing API responses
+        response_parser = parser.get_text_parser(file_ext=file_extension)
 
         # URLBuilder
-        url_class = url.get_url_class(self.sensor_type)
-        url_builder = url_class(address=address, url_param=url_param)
-        self.info_messages.append(f"url_builder_class={url_class.__name__}")
+        url_builder = url.get_url_builder(
+            sensor_type=self.sensor_type,
+            address=address,
+            url_param=url_param
+        )
 
         # APIExtractor class
-        data_extractor = ext.get_data_extractor(self.sensor_type)
-        self.info_messages.append(f"data_extractor_class={data_extractor.__class__.__name__}")
+        data_extractor = ext.get_data_extractor(sensor_type=self.sensor_type)
 
-        # Sensor's API FetchWrapper
-        fetch_wrapper = api_op.FetchWrapper(url_builder=url_builder, data_extractor=data_extractor,
-                                            response_parser=text_parser)
-        bot.add_fetch_wrapper(fetch_wrapper)
+        # FetchWrapper
+        fetch_wrapper = fetch.FetchWrapper(
+            url_builder=url_builder,
+            data_extractor=data_extractor,
+            response_parser=response_parser
+        )
 
-        ################################ INJECT DATABASE DEPENDENCIES ################################
-        # DatabaseAdapter class
-        db_adapter = db_conn.Psycopg2DatabaseAdapter(connection_string=os.environ['DBCONN'])
+        # Inject dependency to Bot
+        bot.add_fetch_wrapper(wrapper=fetch_wrapper)
 
-        # QueryBuilder class
-        file_object = jf.JSONFile(QUERY_FILE)
-        query_builder = qry.QueryBuilder(file_object)
+        ################################ GET DATABASE OBJECTS ################################
+        # Database Utilities
+        conn = db_conn.Psycopg2DatabaseAdapter(connection_string=os.environ['DBCONN'])
+        query_builder = qry.QueryBuilder(query_file=jf.JSONFile(QUERY_FILE))
 
-        # InsertionOperation class
-        insert_wrapper = insert_op.get_insert_wrapper(self.sensor_type, conn=db_adapter, builder=query_builder)
-        insert_wrapper.set_debugger(self.debugger)
+        # RecordBuilder
+        time_rec = t.TimeRecord(timestamp_class=ts.get_timestamp_class(sensor_type=self.sensor_type))
+        location_rec = loc.LocationRecord(postgis_builder=geom.PointBuilder())
+
+        # InsertWrapper
+        insert_wrapper = insert.get_insert_wrapper(sensor_type=self.sensor_type, conn=conn, builder=query_builder)
+
+        ################################ SETUP INSERT WRAPPER ################################
+        # Inject debugger and logger to InsertWrapper
         insert_wrapper.set_logger(logger)
+        insert_wrapper.set_debugger(self.debugger)
 
-        # Setup external dependencies to InsertWrapper
-        insert_wrapper = op_setup.setup_insert_wrapper(
-            bot_name=self.bot_name,
-            sensor_type=self.sensor_type,
-            insert_wrapper=insert_wrapper)
+        # Setup for 'init' and 'update' bots
+        if self.bot_name in ('init', 'update'):
+            insert_wrapper.set_sensor_record_builder(builder=rec.SensorRecord())
+            insert_wrapper.set_api_param_record_builder(builder=rec.APIParamRecord())
+            insert_wrapper.set_sensor_info_record_builder(
+                builder=rec.SensorInfoRecord(time_rec=time_rec))
+            insert_wrapper.set_sensor_location_record_builder(
+                builder=rec.SensorLocationRecord(location_rec=location_rec, time_rec=t.CurrentTimestampTimeRecord()))
+        elif self.bot_name == 'fetch':
+            if self.sensor_type == 'atmotube':
+                insert_wrapper.set_mobile_record_builder(
+                    builder=rec.MobileMeasureRecord(time_rec=time_rec, location_rec=location_rec))
+            elif self.sensor_type == 'thingspeak':
+                insert_wrapper.set_station_record_builder(builder=rec.StationMeasureRecord(time_rec=time_rec))
 
+        # Inject InsertWrapper to Bot
         bot.add_insert_wrapper(insert_wrapper)
         self.info_messages.append(f"insert_wrapper_class={insert_wrapper.__class__.__name__}")
 
-        # SelectFromSensorID operation dependency
+        ################################ SETUP SELECT WRAPPERS ################################
+        # SensorIDSelectWrapper
         if self.bot_name == 'fetch':
-            select_from_sensor_id_operation = select_op.SensorIDSelectWrapper(conn=db_adapter,
-                                                                              query_builder=query_builder)
-            bot.add_sensor_id_select_wrapper(select_from_sensor_id_operation)
-            self.info_messages.append(
-                f"sensor_id_select_wrapper_class={select_from_sensor_id_operation.__class__.__name__}")
+            sensor_id_select_wrapper = select.SensorIDSelectWrapper(conn=conn, query_builder=query_builder)
+            bot.add_sensor_id_select_wrapper(sensor_id_select_wrapper)
+            self.info_messages.append(f"sensor_id_select_wrapper_class={sensor_id_select_wrapper.__class__.__name__}")
 
-        # SelectFromSensorType operation dependency
-        sensor_type_select_wrapper = select_op.SensorTypeSelectWrapper(
-            conn=db_adapter,
+        # SensorTypeSelectWrapper
+        sensor_type_select_wrapper = select.SensorTypeSelectWrapper(
+            conn=conn,
             query_builder=query_builder,
-            sensor_type=self.sensor_type
-        )
+            sensor_type=self.sensor_type)
+
+        # Inject logger and debugger
         sensor_type_select_wrapper.set_logger(logger)
         sensor_type_select_wrapper.set_debugger(self.debugger)
+
+        # Inject SensorTypeSelectWrapper to Bot
         bot.add_sensor_type_select_wrapper(sensor_type_select_wrapper)
         self.info_messages.append(f"sensor_type_select_wrapper_class={sensor_type_select_wrapper.__class__.__name__}")
 
         ################################ INJECT OTHER DEPENDENCIES ################################
 
         # PacketFilter class
-        packet_filter = filt.get_packet_filter(self.bot_name)
-        packet_filter.set_debugger(self.debugger)
-        packet_filter.set_logger(logger)
-        bot.add_packet_filter(packet_filter)
-        self.info_messages.append(f"packet_filter_class={packet_filter.__class__.__name__}")
+        sensor_data_filter = filt.get_sensor_data_filter(bot_name=self.bot_name, sensor_type=self.sensor_type)
+        sensor_data_filter.set_debugger(self.debugger)
+        sensor_data_filter.set_logger(logger)
+        bot.add_sensor_data_filter(sensor_data_filter)
+        self.info_messages.append(f"packet_filter_class={sensor_data_filter.__class__.__name__}")
 
         ################################ INJECT ADAPTER DEPENDENCIES ################################
 
         if self.bot_name in ('init', 'update'):
 
-            # SensorAdapter
-            sensor_adapter = sens.get_sensor_adapter(self.sensor_type)
-            bot.add_api2database_adapter(sensor_adapter)
-            self.info_messages.append(f"sensor_adapter_class={sensor_adapter.__class__.__name__}")
+            # Inject SensorAdapter to Bot
+            bot.add_api2database_adapter(adapter=sens.get_sensor_adapter(sensor_type=self.sensor_type))
 
         elif self.bot_name == 'fetch':
 
-            # Get the start measure id
-            start_measure_id = select_op.get_max_measure_id(
+            # Query the start record ID
+            start_measure_id = select.get_max_measure_id(
                 sensor_type=self.sensor_type,
                 sensor_type_select_wrapper=sensor_type_select_wrapper)
 
             # Query the (param_code, param_id) tuples for the measure param associated to 'sensor_type'
             measure_param_map = sensor_type_select_wrapper.get_measure_param()
 
-            # MeasureAdapter
             measure_adapter = meas.get_measure_adapter(
-                sensor_type=self.sensor_type,
-                start_id=start_measure_id,
-                measure_param_map=measure_param_map
-            )
+                    sensor_type=self.sensor_type,
+                    start_id=start_measure_id,
+                    measure_param_map=measure_param_map
+                )
 
-            bot.add_api2database_adapter(measure_adapter)
-            self.info_messages.append(f"measure_adapter_class={measure_adapter.__class__.__name__}")
+            # Inject MeasureAdapter to Bot
+            bot.add_api2database_adapter(adapter=measure_adapter)
 
-            # ParamAdapter
-            param_adapter = par.get_param_adapter(self.sensor_type)
-            bot.add_db2api_adapter(param_adapter)
-            self.info_messages.append(f"param_adapter_class={param_adapter.__class__.__name__}")
+            # Inject APIParamAdapter to Bot
+            bot.add_db2api_adapter(adapter=par.get_param_adapter(sensor_type=self.sensor_type))
+
         ################################ END ADAPTER DEPENDENCIES ################################
 
         # Add DateLooper dependency
@@ -193,6 +233,12 @@ class Application(log.Loggable):
             date_looper_class = loop.get_date_looper_class(self.sensor_type)
             bot.add_date_looper_class(date_looper_class)
             self.info_messages.append(f"date_looper_class={date_looper_class.__name__}")
+
+        # Add GeoFilter
+        if self.bot_name == 'update':
+            postgis_builder = geom.PointBuilder()
+            geo_filter = filt.GeoFilter(postgis_builder)
+            bot.add_geo_filter(geo_filter)
 
         # Set logger and debugger
         bot.set_logger(logger)

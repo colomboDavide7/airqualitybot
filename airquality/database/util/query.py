@@ -48,11 +48,12 @@ class QueryBuilder:
         return self.query_file.s10
 
     ################################ INSERT MOBILE MEASUREMENTS ################################
-    def insert_mobile_measurements(self, sensor_id: int, channel_name: str, values: List[rec.MobileMeasureRecord]) -> str:
+    def insert_mobile_measurements(self, sensor_id: int, channel_name: str, values: List[str]) -> str:
         query = ""
         query += self.__insert_into_mobile_measurements(values)
-        last_timestamp = values[-1].timestamp.ts
-        query += self.__update_last_acquisition(sensor_id, channel_name, last_timestamp=last_timestamp)
+        tokens = values[-1].split(', ')
+        last_ts = tokens[3]
+        query += self.__update_last_acquisition(sensor_id, channel_name, last_timestamp=last_ts)
         return query
 
     ################################ INSERT STATION MEASUREMENTS ################################
@@ -64,10 +65,11 @@ class QueryBuilder:
         return query
 
     ################################ UPDATE SENSOR AT LOCATION ################################
-    def update_locations(self, values: List[rec.SensorLocationRecord]) -> str:
+    def update_locations(self, values: List[str]) -> str:
         query = ""
         for value in values:
-            query += self.query_file.u2.format(ts=value.valid_from, sens_id=value.sensor_id)
+            token = value.split(', ')
+            query += self.query_file.u2.format(ts=token[1], sens_id=token[0].strip('('))
         query += self.__insert_location_values(values)
         return query
 
@@ -100,16 +102,14 @@ class QueryBuilder:
         query += ','.join(f"{v}" for v in values)
         return query.strip(',') + ';'
 
-    def __insert_into_station_measurements(self, values: List[rec.StationMeasureRecord]) -> str:
+    def __insert_into_station_measurements(self, values: List[str]) -> str:
         query = self.query_file.i2
-        for value in values:
-            query += value.record() + ','
+        query += ','.join(f"{v}" for v in values)
         return query.strip(',') + ';'
 
-    def __insert_into_mobile_measurements(self, values: List[rec.MobileMeasureRecord]) -> str:
+    def __insert_into_mobile_measurements(self, values: List[str]) -> str:
         query = self.query_file.i1
-        for value in values:
-            query += value.record() + ','
+        query += ','.join(f"{v}" for v in values)
         return query.strip(',') + ';'
 
     def __update_last_acquisition(self, sensor_id: int, channel_name: str, last_timestamp):

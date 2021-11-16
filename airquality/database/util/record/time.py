@@ -24,6 +24,7 @@ class TimeRecord(base.RecordBuilder):
             raise SystemExit(f"{TimeRecord.__name__}: bad sensor data => missing required key='timestamp'")
 
 
+################################ CURRENT TIMESTAMP TIME RECORD ################################
 class CurrentTimestampTimeRecord(base.RecordBuilder):
 
     def __init__(self, timestamp_class=ts.CurrentTimestamp):
