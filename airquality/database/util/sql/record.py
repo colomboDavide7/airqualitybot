@@ -19,6 +19,9 @@ class RecordBuilder(abc.ABC):
     def record(self) -> str:
         pass
 
+    def _exit_on_bad_sensor_data(self):
+        pass
+
 
 class LocationRecord(RecordBuilder):
 
@@ -88,30 +91,24 @@ class MobileMeasureRecord(RecordBuilder):
 
     def __init__(self, packet: Dict[str, Any]):
         super(MobileMeasureRecord, self).__init__(sensor_id=-1)
-        self.measure_param_map = None
         self.record_id = packet['record_id']
         self.timestamp = packet['timestamp']
         self.geom = packet['geom']
-        self.param_name = packet.get('param_name')
+        self.param_id = packet.get('param_id')
         self.param_val = packet.get('param_value')
-        if not self.param_name or not self.param_val:
+        if not self.param_id or not self.param_val:
             raise SystemExit(
                 f"{MobileMeasureRecord.__name__}: bad packet => please check you packet has a non-empty list"
                 f"of param name(s) and a non-empty list of param value(s), one for each name(s).")
-        if len(self.param_name) != len(self.param_val):
-            raise SystemExit(f"{MobileMeasureRecord.__name__}: bad packet => number of param name(s) does not match the "
-                             f"number of param value(s)")
-
-
+        if len(self.param_id) != len(self.param_val):
+            raise SystemExit(
+                f"{MobileMeasureRecord.__name__}: bad packet => number of param name(s) does not match the "
+                f"number of param value(s)")
 
     def record(self) -> str:
-
-        if self.measure_param_map is None:
-            raise SystemExit(f"{MobileMeasureRecord.__name__}: bad setup => missing external dependency 'measure_param_map'")
-
         records = ','.join(
-            f"({self.record_id}, {self.measure_param_map[name]}, '{value}', '{self.timestamp.ts}', {self.geom})"
-            for name, value in zip(self.param_name, self.param_val))
+            f"({self.record_id}, {id_}, '{value}', '{self.timestamp}', {self.geom})"
+            for id_, value in zip(self.param_id, self.param_val))
         return records.strip(',')
 
 
@@ -125,11 +122,13 @@ class StationMeasureRecord(RecordBuilder):
         self.param_name = packet.get('param_name')
         self.param_val = packet.get('param_value')
         if not self.param_name or not self.param_val:
-            raise SystemExit(f"{StationMeasureRecord.__name__}: bad packet => please check you packet has a non-empty list"
-                             f"of param name(s) and a non-empty list of param value(s), one for each name(s).")
+            raise SystemExit(
+                f"{StationMeasureRecord.__name__}: bad packet => please check you packet has a non-empty list"
+                f"of param name(s) and a non-empty list of param value(s), one for each name(s).")
         if len(self.param_name) != len(self.param_val):
-            raise SystemExit(f"{StationMeasureRecord.__name__}: bad packet => number of param name(s) does not match the "
-                             f"number of param value(s)")
+            raise SystemExit(
+                f"{StationMeasureRecord.__name__}: bad packet => number of param name(s) does not match the "
+                f"number of param value(s)")
 
     def set_measure_param_map(self, param_map: Dict[str, Any]):
         self.measure_param_map = param_map
@@ -137,7 +136,8 @@ class StationMeasureRecord(RecordBuilder):
     def record(self) -> str:
 
         if self.measure_param_map is None:
-            raise SystemExit(f"{StationMeasureRecord.__name__}: bad setup => missing external dependency 'measure_param_map'")
+            raise SystemExit(
+                f"{StationMeasureRecord.__name__}: bad setup => missing external dependency 'measure_param_map'")
 
         records = ','.join(
             f"({self.record_id}, {self.measure_param_map[name]}, {self.sensor_id}, '{value}', '{self.timestamp.ts}')"

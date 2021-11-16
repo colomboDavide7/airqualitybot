@@ -106,7 +106,7 @@ class TimestampFilter(SensorDataFilter):
         # Filter the measurements: keep only those packets that came after the 'filter_ts'
         fetched_new_measures = []
         for packet in sensor_data:
-            timestamp = packet['timestamp']                     # this is a Timestamp object
+            timestamp = packet['timestamp']
             if timestamp.is_after(self.filter_ts):
                 fetched_new_measures.append(packet)
 

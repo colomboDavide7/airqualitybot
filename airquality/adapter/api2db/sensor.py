@@ -20,48 +20,71 @@ CHANNEL = 'channel'
 LAST = 'last_acquisition'
 
 
-def get_sensor_adapter(sensor_type: str, postgis_class, timest_class):
+def get_sensor_adapter(sensor_type: str):
     if sensor_type == 'purpleair':
-        return PurpleairSensorAdapter(postgis_class, timest_class)
+        return PurpleairSensorAdapter()
     else:
         raise SystemExit(f"'{get_sensor_adapter.__name__}():' bad type '{sensor_type}'")
 
 
 class SensorAdapter(abc.ABC):
 
-    def __init__(self, postgis_class, timest_class):
-        self.postgis_class = postgis_class
-        self.timest_class = timest_class
-
     @abc.abstractmethod
     def reshape(self, sensor_data: Dict[str, Any]) -> Dict[str, Any]:
         pass
 
+    @abc.abstractmethod
+    def _add_sensor_name(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
+        pass
+
+    @abc.abstractmethod
+    def _add_sensor_info(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
+        pass
+
+    @abc.abstractmethod
+    def _add_api_param(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
+        pass
+
 
 class PurpleairSensorAdapter(SensorAdapter):
-
-    def __init__(self, postgis_class, timest_class):
-        super(PurpleairSensorAdapter, self).__init__(postgis_class, timest_class)
+    SENSOR_TYPE = 'PurpleAir/ThingSpeak'
+    CHANNEL_NAMES = ["1A", "1B", "2A", "2B"]
+    API_PARAM = ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
+                 'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b']
 
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         uniformed_data = {}
         try:
-            db_safe_name = data['name'].replace("'", "")
-            uniformed_data[NAME] = f"{db_safe_name} ({data['sensor_index']})"
-            uniformed_data[TYPE] = 'PurpleAir/ThingSpeak'
-            geom_data = {LAT: data['latitude'], LNG: data['longitude']}
-            uniformed_data[GEOM] = self.postgis_class(geom_data)
-            uniformed_data[PAR_NAME] = ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
-                                        'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b']
-            uniformed_data[PAR_VAL] = [data['primary_id_a'], data['primary_id_b'],
-                                       data['primary_key_a'], data['primary_key_b'],
-                                       data['secondary_id_a'], data['secondary_id_b'],
-                                       data['secondary_key_a'], data['secondary_key_b']]
-            uniformed_data[CHANNEL] = ["1A", "1B", "2A", "2B"]
-            uniformed_data[LAST] = [self.timest_class(data['date_created']),
-                                    self.timest_class(data['date_created']),
-                                    self.timest_class(data['date_created']),
-                                    self.timest_class(data['date_created'])]
+            uniformed_data = self._add_sensor_name(uniformed_data=uniformed_data, data=data)
+            uniformed_data = self._add_sensor_info(uniformed_data=uniformed_data, data=data)
+            uniformed_data = self._add_location(uniformed_data=uniformed_data, data=data)
+            uniformed_data = self._add_api_param(uniformed_data=uniformed_data, data=data)
+            uniformed_data[TYPE] = PurpleairSensorAdapter.SENSOR_TYPE
         except KeyError as ke:
             raise SystemExit(f"{PurpleairSensorAdapter.__name__}: bad sensor data => missing key={ke!s}")
+        return uniformed_data
+
+    def _add_sensor_name(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
+        db_safe_name = data['name'].replace("'", "")
+        uniformed_data[NAME] = f"{db_safe_name} ({data['sensor_index']})"
+        return uniformed_data
+
+    def _add_sensor_info(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
+        uniformed_data[CHANNEL] = PurpleairSensorAdapter.CHANNEL_NAMES
+        uniformed_data[LAST] = [data['date_created'], data['date_created'], data['date_created'], data['date_created']]
+        return uniformed_data
+
+    def _add_api_param(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
+        param_name = []
+        param_value = []
+        for name in PurpleairSensorAdapter.API_PARAM:
+            param_name.append(name)
+            param_value.append(data[name])
+        uniformed_data[PAR_VAL] = param_value
+        uniformed_data[PAR_NAME] = param_name
+        return uniformed_data
+
+    def _add_location(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
+        uniformed_data[LAT] = data['latitude']
+        uniformed_data[LNG] = data['longitude']
         return uniformed_data
