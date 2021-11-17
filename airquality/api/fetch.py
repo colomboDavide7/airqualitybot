@@ -36,7 +36,12 @@ class FetchWrapper(log.Loggable):
         sensor_data = self.data_extractor.extract(parsed_response=parsed_response, channel_name=self.channel_name)
 
         # Log message
-        self.info_messages.append(f"{FetchWrapper.__name__} has fetched {len(sensor_data)} sensor data")
+        n_fetched = len(sensor_data)
+        msg = f"{FetchWrapper.__name__} has fetched {n_fetched} sensor data"
+        if n_fetched == 0:
+            self.warning_messages.append(msg)
+        else:
+            self.info_messages.append(msg)
         self.log_messages()
 
         return sensor_data

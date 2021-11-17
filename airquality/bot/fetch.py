@@ -73,8 +73,6 @@ class FetchBot(base.BaseBot):
                     # Fetch data from API
                     sensor_data = looper.get_next_sensor_data()
                     if not sensor_data:
-                        self.debugger.warning(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
-                        self.logger.warning(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
                         continue
 
                     ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
@@ -88,8 +86,6 @@ class FetchBot(base.BaseBot):
                     # Filter measure to keep only new measurements
                     new_data = self.sensor_data_filter.filter(uniformed_packets)
                     if not new_data:
-                        self.debugger.warning(f"no new measurements for sensor_id={sensor_id}")
-                        self.logger.warning(f"no new measurements for sensor_id={sensor_id}")
                         continue
 
                     # Add new measurements

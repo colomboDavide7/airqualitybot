@@ -56,13 +56,10 @@ class NameFilter(SensorDataFilter):
         for data in sensor_data:
             if data['name'] not in self.name_to_filter:
                 filtered_packets.append(data)
-                self.info_messages.append(f"found new sensor '{data['name']}'")
+                self.info_messages.append(f"{NameFilter.__name__} found new sensor '{data['name']}'")
             else:
-                self.warning_messages.append(f"skip sensor '{data['name']}' => already present")
-
-        # Log messages
+                self.warning_messages.append(f"{NameFilter.__name__} skipped existing sensor '{data['name']}'")
         self.log_messages()
-
         return filtered_packets
 
 
@@ -84,16 +81,14 @@ class NameKeeper(SensorDataFilter):
         for data in sensor_data:
             if data['name'] in self.name_to_keep:
                 filtered_packets.append(data)
-                self.info_messages.append(f"found active location '{data['name']}'")
+                self.info_messages.append(f"{NameKeeper.__name__} found active location '{data['name']}'")
             else:
-                self.warning_messages.append(f"skip location '{data['name']}' => not active")
-
+                self.warning_messages.append(f"{NameKeeper.__name__} skipped non-active location '{data['name']}'")
         self.log_messages()
-
         return filtered_packets
 
 
-################################ DATE FILTER ################################
+################################ TIMESTAMP FILTER ################################
 class TimestampFilter(SensorDataFilter):
 
     def __init__(self, timestamp_class):
@@ -111,22 +106,21 @@ class TimestampFilter(SensorDataFilter):
             raise SystemExit(f"{TimestampFilter.__name__}: bad setup => missing external dependency 'filter_ts'")
 
         # Filter the measurements: keep only those packets that came after the 'filter_ts'
-        fetched_new_measures = []
+        filtered_data = []
         for packet in sensor_data:
             timestamp = self.timestamp_class(packet['timestamp'])
             if timestamp.is_after(self.filter_ts):
-                fetched_new_measures.append(packet)
+                filtered_data.append(packet)
+        self._log_message(n_total=len(sensor_data), n_filtered=len(filtered_data))
+        return filtered_data
 
-        # Debug and log new measurement timestamp range
-        if fetched_new_measures:
-            first_timestamp = fetched_new_measures[0]['timestamp']
-            last_timestamp = fetched_new_measures[-1]['timestamp']
-            self.info_messages.append(f"found new measurements from {first_timestamp} to {last_timestamp}")
-
-        # Log messages
+    def _log_message(self, n_total: int, n_filtered: int):
+        msg = f"{TimestampFilter.__name__} found {n_filtered}/{n_total} new measurements"
+        if n_filtered == 0:
+            self.warning_messages.append(msg)
+        else:
+            self.info_messages.append(msg)
         self.log_messages()
-
-        return fetched_new_measures
 
 
 ################################ GEO FILTER ################################
