@@ -6,14 +6,14 @@
 #
 #################################################
 import unittest
-import api.util.request as api
+import airquality.api.util.request as fetch
 
 
 class TestAPIRequestAdapter(unittest.TestCase):
 
     def test_system_exit_when_invalid_url_is_used(self):
         with self.assertRaises(SystemExit):
-            api.fetch("https://bad_address.com?bad_param")
+            fetch.fetch_from_url("https://bad_address.com?bad_param")
 
 
 if __name__ == '__main__':
