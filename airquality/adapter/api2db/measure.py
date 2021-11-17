@@ -10,14 +10,11 @@ from typing import Dict, Any
 import airquality.database.operation.select.type as sel
 
 TS = 'timestamp'
-NAME = 'name'
-TYPE = 'type'
 LAT = 'lat'
 LNG = 'lng'
-GEOM = 'geom'
-PAR_NAME = 'param_name'
-PAR_ID = 'param_id'
-PAR_VAL = 'param_value'
+PARAM = 'param'
+PAR_ID = 'id'
+PAR_VAL = 'val'
 REC_ID = 'record_id'
 
 
@@ -82,8 +79,8 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
         return uniformed_data
 
     def _add_param_id_param_value(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
-        uniformed_data[PAR_ID] = [self.measure_param_map[n] for n in AtmotubeMeasureAdapter.ATMOTUBE_PARAM_NAMES]
-        uniformed_data[PAR_VAL] = [data.get(n) for n in AtmotubeMeasureAdapter.ATMOTUBE_PARAM_NAMES]
+        uniformed_data[PARAM] = [{PAR_ID: self.measure_param_map[n], PAR_VAL: data.get(n)}
+                                 for n in AtmotubeMeasureAdapter.ATMOTUBE_PARAM_NAMES]
         return uniformed_data
 
     def _add_geometry(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
@@ -124,6 +121,5 @@ class ThingspeakMeasureAdapter(MeasureAdapter):
         return uniformed_data
 
     def _add_param_id_param_value(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
-        uniformed_data[PAR_ID] = [self.measure_param_map[f['name']] for f in data['fields']]
-        uniformed_data[PAR_VAL] = [f['value'] for f in data['fields']]
+        uniformed_data[PARAM] = [{PAR_ID: self.measure_param_map[f['name']], PAR_VAL: f['value']} for f in data['fields']]
         return uniformed_data

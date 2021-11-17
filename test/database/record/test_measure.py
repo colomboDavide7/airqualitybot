@@ -26,7 +26,7 @@ class TestMeasurementRecord(unittest.TestCase):
 
     ################################ STATION MEASUREMENT RECORD ################################
     def test_successfully_build_station_record(self):
-        test_data = {'record_id': 99, 'param_id': [1], 'param_value': [55], 'timestamp': '2018-10-11T09:44:00Z'}
+        test_data = {'record_id': 99, 'param': [{'id': 1, 'val': 55}], 'timestamp': '2018-10-11T09:44:00Z'}
         actual_output = self.station_rec.record(test_data, sensor_id=144)
         expected_output = "(99, 1, 144, '55', '2018-10-11 09:44:00')"
         self.assertEqual(actual_output, expected_output)
@@ -38,7 +38,7 @@ class TestMeasurementRecord(unittest.TestCase):
 
     ################################ MOBILE MEASUREMENT RECORD ################################
     def test_successfully_build_mobile_record(self):
-        test_data = {'record_id': 99, 'param_id': [1], 'param_value': [55], 'timestamp': '2018-10-11T09:44:00.000Z',
+        test_data = {'record_id': 99, 'param': [{'id': 1, 'val': 55}], 'timestamp': '2018-10-11T09:44:00.000Z',
                      'lat': '45', 'lng': '9'}
         actual_output = self.mobile_rec.record(sensor_data=test_data)
         expected_output = "(99, 1, '55', '2018-10-11 09:44:00', ST_GeomFromText('POINT(9 45)', 26918))"

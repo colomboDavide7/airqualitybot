@@ -48,8 +48,9 @@ class TestMeasureReshaper(unittest.TestCase):
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
                        'p': 'val7', 'time': '2021-10-11T01:33:44.000Z'}
         expected_output = {'record_id': 99, 'timestamp': '2021-10-11T01:33:44.000Z',
-                           'param_id': [1, 2, 3, 4, 5, 6, 7],
-                           'param_value': ['val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7']}
+                           'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
+                                     {'id': 4, 'val': 'val4'}, {'id': 5, 'val': 'val5'}, {'id': 6, 'val': 'val6'},
+                                     {'id': 7, 'val': 'val7'}]}
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -57,8 +58,9 @@ class TestMeasureReshaper(unittest.TestCase):
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
                        'p': 'val7', 'time': '2021-10-11T01:33:44.000Z', 'coords': {'lat': 'lat_val', 'lon': 'lon_val'}}
         expected_output = {'record_id': 100, 'lat': 'lat_val', 'lng': 'lon_val', 'timestamp': '2021-10-11T01:33:44.000Z',
-                           'param_id': [1, 2, 3, 4, 5, 6, 7],
-                           'param_value': ['val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7']}
+                           'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
+                                     {'id': 4, 'val': 'val4'}, {'id': 5, 'val': 'val5'}, {'id': 6, 'val': 'val6'},
+                                     {'id': 7, 'val': 'val7'}]}
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -66,8 +68,9 @@ class TestMeasureReshaper(unittest.TestCase):
         # Test output when 't', 'h' and 'p' are missing
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 'time': '2021-10-11T01:33:44.000Z'}
         expected_output = {'record_id': 99, 'timestamp': '2021-10-11T01:33:44.000Z',
-                           'param_id': [1, 2, 3, 4, 5, 6, 7],
-                           'param_value': ['val1', 'val2', 'val3', 'val4', None, None, None]}
+                           'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
+                                     {'id': 4, 'val': 'val4'}, {'id': 5, 'val': None}, {'id': 6, 'val': None},
+                                     {'id': 7, 'val': None}]}
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -90,8 +93,8 @@ class TestMeasureReshaper(unittest.TestCase):
                                   {'name': 'f2', 'value': 'val2'}]}
 
         expected_output = {'record_id': 99, 'timestamp': '2021-10-11T01:33:44Z',
-                           'param_id': [9, 10],
-                           'param_value': ['val1', 'val2']}
+                           'param': [{'id': 9, 'val': 'val1'},
+                                     {'id': 10, 'val': 'val2'}]}
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -101,8 +104,8 @@ class TestMeasureReshaper(unittest.TestCase):
                                   {'name': 'f2', 'value': 'val2'}]}
 
         expected_output = {'record_id': 99, 'timestamp': '2021-10-11T01:33:44Z',
-                           'param_id': [9, 10],
-                           'param_value': [None, 'val2']}
+                           'param': [{'id': 9, 'val': None},
+                                     {'id': 10, 'val': 'val2'}]}
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 

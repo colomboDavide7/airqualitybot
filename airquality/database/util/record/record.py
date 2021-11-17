@@ -105,30 +105,23 @@ class MobileMeasureRecord(base.RecordBuilder):
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
         self._exit_on_bad_sensor_data(sensor_data)
         record_id = sensor_data['record_id']
-        param_id = sensor_data['param_id']
-        param_val = sensor_data['param_value']
         ts = self.time_rec.record(sensor_data)
         geom = self.location_rec.record(sensor_data)
-        records = ','.join(f"({record_id}, {id_}, '{value}', {ts}, {geom})" if value is not None else
-                           f"({record_id}, {id_}, NULL, {ts}, {geom})" for id_, value in zip(param_id, param_val))
+        records = ','.join(f"({record_id}, {p['id']}, '{p['val']}', {ts}, {geom})" if p['val'] is not None else
+                           f"({record_id}, {p['id']}, NULL, {ts}, {geom})" for p in sensor_data['param'])
         return records.strip(',')
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
 
         if sensor_data.get('record_id') is None:
             raise SystemExit(f"{MobileMeasureRecord.__name__}: bad sensor data: missing key='record_id'")
-        if sensor_data.get('param_id') is None:
-            raise SystemExit(f"{MobileMeasureRecord.__name__}: bad sensor data: missing key='param_id'")
-        if sensor_data.get('param_value') is None:
-            raise SystemExit(f"{MobileMeasureRecord.__name__}: bad sensor data: missing key='param_value'")
-
-        if not sensor_data['param_value'] or not sensor_data['param_id']:
-            raise SystemExit(f"{MobileMeasureRecord.__name__}: bad packet => please check you packet has a non-empty list"
-                             f"of param id(s) and a non-empty list of param value(s), one for each name(s).")
-
-        if len(sensor_data['param_value']) != len(sensor_data['param_id']):
-            raise SystemExit(f"{MobileMeasureRecord.__name__}: bad packet => number of param id(s) does not match the "
-                             f"number of param value(s)")
+        if 'param' not in sensor_data:
+            raise SystemExit(f"{MobileMeasureRecord.__name__}: bad sensor data: missing key='param'")
+        if not sensor_data['param']:
+            raise SystemExit(f"{MobileMeasureRecord.__name__}: bad sensor data: empty 'param' list")
+        for p in sensor_data['param']:
+            if 'id' not in p or 'val' not in p:
+                raise SystemExit(f"{MobileMeasureRecord.__name__}: bad sensor data: missing 'param' keys")
 
 
 ################################ STATION MEASUREMENT RECORD ################################
@@ -144,25 +137,19 @@ class StationMeasureRecord(base.RecordBuilder):
 
         self._exit_on_bad_sensor_data(sensor_data)
         record_id = sensor_data['record_id']
-        param_id = sensor_data['param_id']
-        param_val = sensor_data['param_value']
         ts = self.time_rec.record(sensor_data)
-        records = ','.join(f"({record_id}, {id_}, {sensor_id}, '{val}', {ts})" for id_, val in zip(param_id, param_val))
+        records = ','.join(f"({record_id}, {p['id']}, {sensor_id}, '{p['val']}', {ts})" if p['val'] is not None else
+                           f"({record_id}, {p['id']}, {sensor_id}, NULL, {ts})" for p in sensor_data['param'])
         return records.strip(',')
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
 
         if sensor_data.get('record_id') is None:
             raise SystemExit(f"{StationMeasureRecord.__name__}: bad sensor data: missing key='record_id'")
-        if sensor_data.get('param_id') is None:
-            raise SystemExit(f"{StationMeasureRecord.__name__}: bad sensor data: missing key='param_id'")
-        if sensor_data.get('param_value') is None:
-            raise SystemExit(f"{StationMeasureRecord.__name__}: bad sensor data: missing key='param_value'")
-
-        if not sensor_data['param_value'] or not sensor_data['param_id']:
-            raise SystemExit(f"{StationMeasureRecord.__name__}: bad packet => please check you packet has a non-empty list"
-                             f"of param id(s) and a non-empty list of param value(s), one for each name(s).")
-
-        if len(sensor_data['param_value']) != len(sensor_data['param_id']):
-            raise SystemExit(f"{StationMeasureRecord.__name__}: bad packet => number of param id(s) does not match the "
-                             f"number of param value(s)")
+        if 'param' not in sensor_data:
+            raise SystemExit(f"{StationMeasureRecord.__name__}: bad sensor data: missing key='param'")
+        if not sensor_data['param']:
+            raise SystemExit(f"{StationMeasureRecord.__name__}: bad sensor data: empty 'param' list")
+        for p in sensor_data['param']:
+            if 'id' not in p or 'val' not in p:
+                raise SystemExit(f"{StationMeasureRecord.__name__}: bad sensor data: missing 'param' keys")

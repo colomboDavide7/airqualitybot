@@ -21,7 +21,7 @@ class SensorDataFilter(log.Loggable):
         pass
 
     @abc.abstractmethod
-    def _log_message(self, n_total: int, n_filtered: int):
+    def _log_message(self, n_total: int, n_filtered: int, msg: str = ""):
         pass
 
 
@@ -39,7 +39,7 @@ class NameFilter(SensorDataFilter):
         self._log_message(n_total=len(sensor_data), n_filtered=len(filtered_data))
         return filtered_data
 
-    def _log_message(self, n_total: int, n_filtered: int):
+    def _log_message(self, n_total: int, n_filtered: int, msg: str = ""):
         msg = f"{NameFilter.__name__} found {n_filtered}/{n_total} new sensors"
         if n_filtered == 0:
             self.warning_messages.append(msg)
@@ -69,7 +69,7 @@ class TimestampFilter(SensorDataFilter):
         self._log_message(n_total=len(sensor_data), n_filtered=len(filtered_data))
         return filtered_data
 
-    def _log_message(self, n_total: int, n_filtered: int):
+    def _log_message(self, n_total: int, n_filtered: int, msg: str = ""):
         msg = f"{TimestampFilter.__name__} found {n_filtered}/{n_total} new measurements"
         if n_filtered == 0:
             self.warning_messages.append(msg)
@@ -90,18 +90,18 @@ class GeoFilter(SensorDataFilter):
 
         active_sensors = [data for data in sensor_data if data['name'] in self.database_active_locations]
         if not active_sensors:
-            self.warning_messages.append(f"{GeoFilter.__name__} has not found active sensors")
-            self.log_messages()
+            self._log_message(n_total=len(sensor_data), n_filtered=len(active_sensors), msg='active sensors')
             return []
 
+        self._log_message(n_total=len(sensor_data), n_filtered=len(active_sensors), msg='active sensors')
         changed_sensors = [data for data in active_sensors
                            if self.postgis_builder.as_text(data) != self.database_active_locations[data['name']]]
 
-        self._log_message(n_total=len(sensor_data), n_filtered=len(changed_sensors))
+        self._log_message(n_total=len(active_sensors), n_filtered=len(changed_sensors))
         return changed_sensors
 
-    def _log_message(self, n_total: int, n_filtered: int):
-        msg = f"{GeoFilter.__name__} found {n_filtered}/{n_total} new locations"
+    def _log_message(self, n_total: int, n_filtered: int, msg="new locations"):
+        msg = f"{GeoFilter.__name__} found {n_filtered}/{n_total} {msg}"
         if n_filtered == 0:
             self.warning_messages.append(msg)
         else:
