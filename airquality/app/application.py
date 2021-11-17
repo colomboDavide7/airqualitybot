@@ -115,8 +115,7 @@ class Application(log.Loggable):
         url_builder = url.get_url_builder(
             sensor_type=self.sensor_type,
             address=address,
-            url_param=url_param
-        )
+            url_param=url_param)
 
         # APIExtractor class
         data_extractor = ext.get_data_extractor(sensor_type=self.sensor_type)
@@ -124,9 +123,12 @@ class Application(log.Loggable):
         # FetchWrapper
         fetch_wrapper = fetch.FetchWrapper(
             url_builder=url_builder,
-            data_extractor=data_extractor,
-            response_parser=response_parser
-        )
+            extractor=data_extractor,
+            parser=response_parser)
+
+        # Inject logger and debugger
+        fetch_wrapper.set_logger(logger)
+        fetch_wrapper.set_debugger(self.debugger)
 
         # Inject dependency to Bot
         bot.add_fetch_wrapper(wrapper=fetch_wrapper)
@@ -188,14 +190,20 @@ class Application(log.Loggable):
         bot.add_sensor_type_select_wrapper(sensor_type_select_wrapper)
         self.info_messages.append(f"sensor_type_select_wrapper_class={sensor_type_select_wrapper.__class__.__name__}")
 
-        ################################ INJECT OTHER DEPENDENCIES ################################
+        ################################ SENSOR DATA FILTER DEPENDENCIES ################################
 
-        # PacketFilter class
+        # SensorDataFilter
         sensor_data_filter = filt.get_sensor_data_filter(bot_name=self.bot_name, sensor_type=self.sensor_type)
         sensor_data_filter.set_debugger(self.debugger)
         sensor_data_filter.set_logger(logger)
         bot.add_sensor_data_filter(sensor_data_filter)
         self.info_messages.append(f"packet_filter_class={sensor_data_filter.__class__.__name__}")
+
+        # Add GeoFilter
+        if self.bot_name == 'update':
+            postgis_builder = geom.PointBuilder()
+            geo_filter = filt.GeoFilter(postgis_builder)
+            bot.add_geo_filter(geo_filter)
 
         ################################ INJECT ADAPTER DEPENDENCIES ################################
 
@@ -233,12 +241,6 @@ class Application(log.Loggable):
             date_looper_class = loop.get_date_looper_class(self.sensor_type)
             bot.add_date_looper_class(date_looper_class)
             self.info_messages.append(f"date_looper_class={date_looper_class.__name__}")
-
-        # Add GeoFilter
-        if self.bot_name == 'update':
-            postgis_builder = geom.PointBuilder()
-            geo_filter = filt.GeoFilter(postgis_builder)
-            bot.add_geo_filter(geo_filter)
 
         # Set logger and debugger
         bot.set_logger(logger)

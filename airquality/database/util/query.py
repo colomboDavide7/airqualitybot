@@ -7,7 +7,6 @@
 #
 #################################################
 from typing import List
-import airquality.database.util.record.record as rec
 import airquality.file.structured.json as struct
 
 
@@ -48,28 +47,24 @@ class QueryBuilder:
         return self.query_file.s10
 
     ################################ INSERT MOBILE MEASUREMENTS ################################
-    def insert_mobile_measurements(self, sensor_id: int, channel_name: str, values: List[str]) -> str:
+    def insert_mobile_measurements(self, sensor_id: int, channel: str, values: List[str]) -> str:
         query = ""
         query += self.__insert_into_mobile_measurements(values)
-        tokens = values[-1].split(', ')
-        last_ts = tokens[3]
-        query += self.__update_last_acquisition(sensor_id, channel_name, last_timestamp=last_ts)
+        last_ts = values[-1].split(', ')[3]
+        query += self.__update_last_acquisition(sensor_id, channel, last_timestamp=last_ts)
         return query
 
     ################################ INSERT STATION MEASUREMENTS ################################
-    def insert_station_measurements(self, sensor_id: int, channel_name: str, values: List[rec.StationMeasureRecord]):
+    def insert_station_measurements(self, sensor_id: int, channel: str, values: List[str]):
         query = ""
         query += self.__insert_into_station_measurements(values)
-        last_timestamp = values[-1].timestamp.ts
-        query += self.__update_last_acquisition(sensor_id, channel_name, last_timestamp=last_timestamp)
+        last_timestamp = values[-1].split(',')[4].strip(')')
+        query += self.__update_last_acquisition(sensor_id, channel, last_timestamp=last_timestamp)
         return query
 
     ################################ UPDATE SENSOR AT LOCATION ################################
     def update_locations(self, values: List[str]) -> str:
-        query = ""
-        for value in values:
-            token = value.split(', ')
-            query += self.query_file.u2.format(ts=token[1], sens_id=token[0].strip('('))
+        query = self.__update_valid_to_timestamp(values)
         query += self.__insert_location_values(values)
         return query
 
@@ -82,6 +77,16 @@ class QueryBuilder:
         return query
 
     ################################ PRIVATE METHODS ################################
+    def __insert_into_mobile_measurements(self, values: List[str]) -> str:
+        query = self.query_file.i1
+        query += ','.join(f"{v}" for v in values)
+        return query.strip(',') + ';'
+
+    def __insert_into_station_measurements(self, values: List[str]) -> str:
+        query = self.query_file.i2
+        query += ','.join(f"{v}" for v in values)
+        return query.strip(',') + ';'
+
     def __insert_into_sensor(self, values: List[str]) -> str:
         query = self.query_file.i3
         query += ','.join(f"{v}" for v in values)
@@ -102,15 +107,14 @@ class QueryBuilder:
         query += ','.join(f"{v}" for v in values)
         return query.strip(',') + ';'
 
-    def __insert_into_station_measurements(self, values: List[str]) -> str:
-        query = self.query_file.i2
-        query += ','.join(f"{v}" for v in values)
-        return query.strip(',') + ';'
-
-    def __insert_into_mobile_measurements(self, values: List[str]) -> str:
-        query = self.query_file.i1
-        query += ','.join(f"{v}" for v in values)
-        return query.strip(',') + ';'
+    def __update_valid_to_timestamp(self, values: List[str]):
+        query = ""
+        for value in values:
+            token = value.split(', ')
+            sensor_id = token[0].strip('(')
+            timestamp = token[1]
+            query += self.query_file.u1.format(ts=timestamp, sens_id=sensor_id)
+        return query
 
     def __update_last_acquisition(self, sensor_id: int, channel_name: str, last_timestamp):
-        return self.query_file.u4.format(ts=last_timestamp, sensor_id=sensor_id, channel=channel_name)
+        return self.query_file.u2.format(ts=last_timestamp, sensor_id=sensor_id, channel=channel_name)

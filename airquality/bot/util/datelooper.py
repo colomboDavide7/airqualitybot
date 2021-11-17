@@ -29,6 +29,12 @@ class DateLooper(log.Loggable):
         super(DateLooper, self).__init__()
         self.fetch_wrapper = fetch_wrapper
 
+    def update_url_param(self, param2update: Dict[str, Any]):
+        self.fetch_wrapper.update_url_param(param2update)
+
+    def set_channel_name(self, channel_name: str):
+        self.fetch_wrapper.set_channel_name(channel_name)
+
     @abc.abstractmethod
     def has_next(self) -> bool:
         pass
@@ -57,8 +63,11 @@ class AtmotubeDateLooper(DateLooper):
                 self.ended = True
                 date = self.stop
 
+            self.info_messages.append(f"{DateLooper.__name__} is looking for new data at '{self.start.ts.split(' ')[0]}'")
+            self.log_messages()
+
             next_date = {'date': date.ts.split(' ')[0]}
-            self.fetch_wrapper.update_param(next_date)
+            self.fetch_wrapper.update_url_param(next_date)
             self.start = self.start.add_days(1)
             return self.fetch_wrapper.get_sensor_data()
 
@@ -82,7 +91,10 @@ class ThingspeakDateLooper(DateLooper):
                 self.ended = True
                 end = self.stop
 
+            self.info_messages.append(f"{DateLooper.__name__} is looking for new data within [{self.start.ts} - {end.ts}]")
+            self.log_messages()
+
             next_start = {'start': self.start.ts.replace(" ", "%20"), 'end': end.ts.replace(" ", "%20")}
-            self.fetch_wrapper.update_param(next_start)
+            self.fetch_wrapper.update_url_param(next_start)
             self.start = self.start.add_days(7)
             return self.fetch_wrapper.get_sensor_data()

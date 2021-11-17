@@ -124,25 +124,23 @@ class AtmotubeInsertWrapper(InsertWrapper):
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(AtmotubeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
-    def insert_measurements(self, fetched_measurements: List[Dict[str, Any]], sensor_id: int, channel_name: str):
+    def insert_measurements(self, sensor_data: List[Dict[str, Any]], sensor_id: int, channel: str):
         self._exit_on_missing_external_dependencies()
 
         measure_values = []
-        for measure in fetched_measurements:
-            measure_values.append(self.mobile_record_builder.record(measure))
-
-        first_measure_id = fetched_measurements[0]['record_id']
-        last_measure_id = fetched_measurements[-1]['record_id']
-        self.info_messages.append(f"fetched measurements from id={first_measure_id} to id={last_measure_id}")
-        self.log_messages()
+        for data in sensor_data:
+            measure_values.append(self.mobile_record_builder.record(data))
 
         # Build the query for inserting all the measurements
-        exec_query = self.builder.insert_mobile_measurements(
-            values=measure_values,
-            sensor_id=sensor_id,
-            channel_name=channel_name
-        )
+        exec_query = self.builder.insert_mobile_measurements(values=measure_values, sensor_id=sensor_id, channel=channel)
         self.conn.send(exec_query)
+
+        first_measure_id = sensor_data[0]['record_id']
+        last_measure_id = sensor_data[-1]['record_id']
+        n_measure = (last_measure_id - first_measure_id) + 1
+        self.info_messages.append(f"{InsertWrapper.__name__} has inserted {n_measure} within record_id range "
+                                  f"[{first_measure_id} - {last_measure_id}]")
+        self.log_messages()
 
     def _exit_on_missing_external_dependencies(self):
         if self.mobile_record_builder is None:
@@ -151,31 +149,31 @@ class AtmotubeInsertWrapper(InsertWrapper):
 
 
 ################################ THINGSPEAK INSERT OPERATION CLASS ################################
-class ThingspeakInsertWrapper(base.DatabaseOperationWrapper):
+class ThingspeakInsertWrapper(InsertWrapper):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
         super(ThingspeakInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
-    def insert_measurements(self,
-                            fetched_measurements: List[Dict[str, Any]],
-                            measure_param_map: Dict[str, Any],
-                            sensor_id: int,
-                            channel_name: str):
-        measure_records = []
-        for measure in fetched_measurements:
-            record = rec.StationMeasureRecord(packet=measure, sensor_id=sensor_id)
-            record.set_measure_param_map(measure_param_map)
-            measure_records.append(record)
+    def insert_measurements(self, sensor_data: List[Dict[str, Any]], sensor_id: int, channel: str):
 
-        first_measure_id = fetched_measurements[0]['record_id']
-        last_measure_id = fetched_measurements[-1]['record_id']
-        self.info_messages.append(f"fetched measurements from id={first_measure_id} to id={last_measure_id}")
-        self.log_messages()
+        self._exit_on_missing_external_dependencies()
+
+        measure_values = []
+        for data in sensor_data:
+            measure_values.append(self.station_record_builder.record(sensor_data=data, sensor_id=sensor_id))
 
         # Build the query for inserting all the measurements
-        exec_query = self.builder.insert_station_measurements(
-            values=measure_records,
-            sensor_id=sensor_id,
-            channel_name=channel_name
-        )
+        exec_query = self.builder.insert_station_measurements(values=measure_values, sensor_id=sensor_id, channel=channel)
         self.conn.send(exec_query)
+
+        first_measure_id = sensor_data[0]['record_id']
+        last_measure_id = sensor_data[-1]['record_id']
+        n_measure = (last_measure_id - first_measure_id) + 1
+        self.info_messages.append(f"{InsertWrapper.__name__} has inserted {n_measure} within record_id range "
+                                  f"[{first_measure_id} - {last_measure_id}]")
+        self.log_messages()
+
+    def _exit_on_missing_external_dependencies(self):
+        if self.station_record_builder is None:
+            raise SystemExit(f"{ThingspeakInsertWrapper.__name__}: bad setup => "
+                             f"missing external dependency 'station_record_builder'")

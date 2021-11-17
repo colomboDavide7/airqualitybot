@@ -47,32 +47,34 @@ class FetchBot(base.BaseBot):
 
                 # Pop the channel name from the uniformed api param of the given sensor_id
                 ch_name = api_param.pop('channel_name')
-                self.debugger.info(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
-                self.logger.info(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
-
-                # Update FetchWrapper parameters
-                self.fetch_wrapper.update_param(api_param)
-
-                # Set channel name
-                self.fetch_wrapper.set_channel_name(ch_name)
+                self.debugger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
+                self.logger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
 
                 # Query sensor channel last acquisition
                 last_acquisition = self.sensor_id_select_wrapper.get_last_acquisition(channel=ch_name, sensor_id=sensor_id)
                 filter_timestamp = ts.SQLTimestamp(last_acquisition)
                 start_ts = filter_timestamp
                 stop_ts = ts.CurrentTimestamp()
+                self.debugger.info(f"last acquisition was at => {filter_timestamp.ts}")
+                self.logger.info(f"last acquisition was at => {filter_timestamp.ts}")
 
                 # Create date looper
                 looper = self.date_looper_class(self.fetch_wrapper, start_ts = start_ts, stop_ts = stop_ts)
+                looper.set_logger(self.logger)
+                looper.set_debugger(self.debugger)
 
                 # Cycle until looper has no more URL
                 while looper.has_next():
 
+                    # Update both URL param and Channel name by adding those specific for the current sensor
+                    looper.update_url_param(api_param)
+                    looper.set_channel_name(ch_name)
+
                     # Fetch data from API
                     sensor_data = looper.get_next_sensor_data()
                     if not sensor_data:
-                        self.debugger.info(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
-                        self.logger.info(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
+                        self.debugger.warning(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
+                        self.logger.warning(f"empty API answer on channel='{ch_name}' for sensor_id={sensor_id}")
                         continue
 
                     ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
@@ -84,22 +86,18 @@ class FetchBot(base.BaseBot):
                     self.sensor_data_filter.set_filter_ts(filter_timestamp)
 
                     # Filter measure to keep only new measurements
-                    fetched_new_measurements = self.sensor_data_filter.filter(uniformed_packets)
-                    if not fetched_new_measurements:
+                    new_data = self.sensor_data_filter.filter(uniformed_packets)
+                    if not new_data:
                         self.debugger.warning(f"no new measurements for sensor_id={sensor_id}")
                         self.logger.warning(f"no new measurements for sensor_id={sensor_id}")
                         continue
 
                     # Add new measurements
-                    self.insert_wrapper.insert_measurements(
-                        fetched_measurements=fetched_new_measurements,
-                        sensor_id=sensor_id,
-                        channel_name=ch_name
-                    )
+                    self.insert_wrapper.insert_measurements(sensor_data=new_data, sensor_id=sensor_id, channel=ch_name)
 
-                    self.debugger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
-                    self.logger.info(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+                self.debugger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+                self.logger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
 
         ################################ SAFELY CLOSE DATABASE CONNECTION ################################
-        self.debugger.info("new measurement(s) successfully fetched => done")
-        self.logger.info("new measurement(s) successfully fetched => done")
+        self.debugger.debug("new measurement(s) successfully fetched => done")
+        self.logger.debug("new measurement(s) successfully fetched => done")
