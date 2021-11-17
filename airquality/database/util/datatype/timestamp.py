@@ -59,6 +59,15 @@ class SQLTimestamp(Timestamp):
         other_dt = dt.datetime.strptime(other.ts, other.fmt)
         return (self_dt - other_dt).total_seconds() > 0
 
+    def is_same_day(self, other) -> bool:
+        if not isinstance(other, SQLTimestamp):
+            raise SystemExit(f"{SQLTimestamp.__name__}: bad type => cannot compare with object of "
+                             f"type='{other.__class__.__name__}'")
+
+        self_dt = dt.datetime.strptime(self.ts, self.fmt).date()
+        other_dt = dt.datetime.strptime(other.ts, other.fmt).date()
+        return self_dt.__eq__(other_dt)
+
 
 ################################ ATMOTUBE TIMESTAMP CLASS ################################
 class AtmotubeTimestamp(SQLTimestamp):
@@ -71,6 +80,9 @@ class AtmotubeTimestamp(SQLTimestamp):
 
     def is_after(self, other) -> bool:
         return super().is_after(other)
+    
+    def is_same_day(self, other) -> bool:
+        return super(AtmotubeTimestamp, self).is_same_day(other)
 
 
 ################################ THINGSPEAK TIMESTAMP CLASS ################################
@@ -85,6 +97,9 @@ class ThingspeakTimestamp(SQLTimestamp):
     def is_after(self, other) -> bool:
         return super().is_after(other)
 
+    def is_same_day(self, other) -> bool:
+        return super(ThingspeakTimestamp, self).is_same_day(other)
+
 
 ################################ CURRENT TIMESTAMP CLASS ################################
 class CurrentTimestamp(SQLTimestamp):
@@ -97,6 +112,9 @@ class CurrentTimestamp(SQLTimestamp):
 
     def is_after(self, other):
         return super().is_after(other)
+
+    def is_same_day(self, other) -> bool:
+        return super(CurrentTimestamp, self).is_same_day(other)
 
 
 ################################ UNIX TIMESTAMP CLASS ################################
@@ -111,3 +129,6 @@ class UnixTimestamp(SQLTimestamp):
 
     def is_after(self, other) -> bool:
         return super().is_after(other)
+
+    def is_same_day(self, other) -> bool:
+        return super(UnixTimestamp, self).is_same_day(other)

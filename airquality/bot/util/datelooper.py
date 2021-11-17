@@ -23,6 +23,7 @@ def get_date_looper_class(sensor_type: str):
                          f"for sensor_type='{sensor_type}'")
 
 
+################################ DATE LOOPER ################################
 class DateLooper(log.Loggable):
 
     def __init__(self, fetch_wrapper: fetch.FetchWrapper):
@@ -43,7 +44,12 @@ class DateLooper(log.Loggable):
     def get_next_sensor_data(self) -> List[Dict[str, Any]]:
         pass
 
+    @abc.abstractmethod
+    def _next_date(self) -> Dict[str, Any]:
+        pass
 
+
+################################ ATMOTUBE LOOPER ################################
 class AtmotubeDateLooper(DateLooper):
 
     def __init__(self, fetch_wrapper: fetch.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp):
@@ -56,22 +62,22 @@ class AtmotubeDateLooper(DateLooper):
         return not self.ended
 
     def get_next_sensor_data(self) -> List[Dict[str, Any]]:
-        if self.has_next():
+        next_date = self._next_date()
+        self.fetch_wrapper.update_url_param(next_date)
+        self.info_messages.append(f"{DateLooper.__name__} is looking for new data at '{next_date['date']}'")
+        self.log_messages()
+        return self.fetch_wrapper.get_sensor_data()
 
-            date = self.start
-            if date.is_after(self.stop):
-                self.ended = True
-                date = self.stop
-
-            self.info_messages.append(f"{DateLooper.__name__} is looking for new data at '{self.start.ts.split(' ')[0]}'")
-            self.log_messages()
-
-            next_date = {'date': date.ts.split(' ')[0]}
-            self.fetch_wrapper.update_url_param(next_date)
-            self.start = self.start.add_days(1)
-            return self.fetch_wrapper.get_sensor_data()
+    def _next_date(self) -> Dict[str, Any]:
+        date = self.start
+        if date.is_after(self.stop) or date.is_same_day(self.stop):
+            self.ended = True
+            date = self.stop
+        self.start = self.start.add_days(1)
+        return {'date': date.ts.split(' ')[0]}
 
 
+################################ THINGSPEAK LOOPER ################################
 class ThingspeakDateLooper(DateLooper):
 
     def __init__(self, fetch_wrapper: fetch.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp):
@@ -84,17 +90,18 @@ class ThingspeakDateLooper(DateLooper):
         return not self.ended
 
     def get_next_sensor_data(self) -> List[Dict[str, Any]]:
-        if self.has_next():
+        next_time_window = self._next_date()
+        self.info_messages.append(f"{DateLooper.__name__} is looking for new data within "
+                                  f"[{next_time_window['start']} - {next_time_window['end']}]")
+        self.log_messages()
+        self.fetch_wrapper.update_url_param(next_time_window)
+        return self.fetch_wrapper.get_sensor_data()
 
-            end = self.start.add_days(7)
-            if end.is_after(self.stop):
-                self.ended = True
-                end = self.stop
-
-            self.info_messages.append(f"{DateLooper.__name__} is looking for new data within [{self.start.ts} - {end.ts}]")
-            self.log_messages()
-
-            next_start = {'start': self.start.ts.replace(" ", "%20"), 'end': end.ts.replace(" ", "%20")}
-            self.fetch_wrapper.update_url_param(next_start)
-            self.start = self.start.add_days(7)
-            return self.fetch_wrapper.get_sensor_data()
+    def _next_date(self) -> Dict[str, Any]:
+        date = self.start
+        end = self.start.add_days(7)
+        if end.is_after(self.stop) or end.is_same_day(self.stop):
+            self.ended = True
+            end = self.stop
+        self.start = self.start.add_days(7)
+        return {'start': date.ts, 'end': end.ts}

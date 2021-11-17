@@ -59,6 +59,22 @@ class TestTimestampBuilder(unittest.TestCase):
         expected_output = "2018-07-22 23:59:08"
         self.assertEqual(actual_output, expected_output)
 
+    def test_is_same_day_atmotube_timestamp(self):
+        self.assertTrue(self.atmotube_ts1.is_same_day(self.atmotube_ts1))
+        self.assertFalse(self.atmotube_ts1.is_same_day(self.atmotube_ts2))
+
+    def test_is_same_day_thingspeak_timestamp(self):
+        self.assertTrue(self.thingspk_ts1.is_same_day(self.thingspk_ts1))
+        self.assertFalse(self.thingspk_ts2.is_same_day(self.thingspk_ts1))
+
+    def test_is_same_day_current_timestamp(self):
+        self.assertFalse(self.current_ts.is_same_day(self.atmotube_ts1))
+        self.assertFalse(self.current_ts.is_same_day(self.unix_ts))
+
+    def test_is_same_day_unix_timestamp(self):
+        self.assertFalse(self.unix_ts.is_same_day(self.thingspk_ts1))
+        self.assertTrue(self.unix_ts.is_same_day(ts.SQLTimestamp(timestamp='2018-07-12 00:00:00')))
+
 
 if __name__ == '__main__':
     unittest.main()

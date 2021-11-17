@@ -68,8 +68,8 @@ class TestURLBuilder(unittest.TestCase):
 
     ################################ TEST BUILD THINGSPEAK URL ################################
     def test_successfully_build_thingspeak_url(self):
-        test_param = {"channel_id": "id", 'format': 'json', "api_key": "key", "opt": "val"}
-        expected_output = "some_api_address/id/feeds.json?api_key=key&opt=val"
+        test_param = {"channel_id": "id", 'format': 'json', "api_key": "key", "opt": "val", "start": "d t"}
+        expected_output = "some_api_address/id/feeds.json?api_key=key&opt=val&start=d%20t"
         thingspeak_builder = url.ThingspeakURL(address=self.address, url_param=test_param)
         actual_output = thingspeak_builder.url()
         self.assertEqual(actual_output, expected_output)

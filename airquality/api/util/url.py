@@ -91,7 +91,8 @@ class ThingspeakURL(URLBuilder):
     def url(self) -> str:
 
         self._exit_on_bad_url_parameters()
-        return f"{self.address}/{self.url_param['channel_id']}/feeds.{self.response_fmt}?{self._get_querystring()}"
+        url = f"{self.address}/{self.url_param['channel_id']}/feeds.{self.response_fmt}?{self._get_querystring()}"
+        return url.replace(' ', '%20')
 
     def _get_querystring(self):
         return '&'.join(f"{n}={v}" for n, v in self.url_param.items() if n != 'channel_id')
