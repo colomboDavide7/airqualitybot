@@ -77,7 +77,7 @@ class PurpleairInsertWrapper(InsertWrapper):
             api_param_values.append(self.api_param_record_builder.record(sensor_data=data, sensor_id=start_id))
             location_values.append(self.sensor_location_record_builder.record(sensor_data=data, sensor_id=start_id))
             sensor_info_values.append(self.sensor_info_record_builder.record(sensor_data=data, sensor_id=start_id))
-            self.info_messages.append(f"added sensor '{data['name']}' with id={start_id}")
+            self.info_messages.append(f"{InsertWrapper.__name__} added sensor '{data['name']}' with id={start_id}")
             start_id += 1
 
         # Execute queries
@@ -85,7 +85,6 @@ class PurpleairInsertWrapper(InsertWrapper):
                                                      location_values=location_values, sensor_info_values=sensor_info_values)
         self.conn.send(exec_query)
 
-        # Log messages
         self.log_messages()
 
     ################################ METHOD FOR UPDATE LOCATIONS ################################
@@ -97,13 +96,12 @@ class PurpleairInsertWrapper(InsertWrapper):
         for data in changed_sensors:
             sensor_id = name2id_map[data['name']]
             location_values.append(self.sensor_location_record_builder.record(sensor_data=data, sensor_id=sensor_id))
-            self.info_messages.append(f"updated location for sensor '{data['name']}'")
+            self.info_messages.append(f"{InsertWrapper.__name__} updated location for sensor '{data['name']}'")
 
         # Execute the queries
         exec_query = self.builder.update_locations(location_values)
         self.conn.send(exec_query)
 
-        # Log messages
         self.log_messages()
 
     def _exit_on_missing_external_dependencies(self):
@@ -125,16 +123,14 @@ class AtmotubeInsertWrapper(InsertWrapper):
         super(AtmotubeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
     def insert_measurements(self, sensor_data: List[Dict[str, Any]], sensor_id: int, channel: str):
+
         self._exit_on_missing_external_dependencies()
-
-        measure_values = []
-        for data in sensor_data:
-            measure_values.append(self.mobile_record_builder.record(data))
-
-        # Build the query for inserting all the measurements
+        measure_values = [self.mobile_record_builder.record(sensor_data=data) for data in sensor_data]
         exec_query = self.builder.insert_mobile_measurements(values=measure_values, sensor_id=sensor_id, channel=channel)
         self.conn.send(exec_query)
+        self._log_message(sensor_data)
 
+    def _log_message(self, sensor_data: List[Dict[str, Any]]):
         first_measure_id = sensor_data[0]['record_id']
         last_measure_id = sensor_data[-1]['record_id']
         n_measure = (last_measure_id - first_measure_id) + 1
@@ -157,14 +153,12 @@ class ThingspeakInsertWrapper(InsertWrapper):
     def insert_measurements(self, sensor_data: List[Dict[str, Any]], sensor_id: int, channel: str):
 
         self._exit_on_missing_external_dependencies()
-
-        measure_values = []
-        for data in sensor_data:
-            measure_values.append(self.station_record_builder.record(sensor_data=data, sensor_id=sensor_id))
-
-        # Build the query for inserting all the measurements
+        measure_values = [self.station_record_builder.record(sensor_data=data, sensor_id=sensor_id) for data in sensor_data]
         exec_query = self.builder.insert_station_measurements(values=measure_values, sensor_id=sensor_id, channel=channel)
         self.conn.send(exec_query)
+        self._log_message(sensor_data)
+
+    def _log_message(self, sensor_data: List[Dict[str, Any]]):
 
         first_measure_id = sensor_data[0]['record_id']
         last_measure_id = sensor_data[-1]['record_id']

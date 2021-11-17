@@ -11,7 +11,6 @@ import dotenv
 # --------------------- LOGGER IMPORT ---------------------
 # log
 import airquality.logger.loggable as log
-# util
 import airquality.logger.util.decorator as log_decorator
 # --------------------- APPLICATION IMPORT ---------------------
 # util
@@ -85,11 +84,11 @@ class Application(log.Loggable):
 
         ################################ BOT SPECIFIC LOGGER ################################
         logger = make.make_file_logger(file_path=f'log/{self.bot_name}.log')
+        self.set_logger(logger)
 
         ################################ MAKE BOT CLASS ################################
         bot_class = fact.get_bot_class(self.bot_name)
         bot = bot_class(log_filename=self.bot_name, log_sub_dir='log')
-        self.info_messages.append(f"bot_class={bot_class.__name__}")
 
         ################################ INJECT API DEPENDENCIES ################################
         api_file_object = jf.JSONFile(API_FILE, path_to_object=[self.sensor_type])
@@ -167,14 +166,12 @@ class Application(log.Loggable):
 
         # Inject InsertWrapper to Bot
         bot.add_insert_wrapper(insert_wrapper)
-        self.info_messages.append(f"insert_wrapper_class={insert_wrapper.__class__.__name__}")
 
         ################################ SETUP SELECT WRAPPERS ################################
         # SensorIDSelectWrapper
         if self.bot_name == 'fetch':
             sensor_id_select_wrapper = select.SensorIDSelectWrapper(conn=conn, query_builder=query_builder)
             bot.add_sensor_id_select_wrapper(sensor_id_select_wrapper)
-            self.info_messages.append(f"sensor_id_select_wrapper_class={sensor_id_select_wrapper.__class__.__name__}")
 
         # SensorTypeSelectWrapper
         sensor_type_select_wrapper = select.SensorTypeSelectWrapper(
@@ -188,22 +185,19 @@ class Application(log.Loggable):
 
         # Inject SensorTypeSelectWrapper to Bot
         bot.add_sensor_type_select_wrapper(sensor_type_select_wrapper)
-        self.info_messages.append(f"sensor_type_select_wrapper_class={sensor_type_select_wrapper.__class__.__name__}")
 
         ################################ SENSOR DATA FILTER DEPENDENCIES ################################
 
         # SensorDataFilter
-        sensor_data_filter = filt.get_sensor_data_filter(bot_name=self.bot_name, sensor_type=self.sensor_type)
+        sensor_data_filter = filt.get_sensor_data_filter(
+            bot_name=self.bot_name,
+            sensor_type=self.sensor_type,
+            sel_wrapper=sensor_type_select_wrapper)
+
+        # Set logger and debugger
         sensor_data_filter.set_debugger(self.debugger)
         sensor_data_filter.set_logger(logger)
         bot.add_sensor_data_filter(sensor_data_filter)
-        self.info_messages.append(f"packet_filter_class={sensor_data_filter.__class__.__name__}")
-
-        # Add GeoFilter
-        if self.bot_name == 'update':
-            postgis_builder = geom.PointBuilder()
-            geo_filter = filt.GeoFilter(postgis_builder)
-            bot.add_geo_filter(geo_filter)
 
         ################################ INJECT ADAPTER DEPENDENCIES ################################
 
@@ -240,7 +234,6 @@ class Application(log.Loggable):
         if self.bot_name == 'fetch':
             date_looper_class = loop.get_date_looper_class(self.sensor_type)
             bot.add_date_looper_class(date_looper_class)
-            self.info_messages.append(f"date_looper_class={date_looper_class.__name__}")
 
         # Set logger and debugger
         bot.set_logger(logger)

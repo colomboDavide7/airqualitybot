@@ -19,9 +19,6 @@ class InitializeBot(base.BaseBot):
     @log_decorator.log_decorator()
     def execute(self):
 
-        # Query database sensor names
-        database_sensor_names = self.sensor_type_select_wrapper.get_sensor_names()
-
         # Fetch API data
         sensor_data = self.fetch_wrapper.get_sensor_data()
         if not sensor_data:
@@ -29,15 +26,12 @@ class InitializeBot(base.BaseBot):
             return
 
         # Reshape API data
-        uniformed_packets = []
+        uniformed_sensor_data = []
         for data in sensor_data:
-            uniformed_packets.append(self.api2db_adapter.reshape(data))
-
-        # Set external dependency to NameFilter
-        self.sensor_data_filter.set_name_to_filter(database_sensor_names)
+            uniformed_sensor_data.append(self.api2db_adapter.reshape(data))
 
         # Apply NameFilter
-        new_sensor_data = self.sensor_data_filter.filter(uniformed_packets)
+        new_sensor_data = self.sensor_data_filter.filter(uniformed_sensor_data)
         if not new_sensor_data:
             self.info_messages.append("all sensors are already present into the database => done")
             return
