@@ -88,26 +88,20 @@ class SensorInfoRecord(base.RecordBuilder):
 
         if sensor_id is None:
             raise SystemExit(f"{SensorInfoRecord.__name__}: bad call => missing argument 'sensor_id'")
-
         self._exit_on_bad_sensor_data(sensor_data)
-        channel_names = sensor_data['channel']
-        last_timestamps = sensor_data['last_acquisition']
-        records = ','.join(
-            f"({sensor_id}, '{ch}', {self.time_rec.record(tsmp)})" for ch, tsmp in zip(channel_names, last_timestamps))
+
+        records = ','.join(f"({sensor_id}, '{info['channel']}', {self.time_rec.record(info)})"
+                           for info in sensor_data['info'])
         return records.strip(',')
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
-        if sensor_data.get('channel') is None:
-            raise SystemExit(f"{SensorInfoRecord.__name__}: bad sensor data => missing key='channel'")
-        if sensor_data.get('last_acquisition') is None:
-            raise SystemExit(f"{SensorInfoRecord.__name__}: bad sensor data => missing key='last_acquisition'")
-
-        if not sensor_data['channel'] or not sensor_data['last_acquisition']:
-            raise SystemExit(f"{SensorInfoRecord.__name__}: bad packet => please check you packet has a non-empty list"
-                             f"of channel name(s) and a non-empty list of last acquisition, one for each channel(s).")
-        if len(sensor_data['channel']) != len(sensor_data['last_acquisition']):
-            raise SystemExit(f"{SensorInfoRecord.__name__}: bad packet => number of channel(s) does not match the "
-                             f"number of last acquisition value(s)")
+        if 'info' not in sensor_data:
+            raise SystemExit(f"{SensorInfoRecord.__name__}: bad sensor data => missing key='info'")
+        if not sensor_data['info']:
+            raise SystemExit(f"{SensorInfoRecord.__name__}: bad sensor data => empty list 'info'")
+        for info in sensor_data['info']:
+            if 'channel' not in info or 'timestamp' not in info:
+                raise SystemExit(f"{SensorInfoRecord.__name__}: bad sensor data => missing 'info' keys")
 
 
 ################################ MOBILE MEASUREMENT RECORD ################################

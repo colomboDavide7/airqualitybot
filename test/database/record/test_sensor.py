@@ -82,7 +82,7 @@ class TestSensorRecord(unittest.TestCase):
 
     ################################ SENSOR INFO RECORD ################################
     def test_successfully_build_sensor_info_record(self):
-        test_data = {'channel': ['ch1'], 'last_acquisition': [{'timestamp': 1531432748}]}
+        test_data = {'info': [{'channel': 'ch1', 'timestamp': 1531432748}]}
         actual_output = self.sensor_info_rec.record(test_data, sensor_id=99)
         expected_output = "(99, 'ch1', '2018-07-12 23:59:08')"
         self.assertEqual(actual_output, expected_output)
