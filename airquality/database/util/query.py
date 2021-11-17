@@ -40,10 +40,10 @@ class QueryBuilder:
     def select_last_acquisition(self, channel: str, sensor_id: int):
         return self.query_file.s8.format(sensor_id=sensor_id, channel=channel)
 
-    def select_max_mobile_measure_id(self):
+    def select_max_mobile_record_id(self):
         return self.query_file.s9
 
-    def select_max_station_measure_id(self):
+    def select_max_station_record_id(self):
         return self.query_file.s10
 
     ################################ INSERT MOBILE MEASUREMENTS ################################

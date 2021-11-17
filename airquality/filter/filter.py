@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 import airquality.logger.loggable as log
 import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
-import airquality.database.operation.select as select
+import airquality.database.operation.select.type as sel_type
 
 
 ################################ SENSOR DATA FILTER BASE CLASS ################################
@@ -110,7 +110,7 @@ class GeoFilter(SensorDataFilter):
 
 
 ################################ GET FUNCTION ################################
-def get_sensor_data_filter(bot_name: str, sensor_type: str, sel_wrapper: select.SensorTypeSelectWrapper) -> SensorDataFilter:
+def get_sensor_data_filter(bot_name: str, sensor_type: str, sel_wrapper: sel_type.TypeSelectWrapper) -> SensorDataFilter:
 
     if bot_name == 'init':
         database_sensor_names = sel_wrapper.get_sensor_names()

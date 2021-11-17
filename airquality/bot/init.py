@@ -9,13 +9,11 @@ import airquality.bot.base as base
 import airquality.logger.util.decorator as log_decorator
 
 
-################################ INITIALIZE BOT ################################
 class InitializeBot(base.BaseBot):
 
     def __init__(self, log_filename: str, log_sub_dir: str):
         super(InitializeBot, self).__init__(log_filename, log_sub_dir)
 
-    ################################ RUN METHOD ################################
     @log_decorator.log_decorator()
     def execute(self):
 

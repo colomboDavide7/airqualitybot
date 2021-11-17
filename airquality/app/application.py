@@ -39,7 +39,7 @@ import airquality.api.util.url as url
 import airquality.api.util.extractor as ext
 # --------------------- DATABASE IMPORT ---------------------
 # operation
-import airquality.database.operation.select as select
+import airquality.database.operation.select.type as sel_type
 import airquality.database.operation.insert as insert
 # util
 import airquality.database.util.datatype.timestamp as ts
@@ -153,10 +153,11 @@ class Application(log.Loggable):
         if self.bot_name in ('init', 'update'):
             insert_wrapper.set_sensor_record_builder(builder=rec.SensorRecord())
             insert_wrapper.set_api_param_record_builder(builder=rec.APIParamRecord())
-            insert_wrapper.set_sensor_info_record_builder(
-                builder=rec.SensorInfoRecord(time_rec=time_rec))
+            insert_wrapper.set_sensor_info_record_builder(builder=rec.SensorInfoRecord(time_rec=time_rec))
             insert_wrapper.set_sensor_location_record_builder(
-                builder=rec.SensorLocationRecord(location_rec=location_rec, time_rec=t.CurrentTimestampTimeRecord()))
+                builder=rec.SensorLocationRecord(location_rec=location_rec, time_rec=t.CurrentTimestampTimeRecord())
+            )
+
         elif self.bot_name == 'fetch':
             if self.sensor_type == 'atmotube':
                 insert_wrapper.set_mobile_record_builder(
@@ -170,21 +171,16 @@ class Application(log.Loggable):
         ################################ SETUP SELECT WRAPPERS ################################
         # SensorIDSelectWrapper
         if self.bot_name == 'fetch':
-            sensor_id_select_wrapper = select.SensorIDSelectWrapper(conn=conn, query_builder=query_builder)
+            sensor_id_select_wrapper = sel_type.SensorIDSelectWrapper(conn=conn, query_builder=query_builder)
             bot.add_sensor_id_select_wrapper(sensor_id_select_wrapper)
 
         # SensorTypeSelectWrapper
-        sensor_type_select_wrapper = select.SensorTypeSelectWrapper(
-            conn=conn,
-            query_builder=query_builder,
-            sensor_type=self.sensor_type)
-
-        # Inject logger and debugger
-        sensor_type_select_wrapper.set_logger(logger)
-        sensor_type_select_wrapper.set_debugger(self.debugger)
+        type_select_wrapper = sel_type.get_type_select_wrapper(conn=conn, query_builder=query_builder, sensor_type=self.sensor_type)
+        type_select_wrapper.set_logger(logger)
+        type_select_wrapper.set_debugger(self.debugger)
 
         # Inject SensorTypeSelectWrapper to Bot
-        bot.add_sensor_type_select_wrapper(sensor_type_select_wrapper)
+        bot.add_sensor_type_select_wrapper(type_select_wrapper)
 
         ################################ SENSOR DATA FILTER DEPENDENCIES ################################
 
@@ -192,7 +188,7 @@ class Application(log.Loggable):
         sensor_data_filter = filt.get_sensor_data_filter(
             bot_name=self.bot_name,
             sensor_type=self.sensor_type,
-            sel_wrapper=sensor_type_select_wrapper)
+            sel_wrapper=type_select_wrapper)
 
         # Set logger and debugger
         sensor_data_filter.set_debugger(self.debugger)
@@ -202,31 +198,18 @@ class Application(log.Loggable):
         ################################ INJECT ADAPTER DEPENDENCIES ################################
 
         if self.bot_name in ('init', 'update'):
-
-            # Inject SensorAdapter to Bot
-            bot.add_api2database_adapter(adapter=sens.get_sensor_adapter(sensor_type=self.sensor_type))
+            # SensorAdapter
+            sensor_adapter = sens.get_sensor_adapter(sensor_type=self.sensor_type)
+            bot.add_api2database_adapter(adapter=sensor_adapter)
 
         elif self.bot_name == 'fetch':
-
-            # Query the start record ID
-            start_measure_id = select.get_max_measure_id(
-                sensor_type=self.sensor_type,
-                sensor_type_select_wrapper=sensor_type_select_wrapper)
-
-            # Query the (param_code, param_id) tuples for the measure param associated to 'sensor_type'
-            measure_param_map = sensor_type_select_wrapper.get_measure_param()
-
-            measure_adapter = meas.get_measure_adapter(
-                    sensor_type=self.sensor_type,
-                    start_id=start_measure_id,
-                    measure_param_map=measure_param_map
-                )
-
-            # Inject MeasureAdapter to Bot
+            # MeasureAdapter
+            measure_adapter = meas.get_measure_adapter(sensor_type=self.sensor_type, type_wrapper=type_select_wrapper)
             bot.add_api2database_adapter(adapter=measure_adapter)
 
-            # Inject APIParamAdapter to Bot
-            bot.add_db2api_adapter(adapter=par.get_param_adapter(sensor_type=self.sensor_type))
+            # ParamAdapter
+            param_adapter = par.get_param_adapter(sensor_type=self.sensor_type)
+            bot.add_db2api_adapter(adapter=param_adapter)
 
         ################################ END ADAPTER DEPENDENCIES ################################
 

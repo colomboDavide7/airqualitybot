@@ -8,7 +8,7 @@
 import airquality.bot.base as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.util.datatype.timestamp as ts
-import airquality.database.operation.select as select
+import airquality.database.operation.select.type as select
 
 
 ################################ FETCH BOT ################################
@@ -25,9 +25,17 @@ class FetchBot(base.BaseBot):
     def add_sensor_id_select_wrapper(self, wrapper: select.SensorIDSelectWrapper):
         self.sensor_id_select_wrapper = wrapper
 
-    ################################ RUN METHOD ################################
+    def _exit_on_missing_external_dependencies(self):
+        if self.sensor_id_select_wrapper is None:
+            raise SystemExit(f"{FetchBot.__name__}: bad setup => missing external dependency 'sensor_id_select_wrapper'")
+        if self.date_looper_class is None:
+            raise SystemExit(f"{FetchBot.__name__}: bad setup => missing external dependency 'date_looper_class'")
+
+    ################################ EXECUTE METHOD ################################
     @log_decorator.log_decorator()
     def execute(self):
+
+        self._exit_on_missing_external_dependencies()
 
         sensor_ids = self.sensor_type_select_wrapper.get_sensor_id()
         if not sensor_ids:
@@ -63,7 +71,7 @@ class FetchBot(base.BaseBot):
                 looper.set_logger(self.logger)
                 looper.set_debugger(self.debugger)
 
-                # Cycle until looper has no more URL
+                ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
                 while looper.has_next():
 
                     # Update both URL param and Channel name by adding those specific for the current sensor
@@ -75,16 +83,14 @@ class FetchBot(base.BaseBot):
                     if not sensor_data:
                         continue
 
-                    ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
-                    uniformed_packets = []
-                    for data in sensor_data:
-                        uniformed_packets.append(self.api2db_adapter.reshape(data))
+                    # Uniform sensor data
+                    uniformed_sensor_data = [self.api2db_adapter.reshape(data) for data in sensor_data]
 
                     # Set 'filter_ts' dependency
                     self.sensor_data_filter.set_filter_ts(filter_timestamp)
 
                     # Filter measure to keep only new measurements
-                    new_data = self.sensor_data_filter.filter(uniformed_packets)
+                    new_data = self.sensor_data_filter.filter(uniformed_sensor_data)
                     if not new_data:
                         continue
 
@@ -93,7 +99,3 @@ class FetchBot(base.BaseBot):
 
                 self.debugger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
                 self.logger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
-
-        ################################ SAFELY CLOSE DATABASE CONNECTION ################################
-        self.debugger.debug("new measurement(s) successfully fetched => done")
-        self.logger.debug("new measurement(s) successfully fetched => done")
