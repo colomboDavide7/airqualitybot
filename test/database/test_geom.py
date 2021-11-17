@@ -27,14 +27,14 @@ class TestGeometryBuilder(unittest.TestCase):
         actual_output = self.point_builder.as_text(test_packet)
         self.assertEqual(actual_output, expected_output)
 
-    def test_system_exit_when_key_error_is_raised(self):
+    def test_null_on_missing_geolocation(self):
         test_missing_lng = {'lat': '45.1234'}
-        with self.assertRaises(SystemExit):
-            self.point_builder._null_on_missing_arguments(test_missing_lng)
+        actual_output = self.point_builder._null_on_missing_geolocation(test_missing_lng)
+        self.assertEqual(actual_output, "NULL")
 
         test_missing_lat = {'lng': '1.1234'}
-        with self.assertRaises(SystemExit):
-            self.point_builder._null_on_missing_arguments(test_missing_lng)
+        actual_output = self.point_builder._null_on_missing_geolocation(test_missing_lat)
+        self.assertEqual(actual_output, "NULL")
 
 
 if __name__ == '__main__':
