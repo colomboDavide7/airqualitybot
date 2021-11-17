@@ -35,26 +35,17 @@ class APIParamRecord(base.RecordBuilder):
             raise SystemExit(f"{SensorInfoRecord.__name__}: bad call => missing argument 'sensor_id'")
 
         self._exit_on_bad_sensor_data(sensor_data)
-        param_name = sensor_data['param_name']
-        param_value = sensor_data['param_value']
-        values = ','.join(f"({sensor_id}, '{n}', '{v}')" if v is not None else f"({sensor_id}, '{n}', NULL)"
-                          for n, v in zip(param_name, param_value))
+        values = ','.join(f"({sensor_id}, '{p['param_name']}', '{p['param_value']}')" for p in sensor_data['param'])
         return values.strip(',')
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
-
-        if sensor_data.get('param_value') is None:
-            raise SystemExit(f"{APIParamRecord.__name__}: bad sensor data => missing key='param_value'")
-        if sensor_data.get('param_name') is None:
-            raise SystemExit(f"{APIParamRecord.__name__}: bad sensor data => missing key='param_name'")
-
-        if not sensor_data['param_value'] or not sensor_data['param_name']:
-            raise SystemExit(f"{APIParamRecord.__name__}: bad packet => please check you packet has a non-empty list"
-                             f"of param name(s) and a non-empty list of param value(s), one for each name(s).")
-
-        if len(sensor_data['param_value']) != len(sensor_data['param_name']):
-            raise SystemExit(f"{APIParamRecord.__name__}: bad packet => number of param name(s) does not match the "
-                             f"number of param value(s)")
+        if 'param' not in sensor_data:
+            raise SystemExit(f"{APIParamRecord.__name__}: bad sensor data => missing key='param'")
+        if not sensor_data['param']:
+            raise SystemExit(f"{APIParamRecord.__name__}: bad sensor data => empty list 'param'")
+        for p in sensor_data['param']:
+            if 'param_name' not in p or 'param_value' not in p:
+                raise SystemExit(f"{APIParamRecord.__name__}: bad sensor data => missing 'param' keys")
 
 
 ################################ SENSOR AT LOCATION RECORD ################################
@@ -118,7 +109,8 @@ class MobileMeasureRecord(base.RecordBuilder):
         param_val = sensor_data['param_value']
         ts = self.time_rec.record(sensor_data)
         geom = self.location_rec.record(sensor_data)
-        records = ','.join(f"({record_id}, {id_}, '{value}', {ts}, {geom})" for id_, value in zip(param_id, param_val))
+        records = ','.join(f"({record_id}, {id_}, '{value}', {ts}, {geom})" if value is not None else
+                           f"({record_id}, {id_}, NULL, {ts}, {geom})" for id_, value in zip(param_id, param_val))
         return records.strip(',')
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):

@@ -14,6 +14,7 @@ TYPE = 'type'
 LAT = 'lat'
 LNG = 'lng'
 GEOM = 'geom'
+PARAM = 'param'
 PAR_NAME = 'param_name'
 PAR_VAL = 'param_value'
 INFO = 'info'
@@ -91,8 +92,7 @@ class PurpleairSensorAdapter(SensorAdapter):
         return uniformed_data
 
     def _add_api_param(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
-        uniformed_data[PAR_VAL] = [data[n] for n in PurpleairSensorAdapter.API_PARAM]
-        uniformed_data[PAR_NAME] = PurpleairSensorAdapter.API_PARAM
+        uniformed_data[PARAM] = [{PAR_NAME: n, PAR_VAL: data[n]} for n in PurpleairSensorAdapter.API_PARAM]
         return uniformed_data
 
     def _add_location(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:

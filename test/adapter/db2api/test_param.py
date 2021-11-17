@@ -44,10 +44,8 @@ class TestParamAdapter(unittest.TestCase):
 
     ################################ TEST THINGSPEAK PARAM RESHAPER ################################
     def test_successfully_uniform_reshape_thingspeak_api_param(self):
-        test_api_param = {'primary_id_a': 'id1A', 'primary_key_a': 'key1A', 'primary_id_b': 'id1B',
-                          'primary_key_b': 'key1B',
-                          'secondary_id_a': 'id2A', 'secondary_key_a': 'key2A', 'secondary_id_b': 'id2B',
-                          'secondary_key_b': 'key2B'}
+        test_api_param = {'primary_id_a': 'id1A', 'primary_key_a': 'key1A', 'primary_id_b': 'id1B', 'primary_key_b': 'key1B',
+                          'secondary_id_a': 'id2A', 'secondary_key_a': 'key2A', 'secondary_id_b': 'id2B', 'secondary_key_b': 'key2B'}
         expected_output = [{'channel_id': 'id1A', 'api_key': 'key1A', 'channel_name': '1A'},
                            {'channel_id': 'id1B', 'api_key': 'key1B', 'channel_name': '1B'},
                            {'channel_id': 'id2A', 'api_key': 'key2A', 'channel_name': '2A'},

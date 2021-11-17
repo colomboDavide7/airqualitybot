@@ -33,10 +33,15 @@ class TestSensorReshaper(unittest.TestCase):
                                     {'channel': '2A', 'timestamp': 'd'}, {'channel': '2B', 'timestamp': 'd'}],
                            'lat': 'lat_val',
                            'lng': 'lng_val',
-                           'param_name': ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
-                                          'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b'],
-                           'param_value': ['id1A', 'id1B', 'key1A', 'key1B', 'id2A', 'id2B', 'key2A', 'key2B'],
-                           'type': 'PurpleAir/ThingSpeak',}
+                           'param': [{'param_name': 'primary_id_a', 'param_value': 'id1A'},
+                                     {'param_name': 'primary_id_b', 'param_value': 'id1B'},
+                                     {'param_name': 'primary_key_a', 'param_value': 'key1A'},
+                                     {'param_name': 'primary_key_b', 'param_value': 'key1B'},
+                                     {'param_name': 'secondary_id_a', 'param_value': 'id2A'},
+                                     {'param_name': 'secondary_id_b', 'param_value': 'id2B'},
+                                     {'param_name': 'secondary_key_a', 'param_value': 'key2A'},
+                                     {'param_name': 'secondary_key_b', 'param_value': 'key2B'}],
+                           'type': 'PurpleAir/ThingSpeak'}
 
         actual_output = self.purpleair_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)

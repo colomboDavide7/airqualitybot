@@ -123,9 +123,12 @@ class AtmotubeInsertWrapper(InsertWrapper):
         super(AtmotubeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
     def insert_measurements(self, sensor_data: List[Dict[str, Any]], sensor_id: int, channel: str):
-
         self._exit_on_missing_external_dependencies()
+
+        # Build values to insert
         measure_values = [self.mobile_record_builder.record(sensor_data=data) for data in sensor_data]
+
+        # Build query
         exec_query = self.builder.insert_mobile_measurements(values=measure_values, sensor_id=sensor_id, channel=channel)
         self.conn.send(exec_query)
         self._log_message(sensor_data)
@@ -151,9 +154,12 @@ class ThingspeakInsertWrapper(InsertWrapper):
         super(ThingspeakInsertWrapper, self).__init__(conn=conn, query_builder=query_builder)
 
     def insert_measurements(self, sensor_data: List[Dict[str, Any]], sensor_id: int, channel: str):
-
         self._exit_on_missing_external_dependencies()
+
+        # Build values to insert
         measure_values = [self.station_record_builder.record(sensor_data=data, sensor_id=sensor_id) for data in sensor_data]
+
+        # Build query
         exec_query = self.builder.insert_station_measurements(values=measure_values, sensor_id=sensor_id, channel=channel)
         self.conn.send(exec_query)
         self._log_message(sensor_data)

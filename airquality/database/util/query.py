@@ -51,15 +51,15 @@ class QueryBuilder:
         query = ""
         query += self.__insert_into_mobile_measurements(values)
         last_ts = values[-1].split(', ')[3]
-        query += self.__update_last_acquisition(sensor_id, channel, last_timestamp=last_ts)
+        query += self.__update_last_acquisition(sensor_id=sensor_id, channel_name=channel, last_timestamp=last_ts)
         return query
 
     ################################ INSERT STATION MEASUREMENTS ################################
     def insert_station_measurements(self, sensor_id: int, channel: str, values: List[str]):
         query = ""
         query += self.__insert_into_station_measurements(values)
-        last_timestamp = values[-1].split(',')[4].strip(')')
-        query += self.__update_last_acquisition(sensor_id, channel, last_timestamp=last_timestamp)
+        last_ts = values[-1].split(',')[4].strip(')')
+        query += self.__update_last_acquisition(sensor_id=sensor_id, channel_name=channel, last_timestamp=last_ts)
         return query
 
     ################################ UPDATE SENSOR AT LOCATION ################################

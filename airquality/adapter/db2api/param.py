@@ -23,6 +23,7 @@ def get_param_adapter(sensor_type: str):
         raise SystemExit(f"'{get_param_adapter.__name__}():' bad type {sensor_type}")
 
 
+################################ PARAM ADAPTER BASE CLASS ################################
 class ParamAdapter(abc.ABC):
 
     @abc.abstractmethod
@@ -34,6 +35,7 @@ class ParamAdapter(abc.ABC):
         pass
 
 
+################################ THINGSPEAK PARAM ADAPTER ################################
 class ThingspeakParamAdapter(ParamAdapter):
 
     def reshape(self, database_api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -59,6 +61,7 @@ class ThingspeakParamAdapter(ParamAdapter):
             raise SystemExit(f"{ThingspeakParamAdapter.__name__}: bad api_param => missing secondary channel B data")
 
 
+################################ ATMOTUBE PARAM ADAPTER ################################
 class AtmotubeParamAdapter(ParamAdapter):
 
     def reshape(self, database_api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
