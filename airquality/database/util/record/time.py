@@ -14,6 +14,7 @@ class TimeRecord(base.RecordBuilder):
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
         self._exit_on_bad_sensor_data(sensor_data)
+
         timestamp_class = sensor_data[adapt_const.TIMEST][adapt_const.CLS]
         class_kwargs = sensor_data[adapt_const.TIMEST][adapt_const.KW]
         return f"'{timestamp_class(**class_kwargs).get_formatted_timestamp()}'"

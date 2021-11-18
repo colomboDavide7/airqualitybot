@@ -28,8 +28,8 @@ def get_timestamp_class(sensor_type: str):
 ################################ TIMESTAMP CLASS ################################
 class Timestamp(abc.ABC):
 
-    def __init__(self, timestamp: str, fmt: str = SQL_TIMEST_FMT):
-        self.ts = timestamp
+    def __init__(self, timest: str, fmt: str = SQL_TIMEST_FMT):
+        self.ts = timest
         self.fmt = fmt
 
     @abc.abstractmethod
@@ -48,8 +48,8 @@ class Timestamp(abc.ABC):
 ################################ SQL TIMESTAMP CLASS ################################
 class SQLTimestamp(Timestamp):
 
-    def __init__(self, timestamp: str, fmt: str = SQL_TIMEST_FMT):
-        super(SQLTimestamp, self).__init__(timestamp=timestamp, fmt=fmt)
+    def __init__(self, timest: str, fmt: str = SQL_TIMEST_FMT):
+        super(SQLTimestamp, self).__init__(timest=timest, fmt=fmt)
 
     def get_formatted_timestamp(self) -> str:
         my_dt = dt.datetime.strptime(self.ts, self.fmt)
@@ -82,8 +82,8 @@ class SQLTimestamp(Timestamp):
 ################################ ATMOTUBE TIMESTAMP CLASS ################################
 class AtmotubeTimestamp(SQLTimestamp):
 
-    def __init__(self, timestamp: str, fmt: str = ATMOTUBE_FMT):
-        super(AtmotubeTimestamp, self).__init__(timestamp=dt.datetime.strptime(timestamp, fmt).strftime(SQL_TIMEST_FMT))
+    def __init__(self, timest: str, fmt: str = ATMOTUBE_FMT):
+        super(AtmotubeTimestamp, self).__init__(timest=dt.datetime.strptime(timest, fmt).strftime(SQL_TIMEST_FMT))
 
     def get_formatted_timestamp(self) -> str:
         return super(AtmotubeTimestamp, self).get_formatted_timestamp()
@@ -101,8 +101,8 @@ class AtmotubeTimestamp(SQLTimestamp):
 ################################ THINGSPEAK TIMESTAMP CLASS ################################
 class ThingspeakTimestamp(SQLTimestamp):
 
-    def __init__(self, timestamp: str, fmt: str = THINGSPK_FMT):
-        super(ThingspeakTimestamp, self).__init__(timestamp=dt.datetime.strptime(timestamp, fmt).strftime(SQL_TIMEST_FMT))
+    def __init__(self, timest: str, fmt: str = THINGSPK_FMT):
+        super(ThingspeakTimestamp, self).__init__(timest=dt.datetime.strptime(timest, fmt).strftime(SQL_TIMEST_FMT))
 
     def get_formatted_timestamp(self) -> str:
         return super(ThingspeakTimestamp, self).get_formatted_timestamp()
@@ -121,7 +121,7 @@ class ThingspeakTimestamp(SQLTimestamp):
 class CurrentTimestamp(SQLTimestamp):
 
     def __init__(self):
-        super().__init__(timestamp=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
+        super().__init__(timest=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
 
     def get_formatted_timestamp(self) -> str:
         return super(CurrentTimestamp, self).get_formatted_timestamp()
@@ -139,8 +139,8 @@ class CurrentTimestamp(SQLTimestamp):
 ################################ UNIX TIMESTAMP CLASS ################################
 class UnixTimestamp(SQLTimestamp):
 
-    def __init__(self, timestamp: int, fmt: str = SQL_TIMEST_FMT):
-        super(UnixTimestamp, self).__init__(timestamp=dt.datetime.fromtimestamp(timestamp).strftime(SQL_TIMEST_FMT),
+    def __init__(self, timest: int, fmt: str = SQL_TIMEST_FMT):
+        super(UnixTimestamp, self).__init__(timest=dt.datetime.fromtimestamp(timest).strftime(SQL_TIMEST_FMT),
                                             fmt=fmt)
 
     def get_formatted_timestamp(self) -> str:

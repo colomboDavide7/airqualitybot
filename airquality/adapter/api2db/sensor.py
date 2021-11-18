@@ -9,6 +9,7 @@ import abc
 from typing import Dict, Any, List
 import airquality.adapter.config as adapt_const
 import airquality.database.util.postgis.config as geom_conf
+import airquality.database.util.datatype.config as time_conf
 import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
 
@@ -28,7 +29,8 @@ class SensorAdapter(abc.ABC):
         self.timestamp_class = timestamp_class
 
     def _get_timestamp(self, timestamp: str) -> Dict[str, Any]:
-        return {adapt_const.CLS: self.timestamp_class, adapt_const.KW: {'timestamp': timestamp}}
+        return {adapt_const.CLS: self.timestamp_class,
+                adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: timestamp}}
 
     @abc.abstractmethod
     def reshape(self, sensor_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -75,7 +77,8 @@ class PurpleairSensorAdapter(SensorAdapter):
         return f"{data['name']} ({data['sensor_index']})".replace("'", "")
 
     def _get_sensor_info(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return [{adapt_const.SENS_CH: ch_n, adapt_const.TIMEST: self._get_timestamp(timestamp=data['date_created'])} for ch_n in adapt_const.CHANNEL_NAMES]
+        return [{adapt_const.SENS_CH: ch_n,
+                 adapt_const.TIMEST: self._get_timestamp(timestamp=data['date_created'])} for ch_n in adapt_const.CHANNEL_NAMES]
 
     def _get_api_param(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return [{adapt_const.PAR_NAME: n, adapt_const.PAR_VAL: data[n]} for n in PurpleairSensorAdapter.API_PARAM]

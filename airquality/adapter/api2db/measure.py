@@ -9,6 +9,7 @@ import abc
 from typing import Dict, Any, List
 import airquality.adapter.config as adapt_const
 import airquality.database.util.postgis.config as geom_const
+import airquality.database.util.datatype.config as time_conf
 import airquality.database.operation.select.type as sel
 import airquality.database.util.postgis.geom as postgis
 import airquality.database.util.datatype.timestamp as ts
@@ -57,10 +58,12 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
         return uniformed_data
 
     def _get_timestamp(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return {adapt_const.CLS: self.timest_cls, adapt_const.KW: {'timestamp': data['time']}}
+        return {adapt_const.CLS: self.timest_cls,
+                adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: data['time']}}
 
     def _get_measure_param_id_value(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return [{adapt_const.PAR_ID: self.measure_param_map[n], adapt_const.PAR_VAL: data.get(n)} for n in AtmotubeMeasureAdapter.ATMOTUBE_PARAM_NAMES]
+        return [{adapt_const.PAR_ID: self.measure_param_map[n], adapt_const.PAR_VAL: data.get(n)}
+                for n in AtmotubeMeasureAdapter.ATMOTUBE_PARAM_NAMES]
 
     def _get_geometry(self, data: Dict[str, Any]) -> Dict[str, Any]:
         geom = {adapt_const.CLS: postgis.NullGeometry, adapt_const.KW: {}}
@@ -94,7 +97,8 @@ class ThingspeakMeasureAdapter(MeasureAdapter):
         return uniformed_data
 
     def _get_timestamp(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return {adapt_const.CLS: self.timest_cls, adapt_const.KW: {'timestamp': data['created_at']}}
+        return {adapt_const.CLS: self.timest_cls,
+                adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: data['created_at']}}
 
     def _get_measure_param_id_value(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return [{adapt_const.PAR_ID: self.measure_param_map[f[extr_const.FIELD_NAME]], adapt_const.PAR_VAL: f[extr_const.FIELD_VALUE]}

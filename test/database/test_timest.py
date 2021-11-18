@@ -17,7 +17,7 @@ class TestTimestampBuilder(unittest.TestCase):
         self.thingspk_ts1 = ts.SQLTimestamp("2021-09-04T17:35:44Z", fmt=ts.THINGSPK_FMT)
         self.thingspk_ts2 = ts.SQLTimestamp("2020-07-14T14:05:09Z", fmt=ts.THINGSPK_FMT)
         self.current_ts = ts.CurrentTimestamp()
-        self.unix_ts = ts.UnixTimestamp(timestamp=1531432748)
+        self.unix_ts = ts.UnixTimestamp(timest=1531432748)
 
     def test_successfully_add_days_to_atmotube_timestamp(self):
         new_timest = self.atmotube_ts1.add_days(days=1)
@@ -73,7 +73,7 @@ class TestTimestampBuilder(unittest.TestCase):
 
     def test_is_same_day_unix_timestamp(self):
         self.assertFalse(self.unix_ts.is_same_day(self.thingspk_ts1))
-        self.assertTrue(self.unix_ts.is_same_day(ts.SQLTimestamp(timestamp='2018-07-12 00:00:00')))
+        self.assertTrue(self.unix_ts.is_same_day(ts.SQLTimestamp(timest='2018-07-12 00:00:00')))
 
 
 if __name__ == '__main__':

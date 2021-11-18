@@ -10,6 +10,7 @@ import unittest
 from typing import Dict, Any
 import airquality.adapter.config as adapt_const
 import airquality.database.util.postgis.config as geom_conf
+import airquality.database.util.datatype.config as time_conf
 import airquality.adapter.api2db.measure as adapt
 import airquality.database.operation.select.type as sel_type
 import airquality.database.util.postgis.geom as geom
@@ -63,8 +64,10 @@ class TestMeasureAdapter(unittest.TestCase):
                                                     {adapt_const.PAR_ID: 5, adapt_const.PAR_VAL: 'val5'},
                                                     {adapt_const.PAR_ID: 6, adapt_const.PAR_VAL: 'val6'},
                                                     {adapt_const.PAR_ID: 7, adapt_const.PAR_VAL: 'val7'}],
-                           adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp, adapt_const.KW: {'timestamp': '2021-10-11T01:33:44.000Z'}},
-                           adapt_const.SENS_GEOM: {adapt_const.CLS: geom.NullGeometry, adapt_const.KW: {}}
+                           adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
+                                                adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2021-10-11T01:33:44.000Z'}},
+                           adapt_const.SENS_GEOM: {adapt_const.CLS: geom.NullGeometry,
+                                                   adapt_const.KW: {}}
                            }
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
@@ -81,7 +84,7 @@ class TestMeasureAdapter(unittest.TestCase):
                                                     {adapt_const.PAR_ID: 6, adapt_const.PAR_VAL: 'val6'},
                                                     {adapt_const.PAR_ID: 7, adapt_const.PAR_VAL: 'val7'}],
                            adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
-                                                adapt_const.KW: {'timestamp': '2021-10-11T01:33:44.000Z'}},
+                                                adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2021-10-11T01:33:44.000Z'}},
                            adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
                                                    adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: 'lat_val',
                                                                     geom_conf.POINT_INIT_LNG_NAME: 'lon_val'}}
@@ -101,7 +104,7 @@ class TestMeasureAdapter(unittest.TestCase):
                                                     {adapt_const.PAR_ID: 6, adapt_const.PAR_VAL: None},
                                                     {adapt_const.PAR_ID: 7, adapt_const.PAR_VAL: None}],
                            adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
-                                                adapt_const.KW: {'timestamp': '2021-10-11T01:33:44.000Z'}},
+                                                adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2021-10-11T01:33:44.000Z'}},
                            adapt_const.SENS_GEOM: {adapt_const.CLS: geom.NullGeometry,
                                                    adapt_const.KW: {}}
                            }
@@ -130,7 +133,7 @@ class TestMeasureAdapter(unittest.TestCase):
                            adapt_const.SENS_PARAM: [{adapt_const.PAR_ID: 9, adapt_const.PAR_VAL: 'val1'},
                                                     {adapt_const.PAR_ID: 10, adapt_const.PAR_VAL: 'val2'}],
                            adapt_const.TIMEST: {adapt_const.CLS: ts.ThingspeakTimestamp,
-                                                adapt_const.KW: {'timestamp': '2021-10-11T01:33:44Z'}}}
+                                                adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2021-10-11T01:33:44Z'}}}
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -142,7 +145,7 @@ class TestMeasureAdapter(unittest.TestCase):
                            adapt_const.SENS_PARAM: [{adapt_const.PAR_ID: 9, adapt_const.PAR_VAL: None},
                                                     {adapt_const.PAR_ID: 10, adapt_const.PAR_VAL: 'val2'}],
                            adapt_const.TIMEST: {adapt_const.CLS: ts.ThingspeakTimestamp,
-                                                adapt_const.KW: {'timestamp': '2021-10-11T01:33:44Z'}}}
+                                                adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2021-10-11T01:33:44Z'}}}
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
