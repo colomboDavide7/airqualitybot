@@ -7,7 +7,8 @@
 #
 ######################################################
 import unittest
-import airquality.adapter.config as c
+import airquality.adapter.config as adapt_const
+import airquality.database.util.postgis.config as geom_conf
 import airquality.adapter.api2db.sensor as sens
 import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
@@ -35,23 +36,25 @@ class TestSensorAdapter(unittest.TestCase):
                        'secondary_key_b': 'key2B',
                        'date_created': 'd'}
 
-        expected_output = {c.SENS_NAME: 'n1 (idx1)',
-                           c.SENS_INFO: [
-                               {c.SENS_CH: c.FST_CH_A, c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
-                               {c.SENS_CH: c.FST_CH_B, c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
-                               {c.SENS_CH: c.SND_CH_A, c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
-                               {c.SENS_CH: c.SND_CH_B, c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}}],
-                           c.SENS_GEOM: {c.CLS: geom.PointBuilder, c.KW: {'lat': 'lat_val', 'lng': 'lng_val'}},
-                           c.TIMEST: {c.CLS: ts.CurrentTimestamp, c.KW: {}},
-                           c.SENS_PARAM: [{c.PAR_NAME: 'primary_id_a', c.PAR_VAL: 'id1A'},
-                                          {c.PAR_NAME: 'primary_id_b', c.PAR_VAL: 'id1B'},
-                                          {c.PAR_NAME: 'primary_key_a', c.PAR_VAL: 'key1A'},
-                                          {c.PAR_NAME: 'primary_key_b', c.PAR_VAL: 'key1B'},
-                                          {c.PAR_NAME: 'secondary_id_a', c.PAR_VAL: 'id2A'},
-                                          {c.PAR_NAME: 'secondary_id_b', c.PAR_VAL: 'id2B'},
-                                          {c.PAR_NAME: 'secondary_key_a', c.PAR_VAL: 'key2A'},
-                                          {c.PAR_NAME: 'secondary_key_b', c.PAR_VAL: 'key2B'}],
-                           c.SENS_TYPE: 'PurpleAir/ThingSpeak'}
+        expected_output = {adapt_const.SENS_NAME: 'n1 (idx1)',
+                           adapt_const.SENS_INFO: [
+                               {adapt_const.SENS_CH: adapt_const.FST_CH_A, adapt_const.TIMEST: {adapt_const.CLS: ts.UnixTimestamp, adapt_const.KW: {'timestamp': 'd'}}},
+                               {adapt_const.SENS_CH: adapt_const.FST_CH_B, adapt_const.TIMEST: {adapt_const.CLS: ts.UnixTimestamp, adapt_const.KW: {'timestamp': 'd'}}},
+                               {adapt_const.SENS_CH: adapt_const.SND_CH_A, adapt_const.TIMEST: {adapt_const.CLS: ts.UnixTimestamp, adapt_const.KW: {'timestamp': 'd'}}},
+                               {adapt_const.SENS_CH: adapt_const.SND_CH_B, adapt_const.TIMEST: {adapt_const.CLS: ts.UnixTimestamp, adapt_const.KW: {'timestamp': 'd'}}}],
+                           adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                                                   adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: 'lat_val',
+                                                                    geom_conf.POINT_INIT_LNG_NAME: 'lng_val'}},
+                           adapt_const.TIMEST: {adapt_const.CLS: ts.CurrentTimestamp, adapt_const.KW: {}},
+                           adapt_const.SENS_PARAM: [{adapt_const.PAR_NAME: 'primary_id_a', adapt_const.PAR_VAL: 'id1A'},
+                                                    {adapt_const.PAR_NAME: 'primary_id_b', adapt_const.PAR_VAL: 'id1B'},
+                                                    {adapt_const.PAR_NAME: 'primary_key_a', adapt_const.PAR_VAL: 'key1A'},
+                                                    {adapt_const.PAR_NAME: 'primary_key_b', adapt_const.PAR_VAL: 'key1B'},
+                                                    {adapt_const.PAR_NAME: 'secondary_id_a', adapt_const.PAR_VAL: 'id2A'},
+                                                    {adapt_const.PAR_NAME: 'secondary_id_b', adapt_const.PAR_VAL: 'id2B'},
+                                                    {adapt_const.PAR_NAME: 'secondary_key_a', adapt_const.PAR_VAL: 'key2A'},
+                                                    {adapt_const.PAR_NAME: 'secondary_key_b', adapt_const.PAR_VAL: 'key2B'}],
+                           adapt_const.SENS_TYPE: 'PurpleAir/ThingSpeak'}
         actual_output = self.purpleair_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -64,10 +67,9 @@ class TestSensorAdapter(unittest.TestCase):
 
     def test_exit_on_missing_sensor_name(self):
         test_missing_name = {'latitude': 'lat_val', 'longitude': 'lng_val',
-                             'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
-                             'primary_key_b': 'key1B',
-                             'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A',
-                             'secondary_key_b': 'key2B', 'date_created': 'd'}
+                             'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A', 'primary_key_b': 'key1B',
+                             'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A', 'secondary_key_b': 'key2B',
+                             'date_created': 'd'}
         with self.assertRaises(SystemExit):
             self.purpleair_adapter.reshape(test_missing_name)
 

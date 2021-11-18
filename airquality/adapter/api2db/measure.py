@@ -7,7 +7,8 @@
 ######################################################
 import abc
 from typing import Dict, Any, List
-import airquality.adapter.config as c
+import airquality.adapter.config as adapt_const
+import airquality.database.util.postgis.config as geom_const
 import airquality.database.operation.select.type as sel
 import airquality.database.util.postgis.geom as postgis
 import airquality.database.util.datatype.timestamp as ts
@@ -48,23 +49,25 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
 
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._exit_on_bad_sensor_data(data=data)
-        uniformed_data = {c.REC_ID: self.record_id,
-                          c.SENS_PARAM: self._get_measure_param_id_value(data=data),
-                          c.SENS_GEOM: self._get_geometry(data=data),
-                          c.TIMEST: self._get_timestamp(data=data)}
+        uniformed_data = {adapt_const.REC_ID: self.record_id,
+                          adapt_const.SENS_PARAM: self._get_measure_param_id_value(data=data),
+                          adapt_const.SENS_GEOM: self._get_geometry(data=data),
+                          adapt_const.TIMEST: self._get_timestamp(data=data)}
         self.record_id += 1
         return uniformed_data
 
     def _get_timestamp(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return {c.CLS: self.timest_cls, c.KW: {'timestamp': data['time']}}
+        return {adapt_const.CLS: self.timest_cls, adapt_const.KW: {'timestamp': data['time']}}
 
     def _get_measure_param_id_value(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return [{c.PAR_ID: self.measure_param_map[n], c.PAR_VAL: data.get(n)} for n in AtmotubeMeasureAdapter.ATMOTUBE_PARAM_NAMES]
+        return [{adapt_const.PAR_ID: self.measure_param_map[n], adapt_const.PAR_VAL: data.get(n)} for n in AtmotubeMeasureAdapter.ATMOTUBE_PARAM_NAMES]
 
     def _get_geometry(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        geom = {c.CLS: postgis.NullGeometry, c.KW: {}}
+        geom = {adapt_const.CLS: postgis.NullGeometry, adapt_const.KW: {}}
         if data.get('coords') is not None:
-            geom = {c.CLS: self.geom_cls, c.KW: {'lat': data['coords']['lat'], 'lng': data['coords']['lon']}}
+            geom = {adapt_const.CLS: self.geom_cls,
+                    adapt_const.KW: {geom_const.POINT_INIT_LAT_NAME: data['coords']['lat'],
+                                     geom_const.POINT_INIT_LNG_NAME: data['coords']['lon']}}
         return geom
 
     def _exit_on_bad_sensor_data(self, data: Dict[str, Any]):
@@ -84,17 +87,17 @@ class ThingspeakMeasureAdapter(MeasureAdapter):
 
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._exit_on_bad_sensor_data(data=data)
-        uniformed_data = {c.REC_ID: self.record_id,
-                          c.SENS_PARAM: self._get_measure_param_id_value(data=data),
-                          c.TIMEST: self._get_timestamp(data=data)}
+        uniformed_data = {adapt_const.REC_ID: self.record_id,
+                          adapt_const.SENS_PARAM: self._get_measure_param_id_value(data=data),
+                          adapt_const.TIMEST: self._get_timestamp(data=data)}
         self.record_id += 1
         return uniformed_data
 
     def _get_timestamp(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        return {c.CLS: self.timest_cls, c.KW: {'timestamp': data['created_at']}}
+        return {adapt_const.CLS: self.timest_cls, adapt_const.KW: {'timestamp': data['created_at']}}
 
     def _get_measure_param_id_value(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return [{c.PAR_ID: self.measure_param_map[f[extr_const.FIELD_NAME]], c.PAR_VAL: f[extr_const.FIELD_VALUE]}
+        return [{adapt_const.PAR_ID: self.measure_param_map[f[extr_const.FIELD_NAME]], adapt_const.PAR_VAL: f[extr_const.FIELD_VALUE]}
                 for f in data[extr_const.FIELDS]]
 
     def _exit_on_bad_sensor_data(self, data: Dict[str, Any]):
