@@ -10,11 +10,13 @@ import airquality.bot.fetch as fetch
 import airquality.bot.update as update
 
 
-def get_bot_class(bot_name: str):
+def get_bot(bot_name: str, log_filename: str, log_sub_dir: str):
 
     if bot_name == 'init':
-        return init.InitializeBot
+        return init.InitializeBot(log_filename=log_filename, log_sub_dir=log_sub_dir)
     elif bot_name == 'update':
-        return update.UpdateBot
+        return update.UpdateBot(log_filename=log_filename, log_sub_dir=log_sub_dir)
     elif bot_name == 'fetch':
-        return fetch.FetchBot
+        return fetch.FetchBot(log_filename=log_filename, log_sub_dir=log_sub_dir)
+    else:
+        raise SystemExit(f"'{get_bot.__name__}():' bad name '{bot_name}'")

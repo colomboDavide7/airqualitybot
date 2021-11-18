@@ -7,15 +7,10 @@
 ######################################################
 # --------------------- BUILTIN IMPORT ---------------------
 import os
-import dotenv
 # --------------------- LOGGER IMPORT ---------------------
 # log
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
-# --------------------- APPLICATION IMPORT ---------------------
-# util
-import airquality.app.util.args as arg
-import airquality.app.util.make as make
 # --------------------- BOT IMPORT ---------------------
 # util
 import airquality.bot.util.fact as fact
@@ -27,6 +22,7 @@ import airquality.filter.filter as filt
 import airquality.file.structured.json as jf
 # util
 import airquality.file.util.parser as parser
+import airquality.file.util.loader as loader
 # --------------------- ADAPTER IMPORT ---------------------
 import airquality.adapter.api2db.sensor as sens
 import airquality.adapter.api2db.measure as meas
@@ -53,6 +49,7 @@ import airquality.database.util.query as qry
 
 ################################ GLOBAL VARIABLES ################################
 
+ENV_FILE = 'properties/.env'
 API_FILE = "properties/api.json"
 QUERY_FILE = "properties/query.json"
 
@@ -78,55 +75,28 @@ class Application(log.Loggable):
     @log_decorator.log_decorator()
     def setup(self):
 
+        ############################ READ API FILE AND GET PARAM ASSOCIATED TO SENSOR TYPE #############################
+        file_obj = jf.JSONFile(API_FILE, path_to_object=[self.sensor_type])
+        address, url_param, file_ext = loader.get_api_param_from_file(sensor_type=self.sensor_type, file_object=file_obj)
+
         ################################ LOADING '.env' FILE ################################
-        dotenv.load_dotenv(dotenv_path="./properties/.env")
-        arg.exit_on_bad_env_param()
-
-        ################################ BOT SPECIFIC LOGGER ################################
-        logger = make.make_file_logger(file_path=f'log/{self.bot_name}.log')
-        self.set_logger(logger)
-
-        ################################ MAKE BOT CLASS ################################
-        bot_class = fact.get_bot_class(self.bot_name)
-        bot = bot_class(log_filename=self.bot_name, log_sub_dir='log')
-
-        ################################ INJECT API DEPENDENCIES ################################
-        api_file_object = jf.JSONFile(API_FILE, path_to_object=[self.sensor_type])
-        address = api_file_object.api_address
-        url_param = api_file_object.url_param
-        arg.exit_on_bad_api_param(url_param=url_param, sensor_type=self.sensor_type)
+        loader.load_environment_file(file_path=ENV_FILE, sensor_type=self.sensor_type)
 
         # Append secret 'api_key' for purpleair sensor from '.env' file
         if self.sensor_type == 'purpleair':
-            api_key = os.environ['PURPLEAIR_KEY1']
-            url_param.update({'api_key': api_key})
+            url_param.update({'api_key': os.environ['PURPLEAIR_KEY1']})
 
-        # file extension for building the TextParser
-        file_extension = "json"
-        if self.sensor_type in ('atmotube', 'thingspeak',):
-            file_extension = url_param['format']
+        ################################ MAKE BOT ################################
+        bot = fact.get_bot(self.bot_name, log_filename=self.bot_name, log_sub_dir='log')
 
         ################################ INJECT API DEPENDENCIES ################################
-        # TextParser for parsing API responses
-        response_parser = parser.get_text_parser(file_ext=file_extension)
-
-        # URLBuilder
-        url_builder = url.get_url_builder(
-            sensor_type=self.sensor_type,
-            address=address,
-            url_param=url_param)
-
-        # APIExtractor class
+        response_parser = parser.get_text_parser(file_ext=file_ext)
+        url_builder = url.get_url_builder(sensor_type=self.sensor_type, address=address, url_param=url_param)
         data_extractor = ext.get_data_extractor(sensor_type=self.sensor_type)
 
         # FetchWrapper
-        fetch_wrapper = fetch.FetchWrapper(
-            url_builder=url_builder,
-            extractor=data_extractor,
-            parser=response_parser)
-
-        # Inject logger and debugger
-        fetch_wrapper.set_logger(logger)
+        fetch_wrapper = fetch.FetchWrapper(url_builder=url_builder, extractor=data_extractor, parser=response_parser)
+        fetch_wrapper.set_logger(self.logger)
         fetch_wrapper.set_debugger(self.debugger)
 
         # Inject dependency to Bot
@@ -146,7 +116,7 @@ class Application(log.Loggable):
 
         ################################ SETUP INSERT WRAPPER ################################
         # Inject debugger and logger to InsertWrapper
-        insert_wrapper.set_logger(logger)
+        insert_wrapper.set_logger(self.logger)
         insert_wrapper.set_debugger(self.debugger)
 
         # Setup for 'init' and 'update' bots
@@ -176,7 +146,7 @@ class Application(log.Loggable):
 
         # SensorTypeSelectWrapper
         type_select_wrapper = sel_type.get_type_select_wrapper(conn=conn, query_builder=query_builder, sensor_type=self.sensor_type)
-        type_select_wrapper.set_logger(logger)
+        type_select_wrapper.set_logger(self.logger)
         type_select_wrapper.set_debugger(self.debugger)
 
         # Inject SensorTypeSelectWrapper to Bot
@@ -192,7 +162,7 @@ class Application(log.Loggable):
 
         # Set logger and debugger
         sensor_data_filter.set_debugger(self.debugger)
-        sensor_data_filter.set_logger(logger)
+        sensor_data_filter.set_logger(self.logger)
         bot.add_sensor_data_filter(sensor_data_filter)
 
         ################################ INJECT ADAPTER DEPENDENCIES ################################
@@ -219,7 +189,7 @@ class Application(log.Loggable):
             bot.add_date_looper_class(date_looper_class)
 
         # Set logger and debugger
-        bot.set_logger(logger)
+        bot.set_logger(self.logger)
         bot.set_debugger(self.debugger)
 
         self.bot = bot

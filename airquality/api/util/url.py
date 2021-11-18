@@ -17,6 +17,8 @@ def get_url_builder(sensor_type: str, address: str, url_param: Dict[str, Any]):
         return AtmotubeURL(address=address, url_param=url_param)
     elif sensor_type == 'thingspeak':
         return ThingspeakURL(address=address, url_param=url_param)
+    else:
+        raise SystemExit(f"'{get_url_builder.__name__}():' bad type '{sensor_type}'")
 
 
 ################################ URL BUILDER ################################

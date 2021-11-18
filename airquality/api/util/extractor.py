@@ -29,6 +29,8 @@ def get_data_extractor(sensor_type: str):
         return AtmotubeDataExtractor()
     elif sensor_type == 'thingspeak':
         return ThingspeakDataExtractor()
+    else:
+        raise SystemExit(f"'{get_data_extractor.__name__}():' bad type '{sensor_type}'")
 
 
 ################################ ABSTRACT BASE CLASS ################################
