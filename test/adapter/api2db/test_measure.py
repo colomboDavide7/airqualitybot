@@ -62,10 +62,10 @@ class TestMeasureAdapter(unittest.TestCase):
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
-        # Test when 'coords' are not missing
+    def test_successfully_reshape_atmotube_measurements_with_coords(self):
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
                        'p': 'val7', 'time': '2021-10-11T01:33:44.000Z', 'coords': {'lat': 'lat_val', 'lon': 'lon_val'}}
-        expected_output = {'record_id': 100,
+        expected_output = {'record_id': 99,
                            'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
                                      {'id': 4, 'val': 'val4'}, {'id': 5, 'val': 'val5'}, {'id': 6, 'val': 'val6'},
                                      {'id': 7, 'val': 'val7'}],
@@ -75,7 +75,7 @@ class TestMeasureAdapter(unittest.TestCase):
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
-    def test_none_value_when_field_is_missing(self):
+    def test_none_value_on_missing_param(self):
         # Test output when 't', 'h' and 'p' are missing
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 'time': '2021-10-11T01:33:44.000Z'}
         expected_output = {'record_id': 99,
@@ -88,15 +88,14 @@ class TestMeasureAdapter(unittest.TestCase):
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
-    def test_system_exit_when_param_is_missing(self):
-        # Test when 'coords' are not missing
+    def test_exit_on_bad_atmotube_coords_item(self):
         test_bad_coords = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
                            'p': 'val7', 'coords': {}}
         with self.assertRaises(SystemExit):
             self.atmotube_adapter.reshape(test_bad_coords)
 
-        test_missing_time = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
-                             'p': 'val7'}
+    def test_exit_on_missing_atmotube_time_item(self):
+        test_missing_time = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6', 'p': 'val7'}
         with self.assertRaises(SystemExit):
             self.atmotube_adapter.reshape(test_missing_time)
 
@@ -113,7 +112,7 @@ class TestMeasureAdapter(unittest.TestCase):
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
-    def test_none_value_when_param_is_null(self):
+    def test_none_value_when_measure_is_missing(self):
         test_packet = {'created_at': '2021-10-11T01:33:44Z',
                        'fields': [{'name': 'f1', 'value': None},
                                   {'name': 'f2', 'value': 'val2'}]}
@@ -125,23 +124,26 @@ class TestMeasureAdapter(unittest.TestCase):
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
-    def test_system_exit_when_key_error_is_raised(self):
+    def test_exit_on_missing_value_item_within_fields(self):
         test_packet = {'created_at': '2021-10-11T01:33:44Z',
                        'fields': [{'name': 'f1', 'bad_key': 'val1'},
                                   {'name': 'f2', 'bad_key': 'val2'}]}
         with self.assertRaises(SystemExit):
             self.thingspeak_adapter.reshape(test_packet)
 
+    def test_exit_on_missing_name_item_within_fields(self):
         test_packet = {'created_at': '2021-10-11T01:33:44Z',
                        'fields': [{'bad_key': 'f1', 'value': 'val1'},
                                   {'bad_key': 'f2', 'value': 'val2'}]}
         with self.assertRaises(SystemExit):
             self.thingspeak_adapter.reshape(test_packet)
 
+    def test_exit_on_missing_fields_item(self):
         test_packet = {'created_at': '2021-10-11T01:33:44Z'}
         with self.assertRaises(SystemExit):
             self.thingspeak_adapter.reshape(test_packet)
 
+    def test_exit_on_missing_created_at_item(self):
         test_packet = {'fields': [{'name': 'f1', 'value': None},
                                   {'name': 'f2', 'value': 'val2'}]}
         with self.assertRaises(SystemExit):
