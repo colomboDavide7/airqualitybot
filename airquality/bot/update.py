@@ -26,8 +26,11 @@ class UpdateBot(base.BaseBot):
         uniformed_sensor_data = [self.api2db_adapter.reshape(data) for data in sensor_data]
 
         # Apply GeoFilter to keep only the fetched sensors that have changed location
-        fetched_changed_sensors = self.sensor_data_filter.filter(uniformed_sensor_data)
+        fetched_changed_sensors = [data for data in uniformed_sensor_data if self.sensor_data_filter.filter(data)]
+        self.info_messages.append(f"{self.sensor_data_filter.__class__.__name__} found {len(fetched_changed_sensors)}/"
+                                  f"{len(uniformed_sensor_data)} new locations")
         if not fetched_changed_sensors:
+            self.info_messages.append("all locations are the same => no update")
             return
 
         # Query the (sensor_name, sensor_id) tuples

@@ -90,8 +90,9 @@ class FetchBot(base.BaseBot):
                     self.sensor_data_filter.set_filter_ts(filter_timestamp)
 
                     # Filter measure to keep only new measurements
-                    new_data = self.sensor_data_filter.filter(uniformed_sensor_data)
+                    new_data = [data for data in uniformed_sensor_data if self.sensor_data_filter.filter(data)]
                     if not new_data:
+                        self.info_messages.append(f"all data are already present => skip them")
                         continue
 
                     # Add new measurements

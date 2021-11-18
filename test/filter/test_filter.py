@@ -17,77 +17,93 @@ class TestFilter(unittest.TestCase):
     def setUp(self) -> None:
         self.atmotube_ts_cls = ts.AtmotubeTimestamp
         self.thingspeak_ts_cls = ts.ThingspeakTimestamp
-        self.filter_ts = ts.SQLTimestamp('2021-11-11 08:44:00')
+        self.timest_filter = filt.TimestampFilter()
+        self.timest_filter.set_filter_ts(filter_ts=ts.SQLTimestamp('2021-11-11 08:44:00'))
+        self.name_filter = filt.NameFilter(database_sensor_names=['n1 (idx1)', 'n2 (idx2)'])
+        self.geo_filter = filt.GeoFilter(database_active_locations={'n1 (idx1)': 'POINT(8.7876 45.1232)'})
 
     ################################ TIMESTAMP FILTER ################################
-    def test_filter_atmotube_packets(self):
-        test_packets = [{'timestamp': '2021-11-11T08:43:45.000Z'},
-                        {'timestamp': '2021-11-11T08:45:45.000Z'}]
-        packet_filter = filt.TimestampFilter(timestamp_class=self.atmotube_ts_cls)
-        packet_filter.set_filter_ts(self.filter_ts)
-        actual_output = packet_filter.filter(test_packets)
-        expected_output = [{'timestamp': '2021-11-11T08:45:45.000Z'}]
-        self.assertEqual(actual_output, expected_output)
+    def test_false_when_atmotube_data_is_before_filter_timestamp(self):
+        test_timestamp_before = {
+            'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2021-11-11T08:43:45.000Z'}}}
+        actual_output = self.timest_filter.filter(sensor_data=test_timestamp_before)
+        self.assertFalse(actual_output)
 
-    def test_filter_thingspeak_packets(self):
-        test_packets = [{'timestamp': '2021-11-11T08:43:45Z'},
-                        {'timestamp': '2021-11-11T08:45:45Z'}]
-        packet_filter = filt.TimestampFilter(timestamp_class=self.thingspeak_ts_cls)
-        packet_filter.set_filter_ts(self.filter_ts)
-        actual_output = packet_filter.filter(test_packets)
-        expected_output = [{'timestamp': '2021-11-11T08:45:45Z'}]
-        self.assertEqual(actual_output, expected_output)
+    def test_true_when_atmotube_data_is_after_filter_timestamp(self):
+        test_timestamp_after = {
+            'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2021-11-11T08:45:45.000Z'}}}
+        actual_output = self.timest_filter.filter(sensor_data=test_timestamp_after)
+        self.assertTrue(actual_output)
+
+    def test_false_when_thingspeak_data_is_before_filter_timestamp(self):
+        test_timestamp_before = {'timestamp':
+                                     {'class': ts.ThingspeakTimestamp,
+                                      'kwargs': {'timestamp': '2021-11-11T08:43:45Z'}}
+                                 }
+        actual_output = self.timest_filter.filter(sensor_data=test_timestamp_before)
+        self.assertFalse(actual_output)
+
+    def test_true_when_thingspeak_data_is_after_filter_timestamp(self):
+        test_timestamp_before = {'timestamp':
+                                     {'class': ts.ThingspeakTimestamp,
+                                      'kwargs': {'timestamp': '2021-11-11T08:45:45Z'}}
+                                 }
+        actual_output = self.timest_filter.filter(sensor_data=test_timestamp_before)
+        self.assertTrue(actual_output)
 
     def test_system_exit_when_missing_filter_ts_dependency(self):
-        test_packets = []
-        packet_filter = filt.TimestampFilter(timestamp_class=self.thingspeak_ts_cls)
+        packet_filter = filt.TimestampFilter()
         with self.assertRaises(SystemExit):
-            packet_filter.filter(test_packets)
+            packet_filter.filter(sensor_data={})
 
     ################################ NAME FILTER ################################
-    def test_name_filter(self):
-        test_fetched_sensors = [{"name": 'n1 (idx1)'}, {"name": 'n2 (idx2)'}, {"name": 'n3 (idx3)'}]
-        packet_filter = filt.NameFilter(database_sensor_names=['n1 (idx1)', 'n2 (idx2)'])
-        actual_output = packet_filter.filter(test_fetched_sensors)
-        expected_output = [{"name": 'n3 (idx3)'}]
-        self.assertEqual(actual_output, expected_output)
+    def test_false_when_purpleair_sensor_name_is_within_database_sensors(self):
+        test_name = {"name": 'n1 (idx1)'}
+        actual_output = self.name_filter.filter(test_name)
+        self.assertFalse(actual_output)
+
+    def test_true_when_purpleair_sensor_name_is_not_within_database_sensors(self):
+        test_name = {"name": 'n3 (idx3)'}
+        actual_output = self.name_filter.filter(test_name)
+        self.assertTrue(actual_output)
 
     ################################ GEO FILTER ################################
-    def test_geo_filter(self):
-        test_data = [{'name': 'n1 (idx1)', 'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '45', 'lng': '9'}}}]
-        geo_filter = filt.GeoFilter(database_active_locations={'n1 (idx1)': 'POINT(8.7876 45.1232)'})
-        actual_output = geo_filter.filter(sensor_data=test_data)
-        expected_output = [{'name': 'n1 (idx1)', 'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '45', 'lng': '9'}}}]
-        self.assertEqual(actual_output, expected_output)
+    def test_false_when_geo_filter_is_applied_to_inactive_sensor(self):
+        test_data = {'name': 'n3 (idx3)', 'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '45', 'lng': '9'}}}
+        actual_output = self.geo_filter.filter(sensor_data=test_data)
+        self.assertFalse(actual_output)
 
-    def test_empty_list_when_geolocation_is_the_same(self):
-        test_data = [{'name': 'n1 (idx1)', 'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '45', 'lng': '9'}}}]
-        geo_filter = filt.GeoFilter(database_active_locations={'n1 (idx1)': 'POINT(9 45)'})
-        actual_output = geo_filter.filter(sensor_data=test_data)
-        expected_output = []
-        self.assertEqual(actual_output, expected_output)
+    def test_false_when_geo_filter_is_applied_to_active_sensor_with_same_location(self):
+        test_data = {'name': 'n1 (idx1)', 'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '45.1232', 'lng': '8.7876'}}}
+        actual_output = self.geo_filter.filter(sensor_data=test_data)
+        self.assertFalse(actual_output)
+
+    def test_true_when_geo_filter_is_applied_to_active_sensor_with_new_location(self):
+        test_data = {'name': 'n1 (idx1)',
+                     'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '46', 'lng': '7'}}}
+        actual_output = self.geo_filter.filter(sensor_data=test_data)
+        self.assertTrue(actual_output)
 
     def test_empty_list_when_database_active_location_is_empty(self):
-        test_data = [{'name': 'n1 (idx1)', 'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '45', 'lng': '9'}}}]
+        test_data = {'name': 'n1 (idx1)', 'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '45', 'lng': '9'}}}
         geo_filter = filt.GeoFilter(database_active_locations={})
         actual_output = geo_filter.filter(sensor_data=test_data)
-        expected_output = []
-        self.assertEqual(actual_output, expected_output)
+        self.assertFalse(actual_output)
 
     def test_exit_on_missing_geom_key_in_sensor_data(self):
-        test_data = [{'name': 'n1 (idx1)'}]
+        test_data = {'name': 'n1 (idx1)'}
         geo_filter = filt.GeoFilter(database_active_locations={'n1 (idx1)': 'POINT(8.7876 45.1232)'})
         with self.assertRaises(SystemExit):
             geo_filter.filter(sensor_data=test_data)
 
     def test_exit_on_empty_geom_dictionary(self):
-        test_data = [{'name': 'n1 (idx1)', 'geom': {}}]
+        test_data = {'name': 'n1 (idx1)', 'geom': {}}
         geo_filter = filt.GeoFilter(database_active_locations={'n1 (idx1)': 'POINT(8.7876 45.1232)'})
         with self.assertRaises(SystemExit):
             geo_filter.filter(sensor_data=test_data)
 
     def test_exit_on_missing_class_or_kwargs_items_in_geom_dictionary(self):
-        test_data = [{'name': 'n1 (idx1)', 'geom': {'class': geom.PointBuilder, 'other': 1}}]
+        test_data = {'name': 'n1 (idx1)', 'geom': {'class': geom.PointBuilder, 'other': 1}}
         geo_filter = filt.GeoFilter(database_active_locations={'n1 (idx1)': 'POINT(8.7876 45.1232)'})
         with self.assertRaises(SystemExit):
             geo_filter.filter(sensor_data=test_data)

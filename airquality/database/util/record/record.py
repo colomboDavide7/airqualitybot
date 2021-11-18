@@ -8,6 +8,7 @@
 from typing import Dict, Any
 import airquality.database.util.record.base as base
 import airquality.database.util.record.time as t
+import airquality.database.util.record.location as loc
 
 
 ################################ SENSOR RECORD ################################
@@ -50,8 +51,9 @@ class APIParamRecord(base.RecordBuilder):
 ################################ SENSOR AT LOCATION RECORD ################################
 class SensorLocationRecord(base.RecordBuilder):
 
-    def __init__(self, time_rec: t.TimeRecord):
+    def __init__(self, time_rec: t.TimeRecord, location_rec: loc.LocationRecord):
         self.time_rec = time_rec
+        self.location_rec = location_rec
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
         self._exit_on_bad_sensor_data(sensor_data)
@@ -59,11 +61,11 @@ class SensorLocationRecord(base.RecordBuilder):
             raise SystemExit(f"{SensorInfoRecord.__name__}: bad call => missing argument 'sensor_id'")
 
         valid_from = self.time_rec.record(sensor_data=sensor_data)
-        geom = sensor_data['geom']['class'](**sensor_data['geom']['kwargs']).geom_from_text()
+        geom = self.location_rec.record(sensor_data=sensor_data)
         return f"({sensor_id}, {valid_from}, {geom})"
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
-        _exit_on_missing_geom_data(sensor_data=sensor_data)
+        pass
 
 
 ################################ SENSOR INFO RECORD ################################
@@ -93,20 +95,20 @@ class SensorInfoRecord(base.RecordBuilder):
 ################################ MOBILE MEASUREMENT RECORD ################################
 class MobileMeasureRecord(base.RecordBuilder):
 
-    def __init__(self, time_rec: t.TimeRecord):
+    def __init__(self, time_rec: t.TimeRecord, location_rec: loc.LocationRecord):
         self.time_rec = time_rec
+        self.location_rec = location_rec
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
         self._exit_on_bad_sensor_data(sensor_data)
         record_id = sensor_data['record_id']
         ts = self.time_rec.record(sensor_data=sensor_data)
-        geom = sensor_data['geom']['class'](**sensor_data['geom']['kwargs']).geom_from_text()
+        geom = self.location_rec.record(sensor_data=sensor_data)
         records = ','.join(f"({record_id}, {p['id']}, '{p['val']}', {ts}, {geom})" if p['val'] is not None else
                            f"({record_id}, {p['id']}, NULL, {ts}, {geom})" for p in sensor_data['param'])
         return records.strip(',')
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
-        _exit_on_missing_geom_data(sensor_data=sensor_data)
         _exit_on_missing_measure_param_data(sensor_data=sensor_data)
 
 
@@ -132,16 +134,6 @@ class StationMeasureRecord(base.RecordBuilder):
 
 
 ########################### FUNCTION FOR CHECKING EXISTENCE OF GEOM ITEM WITHIN SENSOR DATA ############################
-def _exit_on_missing_geom_data(sensor_data: Dict[str, Any]):
-    if 'geom' not in sensor_data:
-        raise SystemExit(f"'{_exit_on_missing_geom_data.__name__}()': bad sensor data => missing key='geom'")
-    if not sensor_data['geom']:
-        raise SystemExit(f"'{_exit_on_missing_geom_data.__name__}()': bad sensor data => 'geom' cannot be empty")
-    if 'class' not in sensor_data['geom'] or 'kwargs' not in sensor_data['geom']:
-        raise SystemExit(f"'{_exit_on_missing_geom_data.__name__}()': bad sensor data => 'geom' must have 'class' and "
-                         f"'kwargs' keys")
-
-
 def _exit_on_missing_measure_param_data(sensor_data: Dict[str, Any]):
     if sensor_data.get('record_id') is None:
         raise SystemExit(f"'{_exit_on_missing_measure_param_data.__name__}()': bad sensor data: missing key='record_id'")

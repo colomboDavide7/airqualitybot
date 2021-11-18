@@ -24,12 +24,10 @@ class InitializeBot(base.BaseBot):
             return
 
         # Reshape API data
-        uniformed_sensor_data = []
-        for data in sensor_data:
-            uniformed_sensor_data.append(self.api2db_adapter.reshape(data))
+        uniformed_sensor_data = [self.api2db_adapter.reshape(d) for d in sensor_data]
 
-        # Apply NameFilter
-        new_sensor_data = self.sensor_data_filter.filter(uniformed_sensor_data)
+        # Apply SensorDataFilter to keep only new sensors
+        new_sensor_data = [data for data in uniformed_sensor_data if self.sensor_data_filter.filter(data)]
         if not new_sensor_data:
             self.info_messages.append("all sensors are already present into the database => done")
             return

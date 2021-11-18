@@ -38,6 +38,9 @@ import airquality.api.util.extractor as ext
 import airquality.database.operation.select.type as sel_type
 import airquality.database.operation.insert as insert
 # util
+import airquality.database.util.postgis.geom as geom
+import airquality.database.util.datatype.timestamp as ts
+import airquality.database.util.record.location as loc
 import airquality.database.util.record.time as t
 import airquality.database.util.record.record as rec
 import airquality.database.util.conn as db_conn
@@ -110,7 +113,7 @@ class Application(log.Loggable):
         insert_wrapper.set_debugger(self.debugger)
 
         ################################ SETUP INSERT WRAPPER ###############################
-        sensor_location_record = rec.SensorLocationRecord(time_rec=t.TimeRecord())
+        sensor_location_record = rec.SensorLocationRecord(time_rec=t.TimeRecord(), location_rec=loc.LocationRecord())
 
         # 'init' bot InsertWrapper dependencies
         if self.bot_name == 'init':
@@ -126,7 +129,9 @@ class Application(log.Loggable):
         # 'fetch' bot InsertWrapper dependencies
         elif self.bot_name == 'fetch':
             if self.sensor_type == 'atmotube':
-                insert_wrapper.set_mobile_record_builder(builder=rec.MobileMeasureRecord(time_rec=t.TimeRecord()))
+                insert_wrapper.set_mobile_record_builder(
+                    builder=rec.MobileMeasureRecord(time_rec=t.TimeRecord(), location_rec=loc.LocationRecord())
+                )
             elif self.sensor_type == 'thingspeak':
                 insert_wrapper.set_station_record_builder(builder=rec.StationMeasureRecord(time_rec=t.TimeRecord()))
 
@@ -150,14 +155,11 @@ class Application(log.Loggable):
         ################################ SENSOR DATA FILTER DEPENDENCIES ################################
 
         # SensorDataFilter
-        sensor_data_filter = filt.get_sensor_data_filter(
-            bot_name=self.bot_name,
-            sensor_type=self.sensor_type,
-            sel_wrapper=type_select_wrapper)
-
-        # Set logger and debugger
+        sensor_data_filter = filt.get_sensor_data_filter(bot_name=self.bot_name, sel_wrapper=type_select_wrapper)
         sensor_data_filter.set_debugger(self.debugger)
         sensor_data_filter.set_logger(self.logger)
+
+        # Inject SensorData filter to bot
         bot.add_sensor_data_filter(sensor_data_filter)
 
         ################################ INJECT ADAPTER DEPENDENCIES ################################
@@ -169,7 +171,14 @@ class Application(log.Loggable):
 
         elif self.bot_name == 'fetch':
             # MeasureAdapter
-            measure_adapter = meas.get_measure_adapter(sensor_type=self.sensor_type, type_wrapper=type_select_wrapper)
+            measure_adapter = meas.get_measure_adapter(
+                sensor_type=self.sensor_type,
+                sel_type=type_select_wrapper,
+                geom_cls=geom.PointBuilder,
+                timest_cls=ts.get_timestamp_class(sensor_type=self.sensor_type)
+            )
+
+            # Inject MeasureAdapter dependency
             bot.add_api2database_adapter(adapter=measure_adapter)
 
             # ParamAdapter

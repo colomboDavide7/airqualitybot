@@ -9,6 +9,7 @@ import unittest
 import airquality.database.util.record.record as rec
 import airquality.database.util.record.time as t
 import airquality.database.util.datatype.timestamp as ts
+import airquality.database.util.record.location as loc
 import airquality.database.util.postgis.geom as geom
 
 
@@ -16,7 +17,8 @@ class TestMeasurementRecord(unittest.TestCase):
 
     def setUp(self) -> None:
         self.time_rec = t.TimeRecord()
-        self.mobile_rec = rec.MobileMeasureRecord(time_rec=self.time_rec)
+        self.location_rec = loc.LocationRecord()
+        self.mobile_rec = rec.MobileMeasureRecord(time_rec=self.time_rec, location_rec=self.location_rec)
         self.station_rec = rec.StationMeasureRecord(self.time_rec)
 
     ################################ STATION MEASUREMENT RECORD ################################
@@ -28,7 +30,7 @@ class TestMeasurementRecord(unittest.TestCase):
         self.assertEqual(actual_output, expected_output)
 
     def test_exit_when_missing_sensor_id(self):
-        test_data = {'record_id': 99, 'param_id': [1], 'param_value': [55], 'timestamp': '2018-10-11T09:44:00Z'}
+        test_data = {'record_id': 99, 'param': [{'id': 1, 'val': 55}], 'timestamp': '2018-10-11T09:44:00Z'}
         with self.assertRaises(SystemExit):
             self.station_rec.record(test_data)
 

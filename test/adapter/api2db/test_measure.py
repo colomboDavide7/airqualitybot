@@ -10,6 +10,8 @@ import unittest
 from typing import Dict, Any
 import airquality.adapter.api2db.measure as adapt
 import airquality.database.operation.select.type as sel_type
+import airquality.database.util.postgis.geom as geom
+import airquality.database.util.datatype.timestamp as ts
 
 
 ############################## ATMOTUBE MOCK #############################
@@ -33,44 +35,56 @@ class ThingspeakTypeSelectWrapperMock(sel_type.TypeSelectWrapper):
 
 
 ############################## TEST CLASS #############################
-class TestMeasureReshaper(unittest.TestCase):
+class TestMeasureAdapter(unittest.TestCase):
 
     def setUp(self) -> None:
         self.atmotube_adapter = adapt.AtmotubeMeasureAdapter(
-            type_wrapper=AtmotubeTypeSelectWrapperMock(conn=None, query_builder=None, sensor_type=None)
+            sel_type=AtmotubeTypeSelectWrapperMock(conn=None, query_builder=None, sensor_type=None),
+            geom_cls=geom.PointBuilder,
+            timest_cls=ts.AtmotubeTimestamp
         )
         self.thingspeak_adapter = adapt.ThingspeakMeasureAdapter(
-            type_wrapper=ThingspeakTypeSelectWrapperMock(conn=None, query_builder=None, sensor_type=None)
+            sel_type=ThingspeakTypeSelectWrapperMock(conn=None, query_builder=None, sensor_type=None),
+            timest_cls=ts.ThingspeakTimestamp
         )
 
     ############################## TEST ATMOTUBE MEASURE ADAPTER #############################
     def test_successfully_reshape_atmotube_measurements(self):
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
                        'p': 'val7', 'time': '2021-10-11T01:33:44.000Z'}
-        expected_output = {'record_id': 99, 'timestamp': '2021-10-11T01:33:44.000Z',
+        expected_output = {'record_id': 99,
                            'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
                                      {'id': 4, 'val': 'val4'}, {'id': 5, 'val': 'val5'}, {'id': 6, 'val': 'val6'},
-                                     {'id': 7, 'val': 'val7'}]}
+                                     {'id': 7, 'val': 'val7'}],
+                           'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44.000Z'}},
+                           'geom': {'class': geom.NullGeometry, 'kwargs': {}}
+                           }
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
         # Test when 'coords' are not missing
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
                        'p': 'val7', 'time': '2021-10-11T01:33:44.000Z', 'coords': {'lat': 'lat_val', 'lon': 'lon_val'}}
-        expected_output = {'record_id': 100, 'lat': 'lat_val', 'lng': 'lon_val', 'timestamp': '2021-10-11T01:33:44.000Z',
+        expected_output = {'record_id': 100,
                            'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
                                      {'id': 4, 'val': 'val4'}, {'id': 5, 'val': 'val5'}, {'id': 6, 'val': 'val6'},
-                                     {'id': 7, 'val': 'val7'}]}
+                                     {'id': 7, 'val': 'val7'}],
+                           'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44.000Z'}},
+                           'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': 'lat_val', 'lng': 'lon_val'}}
+                           }
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
     def test_none_value_when_field_is_missing(self):
         # Test output when 't', 'h' and 'p' are missing
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 'time': '2021-10-11T01:33:44.000Z'}
-        expected_output = {'record_id': 99, 'timestamp': '2021-10-11T01:33:44.000Z',
+        expected_output = {'record_id': 99,
                            'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
                                      {'id': 4, 'val': 'val4'}, {'id': 5, 'val': None}, {'id': 6, 'val': None},
-                                     {'id': 7, 'val': None}]}
+                                     {'id': 7, 'val': None}],
+                           'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44.000Z'}},
+                           'geom': {'class': geom.NullGeometry, 'kwargs': {}}
+                           }
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -92,9 +106,10 @@ class TestMeasureReshaper(unittest.TestCase):
                        'fields': [{'name': 'f1', 'value': 'val1'},
                                   {'name': 'f2', 'value': 'val2'}]}
 
-        expected_output = {'record_id': 99, 'timestamp': '2021-10-11T01:33:44Z',
+        expected_output = {'record_id': 99,
                            'param': [{'id': 9, 'val': 'val1'},
-                                     {'id': 10, 'val': 'val2'}]}
+                                     {'id': 10, 'val': 'val2'}],
+                           'timestamp': {'class': ts.ThingspeakTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44Z'}}}
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -103,9 +118,10 @@ class TestMeasureReshaper(unittest.TestCase):
                        'fields': [{'name': 'f1', 'value': None},
                                   {'name': 'f2', 'value': 'val2'}]}
 
-        expected_output = {'record_id': 99, 'timestamp': '2021-10-11T01:33:44Z',
+        expected_output = {'record_id': 99,
                            'param': [{'id': 9, 'val': None},
-                                     {'id': 10, 'val': 'val2'}]}
+                                     {'id': 10, 'val': 'val2'}],
+                           'timestamp': {'class': ts.ThingspeakTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44Z'}}}
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
