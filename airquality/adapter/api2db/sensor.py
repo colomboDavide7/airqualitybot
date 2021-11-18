@@ -63,8 +63,7 @@ class PurpleairSensorAdapter(SensorAdapter):
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._exit_on_bad_sensor_data(sensor_data=data)
         uniformed_data = {c.SENS_NAME: self._get_sensor_name(data=data),
-                          c.
-                          : self._get_sensor_info(data=data),
+                          c.SENS_INFO: self._get_sensor_info(data=data),
                           c.SENS_GEOM: self._add_location(data=data),
                           c.SENS_PARAM: self._get_api_param(data=data),
                           c.TIMEST: {c.CLS: ts.CurrentTimestamp, c.KW: {}},

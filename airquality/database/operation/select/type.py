@@ -112,6 +112,10 @@ class SensorIDSelectWrapper(base.DatabaseOperationWrapper):
         answer = self.conn.send(exec_query)
         unfolded = [str(t[0]) for t in answer]
 
+        if not unfolded:
+            raise SystemExit(f"{SensorIDSelectWrapper.__name__}: bad database answer => cannot retrieve last acquisition "
+                             f"timestamp for sensor_id={sensor_id} and channel='{channel}'")
+
         self.info_messages.append(f"get last_acquisition timestamp for sensor_id={sensor_id} => '{unfolded[0]}'")
         self.log_messages()
 

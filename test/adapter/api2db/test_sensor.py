@@ -37,11 +37,10 @@ class TestSensorAdapter(unittest.TestCase):
 
         expected_output = {c.SENS_NAME: 'n1 (idx1)',
                            c.SENS_INFO: [
-                               {c.SENS_CH: '1A', c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
-                               {c.SENS_CH: '1B', c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
-                               {c.SENS_CH: '2A', c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
-                               {c.SENS_CH: '2B',
-                                c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}}],
+                               {c.SENS_CH: c.FST_CH_A, c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
+                               {c.SENS_CH: c.FST_CH_B, c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
+                               {c.SENS_CH: c.SND_CH_A, c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
+                               {c.SENS_CH: c.SND_CH_B, c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}}],
                            c.SENS_GEOM: {c.CLS: geom.PointBuilder, c.KW: {'lat': 'lat_val', 'lng': 'lng_val'}},
                            c.TIMEST: {c.CLS: ts.CurrentTimestamp, c.KW: {}},
                            c.SENS_PARAM: [{c.PAR_NAME: 'primary_id_a', c.PAR_VAL: 'id1A'},

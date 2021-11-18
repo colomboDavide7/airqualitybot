@@ -67,7 +67,7 @@ class AtmotubeParamAdapter(ParamAdapter):
         self._exit_on_missing_parameters(database_api_param)
         return [{c.MAC_ADDR: database_api_param['mac'],
                  c.API_KEY: database_api_param['api_key'],
-                 c.CH_NAME: "main"}]
+                 c.CH_NAME: c.ATMOTUBE_CHANNEL}]
 
     def _exit_on_missing_parameters(self, database_api_param: Dict[str, Any]):
         if 'api_key' not in database_api_param:

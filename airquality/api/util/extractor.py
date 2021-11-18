@@ -8,6 +8,7 @@
 import abc
 from typing import Dict, Any, List
 import airquality.api.config as c
+import airquality.adapter.config as adapt_const
 
 
 def get_data_extractor(sensor_type: str):
@@ -45,13 +46,13 @@ class ThingspeakDataExtractor(DataExtractor):
 
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
 
-        if channel_name == '1A':
+        if channel_name == adapt_const.FST_CH_A:
             field_to_use = c.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
-        elif channel_name == '1B':
+        elif channel_name == adapt_const.FST_CH_B:
             field_to_use = c.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B
-        elif channel_name == '2A':
+        elif channel_name == adapt_const.SND_CH_A:
             field_to_use = c.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
-        elif channel_name == '2B':
+        elif channel_name == adapt_const.SND_CH_B:
             field_to_use = c.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
         else:
             raise SystemExit(f"{ThingspeakDataExtractor.__name__}: bad parameter => invalid channel_name='{channel_name}'")
