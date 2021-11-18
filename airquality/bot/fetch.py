@@ -9,7 +9,7 @@ import airquality.bot.base as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.util.datatype.timestamp as ts
 import airquality.database.operation.select.type as select
-
+import airquality.adapter.config as adapt_const
 
 ################################ FETCH BOT ################################
 class FetchBot(base.BaseBot):
@@ -54,7 +54,7 @@ class FetchBot(base.BaseBot):
             for api_param in uniformed_param:
 
                 # Pop the channel name from the uniformed api param of the given sensor_id
-                ch_name = api_param.pop('channel_name')
+                ch_name = api_param.pop(adapt_const.CH_NAME)
                 self.debugger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
                 self.logger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
 

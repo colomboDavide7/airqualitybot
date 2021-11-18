@@ -38,13 +38,16 @@ class ThingspeakParamAdapter(ParamAdapter):
         self._exit_on_missing_parameters(database_api_param)
         return [{c.CH_ID: database_api_param['primary_id_a'],
                  c.API_KEY: database_api_param['primary_key_a'],
-                 c.CH_NAME: "1A"}, {c.CH_ID: database_api_param['primary_id_b'],
-                                    c.API_KEY: database_api_param['primary_key_b'],
-                                    c.CH_NAME: "1B"}, {c.CH_ID: database_api_param['secondary_id_a'],
-                                                       c.API_KEY: database_api_param['secondary_key_a'],
-                                                       c.CH_NAME: "2A"}, {c.CH_ID: database_api_param['secondary_id_b'],
-                                                                          c.API_KEY: database_api_param['secondary_key_b'],
-                                                                          c.CH_NAME: "2B"}]
+                 c.CH_NAME: c.FST_CH_A},
+                {c.CH_ID: database_api_param['primary_id_b'],
+                 c.API_KEY: database_api_param['primary_key_b'],
+                 c.CH_NAME: c.FST_CH_B},
+                {c.CH_ID: database_api_param['secondary_id_a'],
+                 c.API_KEY: database_api_param['secondary_key_a'],
+                 c.CH_NAME: c.SND_CH_A},
+                {c.CH_ID: database_api_param['secondary_id_b'],
+                 c.API_KEY: database_api_param['secondary_key_b'],
+                 c.CH_NAME: c.SND_CH_B}]
 
     def _exit_on_missing_parameters(self, database_api_param: Dict[str, Any]):
         if 'primary_id_a' not in database_api_param or 'primary_key_a' not in database_api_param:
@@ -67,7 +70,7 @@ class AtmotubeParamAdapter(ParamAdapter):
                  c.CH_NAME: "main"}]
 
     def _exit_on_missing_parameters(self, database_api_param: Dict[str, Any]):
-        if c.API_KEY not in database_api_param:
-            raise SystemExit(f"{AtmotubeParamAdapter.__name__}: bad api_param => missing key='{c.API_KEY}'")
-        elif c.MAC_ADDR not in database_api_param:
-            raise SystemExit(f"{AtmotubeParamAdapter.__name__}: bad api_param => missing key='{c.MAC_ADDR}'")
+        if 'api_key' not in database_api_param:
+            raise SystemExit(f"{AtmotubeParamAdapter.__name__}: bad api_param => missing key='api_key'")
+        elif 'mac' not in database_api_param:
+            raise SystemExit(f"{AtmotubeParamAdapter.__name__}: bad api_param => missing key='mac'")

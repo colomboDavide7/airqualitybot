@@ -40,7 +40,13 @@ KW = 'kwargs'
 # Database-to-API constants used for decoding API parameters extracted from the database
 CH_ID = 'channel_id'
 CH_NAME = 'channel_name'
-
-# THE VALUE OF THE TWO VARIABLE CANNOT BE CHANGED!!!
 API_KEY = 'api_key'
 MAC_ADDR = 'mac'
+
+# Purpleair/Thingspeak sensor channels
+
+FST_CH_A = "1A"
+FST_CH_B = "1B"
+SND_CH_A = "2A"
+SND_CH_B = "2B"
+CHANNEL_NAMES = [FST_CH_A, FST_CH_B, SND_CH_A, SND_CH_B]

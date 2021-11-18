@@ -54,7 +54,6 @@ class SensorAdapter(abc.ABC):
 class PurpleairSensorAdapter(SensorAdapter):
 
     SENSOR_TYPE = 'PurpleAir/ThingSpeak'
-    CHANNEL_NAMES = ["1A", "1B", "2A", "2B"]
     API_PARAM = ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
                  'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b']
 
@@ -64,7 +63,8 @@ class PurpleairSensorAdapter(SensorAdapter):
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._exit_on_bad_sensor_data(sensor_data=data)
         uniformed_data = {c.SENS_NAME: self._get_sensor_name(data=data),
-                          c.SENS_INFO: self._get_sensor_info(data=data),
+                          c.
+                          : self._get_sensor_info(data=data),
                           c.SENS_GEOM: self._add_location(data=data),
                           c.SENS_PARAM: self._get_api_param(data=data),
                           c.TIMEST: {c.CLS: ts.CurrentTimestamp, c.KW: {}},
@@ -75,8 +75,7 @@ class PurpleairSensorAdapter(SensorAdapter):
         return f"{data['name']} ({data['sensor_index']})".replace("'", "")
 
     def _get_sensor_info(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return [{c.SENS_CH: n, c.TIMEST: self._get_timestamp(timestamp=data['date_created'])}
-                for n in PurpleairSensorAdapter.CHANNEL_NAMES]
+        return [{c.SENS_CH: ch_n, c.TIMEST: self._get_timestamp(timestamp=data['date_created'])} for ch_n in c.CHANNEL_NAMES]
 
     def _get_api_param(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
         return [{c.PAR_NAME: n, c.PAR_VAL: data[n]} for n in PurpleairSensorAdapter.API_PARAM]
