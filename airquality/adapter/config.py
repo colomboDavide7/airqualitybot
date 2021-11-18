@@ -36,3 +36,11 @@ TIMEST = 'ts'
 # Dynamic make items
 CLS = 'class'
 KW = 'kwargs'
+
+# Database-to-API constants used for decoding API parameters extracted from the database
+CH_ID = 'channel_id'
+CH_NAME = 'channel_name'
+
+# THE VALUE OF THE TWO VARIABLE CANNOT BE CHANGED!!!
+API_KEY = 'api_key'
+MAC_ADDR = 'mac'

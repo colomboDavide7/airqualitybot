@@ -7,11 +7,7 @@
 ######################################################
 import abc
 from typing import Dict, Any, List
-
-CH_ID = 'channel_id'
-CH_NM = 'channel_name'
-KEY = 'api_key'
-MAC = 'mac'
+import airquality.adapter.config as c
 
 
 def get_param_adapter(sensor_type: str):
@@ -40,15 +36,15 @@ class ThingspeakParamAdapter(ParamAdapter):
 
     def reshape(self, database_api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
         self._exit_on_missing_parameters(database_api_param)
-        return [{CH_ID: database_api_param['primary_id_a'],
-                 KEY: database_api_param['primary_key_a'],
-                 CH_NM: "1A"}, {CH_ID: database_api_param['primary_id_b'],
-                                KEY: database_api_param['primary_key_b'],
-                                CH_NM: "1B"}, {CH_ID: database_api_param['secondary_id_a'],
-                                               KEY: database_api_param['secondary_key_a'],
-                                               CH_NM: "2A"}, {CH_ID: database_api_param['secondary_id_b'],
-                                                              KEY: database_api_param['secondary_key_b'],
-                                                              CH_NM: "2B"}]
+        return [{c.CH_ID: database_api_param['primary_id_a'],
+                 c.API_KEY: database_api_param['primary_key_a'],
+                 c.CH_NAME: "1A"}, {c.CH_ID: database_api_param['primary_id_b'],
+                                    c.API_KEY: database_api_param['primary_key_b'],
+                                    c.CH_NAME: "1B"}, {c.CH_ID: database_api_param['secondary_id_a'],
+                                                       c.API_KEY: database_api_param['secondary_key_a'],
+                                                       c.CH_NAME: "2A"}, {c.CH_ID: database_api_param['secondary_id_b'],
+                                                                          c.API_KEY: database_api_param['secondary_key_b'],
+                                                                          c.CH_NAME: "2B"}]
 
     def _exit_on_missing_parameters(self, database_api_param: Dict[str, Any]):
         if 'primary_id_a' not in database_api_param or 'primary_key_a' not in database_api_param:
@@ -66,12 +62,12 @@ class AtmotubeParamAdapter(ParamAdapter):
 
     def reshape(self, database_api_param: Dict[str, Any]) -> List[Dict[str, Any]]:
         self._exit_on_missing_parameters(database_api_param)
-        return [{MAC: database_api_param['mac'],
-                 KEY: database_api_param['api_key'],
-                 CH_NM: "main"}]
+        return [{c.MAC_ADDR: database_api_param['mac'],
+                 c.API_KEY: database_api_param['api_key'],
+                 c.CH_NAME: "main"}]
 
     def _exit_on_missing_parameters(self, database_api_param: Dict[str, Any]):
-        if 'api_key' not in database_api_param:
-            raise SystemExit(f"{AtmotubeParamAdapter.__name__}: bad api_param => missing key='api_key'")
-        elif 'mac' not in database_api_param:
-            raise SystemExit(f"{AtmotubeParamAdapter.__name__}: bad api_param => missing key='mac'")
+        if c.API_KEY not in database_api_param:
+            raise SystemExit(f"{AtmotubeParamAdapter.__name__}: bad api_param => missing key='{c.API_KEY}'")
+        elif c.MAC_ADDR not in database_api_param:
+            raise SystemExit(f"{AtmotubeParamAdapter.__name__}: bad api_param => missing key='{c.MAC_ADDR}'")

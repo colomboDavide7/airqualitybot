@@ -73,6 +73,9 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
 
 
 ################################ INJECT ADAPTER DEPENDENCIES ################################
+import airquality.api.config as extr_const
+
+
 class ThingspeakMeasureAdapter(MeasureAdapter):
 
     def __init__(self, sel_type: sel.TypeSelectWrapper, timest_cls=ts.ThingspeakTimestamp):
@@ -91,17 +94,18 @@ class ThingspeakMeasureAdapter(MeasureAdapter):
         return {c.CLS: self.timest_cls, c.KW: {'timestamp': data['created_at']}}
 
     def _get_measure_param_id_value(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return [{c.PAR_ID: self.measure_param_map[f['name']], c.PAR_VAL: f['value']} for f in data['fields']]
+        return [{c.PAR_ID: self.measure_param_map[f[extr_const.FIELD_NAME]], c.PAR_VAL: f[extr_const.FIELD_VALUE]}
+                for f in data[extr_const.FIELDS]]
 
     def _exit_on_bad_sensor_data(self, data: Dict[str, Any]):
         if 'created_at' not in data:
             raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad sensor data => missing key='created_at'")
-        if 'fields' not in data:
-            raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad sensor data => missing key='fields'")
-        for f in data['fields']:
-            if 'name' not in f or 'value' not in f:
-                raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad sensor data => fields must be a list of "
-                                 f"dictionaries with 'name' and 'value' keys")
+        if extr_const.FIELDS not in data:
+            raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad sensor data => missing key='{extr_const.FIELDS}'")
+        for f in data[extr_const.FIELDS]:
+            if extr_const.FIELD_NAME not in f or extr_const.FIELD_VALUE not in f:
+                raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad sensor data => '{extr_const.FIELDS}'"
+                                 f" must contain '{extr_const.FIELD_NAME}' and '{extr_const.FIELD_VALUE}' keys")
 
 
 ################################ FUNCTION FOR GETTING MEASURE ADAPTER ################################
