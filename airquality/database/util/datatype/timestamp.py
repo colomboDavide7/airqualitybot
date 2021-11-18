@@ -21,6 +21,8 @@ def get_timestamp_class(sensor_type: str):
         return ThingspeakTimestamp
     elif sensor_type == 'purpleair':
         return UnixTimestamp
+    else:
+        raise SystemExit(f"'{get_timestamp_class.__name__}():' bad type '{sensor_type}'")
 
 
 ################################ TIMESTAMP CLASS ################################

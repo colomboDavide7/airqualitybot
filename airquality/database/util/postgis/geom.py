@@ -49,7 +49,6 @@ class PointBuilder(GeometryBuilder):
         geom = self._null_on_missing_geolocation(sensor_data)
         if geom is not None:
             return geom
-
         geom = POINT_GEOMETRY.format(lng=sensor_data['lng'], lat=sensor_data['lat'])
         return ST_GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
 
@@ -57,7 +56,6 @@ class PointBuilder(GeometryBuilder):
         geom = self._null_on_missing_geolocation(sensor_data)
         if geom is not None:
             return geom
-
         return POINT_GEOMETRY.format(lng=sensor_data['lng'], lat=sensor_data['lat'])
 
     def _null_on_missing_geolocation(self, sensor_data: Dict[str, Any]):

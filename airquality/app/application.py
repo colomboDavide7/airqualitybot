@@ -75,7 +75,7 @@ class Application(log.Loggable):
     @log_decorator.log_decorator()
     def setup(self):
 
-        ############################ READ API FILE AND GET PARAM ASSOCIATED TO SENSOR TYPE #############################
+        ############################ LOADING 'api.json' FILE #############################
         file_obj = jf.JSONFile(API_FILE, path_to_object=[self.sensor_type])
         address, url_param, file_ext = loader.get_api_param_from_file(sensor_type=self.sensor_type, file_object=file_obj)
 
@@ -102,10 +102,10 @@ class Application(log.Loggable):
         # Inject dependency to Bot
         bot.add_fetch_wrapper(wrapper=fetch_wrapper)
 
-        ################################ GET DATABASE OBJECTS ################################
+        ################################ CREATE DATABASE OBJECTS ################################
         # Database Utilities
         conn = db_conn.Psycopg2DatabaseAdapter(connection_string=os.environ['DBCONN'])
-        query_builder = qry.QueryBuilder(query_file=jf.JSONFile(QUERY_FILE))
+        query_builder = qry.QueryBuilder(query_file=jf.JSONFile(file_path=QUERY_FILE))
 
         # RecordBuilder
         time_rec = t.TimeRecord(timestamp_class=ts.get_timestamp_class(sensor_type=self.sensor_type))
@@ -113,21 +113,24 @@ class Application(log.Loggable):
 
         # InsertWrapper
         insert_wrapper = insert.get_insert_wrapper(sensor_type=self.sensor_type, conn=conn, builder=query_builder)
-
-        ################################ SETUP INSERT WRAPPER ################################
-        # Inject debugger and logger to InsertWrapper
         insert_wrapper.set_logger(self.logger)
         insert_wrapper.set_debugger(self.debugger)
 
-        # Setup for 'init' and 'update' bots
-        if self.bot_name in ('init', 'update'):
+        ################################ SETUP INSERT WRAPPER ###############################
+        sensor_location_record = rec.SensorLocationRecord(location_rec=location_rec, time_rec=t.CurrentTimestampTimeRecord())
+
+        # 'init' bot InsertWrapper dependencies
+        if self.bot_name == 'init':
             insert_wrapper.set_sensor_record_builder(builder=rec.SensorRecord())
             insert_wrapper.set_api_param_record_builder(builder=rec.APIParamRecord())
             insert_wrapper.set_sensor_info_record_builder(builder=rec.SensorInfoRecord(time_rec=time_rec))
-            insert_wrapper.set_sensor_location_record_builder(
-                builder=rec.SensorLocationRecord(location_rec=location_rec, time_rec=t.CurrentTimestampTimeRecord())
-            )
+            insert_wrapper.set_sensor_location_record_builder(builder=sensor_location_record)
 
+        # 'update' bot InsertWrapper dependencies
+        elif self.bot_name == 'update':
+            insert_wrapper.set_sensor_location_record_builder(builder=sensor_location_record)
+
+        # 'fetch' bot InsertWrapper dependencies
         elif self.bot_name == 'fetch':
             if self.sensor_type == 'atmotube':
                 insert_wrapper.set_mobile_record_builder(

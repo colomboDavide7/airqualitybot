@@ -20,6 +20,8 @@ def get_insert_wrapper(sensor_type: str, conn: db.DatabaseAdapter, builder: quer
         return AtmotubeInsertWrapper(conn=conn, query_builder=builder)
     elif sensor_type == 'thingspeak':
         return ThingspeakInsertWrapper(conn=conn, query_builder=builder)
+    else:
+        raise SystemExit(f"'{get_insert_wrapper.__name__}():' bad type '{sensor_type}'")
 
 
 class InsertWrapper(base.DatabaseOperationWrapper, abc.ABC):

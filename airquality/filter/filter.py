@@ -89,11 +89,10 @@ class GeoFilter(SensorDataFilter):
     def filter(self, sensor_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
         active_sensors = [data for data in sensor_data if data['name'] in self.database_active_locations]
+        self._log_message(n_total=len(sensor_data), n_filtered=len(active_sensors), msg='active sensors')
         if not active_sensors:
-            self._log_message(n_total=len(sensor_data), n_filtered=len(active_sensors), msg='active sensors')
             return []
 
-        self._log_message(n_total=len(sensor_data), n_filtered=len(active_sensors), msg='active sensors')
         changed_sensors = [data for data in active_sensors
                            if self.postgis_builder.as_text(data) != self.database_active_locations[data['name']]]
 
