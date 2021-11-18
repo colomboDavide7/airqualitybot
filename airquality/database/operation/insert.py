@@ -11,6 +11,7 @@ import airquality.database.operation.base as base
 import airquality.database.util.conn as db
 import airquality.database.util.query as query
 import airquality.database.util.record.record as rec
+import airquality.adapter.config as c
 
 
 def get_insert_wrapper(sensor_type: str, conn: db.DatabaseAdapter, builder: query.QueryBuilder):
@@ -79,7 +80,7 @@ class PurpleairInsertWrapper(InsertWrapper):
             api_param_values.append(self.api_param_record_builder.record(sensor_data=data, sensor_id=start_id))
             location_values.append(self.sensor_location_record_builder.record(sensor_data=data, sensor_id=start_id))
             sensor_info_values.append(self.sensor_info_record_builder.record(sensor_data=data, sensor_id=start_id))
-            self.info_messages.append(f"{InsertWrapper.__name__} added sensor '{data['name']}' with id={start_id}")
+            self.info_messages.append(f"{InsertWrapper.__name__} added sensor '{data[c.SENS_NAME]}' with id={start_id}")
             start_id += 1
 
         # Execute queries
@@ -98,9 +99,9 @@ class PurpleairInsertWrapper(InsertWrapper):
 
         location_values = []
         for data in changed_sensors:
-            sensor_id = name2id_map[data['name']]
+            sensor_id = name2id_map[data[c.SENS_NAME]]
             location_values.append(self.sensor_location_record_builder.record(sensor_data=data, sensor_id=sensor_id))
-            self.info_messages.append(f"{InsertWrapper.__name__} updated location for sensor '{data['name']}'")
+            self.info_messages.append(f"{InsertWrapper.__name__} updated location for sensor '{data[c.SENS_NAME]}'")
 
         # Execute the queries
         exec_query = self.builder.update_locations(location_values)
@@ -138,8 +139,8 @@ class AtmotubeInsertWrapper(InsertWrapper):
         self._log_message(sensor_data)
 
     def _log_message(self, sensor_data: List[Dict[str, Any]]):
-        first_measure_id = sensor_data[0]['record_id']
-        last_measure_id = sensor_data[-1]['record_id']
+        first_measure_id = sensor_data[0][c.REC_ID]
+        last_measure_id = sensor_data[-1][c.REC_ID]
         n_measure = (last_measure_id - first_measure_id) + 1
         self.info_messages.append(f"{InsertWrapper.__name__} has inserted {n_measure} within record_id range "
                                   f"[{first_measure_id} - {last_measure_id}]")
@@ -170,8 +171,8 @@ class ThingspeakInsertWrapper(InsertWrapper):
 
     def _log_message(self, sensor_data: List[Dict[str, Any]]):
 
-        first_measure_id = sensor_data[0]['record_id']
-        last_measure_id = sensor_data[-1]['record_id']
+        first_measure_id = sensor_data[0][c.REC_ID]
+        last_measure_id = sensor_data[-1][c.REC_ID]
         n_measure = (last_measure_id - first_measure_id) + 1
         self.info_messages.append(f"{InsertWrapper.__name__} has inserted {n_measure} within record_id range "
                                   f"[{first_measure_id} - {last_measure_id}]")

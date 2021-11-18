@@ -7,6 +7,7 @@
 #
 ######################################################
 import unittest
+import airquality.adapter.config as c
 import airquality.adapter.api2db.sensor as sens
 import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
@@ -26,39 +27,43 @@ class TestSensorAdapter(unittest.TestCase):
             sens.get_sensor_adapter('bad sensor type')
 
     def test_successfully_reshape_purpleair_sensor_data(self):
-        test_packet = {'name': 'n1', 'sensor_index': 'idx1', 'latitude': 'lat_val', 'longitude': 'lng_val',
+        test_packet = {'name': 'n1', 'sensor_index': 'idx1',
+                       'latitude': 'lat_val', 'longitude': 'lng_val',
                        'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
                        'primary_key_b': 'key1B',
                        'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A',
-                       'secondary_key_b': 'key2B', 'date_created': 'd'}
+                       'secondary_key_b': 'key2B',
+                       'date_created': 'd'}
 
-        expected_output = {'name': 'n1 (idx1)',
-                           'info': [{'channel': '1A', 'timestamp': {'class': ts.UnixTimestamp, 'kwargs': {'timestamp': 'd'}}},
-                                    {'channel': '1B', 'timestamp': {'class': ts.UnixTimestamp, 'kwargs': {'timestamp': 'd'}}},
-                                    {'channel': '2A', 'timestamp': {'class': ts.UnixTimestamp, 'kwargs': {'timestamp': 'd'}}},
-                                    {'channel': '2B', 'timestamp': {'class': ts.UnixTimestamp, 'kwargs': {'timestamp': 'd'}}}],
-                           'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': 'lat_val', 'lng': 'lng_val'}},
-                           'timestamp': {'class': ts.CurrentTimestamp, 'kwargs': {}},
-                           'param': [{'param_name': 'primary_id_a', 'param_value': 'id1A'},
-                                     {'param_name': 'primary_id_b', 'param_value': 'id1B'},
-                                     {'param_name': 'primary_key_a', 'param_value': 'key1A'},
-                                     {'param_name': 'primary_key_b', 'param_value': 'key1B'},
-                                     {'param_name': 'secondary_id_a', 'param_value': 'id2A'},
-                                     {'param_name': 'secondary_id_b', 'param_value': 'id2B'},
-                                     {'param_name': 'secondary_key_a', 'param_value': 'key2A'},
-                                     {'param_name': 'secondary_key_b', 'param_value': 'key2B'}],
-                           'type': 'PurpleAir/ThingSpeak'}
+        expected_output = {c.SENS_NAME: 'n1 (idx1)',
+                           c.SENS_INFO: [
+                               {c.SENS_CH: '1A', c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
+                               {c.SENS_CH: '1B', c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
+                               {c.SENS_CH: '2A', c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}},
+                               {c.SENS_CH: '2B',
+                                c.TIMEST: {c.CLS: ts.UnixTimestamp, c.KW: {'timestamp': 'd'}}}],
+                           c.SENS_GEOM: {c.CLS: geom.PointBuilder, c.KW: {'lat': 'lat_val', 'lng': 'lng_val'}},
+                           c.TIMEST: {c.CLS: ts.CurrentTimestamp, c.KW: {}},
+                           c.SENS_PARAM: [{c.PAR_NAME: 'primary_id_a', c.PAR_VAL: 'id1A'},
+                                          {c.PAR_NAME: 'primary_id_b', c.PAR_VAL: 'id1B'},
+                                          {c.PAR_NAME: 'primary_key_a', c.PAR_VAL: 'key1A'},
+                                          {c.PAR_NAME: 'primary_key_b', c.PAR_VAL: 'key1B'},
+                                          {c.PAR_NAME: 'secondary_id_a', c.PAR_VAL: 'id2A'},
+                                          {c.PAR_NAME: 'secondary_id_b', c.PAR_VAL: 'id2B'},
+                                          {c.PAR_NAME: 'secondary_key_a', c.PAR_VAL: 'key2A'},
+                                          {c.PAR_NAME: 'secondary_key_b', c.PAR_VAL: 'key2B'}],
+                           c.SENS_TYPE: 'PurpleAir/ThingSpeak'}
         actual_output = self.purpleair_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
-    def test_system_exit_on_key_error_purpleair(self):
+    def test_exit_on_missing_purpleair_api_param(self):
         test_missing_api_param = {'name': 'n1', 'sensor_index': 'idx1',
                                   'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
                                   'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A'}
         with self.assertRaises(SystemExit):
             self.purpleair_adapter.reshape(test_missing_api_param)
 
-    def test_missing_sensor_name(self):
+    def test_exit_on_missing_sensor_name(self):
         test_missing_name = {'latitude': 'lat_val', 'longitude': 'lng_val',
                              'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
                              'primary_key_b': 'key1B',
@@ -67,7 +72,7 @@ class TestSensorAdapter(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.purpleair_adapter.reshape(test_missing_name)
 
-    def test_missing_geolocation(self):
+    def test_exit_on_missing_geolocation(self):
         test_missing_geom = {'name': 'n1', 'sensor_index': 'idx1',
                              'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
                              'primary_key_b': 'key1B',
@@ -76,7 +81,7 @@ class TestSensorAdapter(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.purpleair_adapter.reshape(test_missing_geom)
 
-    def test_missing_date_created(self):
+    def test_exit_on_missing_date_created(self):
         test_missing_date_created = {'name': 'n1', 'sensor_index': 'idx1', 'latitude': 'lat_val',
                                      'longitude': 'lng_val',
                                      'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
@@ -86,7 +91,7 @@ class TestSensorAdapter(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.purpleair_adapter.reshape(test_missing_date_created)
 
-    def test_missing_api_param(self):
+    def test_exit_on_missing_api_param(self):
         test_packet = {'name': 'n1', 'sensor_index': 'idx1', 'latitude': 'lat_val', 'longitude': 'lng_val',
                        'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
                        'primary_key_b': 'key1B',

@@ -8,6 +8,7 @@
 ######################################################
 import unittest
 from typing import Dict, Any
+import airquality.adapter.config as c
 import airquality.adapter.api2db.measure as adapt
 import airquality.database.operation.select.type as sel_type
 import airquality.database.util.postgis.geom as geom
@@ -52,12 +53,16 @@ class TestMeasureAdapter(unittest.TestCase):
     def test_successfully_reshape_atmotube_measurements(self):
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
                        'p': 'val7', 'time': '2021-10-11T01:33:44.000Z'}
-        expected_output = {'record_id': 99,
-                           'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
-                                     {'id': 4, 'val': 'val4'}, {'id': 5, 'val': 'val5'}, {'id': 6, 'val': 'val6'},
-                                     {'id': 7, 'val': 'val7'}],
-                           'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44.000Z'}},
-                           'geom': {'class': geom.NullGeometry, 'kwargs': {}}
+        expected_output = {c.REC_ID: 99,
+                           c.SENS_PARAM: [{c.PAR_ID: 1, c.PAR_VAL: 'val1'},
+                                          {c.PAR_ID: 2, c.PAR_VAL: 'val2'},
+                                          {c.PAR_ID: 3, c.PAR_VAL: 'val3'},
+                                          {c.PAR_ID: 4, c.PAR_VAL: 'val4'},
+                                          {c.PAR_ID: 5, c.PAR_VAL: 'val5'},
+                                          {c.PAR_ID: 6, c.PAR_VAL: 'val6'},
+                                          {c.PAR_ID: 7, c.PAR_VAL: 'val7'}],
+                           c.TIMEST: {c.CLS: ts.AtmotubeTimestamp, c.KW: {'timestamp': '2021-10-11T01:33:44.000Z'}},
+                           c.SENS_GEOM: {c.CLS: geom.NullGeometry, c.KW: {}}
                            }
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
@@ -65,12 +70,16 @@ class TestMeasureAdapter(unittest.TestCase):
     def test_successfully_reshape_atmotube_measurements_with_coords(self):
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 't': 'val5', 'h': 'val6',
                        'p': 'val7', 'time': '2021-10-11T01:33:44.000Z', 'coords': {'lat': 'lat_val', 'lon': 'lon_val'}}
-        expected_output = {'record_id': 99,
-                           'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
-                                     {'id': 4, 'val': 'val4'}, {'id': 5, 'val': 'val5'}, {'id': 6, 'val': 'val6'},
-                                     {'id': 7, 'val': 'val7'}],
-                           'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44.000Z'}},
-                           'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': 'lat_val', 'lng': 'lon_val'}}
+        expected_output = {c.REC_ID: 99,
+                           c.SENS_PARAM: [{c.PAR_ID: 1, c.PAR_VAL: 'val1'},
+                                          {c.PAR_ID: 2, c.PAR_VAL: 'val2'},
+                                          {c.PAR_ID: 3, c.PAR_VAL: 'val3'},
+                                          {c.PAR_ID: 4, c.PAR_VAL: 'val4'},
+                                          {c.PAR_ID: 5, c.PAR_VAL: 'val5'},
+                                          {c.PAR_ID: 6, c.PAR_VAL: 'val6'},
+                                          {c.PAR_ID: 7, c.PAR_VAL: 'val7'}],
+                           c.TIMEST: {c.CLS: ts.AtmotubeTimestamp, c.KW: {'timestamp': '2021-10-11T01:33:44.000Z'}},
+                           c.SENS_GEOM: {c.CLS: geom.PointBuilder, c.KW: {'lat': 'lat_val', 'lng': 'lon_val'}}
                            }
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
@@ -78,12 +87,16 @@ class TestMeasureAdapter(unittest.TestCase):
     def test_none_value_on_missing_param(self):
         # Test output when 't', 'h' and 'p' are missing
         test_packet = {'voc': 'val1', 'pm1': 'val2', 'pm25': 'val3', 'pm10': 'val4', 'time': '2021-10-11T01:33:44.000Z'}
-        expected_output = {'record_id': 99,
-                           'param': [{'id': 1, 'val': 'val1'}, {'id': 2, 'val': 'val2'}, {'id': 3, 'val': 'val3'},
-                                     {'id': 4, 'val': 'val4'}, {'id': 5, 'val': None}, {'id': 6, 'val': None},
-                                     {'id': 7, 'val': None}],
-                           'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44.000Z'}},
-                           'geom': {'class': geom.NullGeometry, 'kwargs': {}}
+        expected_output = {c.REC_ID: 99,
+                           c.SENS_PARAM: [{c.PAR_ID: 1, c.PAR_VAL: 'val1'},
+                                          {c.PAR_ID: 2, c.PAR_VAL: 'val2'},
+                                          {c.PAR_ID: 3, c.PAR_VAL: 'val3'},
+                                          {c.PAR_ID: 4, c.PAR_VAL: 'val4'},
+                                          {c.PAR_ID: 5, c.PAR_VAL: None},
+                                          {c.PAR_ID: 6, c.PAR_VAL: None},
+                                          {c.PAR_ID: 7, c.PAR_VAL: None}],
+                           c.TIMEST: {c.CLS: ts.AtmotubeTimestamp, c.KW: {'timestamp': '2021-10-11T01:33:44.000Z'}},
+                           c.SENS_GEOM: {c.CLS: geom.NullGeometry, c.KW: {}}
                            }
         actual_output = self.atmotube_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
@@ -105,10 +118,10 @@ class TestMeasureAdapter(unittest.TestCase):
                        'fields': [{'name': 'f1', 'value': 'val1'},
                                   {'name': 'f2', 'value': 'val2'}]}
 
-        expected_output = {'record_id': 99,
-                           'param': [{'id': 9, 'val': 'val1'},
-                                     {'id': 10, 'val': 'val2'}],
-                           'timestamp': {'class': ts.ThingspeakTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44Z'}}}
+        expected_output = {c.REC_ID: 99,
+                           c.SENS_PARAM: [{c.PAR_ID: 9, c.PAR_VAL: 'val1'},
+                                          {c.PAR_ID: 10, c.PAR_VAL: 'val2'}],
+                           c.TIMEST: {c.CLS: ts.ThingspeakTimestamp, c.KW: {'timestamp': '2021-10-11T01:33:44Z'}}}
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 
@@ -116,11 +129,10 @@ class TestMeasureAdapter(unittest.TestCase):
         test_packet = {'created_at': '2021-10-11T01:33:44Z',
                        'fields': [{'name': 'f1', 'value': None},
                                   {'name': 'f2', 'value': 'val2'}]}
-
-        expected_output = {'record_id': 99,
-                           'param': [{'id': 9, 'val': None},
-                                     {'id': 10, 'val': 'val2'}],
-                           'timestamp': {'class': ts.ThingspeakTimestamp, 'kwargs': {'timestamp': '2021-10-11T01:33:44Z'}}}
+        expected_output = {c.REC_ID: 99,
+                           c.SENS_PARAM: [{c.PAR_ID: 9, c.PAR_VAL: None},
+                                          {c.PAR_ID: 10, c.PAR_VAL: 'val2'}],
+                           c.TIMEST: {c.CLS: ts.ThingspeakTimestamp, c.KW: {'timestamp': '2021-10-11T01:33:44Z'}}}
         actual_output = self.thingspeak_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 

@@ -10,6 +10,7 @@ from typing import List, Dict, Any
 import airquality.logger.loggable as log
 import airquality.database.util.datatype.timestamp as ts
 import airquality.database.operation.select.type as sel_type
+import airquality.adapter.config as c
 
 
 def get_sensor_data_filter(bot_name: str, sel_wrapper: sel_type.TypeSelectWrapper):
@@ -42,7 +43,7 @@ class NameFilter(SensorDataFilter):
         self.database_sensor_names = database_sensor_names
 
     def filter(self, sensor_data: Dict[str, Any]) -> bool:
-        return sensor_data['name'] not in self.database_sensor_names
+        return sensor_data[c.SENS_NAME] not in self.database_sensor_names
 
 
 ################################ TIMESTAMP FILTER ################################
@@ -60,7 +61,7 @@ class TimestampFilter(SensorDataFilter):
         if not self.filter_ts:
             raise SystemExit(f"{TimestampFilter.__name__}: bad setup => missing external dependency 'filter_ts'")
 
-        timest = sensor_data['timestamp']['class'](**sensor_data['timestamp']['kwargs'])
+        timest = sensor_data[c.TIMEST][c.CLS](**sensor_data[c.TIMEST][c.KW])
         return timest.is_after(self.filter_ts)
 
 
@@ -75,14 +76,15 @@ class GeoFilter(SensorDataFilter):
 
         if sensor_data['name'] in self.database_active_locations:
             self._exit_on_bad_sensor_data(sensor_data=sensor_data)
-            as_text = sensor_data['geom']['class'](**sensor_data['geom']['kwargs']).as_text()
+            as_text = sensor_data[c.SENS_GEOM][c.CLS](**sensor_data[c.SENS_GEOM][c.KW]).as_text()
             return as_text != self.database_active_locations[sensor_data['name']]
         return False
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
-        if 'geom' not in sensor_data:
-            raise SystemExit(f"{GeoFilter.__name__} bad sensor data => missing key='geom'")
-        if not sensor_data['geom']:
-            raise SystemExit(f"{GeoFilter.__name__} bad sensor data => 'geom' cannot be empty")
-        if 'class' not in sensor_data['geom'] or 'kwargs' not in sensor_data['geom']:
-            raise SystemExit(f"{GeoFilter.__name__} bad sensor data => 'geom' must have 'class' and 'kwargs' keys")
+        msg = f"{GeoFilter.__name__} bad sensor data =>"
+        if c.SENS_GEOM not in sensor_data:
+            raise SystemExit(f"{msg} missing key='{c.SENS_GEOM}'")
+        if not sensor_data[c.SENS_GEOM]:
+            raise SystemExit(f"{msg} '{c.SENS_GEOM}' cannot be empty")
+        if c.CLS not in sensor_data[c.SENS_GEOM] or c.KW not in sensor_data[c.SENS_GEOM]:
+            raise SystemExit(f"{msg} '{c.SENS_GEOM}' must have '{c.CLS}' and '{c.KW}' keys")

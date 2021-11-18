@@ -8,6 +8,7 @@
 import unittest
 import airquality.database.util.record.location as loc
 import airquality.database.util.postgis.geom as geom
+import airquality.adapter.config as c
 
 
 class TestLocationRecord(unittest.TestCase):
@@ -16,10 +17,7 @@ class TestLocationRecord(unittest.TestCase):
         self.location_rec = loc.LocationRecord()
 
     def test_successfully_build_sensor_location_record(self):
-        test_data = {'geom': {
-            'class': geom.PointBuilder,
-            'kwargs': {'lat': '45.123', 'lng': 9.123}
-        }}
+        test_data = {c.SENS_GEOM: {c.CLS: geom.PointBuilder, c.KW: {'lat': '45.123', 'lng': 9.123}}}
         expected_output = "ST_GeomFromText('POINT(9.123 45.123)', 26918)"
         actual_output = self.location_rec.record(sensor_data=test_data)
         self.assertEqual(actual_output, expected_output)
@@ -30,27 +28,17 @@ class TestLocationRecord(unittest.TestCase):
             self.location_rec.record(sensor_data=test_data)
 
     def test_exit_on_empty_geom(self):
-        test_data = {'geom': {}}
+        test_data = {c.SENS_GEOM: {}}
         with self.assertRaises(SystemExit):
             self.location_rec.record(sensor_data=test_data)
 
     def test_exit_on_missing_class_or_kwargs_inside_geom(self):
-        test_data = {
-            'geom': {
-                'class': geom.PointBuilder,
-                'other': 2
-            }
-        }
+        test_data = {c.SENS_GEOM: {c.CLS: geom.PointBuilder, 'other': 2}}
         with self.assertRaises(SystemExit):
             self.location_rec.record(sensor_data=test_data)
 
     def test_null_value_when_null_object_is_passed(self):
-        test_data = {
-            'geom': {
-                'class': geom.NullGeometry,
-                'kwargs': {}
-            }
-        }
+        test_data = {c.SENS_GEOM: {c.CLS: geom.NullGeometry, c.KW: {}}}
         expected_output = "NULL"
         actual_output = self.location_rec.record(sensor_data=test_data)
         self.assertEqual(actual_output, expected_output)
