@@ -74,11 +74,6 @@ class TestSensorRecord(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.api_param_rec.record(test_data)
 
-    # def test_null_value_api_param_record(self):
-    #     test_data = {'param': [{'param_name': 'n', 'param_value': None}]}
-    #     with self.assertRaises(SystemExit):
-    #         self.api_param_rec.record(test_data, sensor_id=144)
-
     ################################ SENSOR INFO RECORD ################################
     def test_successfully_build_sensor_info_record(self):
         test_data = {'info': [{'channel': 'ch1', 'timestamp': 1531432748}]}

@@ -8,12 +8,13 @@
 ######################################################
 import unittest
 import airquality.adapter.api2db.sensor as sens
+import airquality.database.util.postgis.geom as geom
 
 
 class TestSensorReshaper(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.purpleair_adapter = sens.get_sensor_adapter('purpleair')
+        self.purpleair_adapter = sens.get_sensor_adapter('purpleair', postgis_class=geom.PointBuilder)
 
     def test_get_sensor_reshaper_class(self):
         self.assertEqual(self.purpleair_adapter.__class__, sens.PurpleairSensorAdapter)
@@ -31,8 +32,7 @@ class TestSensorReshaper(unittest.TestCase):
         expected_output = {'name': 'n1 (idx1)',
                            'info': [{'channel': '1A', 'timestamp': 'd'}, {'channel': '1B', 'timestamp': 'd'},
                                     {'channel': '2A', 'timestamp': 'd'}, {'channel': '2B', 'timestamp': 'd'}],
-                           'lat': 'lat_val',
-                           'lng': 'lng_val',
+                           'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': 'lat_val', 'lng': 'lng_val'}},
                            'param': [{'param_name': 'primary_id_a', 'param_value': 'id1A'},
                                      {'param_name': 'primary_id_b', 'param_value': 'id1B'},
                                      {'param_name': 'primary_key_a', 'param_value': 'key1A'},
@@ -42,7 +42,6 @@ class TestSensorReshaper(unittest.TestCase):
                                      {'param_name': 'secondary_key_a', 'param_value': 'key2A'},
                                      {'param_name': 'secondary_key_b', 'param_value': 'key2B'}],
                            'type': 'PurpleAir/ThingSpeak'}
-
         actual_output = self.purpleair_adapter.reshape(test_packet)
         self.assertEqual(actual_output, expected_output)
 

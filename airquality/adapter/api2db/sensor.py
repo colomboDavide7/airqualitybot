@@ -7,6 +7,7 @@
 ######################################################
 import abc
 from typing import Dict, Any
+import airquality.database.util.postgis.geom as geom
 
 TS = 'timestamp'
 NAME = 'name'
@@ -22,15 +23,18 @@ CHANNEL = 'channel'
 LAST = 'last_acquisition'
 
 
-def get_sensor_adapter(sensor_type: str):
+def get_sensor_adapter(sensor_type: str, postgis_class=geom.PointBuilder):
     if sensor_type == 'purpleair':
-        return PurpleairSensorAdapter()
+        return PurpleairSensorAdapter(postgis_class=postgis_class)
     else:
         raise SystemExit(f"'{get_sensor_adapter.__name__}():' bad type '{sensor_type}'")
 
 
 ################################ SENSOR ADAPTER CLASS ################################
 class SensorAdapter(abc.ABC):
+
+    def __init__(self, postgis_class=geom.GeometryBuilder):
+        self.postgis_class = postgis_class
 
     @abc.abstractmethod
     def reshape(self, sensor_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -60,6 +64,9 @@ class PurpleairSensorAdapter(SensorAdapter):
     CHANNEL_NAMES = ["1A", "1B", "2A", "2B"]
     API_PARAM = ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
                  'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b']
+
+    def __init__(self, postgis_class=geom.PointBuilder):
+        super(PurpleairSensorAdapter, self).__init__(postgis_class=postgis_class)
 
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._exit_on_bad_sensor_data(sensor_data=data)
@@ -96,6 +103,7 @@ class PurpleairSensorAdapter(SensorAdapter):
         return uniformed_data
 
     def _add_location(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
-        uniformed_data[LAT] = data['latitude']
-        uniformed_data[LNG] = data['longitude']
+        uniformed_data[GEOM] = {'class': geom.NullGeometry, 'kwargs': {}}
+        if 'latitude' in data and 'longitude' in data:
+            uniformed_data[GEOM] = {'class': self.postgis_class, 'kwargs': {LAT: data['latitude'], LNG: data['longitude']}}
         return uniformed_data

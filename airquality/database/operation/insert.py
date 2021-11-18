@@ -92,7 +92,9 @@ class PurpleairInsertWrapper(InsertWrapper):
     ################################ METHOD FOR UPDATE LOCATIONS ################################
     def update_locations(self, changed_sensors: List[Dict[str, Any]], name2id_map: Dict[str, Any]):
 
-        self._exit_on_missing_external_dependencies()
+        if self.sensor_location_record_builder is None:
+            raise SystemExit(f"{PurpleairInsertWrapper.__name__}: bad setup => missing external dependency "
+                             f"'{rec.SensorLocationRecord.__name__}'")
 
         location_values = []
         for data in changed_sensors:

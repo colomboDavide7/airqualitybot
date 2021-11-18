@@ -40,9 +40,7 @@ import airquality.database.operation.insert as insert
 # util
 import airquality.database.util.datatype.timestamp as ts
 import airquality.database.util.record.time as t
-import airquality.database.util.record.location as loc
 import airquality.database.util.record.record as rec
-import airquality.database.util.postgis.geom as geom
 import airquality.database.util.conn as db_conn
 import airquality.database.util.query as qry
 
@@ -109,7 +107,6 @@ class Application(log.Loggable):
 
         # RecordBuilder
         time_rec = t.TimeRecord(timestamp_class=ts.get_timestamp_class(sensor_type=self.sensor_type))
-        location_rec = loc.LocationRecord(postgis_builder=geom.PointBuilder())
 
         # InsertWrapper
         insert_wrapper = insert.get_insert_wrapper(sensor_type=self.sensor_type, conn=conn, builder=query_builder)
@@ -117,7 +114,7 @@ class Application(log.Loggable):
         insert_wrapper.set_debugger(self.debugger)
 
         ################################ SETUP INSERT WRAPPER ###############################
-        sensor_location_record = rec.SensorLocationRecord(location_rec=location_rec, time_rec=t.CurrentTimestampTimeRecord())
+        sensor_location_record = rec.SensorLocationRecord(time_rec=t.CurrentTimestampTimeRecord())
 
         # 'init' bot InsertWrapper dependencies
         if self.bot_name == 'init':
@@ -133,8 +130,7 @@ class Application(log.Loggable):
         # 'fetch' bot InsertWrapper dependencies
         elif self.bot_name == 'fetch':
             if self.sensor_type == 'atmotube':
-                insert_wrapper.set_mobile_record_builder(
-                    builder=rec.MobileMeasureRecord(time_rec=time_rec, location_rec=location_rec))
+                insert_wrapper.set_mobile_record_builder(builder=rec.MobileMeasureRecord(time_rec=time_rec))
             elif self.sensor_type == 'thingspeak':
                 insert_wrapper.set_station_record_builder(builder=rec.StationMeasureRecord(time_rec=time_rec))
 

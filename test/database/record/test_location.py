@@ -6,30 +6,42 @@
 #
 ######################################################
 import unittest
-import airquality.database.util.record.location as loc
+import airquality.database.util.record.record as rec
 import airquality.database.util.postgis.geom as geom
+import airquality.database.util.record.time as t
 
 
 class TestLocationRecord(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.point_builder = geom.PointBuilder()
-        self.location_rec = loc.LocationRecord(self.point_builder)
+        self.sensor_location_record = rec.SensorLocationRecord(time_rec=t.CurrentTimestampTimeRecord())
 
-    def test_point_geometry_record(self):
-        test_data = {'lat': 'l1', 'lng': 'l2'}
-        actual_output = self.location_rec.record(test_data)
-        expected_output = "ST_GeomFromText('POINT(l2 l1)', 26918)"
+    def test_successfully_build_sensor_location_record(self):
+        test_data = {'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': '45.123', 'lng': 9.123}}}
+        expected_output = "(1, '2018-07-12 11:44:00', ST_GeomFromText('POINT(9.123 45.123)', 26918))"
+        actual_output = self.sensor_location_record.record(sensor_data=test_data, sensor_id=1)
         self.assertEqual(actual_output, expected_output)
 
-    def test_null_value_when_coords_are_missing(self):
-        test_data = {'lat': 'l1'}
-        actual_output = self.location_rec.record(test_data)
-        self.assertEqual(actual_output, "NULL")
+    def test_exit_on_missing_geom(self):
+        test_data = {'opt': 'val'}
+        with self.assertRaises(SystemExit):
+            self.sensor_location_record.record(sensor_data=test_data, sensor_id=1)
 
-        test_data = {'lng': 'l1'}
-        actual_output = self.location_rec.record(test_data)
-        self.assertEqual(actual_output, "NULL")
+    def test_exit_on_empty_geom(self):
+        test_data = {'geom': {}}
+        with self.assertRaises(SystemExit):
+            self.sensor_location_record.record(sensor_data=test_data, sensor_id=1)
+
+    def test_exit_on_missing_class_or_kwargs_inside_geom(self):
+        test_data = {'geom': {'class': geom.PointBuilder, 'other': 2}}
+        with self.assertRaises(SystemExit):
+            self.sensor_location_record.record(sensor_data=test_data, sensor_id=1)
+
+    def test_null_value_when_null_object_is_passed(self):
+        test_data = {'geom': {'class': geom.NullGeometry, 'kwargs': {}}}
+        expected_output = "(1, '2018-07-12 11:44:00', NULL)"
+        actual_output = self.sensor_location_record.record(sensor_data=test_data, sensor_id=1)
+        self.assertEqual(actual_output, expected_output)
 
 
 if __name__ == '__main__':

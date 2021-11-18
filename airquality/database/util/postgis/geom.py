@@ -6,7 +6,6 @@
 #
 ######################################################
 import abc
-from typing import Dict, Any
 
 ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 POINT_GEOMETRY = "POINT({lng} {lat})"
@@ -27,37 +26,38 @@ class GeometryBuilder(abc.ABC):
         self.srid = srid
 
     @abc.abstractmethod
-    def geom_from_text(self, sensor_data: Dict[str, Any]) -> str:
+    def geom_from_text(self) -> str:
         pass
 
     @abc.abstractmethod
-    def as_text(self, sensor_data: Dict[str, Any]) -> str:
-        pass
-
-    @abc.abstractmethod
-    def _null_on_missing_geolocation(self, sensor_data: Dict[str, Any]):
+    def as_text(self) -> str:
         pass
 
 
 ################################ POINT BUILDER CLASS ################################
 class PointBuilder(GeometryBuilder):
 
-    def __init__(self, srid: int = 26918):
+    def __init__(self, lat: str, lng: str, srid: int = 26918):
         super(PointBuilder, self).__init__(srid=srid)
+        self.lat = lat
+        self.lng = lng
 
-    def geom_from_text(self, sensor_data: Dict[str, Any]) -> str:
-        geom = self._null_on_missing_geolocation(sensor_data)
-        if geom is not None:
-            return geom
-        geom = POINT_GEOMETRY.format(lng=sensor_data['lng'], lat=sensor_data['lat'])
+    def geom_from_text(self) -> str:
+        geom = POINT_GEOMETRY.format(lng=self.lng, lat=self.lat)
         return ST_GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
 
-    def as_text(self, sensor_data: Dict[str, Any]) -> str:
-        geom = self._null_on_missing_geolocation(sensor_data)
-        if geom is not None:
-            return geom
-        return POINT_GEOMETRY.format(lng=sensor_data['lng'], lat=sensor_data['lat'])
+    def as_text(self) -> str:
+        return POINT_GEOMETRY.format(lng=self.lng, lat=self.lat)
 
-    def _null_on_missing_geolocation(self, sensor_data: Dict[str, Any]):
-        if 'lat' not in sensor_data or 'lng' not in sensor_data:
-            return "NULL"
+
+################################ NULL GEOMETRY CLASS ################################
+class NullGeometry(GeometryBuilder):
+
+    def __init__(self, srid: int = 26918):
+        super(NullGeometry, self).__init__(srid=srid)
+
+    def geom_from_text(self) -> str:
+        return "NULL"
+
+    def as_text(self) -> str:
+        return "NULL"

@@ -8,7 +8,6 @@
 import abc
 from typing import List, Dict, Any
 import airquality.logger.loggable as log
-import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
 import airquality.database.operation.select.type as sel_type
 
@@ -81,9 +80,8 @@ class TimestampFilter(SensorDataFilter):
 ################################ GEO FILTER ################################
 class GeoFilter(SensorDataFilter):
 
-    def __init__(self, postgis_builder: geom.GeometryBuilder, database_active_locations: Dict[str, Any]):
+    def __init__(self, database_active_locations: Dict[str, Any]):
         super(GeoFilter, self).__init__()
-        self.postgis_builder = postgis_builder
         self.database_active_locations = database_active_locations
 
     def filter(self, sensor_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -93,8 +91,12 @@ class GeoFilter(SensorDataFilter):
         if not active_sensors:
             return []
 
-        changed_sensors = [data for data in active_sensors
-                           if self.postgis_builder.as_text(data) != self.database_active_locations[data['name']]]
+        changed_sensors = []
+        for data in sensor_data:
+            self._exit_on_bad_sensor_data(sensor_data=data)
+            as_text = data['geom']['class'](**data['geom']['kwargs']).as_text()
+            if as_text != self.database_active_locations[data['name']]:
+                changed_sensors.append(data)
 
         self._log_message(n_total=len(active_sensors), n_filtered=len(changed_sensors))
         return changed_sensors
@@ -107,6 +109,14 @@ class GeoFilter(SensorDataFilter):
             self.info_messages.append(msg)
         self.log_messages()
 
+    def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
+        if 'geom' not in sensor_data:
+            raise SystemExit(f"{GeoFilter.__name__} bad sensor data => missing key='geom'")
+        if not sensor_data['geom']:
+            raise SystemExit(f"{GeoFilter.__name__} bad sensor data => 'geom' cannot be empty")
+        if 'class' not in sensor_data['geom'] or 'kwargs' not in sensor_data['geom']:
+            raise SystemExit(f"{GeoFilter.__name__} bad sensor data => 'geom' must have 'class' and 'kwargs' keys")
+
 
 ################################ GET FUNCTION ################################
 def get_sensor_data_filter(bot_name: str, sensor_type: str, sel_wrapper: sel_type.TypeSelectWrapper) -> SensorDataFilter:
@@ -116,7 +126,7 @@ def get_sensor_data_filter(bot_name: str, sensor_type: str, sel_wrapper: sel_typ
         return NameFilter(database_sensor_names=database_sensor_names)
     elif bot_name == 'update':
         active_locations = sel_wrapper.get_active_locations()
-        return GeoFilter(postgis_builder=geom.PointBuilder(), database_active_locations=active_locations)
+        return GeoFilter(database_active_locations=active_locations)
     elif bot_name == 'fetch':
         timestamp_class = ts.get_timestamp_class(sensor_type=sensor_type)
         return TimestampFilter(timestamp_class=timestamp_class)
