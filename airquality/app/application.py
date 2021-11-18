@@ -38,7 +38,6 @@ import airquality.api.util.extractor as ext
 import airquality.database.operation.select.type as sel_type
 import airquality.database.operation.insert as insert
 # util
-import airquality.database.util.datatype.timestamp as ts
 import airquality.database.util.record.time as t
 import airquality.database.util.record.record as rec
 import airquality.database.util.conn as db_conn
@@ -105,22 +104,19 @@ class Application(log.Loggable):
         conn = db_conn.Psycopg2DatabaseAdapter(connection_string=os.environ['DBCONN'])
         query_builder = qry.QueryBuilder(query_file=jf.JSONFile(file_path=QUERY_FILE))
 
-        # RecordBuilder
-        time_rec = t.TimeRecord(timestamp_class=ts.get_timestamp_class(sensor_type=self.sensor_type))
-
         # InsertWrapper
         insert_wrapper = insert.get_insert_wrapper(sensor_type=self.sensor_type, conn=conn, builder=query_builder)
         insert_wrapper.set_logger(self.logger)
         insert_wrapper.set_debugger(self.debugger)
 
         ################################ SETUP INSERT WRAPPER ###############################
-        sensor_location_record = rec.SensorLocationRecord(time_rec=t.CurrentTimestampTimeRecord())
+        sensor_location_record = rec.SensorLocationRecord(time_rec=t.TimeRecord())
 
         # 'init' bot InsertWrapper dependencies
         if self.bot_name == 'init':
             insert_wrapper.set_sensor_record_builder(builder=rec.SensorRecord())
             insert_wrapper.set_api_param_record_builder(builder=rec.APIParamRecord())
-            insert_wrapper.set_sensor_info_record_builder(builder=rec.SensorInfoRecord(time_rec=time_rec))
+            insert_wrapper.set_sensor_info_record_builder(builder=rec.SensorInfoRecord(time_rec=t.TimeRecord()))
             insert_wrapper.set_sensor_location_record_builder(builder=sensor_location_record)
 
         # 'update' bot InsertWrapper dependencies
@@ -130,9 +126,9 @@ class Application(log.Loggable):
         # 'fetch' bot InsertWrapper dependencies
         elif self.bot_name == 'fetch':
             if self.sensor_type == 'atmotube':
-                insert_wrapper.set_mobile_record_builder(builder=rec.MobileMeasureRecord(time_rec=time_rec))
+                insert_wrapper.set_mobile_record_builder(builder=rec.MobileMeasureRecord(time_rec=t.TimeRecord()))
             elif self.sensor_type == 'thingspeak':
-                insert_wrapper.set_station_record_builder(builder=rec.StationMeasureRecord(time_rec=time_rec))
+                insert_wrapper.set_station_record_builder(builder=rec.StationMeasureRecord(time_rec=t.TimeRecord()))
 
         # Inject InsertWrapper to Bot
         bot.add_insert_wrapper(insert_wrapper)

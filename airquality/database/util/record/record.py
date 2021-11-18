@@ -50,18 +50,17 @@ class APIParamRecord(base.RecordBuilder):
 ################################ SENSOR AT LOCATION RECORD ################################
 class SensorLocationRecord(base.RecordBuilder):
 
-    def __init__(self, time_rec: t.CurrentTimestampTimeRecord, ts: str = "2018-07-12 11:44:00"):
+    def __init__(self, time_rec: t.TimeRecord):
         self.time_rec = time_rec
-        self.valid_from = f"'{ts}'"
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
-
+        self._exit_on_bad_sensor_data(sensor_data)
         if sensor_id is None:
             raise SystemExit(f"{SensorInfoRecord.__name__}: bad call => missing argument 'sensor_id'")
 
-        self._exit_on_bad_sensor_data(sensor_data)
+        valid_from = self.time_rec.record(sensor_data=sensor_data)
         geom = sensor_data['geom']['class'](**sensor_data['geom']['kwargs']).geom_from_text()
-        return f"({sensor_id}, {self.valid_from}, {geom})"
+        return f"({sensor_id}, {valid_from}, {geom})"
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
         _exit_on_missing_geom_data(sensor_data=sensor_data)
@@ -74,13 +73,11 @@ class SensorInfoRecord(base.RecordBuilder):
         self.time_rec = time_rec
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
-
+        self._exit_on_bad_sensor_data(sensor_data)
         if sensor_id is None:
             raise SystemExit(f"{SensorInfoRecord.__name__}: bad call => missing argument 'sensor_id'")
-        self._exit_on_bad_sensor_data(sensor_data)
 
-        records = ','.join(f"({sensor_id}, '{info['channel']}', {self.time_rec.record(info)})"
-                           for info in sensor_data['info'])
+        records = ','.join(f"({sensor_id}, '{info['channel']}', {self.time_rec.record(info)})" for info in sensor_data['info'])
         return records.strip(',')
 
     def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
@@ -102,7 +99,7 @@ class MobileMeasureRecord(base.RecordBuilder):
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
         self._exit_on_bad_sensor_data(sensor_data)
         record_id = sensor_data['record_id']
-        ts = self.time_rec.record(sensor_data)
+        ts = self.time_rec.record(sensor_data=sensor_data)
         geom = sensor_data['geom']['class'](**sensor_data['geom']['kwargs']).geom_from_text()
         records = ','.join(f"({record_id}, {p['id']}, '{p['val']}', {ts}, {geom})" if p['val'] is not None else
                            f"({record_id}, {p['id']}, NULL, {ts}, {geom})" for p in sensor_data['param'])
@@ -120,12 +117,12 @@ class StationMeasureRecord(base.RecordBuilder):
         self.time_rec = time_rec
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
+        self._exit_on_bad_sensor_data(sensor_data)
         if sensor_id is None:
             raise SystemExit(f"{StationMeasureRecord.__name__}: bad call => missing argument 'sensor_id'")
 
-        self._exit_on_bad_sensor_data(sensor_data)
         record_id = sensor_data['record_id']
-        ts = self.time_rec.record(sensor_data)
+        ts = self.time_rec.record(sensor_data=sensor_data)
         records = ','.join(f"({record_id}, {p['id']}, {sensor_id}, '{p['val']}', {ts})" if p['val'] is not None else
                            f"({record_id}, {p['id']}, {sensor_id}, NULL, {ts})" for p in sensor_data['param'])
         return records.strip(',')

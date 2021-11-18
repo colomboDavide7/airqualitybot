@@ -9,12 +9,15 @@
 import unittest
 import airquality.adapter.api2db.sensor as sens
 import airquality.database.util.postgis.geom as geom
+import airquality.database.util.datatype.timestamp as ts
 
 
-class TestSensorReshaper(unittest.TestCase):
+class TestSensorAdapter(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.purpleair_adapter = sens.get_sensor_adapter('purpleair', postgis_class=geom.PointBuilder)
+        self.purpleair_adapter = sens.get_sensor_adapter('purpleair',
+                                                         postgis_class=geom.PointBuilder,
+                                                         timestamp_class=ts.UnixTimestamp)
 
     def test_get_sensor_reshaper_class(self):
         self.assertEqual(self.purpleair_adapter.__class__, sens.PurpleairSensorAdapter)
@@ -30,9 +33,12 @@ class TestSensorReshaper(unittest.TestCase):
                        'secondary_key_b': 'key2B', 'date_created': 'd'}
 
         expected_output = {'name': 'n1 (idx1)',
-                           'info': [{'channel': '1A', 'timestamp': 'd'}, {'channel': '1B', 'timestamp': 'd'},
-                                    {'channel': '2A', 'timestamp': 'd'}, {'channel': '2B', 'timestamp': 'd'}],
+                           'info': [{'channel': '1A', 'timestamp': {'class': ts.UnixTimestamp, 'kwargs': {'timestamp': 'd'}}},
+                                    {'channel': '1B', 'timestamp': {'class': ts.UnixTimestamp, 'kwargs': {'timestamp': 'd'}}},
+                                    {'channel': '2A', 'timestamp': {'class': ts.UnixTimestamp, 'kwargs': {'timestamp': 'd'}}},
+                                    {'channel': '2B', 'timestamp': {'class': ts.UnixTimestamp, 'kwargs': {'timestamp': 'd'}}}],
                            'geom': {'class': geom.PointBuilder, 'kwargs': {'lat': 'lat_val', 'lng': 'lng_val'}},
+                           'timestamp': {'class': ts.CurrentTimestamp, 'kwargs': {}},
                            'param': [{'param_name': 'primary_id_a', 'param_value': 'id1A'},
                                      {'param_name': 'primary_id_b', 'param_value': 'id1B'},
                                      {'param_name': 'primary_key_a', 'param_value': 'key1A'},

@@ -40,12 +40,20 @@ class Timestamp(abc.ABC):
     def is_after(self, other) -> bool:
         pass
 
+    @abc.abstractmethod
+    def get_formatted_timestamp(self) -> str:
+        pass
+
 
 ################################ SQL TIMESTAMP CLASS ################################
 class SQLTimestamp(Timestamp):
 
     def __init__(self, timestamp: str, fmt: str = SQL_TIMEST_FMT):
         super(SQLTimestamp, self).__init__(timestamp=timestamp, fmt=fmt)
+
+    def get_formatted_timestamp(self) -> str:
+        my_dt = dt.datetime.strptime(self.ts, self.fmt)
+        return my_dt.strftime(SQL_TIMEST_FMT)
 
     def add_days(self, days: int):
         my_dt = dt.datetime.strptime(self.ts, self.fmt)
@@ -77,6 +85,9 @@ class AtmotubeTimestamp(SQLTimestamp):
     def __init__(self, timestamp: str, fmt: str = ATMOTUBE_FMT):
         super(AtmotubeTimestamp, self).__init__(timestamp=dt.datetime.strptime(timestamp, fmt).strftime(SQL_TIMEST_FMT))
 
+    def get_formatted_timestamp(self) -> str:
+        return super(AtmotubeTimestamp, self).get_formatted_timestamp()
+
     def add_days(self, days: int = 1):
         super().add_days(days)
 
@@ -92,6 +103,9 @@ class ThingspeakTimestamp(SQLTimestamp):
 
     def __init__(self, timestamp: str, fmt: str = THINGSPK_FMT):
         super(ThingspeakTimestamp, self).__init__(timestamp=dt.datetime.strptime(timestamp, fmt).strftime(SQL_TIMEST_FMT))
+
+    def get_formatted_timestamp(self) -> str:
+        return super(ThingspeakTimestamp, self).get_formatted_timestamp()
 
     def add_days(self, days: int = 7):
         super().add_days(days)
@@ -109,6 +123,9 @@ class CurrentTimestamp(SQLTimestamp):
     def __init__(self):
         super().__init__(timestamp=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
 
+    def get_formatted_timestamp(self) -> str:
+        return super(CurrentTimestamp, self).get_formatted_timestamp()
+
     def add_days(self, days: int):
         return super().add_days(days)
 
@@ -122,9 +139,12 @@ class CurrentTimestamp(SQLTimestamp):
 ################################ UNIX TIMESTAMP CLASS ################################
 class UnixTimestamp(SQLTimestamp):
 
-    def __init__(self, unixts: int, fmt: str = SQL_TIMEST_FMT):
-        super(UnixTimestamp, self).__init__(timestamp=dt.datetime.fromtimestamp(unixts).strftime(SQL_TIMEST_FMT),
+    def __init__(self, timestamp: int, fmt: str = SQL_TIMEST_FMT):
+        super(UnixTimestamp, self).__init__(timestamp=dt.datetime.fromtimestamp(timestamp).strftime(SQL_TIMEST_FMT),
                                             fmt=fmt)
+
+    def get_formatted_timestamp(self) -> str:
+        return super(UnixTimestamp, self).get_formatted_timestamp()
 
     def add_days(self, days: int):
         return super().add_days(days)

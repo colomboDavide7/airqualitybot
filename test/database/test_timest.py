@@ -17,7 +17,7 @@ class TestTimestampBuilder(unittest.TestCase):
         self.thingspk_ts1 = ts.SQLTimestamp("2021-09-04T17:35:44Z", fmt=ts.THINGSPK_FMT)
         self.thingspk_ts2 = ts.SQLTimestamp("2020-07-14T14:05:09Z", fmt=ts.THINGSPK_FMT)
         self.current_ts = ts.CurrentTimestamp()
-        self.unix_ts = ts.UnixTimestamp(unixts=1531432748)
+        self.unix_ts = ts.UnixTimestamp(timestamp=1531432748)
 
     def test_successfully_add_days_to_atmotube_timestamp(self):
         new_timest = self.atmotube_ts1.add_days(days=1)

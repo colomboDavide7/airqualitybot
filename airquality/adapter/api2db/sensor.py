@@ -8,6 +8,7 @@
 import abc
 from typing import Dict, Any
 import airquality.database.util.postgis.geom as geom
+import airquality.database.util.datatype.timestamp as ts
 
 TS = 'timestamp'
 NAME = 'name'
@@ -23,9 +24,9 @@ CHANNEL = 'channel'
 LAST = 'last_acquisition'
 
 
-def get_sensor_adapter(sensor_type: str, postgis_class=geom.PointBuilder):
+def get_sensor_adapter(sensor_type: str, postgis_class=geom.PointBuilder, timestamp_class=ts.UnixTimestamp):
     if sensor_type == 'purpleair':
-        return PurpleairSensorAdapter(postgis_class=postgis_class)
+        return PurpleairSensorAdapter(postgis_class=postgis_class, timestamp_class=timestamp_class)
     else:
         raise SystemExit(f"'{get_sensor_adapter.__name__}():' bad type '{sensor_type}'")
 
@@ -33,8 +34,12 @@ def get_sensor_adapter(sensor_type: str, postgis_class=geom.PointBuilder):
 ################################ SENSOR ADAPTER CLASS ################################
 class SensorAdapter(abc.ABC):
 
-    def __init__(self, postgis_class=geom.GeometryBuilder):
+    def __init__(self, postgis_class=geom.GeometryBuilder, timestamp_class=ts.Timestamp):
         self.postgis_class = postgis_class
+        self.timestamp_class = timestamp_class
+
+    def _make_timestamp_dictionary(self, timestamp: str) -> Dict[str, Any]:
+        return {'class': self.timestamp_class, 'kwargs': {'timestamp': timestamp}}
 
     @abc.abstractmethod
     def reshape(self, sensor_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -65,8 +70,8 @@ class PurpleairSensorAdapter(SensorAdapter):
     API_PARAM = ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
                  'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b']
 
-    def __init__(self, postgis_class=geom.PointBuilder):
-        super(PurpleairSensorAdapter, self).__init__(postgis_class=postgis_class)
+    def __init__(self, postgis_class=geom.PointBuilder, timestamp_class=ts.UnixTimestamp):
+        super(PurpleairSensorAdapter, self).__init__(postgis_class=postgis_class, timestamp_class=timestamp_class)
 
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._exit_on_bad_sensor_data(sensor_data=data)
@@ -75,6 +80,7 @@ class PurpleairSensorAdapter(SensorAdapter):
         uniformed_data = self._add_sensor_info(uniformed_data=uniformed_data, data=data)
         uniformed_data = self._add_location(uniformed_data=uniformed_data, data=data)
         uniformed_data = self._add_api_param(uniformed_data=uniformed_data, data=data)
+        uniformed_data[TS] = {'class': ts.CurrentTimestamp, 'kwargs': {}}
         uniformed_data[TYPE] = PurpleairSensorAdapter.SENSOR_TYPE
         return uniformed_data
 
@@ -95,7 +101,8 @@ class PurpleairSensorAdapter(SensorAdapter):
         return uniformed_data
 
     def _add_sensor_info(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:
-        uniformed_data[INFO] = [{CHANNEL: n, TS: data['date_created']} for n in PurpleairSensorAdapter.CHANNEL_NAMES]
+        uniformed_data[INFO] = [{CHANNEL: n, TS: self._make_timestamp_dictionary(timestamp=data['date_created'])}
+                                for n in PurpleairSensorAdapter.CHANNEL_NAMES]
         return uniformed_data
 
     def _add_api_param(self, uniformed_data: Dict[str, Any], data: Dict[str, Any]) -> Dict[str, Any]:

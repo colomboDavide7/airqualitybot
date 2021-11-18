@@ -13,30 +13,38 @@ import airquality.database.util.datatype.timestamp as ts
 class TestTimeRecord(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.atmotube_ts_class = ts.AtmotubeTimestamp
-        self.thingspeak_ts_class = ts.ThingspeakTimestamp
-        self.atmotube_time_rec = t.TimeRecord(self.atmotube_ts_class)
-        self.thingspeak_time_rec = t.TimeRecord(self.thingspeak_ts_class)
+        self.time_rec = t.TimeRecord()
 
     def test_time_record_with_atmotube_timestamp_class(self):
-        test_data = {'timestamp': '2018-10-11T09:44:00.000Z'}
-        actual_output = self.atmotube_time_rec.record(test_data)
+        test_data = {'timestamp': {'class': ts.AtmotubeTimestamp, 'kwargs': {'timestamp': '2018-10-11T09:44:00.000Z'}}}
+        actual_output = self.time_rec.record(test_data)
         expected_output = f"'2018-10-11 09:44:00'"
         self.assertEqual(actual_output, expected_output)
 
     def test_time_record_with_thingspeak_timestamp_class(self):
-        test_data = {'timestamp': '2018-10-11T09:44:00Z'}
-        actual_output = self.thingspeak_time_rec.record(test_data)
+        test_data = {'timestamp': {'class': ts.ThingspeakTimestamp, 'kwargs': {'timestamp': '2018-10-11T09:44:00Z'}}}
+        actual_output = self.time_rec.record(test_data)
         expected_output = f"'2018-10-11 09:44:00'"
         self.assertEqual(actual_output, expected_output)
 
     def test_exit_on_missing_timestamp(self):
         bad_data = {'bad': 'val'}
         with self.assertRaises(SystemExit):
-            self.atmotube_time_rec.record(bad_data)
+            self.time_rec.record(bad_data)
 
+    def test_exit_on_missing_class_or_kwargs(self):
+        test_data = {'timestamp': {'kwargs': {'timestamp': '2018-10-11T09:44:00Z'}}}
         with self.assertRaises(SystemExit):
-            self.thingspeak_time_rec.record(bad_data)
+            self.time_rec.record(test_data)
+
+        test_data = {'timestamp': {'class': ts.ThingspeakTimestamp}}
+        with self.assertRaises(SystemExit):
+            self.time_rec.record(test_data)
+
+    def test_exit_on_empty_timestamp_dictionary(self):
+        test_data = {'timestamp': {}}
+        with self.assertRaises(SystemExit):
+            self.time_rec.record(test_data)
 
 
 if __name__ == '__main__':
