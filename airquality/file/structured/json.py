@@ -47,7 +47,9 @@ class JSONFile(FileObject):
             raise SystemExit(f"{JSONFile.__name__}: bad operation => cannot load file content multiple times")
 
         raw = read.open_read_close_file(self.file_path)                 # read raw file content
-        text_parser = txt.get_text_parser(file_ext='json')              # get text parser
+        text_parser = txt.get_text_parser(                              # get text parser
+            file_ext='json',
+            log_filename=self.log_filename)
         self.content = text_parser.parse(raw)                           # parse the raw content
 
         if self.path_to_object:                                         # search JSON object from 'path_to_object'

@@ -12,19 +12,22 @@ import airquality.database.util.postgis.config as geom_conf
 import airquality.database.util.datatype.config as time_conf
 import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
+import airquality.logger.loggable as log
+import airquality.logger.util.decorator as log_decorator
 
 
-def get_sensor_adapter(sensor_type: str, postgis_class=geom.PointBuilder, timestamp_class=ts.UnixTimestamp):
+def get_sensor_adapter(sensor_type: str, postgis_class=geom.PointBuilder, timestamp_class=ts.UnixTimestamp, log_filename="app"):
     if sensor_type == 'purpleair':
-        return PurpleairSensorAdapter(postgis_class=postgis_class, timestamp_class=timestamp_class)
+        return PurpleairSensorAdapter(postgis_class=postgis_class, timestamp_class=timestamp_class, log_filename=log_filename)
     else:
         raise SystemExit(f"'{get_sensor_adapter.__name__}():' bad type '{sensor_type}'")
 
 
 ################################ SENSOR ADAPTER CLASS ################################
-class SensorAdapter(abc.ABC):
+class SensorAdapter(log.Loggable):
 
-    def __init__(self, postgis_class=geom.GeometryBuilder, timestamp_class=ts.Timestamp):
+    def __init__(self, postgis_class=geom.GeometryBuilder, timestamp_class=ts.Timestamp, log_filename="app"):
+        super(SensorAdapter, self).__init__(log_filename=log_filename)
         self.postgis_class = postgis_class
         self.timestamp_class = timestamp_class
 
@@ -58,9 +61,12 @@ class PurpleairSensorAdapter(SensorAdapter):
 
     SENSOR_TYPE = 'PurpleAir/ThingSpeak'
 
-    def __init__(self, postgis_class=geom.PointBuilder, timestamp_class=ts.UnixTimestamp):
-        super(PurpleairSensorAdapter, self).__init__(postgis_class=postgis_class, timestamp_class=timestamp_class)
+    def __init__(self, postgis_class=geom.PointBuilder, timestamp_class=ts.UnixTimestamp, log_filename="app"):
+        super(PurpleairSensorAdapter, self).__init__(postgis_class=postgis_class,
+                                                     timestamp_class=timestamp_class,
+                                                     log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def reshape(self, data: Dict[str, Any]) -> Dict[str, Any]:
         self._exit_on_bad_sensor_data(sensor_data=data)
         uniformed_data = {adapt_const.SENS_NAME: self._get_sensor_name(data=data),

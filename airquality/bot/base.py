@@ -15,8 +15,8 @@ import airquality.filter.filter as filt
 
 class BaseBot(log.Loggable):
 
-    def __init__(self):
-        super(BaseBot, self).__init__()
+    def __init__(self, log_filename="app"):
+        super(BaseBot, self).__init__(log_filename=log_filename)
         self.db2api_adapter = None
         self.api2db_adapter = None
         self.sensor_type_select_wrapper = None
@@ -50,8 +50,4 @@ class BaseBot(log.Loggable):
     ################################ ABSTRACT METHODS ################################
     @abc.abstractmethod
     def execute(self):
-        pass
-
-    def safe_shut_down(self):
-        # TODO: shut down database connection
         pass

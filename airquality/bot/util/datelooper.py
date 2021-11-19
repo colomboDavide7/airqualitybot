@@ -8,6 +8,7 @@
 import abc
 from typing import List, Dict, Any
 import airquality.logger.loggable as log
+import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetch as fetch
 import airquality.database.util.datatype.timestamp as ts
 
@@ -26,8 +27,8 @@ def get_date_looper_class(sensor_type: str):
 ################################ DATE LOOPER ################################
 class DateLooper(log.Loggable):
 
-    def __init__(self, fetch_wrapper: fetch.FetchWrapper):
-        super(DateLooper, self).__init__()
+    def __init__(self, fetch_wrapper: fetch.FetchWrapper, log_filename="app"):
+        super(DateLooper, self).__init__(log_filename=log_filename)
         self.fetch_wrapper = fetch_wrapper
 
     def update_url_param(self, param2update: Dict[str, Any]):
@@ -52,8 +53,8 @@ class DateLooper(log.Loggable):
 ################################ ATMOTUBE LOOPER ################################
 class AtmotubeDateLooper(DateLooper):
 
-    def __init__(self, fetch_wrapper: fetch.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp):
-        super(AtmotubeDateLooper, self).__init__(fetch_wrapper)
+    def __init__(self, fetch_wrapper: fetch.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp, log_filename="app"):
+        super(AtmotubeDateLooper, self).__init__(fetch_wrapper=fetch_wrapper, log_filename=log_filename)
         self.start = start_ts
         self.stop = stop_ts
         self.ended = False
@@ -61,14 +62,11 @@ class AtmotubeDateLooper(DateLooper):
     def has_next(self):
         return not self.ended
 
+    @log_decorator.log_decorator()
     def get_next_sensor_data(self) -> List[Dict[str, Any]]:
-        # Get next date URL parameters
         next_date = self._get_next_date_url_param()
-        # Update URL parameters
+        self.log_info(f"{AtmotubeDateLooper.__name__}: looking for new sensor data on date='{next_date['date']}'")
         self.fetch_wrapper.update_url_param(next_date)
-        # Log message
-        self.log_info(f"...looking for new sensor data on date='{next_date['date']}'")
-        # Get sensor data
         return self.fetch_wrapper.get_sensor_data()
 
     def _get_next_date_url_param(self) -> Dict[str, Any]:
@@ -83,8 +81,8 @@ class AtmotubeDateLooper(DateLooper):
 ################################ THINGSPEAK LOOPER ################################
 class ThingspeakDateLooper(DateLooper):
 
-    def __init__(self, fetch_wrapper: fetch.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp):
-        super(ThingspeakDateLooper, self).__init__(fetch_wrapper)
+    def __init__(self, fetch_wrapper: fetch.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp, log_filename="app"):
+        super(ThingspeakDateLooper, self).__init__(fetch_wrapper=fetch_wrapper, log_filename=log_filename)
         self.start = start_ts
         self.stop = stop_ts
         self.ended = False
@@ -92,14 +90,12 @@ class ThingspeakDateLooper(DateLooper):
     def has_next(self):
         return not self.ended
 
+    @log_decorator.log_decorator()
     def get_next_sensor_data(self) -> List[Dict[str, Any]]:
-        # Get next URL parameters
         next_time_window = self._get_next_date_url_param()
-        # Log messages
-        self.log_info(f"...looking for new data within date range [{next_time_window['start']} - {next_time_window['end']}]")
-        # Update URL parameters
+        self.log_info(f"{ThingspeakDateLooper.__name__}: looking for new measurements within date range "
+                      f"[{next_time_window['start']} - {next_time_window['end']}]")
         self.fetch_wrapper.update_url_param(next_time_window)
-        # Get sensor data
         return self.fetch_wrapper.get_sensor_data()
 
     def _get_next_date_url_param(self) -> Dict[str, Any]:

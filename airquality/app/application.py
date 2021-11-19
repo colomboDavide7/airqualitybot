@@ -87,7 +87,7 @@ class Application(log.Loggable):
             url_param.update({'api_key': os.environ['PURPLEAIR_KEY1']})
 
         ################################ MAKE BOT ################################
-        bot = fact.get_bot(self.bot_name)
+        bot = fact.get_bot(self.bot_name, log_filename=self.log_filename)
 
         ################################ INJECT API DEPENDENCIES ################################
         response_parser = parser.get_text_parser(file_ext=api_resp_format, log_filename=self.log_filename)
@@ -163,7 +163,8 @@ class Application(log.Loggable):
         ################################ SENSOR DATA FILTER DEPENDENCIES ################################
 
         # SensorDataFilter
-        sensor_data_filter = filt.get_sensor_data_filter(bot_name=self.bot_name, sel_wrapper=type_select_wrapper)
+        sensor_data_filter = filt.get_sensor_data_filter(bot_name=self.bot_name, sel_wrapper=type_select_wrapper,
+                                                         log_filename=self.log_filename)
         sensor_data_filter.set_console_logger(self.console_logger)
         sensor_data_filter.set_file_logger(self.file_logger)
 
@@ -174,7 +175,9 @@ class Application(log.Loggable):
 
         if self.bot_name in ('init', 'update'):
             # SensorAdapter
-            sensor_adapter = sens.get_sensor_adapter(sensor_type=self.sensor_type)
+            sensor_adapter = sens.get_sensor_adapter(sensor_type=self.sensor_type, log_filename=self.log_filename)
+            sensor_adapter.set_file_logger(self.file_logger)
+            sensor_adapter.set_console_logger(self.console_logger)
             bot.add_api2database_adapter(adapter=sensor_adapter)
 
         elif self.bot_name == 'fetch':

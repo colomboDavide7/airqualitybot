@@ -6,22 +6,21 @@
 #
 #################################################
 import airquality.bot.base as base
+import airquality.logger.util.decorator as log_decorator
 
 
 class UpdateBot(base.BaseBot):
 
-    def __init__(self):
-        super(UpdateBot, self).__init__()
+    def __init__(self, log_filename="app"):
+        super(UpdateBot, self).__init__(log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def execute(self):
-
-        self.log_info(f"{UpdateBot.__name__}: begin execution...")
 
         # Fetch API data
         sensor_data = self.fetch_wrapper.get_sensor_data()
         if not sensor_data:
-            self.log_warning("...empty API sensor data...")
-            self.log_info(f"{UpdateBot.__name__}: done => no location updated")
+            self.log_warning(f"{UpdateBot.__name__}: empty API sensor data => no location updated")
             return
 
         # Reshape packets to a uniform interface
@@ -30,8 +29,7 @@ class UpdateBot(base.BaseBot):
         # Apply GeoFilter to keep only the fetched sensors that have changed location
         fetched_changed_sensors = [data for data in uniformed_sensor_data if self.sensor_data_filter.filter(data)]
         if not fetched_changed_sensors:
-            self.log_warning("...all location are the same...")
-            self.log_info(f"{UpdateBot.__name__}: done => no location updated")
+            self.log_warning(f"{UpdateBot.__name__}: all sensor locations are the same => no location updated")
             return
 
         # Query the (sensor_name, sensor_id) tuples
@@ -39,8 +37,3 @@ class UpdateBot(base.BaseBot):
 
         # Update locations
         self.insert_wrapper.update_locations(changed_sensors=fetched_changed_sensors, name2id_map=name2id_map)
-
-        # TODO: close database connection
-        # self.insert_wrapper.shut_down()
-
-        self.log_info(f"{UpdateBot.__name__}: done => location successfully updated")
