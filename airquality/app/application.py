@@ -150,6 +150,8 @@ class Application(log.Loggable):
         # SensorIDSelectWrapper
         if self.bot_name == 'fetch':
             sensor_id_select_wrapper = sel_type.SensorIDSelectWrapper(conn=conn, query_builder=query_builder)
+            sensor_id_select_wrapper.set_file_logger(self.file_logger)
+            sensor_id_select_wrapper.set_console_logger(self.console_logger)
             bot.add_sensor_id_select_wrapper(sensor_id_select_wrapper)
 
         # SensorTypeSelectWrapper

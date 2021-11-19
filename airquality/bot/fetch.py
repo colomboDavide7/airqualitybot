@@ -6,7 +6,6 @@
 #
 #################################################
 import airquality.bot.base as base
-import airquality.logger.util.decorator as log_decorator
 import airquality.database.util.datatype.timestamp as ts
 import airquality.database.operation.select.type as select
 import airquality.adapter.config as adapt_const
@@ -33,9 +32,9 @@ class FetchBot(base.BaseBot):
             raise SystemExit(f"{FetchBot.__name__}: bad setup => missing external dependency 'date_looper_class'")
 
     ################################ EXECUTE METHOD ################################
-    @log_decorator.log_decorator()
     def execute(self):
 
+        self.log_info(f"{FetchBot.__name__}: begin execution...")
         self._exit_on_missing_external_dependencies()
 
         sensor_ids = self.sensor_type_select_wrapper.get_sensor_id()
@@ -47,6 +46,8 @@ class FetchBot(base.BaseBot):
         ############################# CYCLE ON ALL SENSOR IDS FOUND ##############################
         for sensor_id in sensor_ids:
 
+            self.log_info(20*"*" + f"sensor_id={sensor_id}" + 20*"*")
+
             # Extract database API parameters
             db_api_param = self.sensor_id_select_wrapper.get_sensor_api_param(sensor_id)
             uniformed_param = self.db2api_adapter.reshape(db_api_param)
@@ -56,22 +57,15 @@ class FetchBot(base.BaseBot):
 
                 # Pop the channel name from the uniformed api param of the given sensor_id
                 ch_name = api_param.pop(adapt_const.CH_NAME)
-                self.console_logger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
-                self.file_logger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
+                self.log_info(20*"%" + f"channel_name={ch_name}" + 20*"%")
 
                 # Query sensor channel last acquisition
                 last_acquisition = self.sensor_id_select_wrapper.get_last_acquisition(channel=ch_name, sensor_id=sensor_id)
                 filter_timestamp = ts.SQLTimestamp(last_acquisition)
-                self.log_info(f"...last_acquisition timestamp for sensor_id={sensor_id} is "
-                              f"'{filter_timestamp.get_formatted_timestamp()}'...")
+                self.log_info(f"...last acquisition was at => {filter_timestamp.ts}")
 
-                start_ts = filter_timestamp
-                stop_ts = ts.CurrentTimestamp()
-                self.console_logger.info(f"last acquisition was at => {filter_timestamp.ts}")
-                self.file_logger.info(f"last acquisition was at => {filter_timestamp.ts}")
-
-                # Create date looper
-                looper = self.date_looper_class(self.fetch_wrapper, start_ts = start_ts, stop_ts = stop_ts)
+                # DateLooper
+                looper = self.date_looper_class(self.fetch_wrapper, start_ts=filter_timestamp, stop_ts=ts.CurrentTimestamp())
                 looper.set_file_logger(self.file_logger)
                 looper.set_console_logger(self.console_logger)
 
@@ -85,6 +79,7 @@ class FetchBot(base.BaseBot):
                     # Fetch data from API
                     sensor_data = looper.get_next_sensor_data()
                     if not sensor_data:
+                        self.log_warning("continue => empty API sensor data")
                         continue
 
                     # Uniform sensor data
@@ -95,12 +90,15 @@ class FetchBot(base.BaseBot):
 
                     # Filter measure to keep only new measurements
                     new_data = [data for data in uniformed_sensor_data if self.sensor_data_filter.filter(data)]
+                    n_tot = len(uniformed_sensor_data)
+                    n_filtered = len(new_data)
+                    self.log_info(f"...found {n_filtered}/{n_tot} new measurements...")
+
                     if not new_data:
-                        self.info_messages.append(f"all data are already present => skip them")
+                        self.log_info(f"continue => no new measurements")
                         continue
 
                     # Add new measurements
                     self.insert_wrapper.insert_measurements(sensor_data=new_data, sensor_id=sensor_id, channel=ch_name)
 
-                self.console_logger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
-                self.file_logger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+        self.log_info(f"{FetchBot.__name__}: done => new measurements successfully inserted")

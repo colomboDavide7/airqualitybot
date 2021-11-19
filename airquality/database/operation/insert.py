@@ -139,7 +139,7 @@ class AtmotubeInsertWrapper(InsertWrapper):
 
     def insert_measurements(self, sensor_data: List[Dict[str, Any]], sensor_id: int, channel: str):
 
-        self.log_info(f"{AtmotubeInsertWrapper.__name__}: try to insert new measurements...")
+        self.log_info(f"{AtmotubeInsertWrapper.__name__}: try to insert {len(sensor_data)} new measurements...")
         # Check external dependencies
         self._exit_on_missing_external_dependencies()
         # Build values to insert
@@ -173,7 +173,7 @@ class ThingspeakInsertWrapper(InsertWrapper):
 
     def insert_measurements(self, sensor_data: List[Dict[str, Any]], sensor_id: int, channel: str):
 
-        self.log_info(f"{ThingspeakInsertWrapper.__name__}: try to insert new measurements...")
+        self.log_info(f"{ThingspeakInsertWrapper.__name__}: try to insert {len(sensor_data)} new measurements...")
         # Check external dependencies
         self._exit_on_missing_external_dependencies()
         # Build values to insert
