@@ -8,16 +8,17 @@
 import abc
 from typing import Dict, Any
 import airquality.logger.loggable as log
+import airquality.logger.util.decorator as log_decorator
 
 
-def get_url_builder(sensor_type: str, address: str, url_param: Dict[str, Any]):
+def get_url_builder(sensor_type: str, address: str, url_param: Dict[str, Any], log_filename="app"):
 
     if sensor_type == 'purpleair':
-        return PurpleairURL(address=address, url_param=url_param)
+        return PurpleairURL(address=address, url_param=url_param, log_filename=log_filename)
     elif sensor_type == 'atmotube':
-        return AtmotubeURL(address=address, url_param=url_param)
+        return AtmotubeURL(address=address, url_param=url_param, log_filename=log_filename)
     elif sensor_type == 'thingspeak':
-        return ThingspeakURL(address=address, url_param=url_param)
+        return ThingspeakURL(address=address, url_param=url_param, log_filename=log_filename)
     else:
         raise SystemExit(f"'{get_url_builder.__name__}():' bad type '{sensor_type}'")
 
@@ -25,8 +26,8 @@ def get_url_builder(sensor_type: str, address: str, url_param: Dict[str, Any]):
 ################################ URL BUILDER ################################
 class URLBuilder(log.Loggable):
 
-    def __init__(self, address: str, url_param: Dict[str, Any]):
-        super(URLBuilder, self).__init__()
+    def __init__(self, address: str, url_param: Dict[str, Any], log_filename="app"):
+        super(URLBuilder, self).__init__(log_filename=log_filename)
         self.address = address
         self.url_param = url_param
 
@@ -45,9 +46,10 @@ class URLBuilder(log.Loggable):
 ################################ PURPLEAIR URL BUILDER ################################
 class PurpleairURL(URLBuilder):
 
-    def __init__(self, address: str, url_param: Dict[str, Any]):
-        super(PurpleairURL, self).__init__(address=address, url_param=url_param)
+    def __init__(self, address: str, url_param: Dict[str, Any], log_filename="app"):
+        super(PurpleairURL, self).__init__(address=address, url_param=url_param, log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def url(self) -> str:
 
         self.log_info(f"{PurpleairURL.__name__}: try to build URL...")
@@ -71,9 +73,10 @@ class PurpleairURL(URLBuilder):
 ################################ ATMOTUBE URL BUILDER ################################
 class AtmotubeURL(URLBuilder):
 
-    def __init__(self, address: str, url_param: Dict[str, Any]):
-        super(AtmotubeURL, self).__init__(address=address, url_param=url_param)
+    def __init__(self, address: str, url_param: Dict[str, Any], log_filename="app"):
+        super(AtmotubeURL, self).__init__(address=address, url_param=url_param, log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def url(self) -> str:
 
         self.log_info(f"{AtmotubeURL.__name__}: try to build URL...")
@@ -92,13 +95,14 @@ class AtmotubeURL(URLBuilder):
 ################################ THINGSPEAK URL BUILDER ################################
 class ThingspeakURL(URLBuilder):
 
-    def __init__(self, address: str, url_param: Dict[str, Any]):
-        super(ThingspeakURL, self).__init__(address=address, url_param=url_param)
+    def __init__(self, address: str, url_param: Dict[str, Any], log_filename="app"):
+        super(ThingspeakURL, self).__init__(address=address, url_param=url_param, log_filename=log_filename)
 
         if 'format' not in self.url_param:
             raise SystemExit(f"{ThingspeakURL.__name__}: bad 'api.json' file structure => missing key='format'")
         self.response_fmt = self.url_param.pop('format')
 
+    @log_decorator.log_decorator()
     def url(self) -> str:
 
         self.log_info(f"{ThingspeakURL.__name__}: try to build URL...")

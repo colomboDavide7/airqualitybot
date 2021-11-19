@@ -40,7 +40,7 @@ def _get_handler_cls(use_file=False):
 
 
 def _get_logger(handler: logging.Handler, formatter: logging.Formatter, logger_name: str) -> logging.Logger:
-    logger = logging.getLogger(logger_name)     # create logger with name='debugger'
+    logger = logging.Logger(logger_name)        # create logger with name='debugger'
     handler.setFormatter(formatter)             # add Formatter dependency to Handler
     logger.addHandler(handler)                  # add Handler dependency to Logger
     logger.setLevel(logging.DEBUG)              # set logging level

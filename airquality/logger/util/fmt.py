@@ -18,7 +18,7 @@ COLORED_LEVELS = {'DEBUG': GREEN,
                   'WARNING': YELLOW,
                   'ERROR': RED}
 
-FMT_STR = f"[%(levelname)s] %(asctime)-30s %(filename)-25s %(funcName)-15s %(message)s"
+FMT_STR = f"%(levelname)-20s %(asctime)-30s %(filename)-20s %(funcName)-20s %(message)s"
 
 
 def get_formatter_cls(use_color=False):
@@ -43,6 +43,11 @@ class CustomFormatter(logging.Formatter):
 class ColoredFormatter(logging.Formatter):
 
     def format(self, record) -> str:
+        if hasattr(record, 'func_name_override'):
+            record.funcName = record.func_name_override
+        if hasattr(record, 'file_name_override'):
+            record.filename = record.file_name_override
+
         levelname = record.levelname
         if levelname in COLORED_LEVELS:
             colored_levelname = COLORED_LEVELS[levelname] + levelname + RESET

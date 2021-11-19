@@ -10,6 +10,7 @@ import os
 # --------------------- LOGGER IMPORT ---------------------
 # log
 import airquality.logger.loggable as log
+import airquality.logger.util.decorator as log_decorator
 # --------------------- BOT IMPORT ---------------------
 # util
 import airquality.bot.util.fact as fact
@@ -60,14 +61,19 @@ class Application(log.Loggable):
         super(Application, self).__init__()
         self.bot_name = bot_name
         self.sensor_type = sensor_type
+        self.log_filename = bot_name
         self.bot = None
 
+    @log_decorator.log_decorator()
     def run(self):
         if not self.bot:
             raise SystemExit(f"{Application.__name__}: bad setup => bot is None")
         self.bot.execute()
 
+    @log_decorator.log_decorator()
     def setup(self):
+
+        self.log_info(f"{Application.__name__}: try to setup a new bot....")
 
         ############################ LOADING 'api.json' FILE #############################
         file_obj = jf.JSONFile(API_FILE, path_to_object=[self.sensor_type])
@@ -84,20 +90,22 @@ class Application(log.Loggable):
         bot = fact.get_bot(self.bot_name)
 
         ################################ INJECT API DEPENDENCIES ################################
-        response_parser = parser.get_text_parser(file_ext=api_resp_format)
+        response_parser = parser.get_text_parser(file_ext=api_resp_format, log_filename=self.log_filename)
         response_parser.set_file_logger(self.file_logger)
         response_parser.set_console_logger(self.console_logger)
 
-        url_builder = url.get_url_builder(sensor_type=self.sensor_type, address=address, url_param=url_param)
+        url_builder = url.get_url_builder(sensor_type=self.sensor_type, address=address, url_param=url_param,
+                                          log_filename=self.log_filename)
         url_builder.set_file_logger(self.file_logger)
         url_builder.set_console_logger(self.console_logger)
 
-        data_extractor = ext.get_data_extractor(sensor_type=self.sensor_type)
+        data_extractor = ext.get_data_extractor(sensor_type=self.sensor_type, log_filename=self.log_filename)
         data_extractor.set_file_logger(self.file_logger)
         data_extractor.set_console_logger(self.console_logger)
 
         # FetchWrapper
-        fetch_wrapper = fetch.FetchWrapper(url_builder=url_builder, extractor=data_extractor, parser=response_parser)
+        fetch_wrapper = fetch.FetchWrapper(url_builder=url_builder, extractor=data_extractor, parser=response_parser,
+                                           log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
 
@@ -201,5 +209,7 @@ class Application(log.Loggable):
         # Set logger and debugger
         bot.set_file_logger(self.file_logger)
         bot.set_console_logger(self.console_logger)
+
+        self.log_info(f"{Application.__name__}: done => bot successfully setup")
 
         self.bot = bot

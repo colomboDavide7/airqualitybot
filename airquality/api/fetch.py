@@ -11,12 +11,13 @@ import airquality.api.util.extractor as ext
 import airquality.file.util.parser as parse
 import airquality.api.util.request as fetch
 import airquality.logger.loggable as log
+import airquality.logger.util.decorator as log_decorator
 
 
 class FetchWrapper(log.Loggable):
 
-    def __init__(self, url_builder: bldr.URLBuilder, extractor: ext.DataExtractor, parser: parse.TextParser):
-        super(FetchWrapper, self).__init__()
+    def __init__(self, url_builder: bldr.URLBuilder, extractor: ext.DataExtractor, parser: parse.TextParser, log_filename="app"):
+        super(FetchWrapper, self).__init__(log_filename=log_filename)
         self.builder = url_builder
         self.data_extractor = extractor
         self.response_parser = parser
@@ -28,6 +29,7 @@ class FetchWrapper(log.Loggable):
     def set_channel_name(self, name: str):
         self.channel_name = name
 
+    @log_decorator.log_decorator
     def get_sensor_data(self) -> List[Dict[str, Any]]:
 
         self.log_info(f"{FetchWrapper.__name__}: try to fetch sensor data...")

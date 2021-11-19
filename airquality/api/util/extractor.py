@@ -10,16 +10,17 @@ from typing import Dict, Any, List
 import airquality.api.config as api_const
 import airquality.adapter.config as adapt_const
 import airquality.logger.loggable as log
+import airquality.logger.util.decorator as log_decorator
 
 
-def get_data_extractor(sensor_type: str):
+def get_data_extractor(sensor_type: str, log_filename="app"):
 
     if sensor_type == 'purpleair':
-        return PurpleairDataExtractor()
+        return PurpleairDataExtractor(log_filename=log_filename)
     elif sensor_type == 'atmotube':
-        return AtmotubeDataExtractor()
+        return AtmotubeDataExtractor(log_filename=log_filename)
     elif sensor_type == 'thingspeak':
-        return ThingspeakDataExtractor()
+        return ThingspeakDataExtractor(log_filename=log_filename)
     else:
         raise SystemExit(f"'{get_data_extractor.__name__}():' bad type '{sensor_type}'")
 
@@ -27,8 +28,8 @@ def get_data_extractor(sensor_type: str):
 ################################ ABSTRACT BASE CLASS ################################
 class DataExtractor(log.Loggable):
 
-    def __init__(self):
-        super(DataExtractor, self).__init__()
+    def __init__(self, log_filename="app"):
+        super(DataExtractor, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
@@ -42,9 +43,10 @@ class DataExtractor(log.Loggable):
 ################################ PURPLEAIR DATA EXTRACTOR ################################
 class PurpleairDataExtractor(DataExtractor):
 
-    def __init__(self):
-        super(PurpleairDataExtractor, self).__init__()
+    def __init__(self, log_filename="app"):
+        super(PurpleairDataExtractor, self).__init__(log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
 
         self.log_info(f"{PurpleairDataExtractor.__name__}: try to extract API sensor data...")
@@ -67,9 +69,10 @@ class PurpleairDataExtractor(DataExtractor):
 ################################ THINGSPEAK DATA EXTRACTOR ################################
 class ThingspeakDataExtractor(DataExtractor):
 
-    def __init__(self):
-        super(ThingspeakDataExtractor, self).__init__()
+    def __init__(self, log_filename="app"):
+        super(ThingspeakDataExtractor, self).__init__(log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
 
         self.log_info(f"{ThingspeakDataExtractor.__name__}: try to extract API sensor data...")
@@ -109,9 +112,10 @@ class ThingspeakDataExtractor(DataExtractor):
 
 class AtmotubeDataExtractor(DataExtractor):
 
-    def __init__(self):
-        super(AtmotubeDataExtractor, self).__init__()
+    def __init__(self, log_filename="app"):
+        super(AtmotubeDataExtractor, self).__init__(log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
 
         self.log_info(f"{AtmotubeDataExtractor.__name__}: try to extract API sensor data...")
