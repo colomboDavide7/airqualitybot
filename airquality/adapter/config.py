@@ -52,3 +52,21 @@ CHANNEL_NAMES = [FST_CH_A, FST_CH_B, SND_CH_A, SND_CH_B]
 
 # Atmotube channel name
 ATMOTUBE_CHANNEL = "main"
+
+# Purpleair/Thingspeak api parameters name. These names are used by the SensorAdapter for building the correct
+# sensor packet that will be translated into SQL record by the APIParamRecord class. When these parameters are queried
+# for fetching API data, ParamAdapter came in the game and uses them to get the correct channel parameters and build
+# the URL.
+
+# !!! THE VALUES CANNOT BE CHANGED BECAUSE THESE ARE THE NAMES OF THE PURPLEAIR 'fields' WITHIN THE API RESPONSE !!!
+
+FST_ID_A = 'primary_id_a'
+FST_KEY_A = 'primary_key_a'
+FST_ID_B = 'primary_id_b'
+FST_KEY_B = 'primary_key_b'
+SND_ID_A = 'secondary_id_a'
+SND_ID_B = 'secondary_id_b'
+SND_KEY_A = 'secondary_key_a'
+SND_KEY_B = 'secondary_key_b'
+
+API_PARAM = [FST_ID_A, FST_ID_B, FST_KEY_A, FST_KEY_B, SND_ID_A, SND_ID_B, SND_KEY_A, SND_KEY_B]

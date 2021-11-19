@@ -15,6 +15,16 @@ import airquality.database.util.postgis.geom as postgis
 import airquality.database.util.datatype.timestamp as ts
 
 
+def get_measure_adapter(sensor_type: str, sel_type: sel.TypeSelectWrapper, geom_cls, timest_cls):
+
+    if sensor_type == 'atmotube':
+        return AtmotubeMeasureAdapter(sel_type=sel_type, geom_cls=geom_cls, timest_cls=timest_cls)
+    elif sensor_type == 'thingspeak':
+        return ThingspeakMeasureAdapter(sel_type=sel_type, timest_cls=timest_cls)
+    else:
+        raise SystemExit(f"'{get_measure_adapter.__name__}():' bad type '{sensor_type}'")
+
+
 class MeasureAdapter(abc.ABC):
 
     def __init__(self, sel_type: sel.TypeSelectWrapper, geom_cls=postgis.GeometryBuilder, timest_cls=ts.Timestamp):
@@ -39,7 +49,7 @@ class MeasureAdapter(abc.ABC):
         pass
 
 
-################################ INJECT ADAPTER DEPENDENCIES ################################
+################################ ATMOTUBE MEASURE ADAPTER ################################
 class AtmotubeMeasureAdapter(MeasureAdapter):
 
     ATMOTUBE_PARAM_NAMES = ['voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p']
@@ -78,7 +88,7 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
             raise SystemExit(f"{AtmotubeMeasureAdapter.__name__}: bad sensor data => missing key='time'")
 
 
-################################ INJECT ADAPTER DEPENDENCIES ################################
+################################ THINGSPEAK MEASURE ADAPTER ################################
 import airquality.api.config as extr_const
 
 
@@ -113,15 +123,3 @@ class ThingspeakMeasureAdapter(MeasureAdapter):
             if extr_const.FIELD_NAME not in f or extr_const.FIELD_VALUE not in f:
                 raise SystemExit(f"{ThingspeakMeasureAdapter.__name__}: bad sensor data => '{extr_const.FIELDS}'"
                                  f" must contain '{extr_const.FIELD_NAME}' and '{extr_const.FIELD_VALUE}' keys")
-
-
-################################ FUNCTION FOR GETTING MEASURE ADAPTER ################################
-def get_measure_adapter(sensor_type: str, sel_type: sel.TypeSelectWrapper, geom_cls, timest_cls) -> MeasureAdapter:
-
-    if sensor_type == 'atmotube':
-        return AtmotubeMeasureAdapter(sel_type=sel_type, geom_cls=geom_cls,
-                                      timest_cls=timest_cls)
-    elif sensor_type == 'thingspeak':
-        return ThingspeakMeasureAdapter(sel_type=sel_type, timest_cls=timest_cls)
-    else:
-        raise SystemExit(f"'{get_measure_adapter.__name__}():' bad type '{sensor_type}'")

@@ -57,8 +57,6 @@ class SensorAdapter(abc.ABC):
 class PurpleairSensorAdapter(SensorAdapter):
 
     SENSOR_TYPE = 'PurpleAir/ThingSpeak'
-    API_PARAM = ['primary_id_a', 'primary_id_b', 'primary_key_a', 'primary_key_b',
-                 'secondary_id_a', 'secondary_id_b', 'secondary_key_a', 'secondary_key_b']
 
     def __init__(self, postgis_class=geom.PointBuilder, timestamp_class=ts.UnixTimestamp):
         super(PurpleairSensorAdapter, self).__init__(postgis_class=postgis_class, timestamp_class=timestamp_class)
@@ -81,7 +79,7 @@ class PurpleairSensorAdapter(SensorAdapter):
                  adapt_const.TIMEST: self._get_timestamp(timestamp=data['date_created'])} for ch_n in adapt_const.CHANNEL_NAMES]
 
     def _get_api_param(self, data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        return [{adapt_const.PAR_NAME: n, adapt_const.PAR_VAL: data[n]} for n in PurpleairSensorAdapter.API_PARAM]
+        return [{adapt_const.PAR_NAME: n, adapt_const.PAR_VAL: data[n]} for n in adapt_const.API_PARAM]
 
     def _get_location(self, data: Dict[str, Any]) -> Dict[str, Any]:
         g = {adapt_const.CLS: geom.NullGeometry, adapt_const.KW: {}}
@@ -98,6 +96,6 @@ class PurpleairSensorAdapter(SensorAdapter):
             raise SystemExit(f"{PurpleairSensorAdapter.__name__}: bad sensor data => missing fields 'latitude', 'longitude'")
         if 'date_created' not in sensor_data:
             raise SystemExit(f"{PurpleairSensorAdapter.__name__}: bad sensor data => missing field='date_created'")
-        for n in PurpleairSensorAdapter.API_PARAM:
+        for n in adapt_const.API_PARAM:
             if n not in sensor_data:
                 raise SystemExit(f"{PurpleairSensorAdapter.__name__}: bad sensor data => missing api param key='{n}'")
