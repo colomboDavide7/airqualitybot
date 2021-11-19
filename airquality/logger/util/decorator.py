@@ -12,6 +12,8 @@ import sys
 
 import airquality.logger.util.log as make
 
+FORMATTED_ARGUMENTS_MAX_LEN = 50
+
 
 def log_decorator(_func=None):
     def log_decorator_info(func):
@@ -27,14 +29,24 @@ def log_decorator(_func=None):
             extra_args = {'func_name_override': func.__name__,
                           'file_name_override': os.path.basename(py_file_caller.filename)}
 
-            logger_obj.debug(f"=> CALL on {self.__class__.__name__}", extra=extra_args)
-            debugger_obj.debug(f"=> CALL on {self.__class__.__name__}", extra=extra_args)
+            # Get function args and kwargs in the proper shape
+            function_args = [repr(a) for a in args]
+            function_kwargs = [f"{k}={v!r}" for k, v in kwargs.items()]
+            formatted_arguments = ', '.join(function_args + function_kwargs)
+
+            # Trim the formatted_arguments if they are too long
+            if len(formatted_arguments) >= FORMATTED_ARGUMENTS_MAX_LEN:
+                formatted_arguments = formatted_arguments[0:25] + " ... " + formatted_arguments[-25:-1]
+
+            # Log CALL to function
+            logger_obj.debug(f"=> CALL {func.__name__}({formatted_arguments}) in {self.__class__.__name__}", extra=extra_args)
+            debugger_obj.debug(f"=> CALL {func.__name__}({formatted_arguments}) in {self.__class__.__name__}", extra=extra_args)
             try:
                 value = func(self, *args, **kwargs)
-                logger_obj.debug(f"<= RETURN from {self.__class__.__name__}", extra=extra_args)
-                debugger_obj.debug(f"<= RETURN from {self.__class__.__name__}", extra=extra_args)
+                logger_obj.debug(f"<= RETURN from {func.__name__}() in {self.__class__.__name__}", extra=extra_args)
+                debugger_obj.debug(f"<= RETURN from {func.__name__}() in {self.__class__.__name__}", extra=extra_args)
             except SystemExit:
-                logger_obj.error(20*'x' + f" Exception: {str(sys.exc_info()[1])} " + 20*'x', extra=extra_args)
+                logger_obj.error(f"<= EXCEPTION: {str(sys.exc_info()[1])}", extra=extra_args)
                 raise
             return value
         return log_decorator_wrapper
@@ -42,7 +54,3 @@ def log_decorator(_func=None):
         return log_decorator_info
     else:
         return log_decorator_info(_func)
-
-
-# logger_obj.debug(20*"-" + f" CALL " + 20*"-", extra=extra_args)
-#             debugger_obj.debug(20*"-" + f" CALL " + 20*"-", extra=extra_args)

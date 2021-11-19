@@ -12,7 +12,7 @@ import airquality.logger.loggable as log
 
 class DatabaseOperationWrapper(log.Loggable):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
-        super(DatabaseOperationWrapper, self).__init__()
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="app"):
+        super(DatabaseOperationWrapper, self).__init__(log_filename=log_filename)
         self.conn = conn
         self.builder = query_builder

@@ -51,12 +51,8 @@ class PurpleairURL(URLBuilder):
 
     @log_decorator.log_decorator()
     def url(self) -> str:
-
-        self.log_info(f"{PurpleairURL.__name__}: try to build URL...")
         self._exit_on_bad_url_parameters()
-        url = f"{self.address}?{self._get_fields_string()}&{self._get_querystring()}"
-        self.log_info(f"{PurpleairURL.__name__}: done")
-        return url
+        return f"{self.address}?{self._get_fields_string()}&{self._get_querystring()}"
 
     def _get_fields_string(self) -> str:
         return "fields=" + ','.join(f"{f}" for f in self.url_param.pop('fields'))
@@ -78,12 +74,8 @@ class AtmotubeURL(URLBuilder):
 
     @log_decorator.log_decorator()
     def url(self) -> str:
-
-        self.log_info(f"{AtmotubeURL.__name__}: try to build URL...")
         self._exit_on_bad_url_parameters()
-        url = f"{self.address}?{self._get_querystring()}"
-        self.log_info(f"{AtmotubeURL.__name__}: done")
-        return url
+        return f"{self.address}?{self._get_querystring()}"
 
     def _exit_on_bad_url_parameters(self):
         if 'api_key' not in self.url_param:
@@ -104,11 +96,8 @@ class ThingspeakURL(URLBuilder):
 
     @log_decorator.log_decorator()
     def url(self) -> str:
-
-        self.log_info(f"{ThingspeakURL.__name__}: try to build URL...")
         self._exit_on_bad_url_parameters()
         url = f"{self.address}/{self.url_param['channel_id']}/feeds.{self.response_fmt}?{self._get_querystring()}"
-        self.log_info(f"{ThingspeakURL.__name__}: done")
         return url.replace(' ', '%20')
 
     def _get_querystring(self):

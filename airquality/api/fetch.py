@@ -31,15 +31,12 @@ class FetchWrapper(log.Loggable):
 
     @log_decorator.log_decorator
     def get_sensor_data(self) -> List[Dict[str, Any]]:
-
-        self.log_info(f"{FetchWrapper.__name__}: try to fetch sensor data...")
         url = self.builder.url()
         response_text = fetch.fetch_from_url(url)
         parsed_response = self.response_parser.parse(response_text)
         sensor_data = self.data_extractor.extract(parsed_response=parsed_response, channel_name=self.channel_name)
 
-        msg = f"...fetched {len(sensor_data)} sensor data..."
+        msg = f"{FetchWrapper.__name__}: fetched {len(sensor_data)} sensor data"
         self.log_warning(msg) if len(sensor_data) == 0 else self.log_info(msg)
-        self.log_info(f"{FetchWrapper.__name__}: done")
 
         return sensor_data

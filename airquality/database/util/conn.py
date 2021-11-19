@@ -9,12 +9,22 @@
 import abc
 import psycopg2
 import airquality.logger.loggable as log
+import airquality.logger.util.decorator as log_decorator
 
 
+def get_database_adapter(connection_string: str, adapter_type="psycopg2", log_filename="app"):
+
+    if adapter_type == 'psycopg2':
+        return Psycopg2DatabaseAdapter(connection_string=connection_string, log_filename=log_filename)
+    else:
+        raise SystemExit(f"'{get_database_adapter.__name__}():' bad adapter type '{adapter_type}'")
+
+
+################################ DATABASE ADAPTER BASE CLASS ################################
 class DatabaseAdapter(log.Loggable):
 
-    def __init__(self):
-        super(DatabaseAdapter, self).__init__()
+    def __init__(self, log_filename="app"):
+        super(DatabaseAdapter, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
     def open_conn(self):
@@ -29,24 +39,23 @@ class DatabaseAdapter(log.Loggable):
         pass
 
 
+################################ PSYCOPG2 DATABASE ADAPTER ###############################
 class Psycopg2DatabaseAdapter(DatabaseAdapter):
 
-    def __init__(self, connection_string: str):
-        super(Psycopg2DatabaseAdapter, self).__init__()
+    def __init__(self, connection_string: str, log_filename="app"):
+        super(Psycopg2DatabaseAdapter, self).__init__(log_filename=log_filename)
         self.connection_string = connection_string
         self.conn = None
 
+    @log_decorator.log_decorator()
     def open_conn(self):
         try:
-            self.log_info(f"{Psycopg2DatabaseAdapter.__name__}: try to open database connection...")
             self.conn = psycopg2.connect(self.connection_string)
         except psycopg2.Error as err:
             raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad connection string => {err!s}")
-        self.log_info(f"{Psycopg2DatabaseAdapter.__name__}: done")
 
+    @log_decorator.log_decorator()
     def send(self, query: str):
-
-        self.log_info(f"{Psycopg2DatabaseAdapter.__name__}: try to send query...")
         if self.conn is None:
             raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => connection is close")
         try:
@@ -58,14 +67,11 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
                 answer = cursor.fetchall()
         except psycopg2.Error as err:
             raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad query => {err!s}")
-
-        self.log_info(f"{Psycopg2DatabaseAdapter.__name__}: done")
         return answer
 
+    @log_decorator.log_decorator()
     def close_conn(self):
         try:
-            self.log_info(f"{Psycopg2DatabaseAdapter.__name__}: try to close database connection...")
             self.conn.close()
         except psycopg2.InterfaceError as err:
             raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => {err!s}")
-        self.log_info(f"{Psycopg2DatabaseAdapter.__name__}: done")

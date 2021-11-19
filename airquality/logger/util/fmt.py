@@ -18,7 +18,7 @@ COLORED_LEVELS = {'DEBUG': GREEN,
                   'WARNING': YELLOW,
                   'ERROR': RED}
 
-FMT_STR = f"%(levelname)-20s %(asctime)-30s %(filename)-20s %(funcName)-20s %(message)s"
+FMT_STR = f"%(levelname)-20s %(asctime)-30s %(filename)-20s %(message)s"
 
 
 def get_formatter_cls(use_color=False):

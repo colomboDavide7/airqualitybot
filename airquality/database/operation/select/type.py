@@ -10,6 +10,7 @@ from typing import List, Dict, Any
 import airquality.database.operation.base as base
 import airquality.database.util.conn as db
 import airquality.database.util.query as query
+import airquality.logger.util.decorator as log_decorator
 
 
 def get_type_select_wrapper(sensor_type: str, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
@@ -99,26 +100,22 @@ class StationTypeSelectWrapper(TypeSelectWrapper):
 ################################ SENSOR ID SELECT WRAPPER ################################
 class SensorIDSelectWrapper(base.DatabaseOperationWrapper):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder):
-        super(SensorIDSelectWrapper, self).__init__(conn=conn, query_builder=query_builder)
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="app"):
+        super(SensorIDSelectWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def get_sensor_api_param(self, sensor_id: int) -> Dict[str, Any]:
-        self.log_info(f"{SensorIDSelectWrapper.__name__}: try to query API param for sensor_id='{sensor_id}...")
         exec_query = self.builder.select_api_param_from_sensor_id(sensor_id)
         answer = self.conn.send(exec_query)
-        self.log_info(f"{SensorIDSelectWrapper.__name__}: done")
         return dict(answer)
 
+    @log_decorator.log_decorator()
     def get_last_acquisition(self, channel: str, sensor_id: int) -> str:
-        self.log_info(f"{SensorIDSelectWrapper.__name__}: try to query last acquisition for sensor_id='{sensor_id} on "
-                      f"channel='{channel}'...")
         exec_query = self.builder.select_last_acquisition(channel=channel, sensor_id=sensor_id)
         answer = self.conn.send(exec_query)
         unfolded = [str(t[0]) for t in answer]
 
         if not unfolded:
-            raise SystemExit(f"{SensorIDSelectWrapper.__name__}: bad database answer => cannot retrieve last acquisition "
+            raise SystemExit(f"{SensorIDSelectWrapper.__name__}: bad database answer => empty last acquisition "
                              f"timestamp for sensor_id={sensor_id} and channel='{channel}'")
-
-        self.log_info(f"{SensorIDSelectWrapper.__name__}: done")
         return unfolded[0]

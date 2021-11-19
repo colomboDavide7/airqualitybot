@@ -19,8 +19,8 @@ console_logger = log.get_console_logger(use_color=True)
 def main():
     try:
         app_obj = get_application()
-        app_obj.setup()
-        app_obj.run()
+        app_obj.setup_bot()
+        app_obj.run_bot()
     except (SystemExit, AttributeError, KeyError) as ex:
         console_logger.error(f"{ex!s}")
         error_logger.error(f"{ex!s}")

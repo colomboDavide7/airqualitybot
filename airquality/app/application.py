@@ -65,18 +65,18 @@ class Application(log.Loggable):
         self.bot = None
 
     @log_decorator.log_decorator()
-    def run(self):
+    def run_bot(self):
         if not self.bot:
             raise SystemExit(f"{Application.__name__}: bad setup => bot is None")
         self.bot.execute()
 
     @log_decorator.log_decorator()
-    def setup(self):
-
-        self.log_info(f"{Application.__name__}: try to setup a new bot....")
+    def setup_bot(self):
 
         ############################ LOADING 'api.json' FILE #############################
-        file_obj = jf.JSONFile(API_FILE, path_to_object=[self.sensor_type])
+        file_obj = jf.get_file_object(file_type="json", file_path=API_FILE, path_to_object=[self.sensor_type],
+                                      log_filename=self.log_filename)
+        file_obj.load()
         address, url_param, api_resp_format = loader.get_api_param_from_file(sensor_type=self.sensor_type, file_object=file_obj)
 
         ################################ LOADING '.env' FILE ################################
@@ -91,18 +91,9 @@ class Application(log.Loggable):
 
         ################################ INJECT API DEPENDENCIES ################################
         response_parser = parser.get_text_parser(file_ext=api_resp_format, log_filename=self.log_filename)
-        response_parser.set_file_logger(self.file_logger)
-        response_parser.set_console_logger(self.console_logger)
-
+        data_extractor = ext.get_data_extractor(sensor_type=self.sensor_type, log_filename=self.log_filename)
         url_builder = url.get_url_builder(sensor_type=self.sensor_type, address=address, url_param=url_param,
                                           log_filename=self.log_filename)
-        url_builder.set_file_logger(self.file_logger)
-        url_builder.set_console_logger(self.console_logger)
-
-        data_extractor = ext.get_data_extractor(sensor_type=self.sensor_type, log_filename=self.log_filename)
-        data_extractor.set_file_logger(self.file_logger)
-        data_extractor.set_console_logger(self.console_logger)
-
         # FetchWrapper
         fetch_wrapper = fetch.FetchWrapper(url_builder=url_builder, extractor=data_extractor, parser=response_parser,
                                            log_filename=self.log_filename)
@@ -114,28 +105,33 @@ class Application(log.Loggable):
 
         ################################ CREATE DATABASE OBJECTS ################################
         # Database Utilities
-        conn = db_conn.Psycopg2DatabaseAdapter(connection_string=os.environ['DBCONN'])
-        conn.set_file_logger(self.file_logger)
-        conn.set_console_logger(self.console_logger)
-
-        # Open connection
+        conn = db_conn.get_database_adapter(connection_string=os.environ['DBCONN'], log_filename=self.log_filename)
         conn.open_conn()
 
-        query_builder = qry.QueryBuilder(query_file=jf.JSONFile(file_path=QUERY_FILE))
+        # Get FileObject for 'query.json' file
+        file_obj = jf.get_file_object(file_type='json', file_path=QUERY_FILE, log_filename=self.log_filename)
+        file_obj.load()
+
+        # QueryBuilder
+        query_builder = qry.QueryBuilder(query_file=file_obj)
 
         # InsertWrapper
-        insert_wrapper = insert.get_insert_wrapper(sensor_type=self.sensor_type, conn=conn, builder=query_builder)
+        insert_wrapper = insert.get_insert_wrapper(sensor_type=self.sensor_type, conn=conn, builder=query_builder,
+                                                   log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 
         ################################ SETUP INSERT WRAPPER ###############################
-        sensor_location_record = rec.SensorLocationRecord(time_rec=t.TimeRecord(), location_rec=loc.LocationRecord())
+        time_rec = t.TimeRecord()
+        location_rec = loc.LocationRecord()
+
+        sensor_location_record = rec.SensorLocationRecord(time_rec=time_rec, location_rec=location_rec)
 
         # 'init' bot InsertWrapper dependencies
         if self.bot_name == 'init':
             insert_wrapper.set_sensor_record_builder(builder=rec.SensorRecord())
             insert_wrapper.set_api_param_record_builder(builder=rec.APIParamRecord())
-            insert_wrapper.set_sensor_info_record_builder(builder=rec.SensorInfoRecord(time_rec=t.TimeRecord()))
+            insert_wrapper.set_sensor_info_record_builder(builder=rec.SensorInfoRecord(time_rec=time_rec))
             insert_wrapper.set_sensor_location_record_builder(builder=sensor_location_record)
 
         # 'update' bot InsertWrapper dependencies
@@ -145,11 +141,10 @@ class Application(log.Loggable):
         # 'fetch' bot InsertWrapper dependencies
         elif self.bot_name == 'fetch':
             if self.sensor_type == 'atmotube':
-                insert_wrapper.set_mobile_record_builder(
-                    builder=rec.MobileMeasureRecord(time_rec=t.TimeRecord(), location_rec=loc.LocationRecord())
-                )
+                insert_wrapper.set_mobile_record_builder(builder=rec.MobileMeasureRecord(time_rec=time_rec,
+                                                                                         location_rec=location_rec))
             elif self.sensor_type == 'thingspeak':
-                insert_wrapper.set_station_record_builder(builder=rec.StationMeasureRecord(time_rec=t.TimeRecord()))
+                insert_wrapper.set_station_record_builder(builder=rec.StationMeasureRecord(time_rec=time_rec))
 
         # Inject InsertWrapper to Bot
         bot.add_insert_wrapper(insert_wrapper)
@@ -157,9 +152,8 @@ class Application(log.Loggable):
         ################################ SETUP SELECT WRAPPERS ################################
         # SensorIDSelectWrapper
         if self.bot_name == 'fetch':
-            sensor_id_select_wrapper = sel_type.SensorIDSelectWrapper(conn=conn, query_builder=query_builder)
-            sensor_id_select_wrapper.set_file_logger(self.file_logger)
-            sensor_id_select_wrapper.set_console_logger(self.console_logger)
+            sensor_id_select_wrapper = sel_type.SensorIDSelectWrapper(conn=conn, query_builder=query_builder,
+                                                                      log_filename=self.log_filename)
             bot.add_sensor_id_select_wrapper(sensor_id_select_wrapper)
 
         # SensorTypeSelectWrapper
@@ -209,7 +203,5 @@ class Application(log.Loggable):
         # Set logger and debugger
         bot.set_file_logger(self.file_logger)
         bot.set_console_logger(self.console_logger)
-
-        self.log_info(f"{Application.__name__}: done => bot successfully setup")
 
         self.bot = bot
