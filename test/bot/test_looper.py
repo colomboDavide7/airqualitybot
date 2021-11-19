@@ -34,7 +34,7 @@ class TestLooper(unittest.TestCase):
         looper = loop.AtmotubeDateLooper(fetch_wrapper=self.atmotube_fetch, start_ts=test_start, stop_ts=test_end)
 
         # Next 1
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'date': '2021-10-11'}
         self.assertEqual(actual_output, expected_output)
         self.assertTrue(looper.ended)
@@ -45,19 +45,19 @@ class TestLooper(unittest.TestCase):
         looper = loop.AtmotubeDateLooper(fetch_wrapper=self.atmotube_fetch, start_ts=test_start, stop_ts=test_end)
 
         # Next 1
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'date': '2021-10-11'}
         self.assertEqual(actual_output, expected_output)
         self.assertFalse(looper.ended)
 
         # Next 2
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'date': '2021-10-12'}
         self.assertEqual(actual_output, expected_output)
         self.assertFalse(looper.ended)
 
         # Next 3
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'date': '2021-10-13'}
         self.assertEqual(actual_output, expected_output)
         self.assertTrue(looper.ended)
@@ -69,7 +69,7 @@ class TestLooper(unittest.TestCase):
         looper = loop.ThingspeakDateLooper(fetch_wrapper=self.atmotube_fetch, start_ts=test_start, stop_ts=test_end)
 
         # Next 1
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'start': '2021-10-11 08:45:00', 'end': '2021-10-11 20:22:00'}
         self.assertEqual(actual_output, expected_output)
         self.assertTrue(looper.ended)
@@ -80,25 +80,25 @@ class TestLooper(unittest.TestCase):
         looper = loop.ThingspeakDateLooper(fetch_wrapper=self.atmotube_fetch, start_ts=test_start, stop_ts=test_end)
 
         # Next 1
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'start': '2021-10-11 08:45:00', 'end': '2021-10-18 08:45:00'}
         self.assertEqual(actual_output, expected_output)
         self.assertFalse(looper.ended)
 
         # Next 2
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'start': '2021-10-18 08:45:00', 'end': '2021-10-25 08:45:00'}
         self.assertEqual(actual_output, expected_output)
         self.assertFalse(looper.ended)
 
         # Next 3
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'start': '2021-10-25 08:45:00', 'end': '2021-11-01 08:45:00'}
         self.assertEqual(actual_output, expected_output)
         self.assertFalse(looper.ended)
 
         # Next 4
-        actual_output = looper._next_date()
+        actual_output = looper._get_next_date_url_param()
         expected_output = {'start': '2021-11-01 08:45:00', 'end': '2021-11-05 20:22:00'}
         self.assertEqual(actual_output, expected_output)
         self.assertTrue(looper.ended)

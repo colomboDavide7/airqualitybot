@@ -11,11 +11,12 @@ import airquality.database.util.datatype.timestamp as ts
 import airquality.database.operation.select.type as select
 import airquality.adapter.config as adapt_const
 
+
 ################################ FETCH BOT ################################
 class FetchBot(base.BaseBot):
 
-    def __init__(self, log_filename: str, log_sub_dir: str):
-        super(FetchBot, self).__init__(log_filename, log_sub_dir)
+    def __init__(self):
+        super(FetchBot, self).__init__()
         self.date_looper_class = None
         self.sensor_id_select_wrapper = None
 
@@ -39,8 +40,8 @@ class FetchBot(base.BaseBot):
 
         sensor_ids = self.sensor_type_select_wrapper.get_sensor_id()
         if not sensor_ids:
-            self.debugger.warning(f"no sensor found => done")
-            self.logger.warning(f"no sensor found => done")
+            self.console_logger.warning(f"no sensor found => done")
+            self.file_logger.warning(f"no sensor found => done")
             return
 
         ############################# CYCLE ON ALL SENSOR IDS FOUND ##############################
@@ -55,21 +56,24 @@ class FetchBot(base.BaseBot):
 
                 # Pop the channel name from the uniformed api param of the given sensor_id
                 ch_name = api_param.pop(adapt_const.CH_NAME)
-                self.debugger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
-                self.logger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
+                self.console_logger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
+                self.file_logger.debug(f"start fetch new measurements on channel='{ch_name}' for sensor_id={sensor_id}")
 
                 # Query sensor channel last acquisition
                 last_acquisition = self.sensor_id_select_wrapper.get_last_acquisition(channel=ch_name, sensor_id=sensor_id)
                 filter_timestamp = ts.SQLTimestamp(last_acquisition)
+                self.log_info(f"...last_acquisition timestamp for sensor_id={sensor_id} is "
+                              f"'{filter_timestamp.get_formatted_timestamp()}'...")
+
                 start_ts = filter_timestamp
                 stop_ts = ts.CurrentTimestamp()
-                self.debugger.info(f"last acquisition was at => {filter_timestamp.ts}")
-                self.logger.info(f"last acquisition was at => {filter_timestamp.ts}")
+                self.console_logger.info(f"last acquisition was at => {filter_timestamp.ts}")
+                self.file_logger.info(f"last acquisition was at => {filter_timestamp.ts}")
 
                 # Create date looper
                 looper = self.date_looper_class(self.fetch_wrapper, start_ts = start_ts, stop_ts = stop_ts)
-                looper.set_logger(self.logger)
-                looper.set_debugger(self.debugger)
+                looper.set_file_logger(self.file_logger)
+                looper.set_console_logger(self.console_logger)
 
                 ############################# UNIFORM PACKETS FOR SQL BUILDER ##############################
                 while looper.has_next():
@@ -98,5 +102,5 @@ class FetchBot(base.BaseBot):
                     # Add new measurements
                     self.insert_wrapper.insert_measurements(sensor_data=new_data, sensor_id=sensor_id, channel=ch_name)
 
-                self.debugger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
-                self.logger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+                self.console_logger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")
+                self.file_logger.debug(f"end fetch new measurements on channel={ch_name} for sensor_id={sensor_id}")

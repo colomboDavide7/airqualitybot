@@ -15,7 +15,7 @@ import airquality.filter.filter as filt
 
 class BaseBot(log.Loggable):
 
-    def __init__(self, log_filename: str, log_sub_dir: str):
+    def __init__(self):
         super(BaseBot, self).__init__()
         self.db2api_adapter = None
         self.api2db_adapter = None
@@ -23,8 +23,6 @@ class BaseBot(log.Loggable):
         self.insert_wrapper = None
         self.sensor_data_filter = None
         self.fetch_wrapper = None
-        self.log_filename = log_filename
-        self.log_sub_dir = log_sub_dir
 
     ################################ METHODS FOR ADDING EXTERNAL DEPENDENCIES ################################
     def add_fetch_wrapper(self, wrapper: fetch.FetchWrapper):

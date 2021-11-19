@@ -7,8 +7,9 @@
 #################################################
 import abc
 from typing import Dict, Any, List
-import airquality.api.config as c
+import airquality.api.config as api_const
 import airquality.adapter.config as adapt_const
+import airquality.logger.loggable as log
 
 
 def get_data_extractor(sensor_type: str):
@@ -24,7 +25,10 @@ def get_data_extractor(sensor_type: str):
 
 
 ################################ ABSTRACT BASE CLASS ################################
-class DataExtractor(abc.ABC):
+class DataExtractor(log.Loggable):
+
+    def __init__(self):
+        super(DataExtractor, self).__init__()
 
     @abc.abstractmethod
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
@@ -38,12 +42,19 @@ class DataExtractor(abc.ABC):
 ################################ PURPLEAIR DATA EXTRACTOR ################################
 class PurpleairDataExtractor(DataExtractor):
 
+    def __init__(self):
+        super(PurpleairDataExtractor, self).__init__()
+
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
+
+        self.log_info(f"{PurpleairDataExtractor.__name__}: try to extract API sensor data...")
         self._exit_on_bad_parsed_response(parsed_response=parsed_response)
 
         data_packets = []
         for data_packet in parsed_response['data']:
             data_packets.append(dict(zip(parsed_response['fields'], data_packet)))
+
+        self.log_info(f"{PurpleairDataExtractor.__name__}: done")
         return data_packets
 
     def _exit_on_bad_parsed_response(self, parsed_response: Dict[str, Any]):
@@ -56,16 +67,21 @@ class PurpleairDataExtractor(DataExtractor):
 ################################ THINGSPEAK DATA EXTRACTOR ################################
 class ThingspeakDataExtractor(DataExtractor):
 
+    def __init__(self):
+        super(ThingspeakDataExtractor, self).__init__()
+
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
 
+        self.log_info(f"{ThingspeakDataExtractor.__name__}: try to extract API sensor data...")
+
         if channel_name == adapt_const.FST_CH_A:
-            field_to_use = c.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
+            field_to_use = api_const.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1A
         elif channel_name == adapt_const.FST_CH_B:
-            field_to_use = c.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B
+            field_to_use = api_const.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_1B
         elif channel_name == adapt_const.SND_CH_A:
-            field_to_use = c.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
+            field_to_use = api_const.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2A
         elif channel_name == adapt_const.SND_CH_B:
-            field_to_use = c.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
+            field_to_use = api_const.THINGSPEAK2DATABASE_PARAM_NAME_MAPPING_2B
         else:
             raise SystemExit(f"{ThingspeakDataExtractor.__name__}: bad parameter => invalid channel_name='{channel_name}'")
 
@@ -76,10 +92,12 @@ class ThingspeakDataExtractor(DataExtractor):
         data_packets = []
         for feed in parsed_response['feeds']:
             self._exit_on_bad_parsed_response(feed)
-            data_packet = {'created_at': feed['created_at'], c.FIELDS: []}
+            data_packet = {'created_at': feed['created_at'], api_const.FIELDS: []}
             for field in field_to_use.keys():
-                data_packet[c.FIELDS].append({c.FIELD_NAME: field_to_use[field], c.FIELD_VALUE: feed[field]})
+                data_packet[api_const.FIELDS].append({api_const.FIELD_NAME: field_to_use[field], api_const.FIELD_VALUE: feed[field]})
             data_packets.append(data_packet)
+
+        self.log_info(f"{ThingspeakDataExtractor.__name__}: done")
         return data_packets
 
     def _exit_on_bad_parsed_response(self, parsed_response: Dict[str, Any]):
@@ -91,9 +109,16 @@ class ThingspeakDataExtractor(DataExtractor):
 
 class AtmotubeDataExtractor(DataExtractor):
 
+    def __init__(self):
+        super(AtmotubeDataExtractor, self).__init__()
+
     def extract(self, parsed_response: Dict[str, Any], channel_name="") -> List[Dict[str, Any]]:
+
+        self.log_info(f"{AtmotubeDataExtractor.__name__}: try to extract API sensor data...")
         self._exit_on_bad_parsed_response(parsed_response=parsed_response)
-        return parsed_response['data']['items']
+        sensor_data = parsed_response['data']['items']
+        self.log_info(f"{AtmotubeDataExtractor.__name__}: done")
+        return sensor_data
 
     def _exit_on_bad_parsed_response(self, parsed_response: Dict[str, Any]):
         if 'data' not in parsed_response:

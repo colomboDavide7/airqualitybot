@@ -45,7 +45,7 @@ class DateLooper(log.Loggable):
         pass
 
     @abc.abstractmethod
-    def _next_date(self) -> Dict[str, Any]:
+    def _get_next_date_url_param(self) -> Dict[str, Any]:
         pass
 
 
@@ -62,13 +62,16 @@ class AtmotubeDateLooper(DateLooper):
         return not self.ended
 
     def get_next_sensor_data(self) -> List[Dict[str, Any]]:
-        next_date = self._next_date()
+        # Get next date URL parameters
+        next_date = self._get_next_date_url_param()
+        # Update URL parameters
         self.fetch_wrapper.update_url_param(next_date)
-        self.info_messages.append(f"{DateLooper.__name__} is looking for new data at '{next_date['date']}'")
-        self.log_messages()
+        # Log message
+        self.log_info(f"...looking for new sensor data on date='{next_date['date']}'")
+        # Get sensor data
         return self.fetch_wrapper.get_sensor_data()
 
-    def _next_date(self) -> Dict[str, Any]:
+    def _get_next_date_url_param(self) -> Dict[str, Any]:
         date = self.start
         if date.is_after(self.stop) or date.is_same_day(self.stop):
             self.ended = True
@@ -90,14 +93,16 @@ class ThingspeakDateLooper(DateLooper):
         return not self.ended
 
     def get_next_sensor_data(self) -> List[Dict[str, Any]]:
-        next_time_window = self._next_date()
-        self.info_messages.append(f"{DateLooper.__name__} is looking for new data within "
-                                  f"[{next_time_window['start']} - {next_time_window['end']}]")
-        self.log_messages()
+        # Get next URL parameters
+        next_time_window = self._get_next_date_url_param()
+        # Log messages
+        self.log_info(f"...looking for new data within date range [{next_time_window['start']} - {next_time_window['end']}]")
+        # Update URL parameters
         self.fetch_wrapper.update_url_param(next_time_window)
+        # Get sensor data
         return self.fetch_wrapper.get_sensor_data()
 
-    def _next_date(self) -> Dict[str, Any]:
+    def _get_next_date_url_param(self) -> Dict[str, Any]:
         date = self.start
         end = self.start.add_days(7)
         if end.is_after(self.stop) or end.is_same_day(self.stop):

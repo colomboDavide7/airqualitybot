@@ -7,6 +7,7 @@
 #################################################
 import abc
 from typing import Dict, Any
+import airquality.logger.loggable as log
 
 
 def get_url_builder(sensor_type: str, address: str, url_param: Dict[str, Any]):
@@ -22,9 +23,10 @@ def get_url_builder(sensor_type: str, address: str, url_param: Dict[str, Any]):
 
 
 ################################ URL BUILDER ################################
-class URLBuilder(abc.ABC):
+class URLBuilder(log.Loggable):
 
     def __init__(self, address: str, url_param: Dict[str, Any]):
+        super(URLBuilder, self).__init__()
         self.address = address
         self.url_param = url_param
 
@@ -48,8 +50,11 @@ class PurpleairURL(URLBuilder):
 
     def url(self) -> str:
 
+        self.log_info(f"{PurpleairURL.__name__}: try to build URL...")
         self._exit_on_bad_url_parameters()
-        return f"{self.address}?{self._get_fields_string()}&{self._get_querystring()}"
+        url = f"{self.address}?{self._get_fields_string()}&{self._get_querystring()}"
+        self.log_info(f"{PurpleairURL.__name__}: done")
+        return url
 
     def _get_fields_string(self) -> str:
         return "fields=" + ','.join(f"{f}" for f in self.url_param.pop('fields'))
@@ -70,8 +75,12 @@ class AtmotubeURL(URLBuilder):
         super(AtmotubeURL, self).__init__(address=address, url_param=url_param)
 
     def url(self) -> str:
+
+        self.log_info(f"{AtmotubeURL.__name__}: try to build URL...")
         self._exit_on_bad_url_parameters()
-        return f"{self.address}?{self._get_querystring()}"
+        url = f"{self.address}?{self._get_querystring()}"
+        self.log_info(f"{AtmotubeURL.__name__}: done")
+        return url
 
     def _exit_on_bad_url_parameters(self):
         if 'api_key' not in self.url_param:
@@ -92,8 +101,10 @@ class ThingspeakURL(URLBuilder):
 
     def url(self) -> str:
 
+        self.log_info(f"{ThingspeakURL.__name__}: try to build URL...")
         self._exit_on_bad_url_parameters()
         url = f"{self.address}/{self.url_param['channel_id']}/feeds.{self.response_fmt}?{self._get_querystring()}"
+        self.log_info(f"{ThingspeakURL.__name__}: done")
         return url.replace(' ', '%20')
 
     def _get_querystring(self):

@@ -8,22 +8,21 @@
 import sys
 from typing import List, Tuple
 import airquality.app.application as app
-import airquality.app.util.make as make
+import airquality.logger.util.log as log
 
 
 # Create error logger and debugger
-error_logger = make.make_file_logger(file_path='log/errors.log')
-debugger = make.make_console_debugger(use_color=True)
+error_logger = log.get_file_logger(file_path='log/errors.log', logger_name="errors")
+console_logger = log.get_console_logger(use_color=True)
 
 
 def main():
     try:
         app_obj = get_application()
         app_obj.setup()
-        app_obj.log_messages()
         app_obj.run()
     except (SystemExit, AttributeError, KeyError) as ex:
-        debugger.error(f"{ex!s}")
+        console_logger.error(f"{ex!s}")
         error_logger.error(f"{ex!s}")
         sys.exit(1)
 
@@ -35,9 +34,9 @@ def get_application():
     application = app.Application(bot_name=bot_name, sensor_type=sensor_type)
 
     # Set external dependencies
-    logger = make.make_file_logger(file_path=f'log/{bot_name}.log', mode='a+')
-    application.set_logger(logger)
-    application.set_debugger(debugger)
+    file_logger = log.get_file_logger(file_path=f'log/{bot_name}.log', mode='a+', logger_name=bot_name)
+    application.set_file_logger(file_logger)
+    application.set_console_logger(console_logger)
 
     return application
 

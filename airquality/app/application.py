@@ -10,7 +10,6 @@ import os
 # --------------------- LOGGER IMPORT ---------------------
 # log
 import airquality.logger.loggable as log
-import airquality.logger.util.decorator as log_decorator
 # --------------------- BOT IMPORT ---------------------
 # util
 import airquality.bot.util.fact as fact
@@ -61,23 +60,18 @@ class Application(log.Loggable):
         super(Application, self).__init__()
         self.bot_name = bot_name
         self.sensor_type = sensor_type
-        self.log_filename = bot_name
-        self.log_sub_dir = 'log'
         self.bot = None
 
-    @log_decorator.log_decorator()
     def run(self):
         if not self.bot:
             raise SystemExit(f"{Application.__name__}: bad setup => bot is None")
         self.bot.execute()
-        self.bot.log_messages()
 
-    @log_decorator.log_decorator()
     def setup(self):
 
         ############################ LOADING 'api.json' FILE #############################
         file_obj = jf.JSONFile(API_FILE, path_to_object=[self.sensor_type])
-        address, url_param, file_ext = loader.get_api_param_from_file(sensor_type=self.sensor_type, file_object=file_obj)
+        address, url_param, api_resp_format = loader.get_api_param_from_file(sensor_type=self.sensor_type, file_object=file_obj)
 
         ################################ LOADING '.env' FILE ################################
         loader.load_environment_file(file_path=ENV_FILE, sensor_type=self.sensor_type)
@@ -87,17 +81,25 @@ class Application(log.Loggable):
             url_param.update({'api_key': os.environ['PURPLEAIR_KEY1']})
 
         ################################ MAKE BOT ################################
-        bot = fact.get_bot(self.bot_name, log_filename=self.bot_name, log_sub_dir='log')
+        bot = fact.get_bot(self.bot_name)
 
         ################################ INJECT API DEPENDENCIES ################################
-        response_parser = parser.get_text_parser(file_ext=file_ext)
+        response_parser = parser.get_text_parser(file_ext=api_resp_format)
+        response_parser.set_file_logger(self.file_logger)
+        response_parser.set_console_logger(self.console_logger)
+
         url_builder = url.get_url_builder(sensor_type=self.sensor_type, address=address, url_param=url_param)
+        url_builder.set_file_logger(self.file_logger)
+        url_builder.set_console_logger(self.console_logger)
+
         data_extractor = ext.get_data_extractor(sensor_type=self.sensor_type)
+        data_extractor.set_file_logger(self.file_logger)
+        data_extractor.set_console_logger(self.console_logger)
 
         # FetchWrapper
         fetch_wrapper = fetch.FetchWrapper(url_builder=url_builder, extractor=data_extractor, parser=response_parser)
-        fetch_wrapper.set_logger(self.logger)
-        fetch_wrapper.set_debugger(self.debugger)
+        fetch_wrapper.set_file_logger(self.file_logger)
+        fetch_wrapper.set_console_logger(self.console_logger)
 
         # Inject dependency to Bot
         bot.add_fetch_wrapper(wrapper=fetch_wrapper)
@@ -105,12 +107,18 @@ class Application(log.Loggable):
         ################################ CREATE DATABASE OBJECTS ################################
         # Database Utilities
         conn = db_conn.Psycopg2DatabaseAdapter(connection_string=os.environ['DBCONN'])
+        conn.set_file_logger(self.file_logger)
+        conn.set_console_logger(self.console_logger)
+
+        # Open connection
+        conn.open_conn()
+
         query_builder = qry.QueryBuilder(query_file=jf.JSONFile(file_path=QUERY_FILE))
 
         # InsertWrapper
         insert_wrapper = insert.get_insert_wrapper(sensor_type=self.sensor_type, conn=conn, builder=query_builder)
-        insert_wrapper.set_logger(self.logger)
-        insert_wrapper.set_debugger(self.debugger)
+        insert_wrapper.set_file_logger(self.file_logger)
+        insert_wrapper.set_console_logger(self.console_logger)
 
         ################################ SETUP INSERT WRAPPER ###############################
         sensor_location_record = rec.SensorLocationRecord(time_rec=t.TimeRecord(), location_rec=loc.LocationRecord())
@@ -146,18 +154,14 @@ class Application(log.Loggable):
 
         # SensorTypeSelectWrapper
         type_select_wrapper = sel_type.get_type_select_wrapper(conn=conn, query_builder=query_builder, sensor_type=self.sensor_type)
-        type_select_wrapper.set_logger(self.logger)
-        type_select_wrapper.set_debugger(self.debugger)
-
-        # Inject SensorTypeSelectWrapper to Bot
         bot.add_sensor_type_select_wrapper(type_select_wrapper)
 
         ################################ SENSOR DATA FILTER DEPENDENCIES ################################
 
         # SensorDataFilter
         sensor_data_filter = filt.get_sensor_data_filter(bot_name=self.bot_name, sel_wrapper=type_select_wrapper)
-        sensor_data_filter.set_debugger(self.debugger)
-        sensor_data_filter.set_logger(self.logger)
+        sensor_data_filter.set_console_logger(self.console_logger)
+        sensor_data_filter.set_file_logger(self.file_logger)
 
         # Inject SensorData filter to bot
         bot.add_sensor_data_filter(sensor_data_filter)
@@ -193,7 +197,7 @@ class Application(log.Loggable):
             bot.add_date_looper_class(date_looper_class)
 
         # Set logger and debugger
-        bot.set_logger(self.logger)
-        bot.set_debugger(self.debugger)
+        bot.set_file_logger(self.file_logger)
+        bot.set_console_logger(self.console_logger)
 
         self.bot = bot

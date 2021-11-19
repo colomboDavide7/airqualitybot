@@ -12,32 +12,25 @@ import airquality.logger.util.log as log
 class Loggable(abc.ABC):
 
     def __init__(self):
-        self.logger = None
-        self.debugger = None
-        self.info_messages = []
-        self.warning_messages = []
+        self.file_logger = None
+        self.console_logger = None
 
-    def set_logger(self, logger: log.logging.Logger):
-        self.logger = logger
+    def set_file_logger(self, logger: log.logging.Logger):
+        self.file_logger = logger
 
-    def set_debugger(self, debugger: log.logging.Logger):
-        self.debugger = debugger
+    def set_console_logger(self, logger: log.logging.Logger):
+        self.console_logger = logger
 
-    def log_messages(self):
-        if self.logger:
-            for msg in self.info_messages:
-                self.logger.info(msg)
-            for msg in self.warning_messages:
-                self.logger.warning(msg)
+    def log_info(self, msg_to_log: str):
+        if self.file_logger:
+            self.file_logger.info(msg_to_log)
 
-        if self.debugger:
-            for msg in self.info_messages:
-                self.debugger.info(msg)
-            for msg in self.warning_messages:
-                self.debugger.warning(msg)
+        if self.console_logger:
+            self.console_logger.info(msg_to_log)
 
-        self._clear_messages()
+    def log_warning(self, msg_to_log: str):
+        if self.file_logger:
+            self.file_logger.warning(msg_to_log)
 
-    def _clear_messages(self):
-        self.info_messages.clear()
-        self.warning_messages.clear()
+        if self.console_logger:
+            self.console_logger.warning(msg_to_log)

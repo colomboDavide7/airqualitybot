@@ -21,10 +21,10 @@ class TestFormatter(unittest.TestCase):
         self.assertEqual(obj_cls, formt.ColoredFormatter)
 
     def test_get_handler_class(self):
-        obj_cls = log.get_handler_cls(use_file=False)
+        obj_cls = log._get_handler_cls(use_file=False)
         self.assertEqual(obj_cls, log.logging.StreamHandler)
 
-        obj_cls = log.get_handler_cls(use_file=True)
+        obj_cls = log._get_handler_cls(use_file=True)
         self.assertEqual(obj_cls, log.logging.FileHandler)
 
 

@@ -13,17 +13,17 @@ import airquality.file.structured.json as jf
 
 def get_api_param_from_file(sensor_type: str, file_object: jf.JSONFile) -> Tuple[str, Dict[str, Any], str]:
 
-    address = file_object.api_address
     url_param = file_object.url_param
 
-    # file extension for building the TextParser
-    file_extension = "json"
+    # 'api_response_format' variable is used to decide which type of TextParser build for parsing API response
+    api_response_format = "json"
     if sensor_type in ('atmotube', 'thingspeak'):
-        if not url_param.get('format'):
-            raise SystemExit(f"bad 'api.json' file structure => '{sensor_type}' sensor type require 'format' param")
-        file_extension = url_param['format']
+        if 'format' not in url_param:
+            raise SystemExit(f"'{get_api_param_from_file.__name__}():'bad 'api.json' file structure => "
+                             f"'{sensor_type}' sensor type require 'format' param")
+        api_response_format = url_param['format']
 
-    return address, url_param, file_extension
+    return file_object.api_address, url_param, api_response_format
 
 
 def load_environment_file(file_path: str, sensor_type: str):

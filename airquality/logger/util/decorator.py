@@ -10,9 +10,7 @@ import inspect
 import os
 import sys
 
-import airquality.logger.util.log as log
-import airquality.logger.util.fmt as formt
-import airquality.app.util.make as make
+import airquality.logger.util.log as make
 
 
 def log_decorator(_func=None):
@@ -21,8 +19,8 @@ def log_decorator(_func=None):
         def log_decorator_wrapper(self, *args, **kwargs):
 
             # Create file logger
-            logger_obj = make.make_file_logger(file_path=f"log/{self.log_filename}.log", mode='a+')
-            debugger_obj = make.make_console_debugger(use_color=True)
+            logger_obj = make.get_file_logger(file_path=f"log/{self.log_filename}.log", mode='a+')
+            debugger_obj = make.get_console_logger(use_color=True)
 
             # Get the file caller
             py_file_caller = inspect.getframeinfo(inspect.stack()[1][0])

@@ -6,21 +6,22 @@
 #
 #################################################
 import airquality.bot.base as base
-import airquality.logger.util.decorator as log_decorator
 
 
 class InitializeBot(base.BaseBot):
 
-    def __init__(self, log_filename: str, log_sub_dir: str):
-        super(InitializeBot, self).__init__(log_filename, log_sub_dir)
+    def __init__(self):
+        super(InitializeBot, self).__init__()
 
-    @log_decorator.log_decorator()
     def execute(self):
+
+        self.log_info(f"{InitializeBot.__name__}: begin execution...")
 
         # Fetch API data
         sensor_data = self.fetch_wrapper.get_sensor_data()
         if not sensor_data:
-            self.warning_messages.append("empty API answer => done")
+            self.log_warning("...empty API sensor data...")
+            self.log_info(f"{InitializeBot.__name__}: done => no sensor inserted")
             return
 
         # Reshape API data
@@ -29,11 +30,13 @@ class InitializeBot(base.BaseBot):
         # Apply SensorDataFilter to keep only new sensors
         new_sensor_data = [data for data in uniformed_sensor_data if self.sensor_data_filter.filter(data)]
         if not new_sensor_data:
-            self.info_messages.append("all sensors are already present into the database => done")
+            self.log_warning("...all the sensors are already present into the database...")
+            self.log_info(f"{InitializeBot.__name__}: done => no sensor inserted")
             return
 
         # Query the max 'sensor_id' for knowing the 'sensor_id' during the insertion
         max_sensor_id = self.sensor_type_select_wrapper.get_max_sensor_id()
-
         # Execute queries on sensors
         self.insert_wrapper.initialize_sensors(sensor_data=new_sensor_data, start_id=max_sensor_id)
+
+        self.log_info(f"{InitializeBot.__name__}: done => sensors successfully inserted")
