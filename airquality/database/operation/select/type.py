@@ -100,7 +100,7 @@ class StationTypeSelectWrapper(TypeSelectWrapper):
 ################################ SENSOR ID SELECT WRAPPER ################################
 class SensorIDSelectWrapper(base.DatabaseOperationWrapper):
 
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="app"):
+    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="log"):
         super(SensorIDSelectWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
 
     @log_decorator.log_decorator()

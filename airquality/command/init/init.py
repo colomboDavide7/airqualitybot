@@ -16,7 +16,7 @@ import airquality.filter.filter as flt
 import airquality.logger.util.decorator as log_decorator
 
 
-class PurpleairInitCommand(c.Command):
+class InitCommand(c.Command):
 
     ################################ __init__ ###############################
     def __init__(self,
@@ -27,7 +27,7 @@ class PurpleairInitCommand(c.Command):
                  log_filename="purpleair"
                  ):
 
-        super(PurpleairInitCommand, self).__init__(
+        super(InitCommand, self).__init__(
             fetch_wrapper=fetch_wrapper,
             insert_wrapper=insert_wrapper,
             select_type_wrapper=select_type_wrapper,
@@ -41,12 +41,12 @@ class PurpleairInitCommand(c.Command):
 
         database_sensor_names = self.select_type_wrapper.get_sensor_names()
         if not database_sensor_names:
-            self.log_info(f"{PurpleairInitCommand.__name__}: empty database sensor names")
+            self.log_info(f"{InitCommand.__name__}: empty database sensor names")
 
         # Fetch API data
         sensor_data = self.fetch_wrapper.get_sensor_data()
         if not sensor_data:
-            self.log_warning(f"{PurpleairInitCommand.__name__}: empty API sensor data => no sensor inserted")
+            self.log_warning(f"{InitCommand.__name__}: empty API sensor data => no sensor inserted")
             return
 
         # Reshape API data
@@ -60,7 +60,7 @@ class PurpleairInitCommand(c.Command):
         # Filter sensor data
         new_sensor_data = [data for data in uniformed_sensor_data if sensor_data_filter.filter(data)]
         if not new_sensor_data:
-            self.log_warning(f"{PurpleairInitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
+            self.log_warning(f"{InitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
             return
 
         # Query the max 'sensor_id' for knowing the 'sensor_id' during the insertion

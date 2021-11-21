@@ -7,15 +7,15 @@
 ######################################################
 import abc
 from typing import List, Dict, Any
-import airquality.logger.loggable as log
+import airquality.database.operation.base as base
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
 
 
-class InsertWrapper(log.Loggable, abc.ABC):
+class InsertWrapper(base.DatabaseOperationWrapper, abc.ABC):
 
     def __init__(self, conn: connection.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="log"):
-        super(InsertWrapper, self).__init__(log_filename=log_filename)
+        super(InsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
         self.conn = conn
         self.query_builder = query_builder
 

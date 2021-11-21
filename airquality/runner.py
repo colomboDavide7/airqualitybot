@@ -10,6 +10,7 @@ from typing import List, Tuple
 import airquality.logger.util.log as log
 import airquality.command.init.setup as init_setup
 import airquality.command.update.setup as upd_setup
+import airquality.command.fetch.setup as ftc_setup
 
 
 # Create error logger and debugger
@@ -33,6 +34,17 @@ def main():
             setup_obj = upd_setup.PurpleairUpdateSetup(log_filename="purpleair")
             logger_file_path = "log/update/purpleair.log"
             logger_name = "purpleair_update"
+        elif cmd_name == 'fetch':
+            if sensor_type == 'atmotube':
+                setup_obj = ftc_setup.AtmotubeFetchSetup(log_filename="atmotube")
+                logger_file_path = "log/fetch/atmotube.log"
+                logger_name = "atmotube_fetch"
+            elif sensor_type == "thingspeak":
+                print("Thingspeak Fetch")
+            else:
+                raise SystemExit(f"{main.__name__}: bad sensor type '{sensor_type}' for command '{cmd_name}'")
+        else:
+            raise SystemExit(f"{main.__name__}: bad command '{cmd_name}'")
 
         setup_obj.set_file_logger(logger=log.get_file_logger(file_path=logger_file_path, logger_name=logger_name))
         setup_obj.set_console_logger(logger=console_logger)
@@ -47,7 +59,7 @@ def main():
 
 def get_commandline_arguments(args: List[str]) -> Tuple[str, str]:
 
-    program_usage = "USAGE: python(version) -m airquality bot_name sensor_type"
+    program_usage = "USAGE: python(version) -m airquality command_name sensor_type"
     valid_combination = [('init', 'purpleair'), ('update', 'purpleair'), ('fetch', 'atmotube'), ('fetch', 'thingspeak')]
 
     if not args:
@@ -56,23 +68,6 @@ def get_commandline_arguments(args: List[str]) -> Tuple[str, str]:
         raise SystemExit(f"'{get_commandline_arguments.__name__}()': bad usage => wrong number of argument, "
                          f"required 2, got {len(args)}. {program_usage}")
 
-    bot_name = args[0]
+    command_name = args[0]
     sensor_type = args[1]
-    if (bot_name, sensor_type) not in valid_combination:
-        raise SystemExit(f"'{get_commandline_arguments.__name__}():' bad arguments => '{sensor_type}' sensor type is "
-                         f" not valid for '{bot_name}' bot. Valid combinations are: {valid_combination}")
-    return bot_name, sensor_type
-
-
-# def get_application():
-#
-#     # Get arguments and create the Application
-#
-#     application = app.Application(bot_name=bot_name, sensor_type=sensor_type)
-#
-#     # Set external dependencies
-#     file_logger = log.get_file_logger(file_path=f'log/{bot_name}.log', mode='a+', logger_name=bot_name)
-#     application.set_file_logger(file_logger)
-#     application.set_console_logger(console_logger)
-#
-#     return application
+    return command_name, sensor_type

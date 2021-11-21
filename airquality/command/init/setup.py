@@ -6,7 +6,7 @@
 #
 ######################################################
 import os
-import airquality.command.init.purpleair as command
+import airquality.command.init.init as command
 import airquality.command.config as comm_const
 import airquality.command.setup as setup
 
@@ -43,15 +43,8 @@ class PurpleairInitSetup(setup.CommandSetup):
         fl.load_environment_file(file_path=comm_const.ENV_FILE_PATH, sensor_type=sensor_type)
 
         ################################ API-SIDE OBJECTS ################################
-        # Load API file
-        api_file_obj = setup.load_file(file_path=comm_const.API_FILE_PATH,
-                                       path_to_object=[sensor_type],
-                                       log_filename=self.log_filename)
-        # Get API address
-        address = api_file_obj.api_address
-
-        # Get URL param
-        url_param = api_file_obj.url_param
+        # API parameters
+        address, url_param = setup.get_api_parameters(sensor_type=sensor_type, log_filename=self.log_filename)
         url_param.update({'api_key': os.environ['PURPLEAIR_KEY1']})
 
         # Setup API-side objects
@@ -103,10 +96,10 @@ class PurpleairInitSetup(setup.CommandSetup):
         )
 
         # Build command object
-        cmd = command.PurpleairInitCommand(fetch_wrapper=fetch_wrapper,
-                                           insert_wrapper=insert_wrapper,
-                                           select_type_wrapper=select_type_wrapper,
-                                           api2db_adapter=api2db_adapter)
+        cmd = command.InitCommand(fetch_wrapper=fetch_wrapper,
+                                  insert_wrapper=insert_wrapper,
+                                  select_type_wrapper=select_type_wrapper,
+                                  api2db_adapter=api2db_adapter)
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
 

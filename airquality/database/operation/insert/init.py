@@ -24,7 +24,8 @@ class InitializeInsertWrapper(base.InsertWrapper):
                  sensor_info_rec: rec.SensorInfoRecord,
                  sensor_location_rec: rec.SensorLocationRecord,
                  log_filename="log"
-                 ):
+    ):
+
         super(InitializeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
         self.sensor_rec = sensor_rec
         self.sensor_api_rec = sensor_api_rec

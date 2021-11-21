@@ -11,7 +11,7 @@ import airquality.database.util.datatype.timestamp as ts
 import airquality.database.operation.select.type as select
 import airquality.adapter.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
-import airquality.bot.util.datelooper as loop
+import looper.datelooper as loop
 
 
 ################################ FETCH BOT ################################

@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.bot.util.datelooper as loop
+import looper.datelooper as loop
 import airquality.api.util.url as url
 import airquality.api.fetch as fetch
 import airquality.api.util.extractor as ext

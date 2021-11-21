@@ -14,7 +14,7 @@ import airquality.logger.util.decorator as log_decorator
 # --------------------- BOT IMPORT ---------------------
 # util
 import airquality.bot.util.fact as fact
-import airquality.bot.util.datelooper as loop
+import looper.datelooper as loop
 # --------------------- FILTER IMPORT ---------------------
 import airquality.filter.filter as filt
 # --------------------- FILE IMPORT ---------------------

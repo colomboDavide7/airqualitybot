@@ -16,7 +16,7 @@ import airquality.adapter.api2db.measure as meas_adapt
 import airquality.filter.filter as flt
 
 
-class PurpleairUpdateCommand(base.Command):
+class UpdateCommand(base.Command):
 
     ################################ __init__ ################################
     def __init__(self,
@@ -27,7 +27,7 @@ class PurpleairUpdateCommand(base.Command):
                  log_filename="purpleair"
                  ):
 
-        super(PurpleairUpdateCommand, self).__init__(
+        super(UpdateCommand, self).__init__(
             fetch_wrapper=fetch_wrapper,
             insert_wrapper=insert_wrapper,
             select_type_wrapper=select_type_wrapper,
@@ -41,13 +41,13 @@ class PurpleairUpdateCommand(base.Command):
         # Query database active locations
         database_active_locations = self.select_type_wrapper.get_active_locations()
         if not database_active_locations:
-            self.log_warning(f"{PurpleairUpdateCommand.__name__}: empty database active locations => no location updated")
+            self.log_warning(f"{UpdateCommand.__name__}: empty database active locations => no location updated")
             return
 
         # Fetch API data
         sensor_data = self.fetch_wrapper.get_sensor_data()
         if not sensor_data:
-            self.log_warning(f"{PurpleairUpdateCommand.__name__}: empty API sensor data => no location updated")
+            self.log_warning(f"{UpdateCommand.__name__}: empty API sensor data => no location updated")
             return
 
         # Reshape packets to a uniform interface
@@ -61,7 +61,7 @@ class PurpleairUpdateCommand(base.Command):
         # Filter sensor data
         fetched_changed_sensors = [data for data in uniformed_sensor_data if sensor_data_filter.filter(data)]
         if not fetched_changed_sensors:
-            self.log_warning(f"{PurpleairUpdateCommand.__name__}: all sensor locations are the same => no location updated")
+            self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")
             return
 
         # Query the (sensor_name, sensor_id) tuples

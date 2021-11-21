@@ -17,6 +17,7 @@ import airquality.adapter.api2db.measure as meas_adapt
 
 class Command(log.Loggable, abc.ABC):
 
+    ################################ __init__ ###############################
     def __init__(self,
                  fetch_wrapper: fetch.FetchWrapper,
                  insert_wrapper: ins.InsertWrapper,
@@ -30,6 +31,7 @@ class Command(log.Loggable, abc.ABC):
         self.select_type_wrapper = select_type_wrapper
         self.api2db_adapter = api2db_adapter
 
+    ################################ execute ###############################
     @abc.abstractmethod
     def execute(self):
         pass
