@@ -9,6 +9,8 @@ import sys
 from typing import List, Tuple
 import airquality.logger.util.log as log
 import airquality.command.init.setup as init_setup
+import airquality.command.update.setup as upd_setup
+
 
 # Create error logger and debugger
 error_logger = log.get_file_logger(file_path='log/errors.log', logger_name="errors")
@@ -27,6 +29,10 @@ def main():
             setup_obj = init_setup.PurpleairInitSetup(log_filename="purpleair")
             logger_file_path = "log/init/purpleair.log"
             logger_name = "purpleair_init"
+        elif cmd_name == 'update':
+            setup_obj = upd_setup.PurpleairUpdateSetup(log_filename="purpleair")
+            logger_file_path = "log/update/purpleair.log"
+            logger_name = "purpleair_update"
 
         setup_obj.set_file_logger(logger=log.get_file_logger(file_path=logger_file_path, logger_name=logger_name))
         setup_obj.set_console_logger(logger=console_logger)
