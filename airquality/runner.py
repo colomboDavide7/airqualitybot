@@ -40,7 +40,9 @@ def main():
                 logger_file_path = "log/fetch/atmotube.log"
                 logger_name = "atmotube_fetch"
             elif sensor_type == "thingspeak":
-                print("Thingspeak Fetch")
+                setup_obj = ftc_setup.ThingspeakFetchSetup(log_filename="thingspeak")
+                logger_file_path = "log/fetch/thingspeak.log"
+                logger_name = "thingspeak_fetch"
             else:
                 raise SystemExit(f"{main.__name__}: bad sensor type '{sensor_type}' for command '{cmd_name}'")
         else:

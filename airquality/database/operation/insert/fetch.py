@@ -68,15 +68,17 @@ class FetchStationInsertWrapper(base.InsertWrapper):
     def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
 
         # Create measure values
-        measure_values = [self.sensor_measure_rec.record(sensor_data=data) for data in sensor_data]
+        measure_values = [self.sensor_measure_rec.record(sensor_data=data, sensor_id=sensor_id) for data in sensor_data]
 
         # Build query
-        exec_query = self.query_builder.insert_station_measurements(values=measure_values, sensor_id=sensor_id, channel=sensor_channel)
+        exec_query = self.query_builder.insert_station_measurements(values=measure_values,
+                                                                    sensor_id=sensor_id,
+                                                                    channel=sensor_channel)
         self.conn.send(exec_query)
 
         # Log messages
         fst_rec_id = sensor_data[0][adapt_const.REC_ID]
         lst_rec_id = sensor_data[-1][adapt_const.REC_ID]
         tot = (lst_rec_id - fst_rec_id) + 1
-        self.log_info(f"{FetchStationInsertWrapper.__name__}: inserted {tot} mobile records within record_id "
+        self.log_info(f"{FetchStationInsertWrapper.__name__}: inserted {tot} station records within record_id "
                       f"[{fst_rec_id} - {lst_rec_id}]")
