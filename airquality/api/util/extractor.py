@@ -13,7 +13,7 @@ import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 
 
-def get_data_extractor(sensor_type: str, log_filename="app"):
+def get_data_extractor(sensor_type: str, log_filename="log"):
 
     if sensor_type == 'purpleair':
         return PurpleairDataExtractor(log_filename=log_filename)
@@ -28,7 +28,7 @@ def get_data_extractor(sensor_type: str, log_filename="app"):
 ################################ ABSTRACT BASE CLASS ################################
 class DataExtractor(log.Loggable):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(DataExtractor, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
@@ -43,7 +43,7 @@ class DataExtractor(log.Loggable):
 ################################ PURPLEAIR DATA EXTRACTOR ################################
 class PurpleairDataExtractor(DataExtractor):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(PurpleairDataExtractor, self).__init__(log_filename=log_filename)
 
     @log_decorator.log_decorator()
@@ -65,7 +65,7 @@ class PurpleairDataExtractor(DataExtractor):
 ################################ THINGSPEAK DATA EXTRACTOR ################################
 class ThingspeakDataExtractor(DataExtractor):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(ThingspeakDataExtractor, self).__init__(log_filename=log_filename)
 
     @log_decorator.log_decorator()
@@ -104,7 +104,7 @@ class ThingspeakDataExtractor(DataExtractor):
 
 class AtmotubeDataExtractor(DataExtractor):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(AtmotubeDataExtractor, self).__init__(log_filename=log_filename)
 
     @log_decorator.log_decorator()

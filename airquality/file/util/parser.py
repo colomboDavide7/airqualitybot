@@ -12,7 +12,7 @@ import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 
 
-def get_text_parser(file_ext: str, log_filename="app"):
+def get_text_parser(file_ext: str, log_filename="log"):
 
     if file_ext == 'json':
         return JSONParser(log_filename=log_filename)
@@ -22,7 +22,7 @@ def get_text_parser(file_ext: str, log_filename="app"):
 
 class TextParser(log.Loggable):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(TextParser, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
@@ -32,15 +32,13 @@ class TextParser(log.Loggable):
 
 class JSONParser(TextParser):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(JSONParser, self).__init__(log_filename=log_filename)
 
     @log_decorator.log_decorator()
     def parse(self, text: str) -> Dict[str, Any]:
         try:
-            self.log_info(f"{JSONParser.__name__} try to parse json text...")
             parsed_text = json.loads(text)
-            self.log_info(f"{JSONParser.__name__}: done")
             return parsed_text
         except json.decoder.JSONDecodeError as je:
             raise SystemExit(f"{JSONParser.__name__}: bad json schema => {je!s}")

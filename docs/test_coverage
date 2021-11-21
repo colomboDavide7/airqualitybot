@@ -1,0 +1,29 @@
+coverage erase
+coverage run -a --source=airquality -m test.adapter.api2db.test_measure
+coverage run -a --source=airquality -m test.adapter.api2db.test_sensor
+coverage run -a --source=airquality -m test.adapter.db2api.test_param
+coverage run -a --source=airquality -m test.api.test_extractor
+coverage run -a --source=airquality -m test.api.test_fetch
+coverage run -a --source=airquality -m test.api.test_url
+coverage run -a --source=airquality -m test.bot.test_looper
+coverage run -a --source=airquality -m test.database.test_geom
+coverage run -a --source=airquality -m test.database.test_timest
+coverage run -a --source=airquality -m test.database.record.test_location
+coverage run -a --source=airquality -m test.database.record.test_measure
+coverage run -a --source=airquality -m test.database.record.test_sensor
+coverage run -a --source=airquality -m test.database.record.test_time
+coverage run -a --source=airquality -m test.file.test_parser
+coverage run -a --source=airquality -m test.filter.test_filter
+coverage run -a --source=airquality -m test.logger.test_fmt
+coverage report
+
+
+# Run test coverage at once
+
+
+coverage run --source airquality -m unittest discover && coverage report --skip-covered
+
+
+
+
+

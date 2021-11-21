@@ -14,7 +14,7 @@ import airquality.database.util.datatype.timestamp as ts
 import airquality.database.operation.select.type as sel_type
 
 
-def get_sensor_data_filter(bot_name: str, sel_wrapper: sel_type.TypeSelectWrapper, log_filename="app"):
+def get_sensor_data_filter(bot_name: str, sel_wrapper: sel_type.TypeSelectWrapper, log_filename="log"):
 
     if bot_name == 'init':
         database_sensor_names = sel_wrapper.get_sensor_names()
@@ -31,7 +31,7 @@ def get_sensor_data_filter(bot_name: str, sel_wrapper: sel_type.TypeSelectWrappe
 ################################ SENSOR DATA FILTER BASE CLASS ################################
 class SensorDataFilter(log.Loggable):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(SensorDataFilter, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
@@ -46,7 +46,7 @@ class SensorDataFilter(log.Loggable):
 ################################ NAME FILTER ################################
 class NameFilter(SensorDataFilter):
 
-    def __init__(self, database_sensor_names: List[str], log_filename="app"):
+    def __init__(self, database_sensor_names: List[str], log_filename="log"):
         super(NameFilter, self).__init__(log_filename=log_filename)
         self.database_sensor_names = database_sensor_names
 
@@ -62,7 +62,7 @@ class NameFilter(SensorDataFilter):
 ################################ TIMESTAMP FILTER ################################
 class TimestampFilter(SensorDataFilter):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(TimestampFilter, self).__init__(log_filename=log_filename)
         self.filter_ts = None
 
@@ -94,7 +94,7 @@ class TimestampFilter(SensorDataFilter):
 ################################ GEO FILTER ################################
 class GeoFilter(SensorDataFilter):
 
-    def __init__(self, database_active_locations: Dict[str, Any], log_filename="app"):
+    def __init__(self, database_active_locations: Dict[str, Any], log_filename="log"):
         super(GeoFilter, self).__init__(log_filename=log_filename)
         self.database_active_locations = database_active_locations
 

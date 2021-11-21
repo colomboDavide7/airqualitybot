@@ -12,7 +12,7 @@ import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 
 
-def get_database_adapter(connection_string: str, adapter_type="psycopg2", log_filename="app"):
+def get_database_adapter(connection_string: str, adapter_type="psycopg2", log_filename="log"):
 
     if adapter_type == 'psycopg2':
         return Psycopg2DatabaseAdapter(connection_string=connection_string, log_filename=log_filename)
@@ -23,7 +23,7 @@ def get_database_adapter(connection_string: str, adapter_type="psycopg2", log_fi
 ################################ DATABASE ADAPTER BASE CLASS ################################
 class DatabaseAdapter(log.Loggable):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(DatabaseAdapter, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
@@ -42,7 +42,7 @@ class DatabaseAdapter(log.Loggable):
 ################################ PSYCOPG2 DATABASE ADAPTER ###############################
 class Psycopg2DatabaseAdapter(DatabaseAdapter):
 
-    def __init__(self, connection_string: str, log_filename="app"):
+    def __init__(self, connection_string: str, log_filename="log"):
         super(Psycopg2DatabaseAdapter, self).__init__(log_filename=log_filename)
         self.connection_string = connection_string
         self.conn = None

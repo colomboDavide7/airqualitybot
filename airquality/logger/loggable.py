@@ -11,7 +11,7 @@ import airquality.logger.util.log as log
 
 class Loggable(abc.ABC):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         self.log_filename = log_filename
         self.file_logger = None
         self.console_logger = None

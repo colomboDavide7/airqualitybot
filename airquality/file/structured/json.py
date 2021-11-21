@@ -13,18 +13,18 @@ import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 
 
-def get_file_object(file_type: str, file_path: str, path_to_object: List[str] = (), log_filename="app"):
+def get_file_object_from_file_type(file_type: str, file_path: str, path_to_object: List[str] = (), log_filename="log"):
 
     if file_type == 'json':
         return JSONFile(file_path=file_path, path_to_object=path_to_object, log_filename=log_filename)
     else:
-        raise SystemExit(f"'{get_file_object.__name__}()': bad 'file_type'={file_type}")
+        raise SystemExit(f"'{get_file_object_from_file_type.__name__}()': bad 'file_type'={file_type}")
 
 
 ############################ FILE OBJECT BASE CLASS #############################
 class FileObject(log.Loggable):
 
-    def __init__(self, log_filename="app"):
+    def __init__(self, log_filename="log"):
         super(FileObject, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
@@ -35,7 +35,7 @@ class FileObject(log.Loggable):
 ############################ JSON FILE OBJECT CLASS #############################
 class JSONFile(FileObject):
 
-    def __init__(self, file_path: str, path_to_object: List[str] = (), log_filename="app"):
+    def __init__(self, file_path: str, path_to_object: List[str] = (), log_filename="log"):
         super(JSONFile, self).__init__(log_filename=log_filename)
         self.file_path = file_path
         self.path_to_object = path_to_object

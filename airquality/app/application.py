@@ -74,8 +74,8 @@ class Application(log.Loggable):
     def setup_bot(self):
 
         ############################ LOADING 'api.json' FILE #############################
-        file_obj = jf.get_file_object(file_type="json", file_path=API_FILE, path_to_object=[self.sensor_type],
-                                      log_filename=self.log_filename)
+        file_obj = jf.get_file_object_from_file_type(file_type="json", file_path=API_FILE, path_to_object=[self.sensor_type],
+                                                     log_filename=self.log_filename)
         file_obj.load()
         address, url_param, api_resp_format = loader.get_api_param_from_file(sensor_type=self.sensor_type, file_object=file_obj)
 
@@ -109,7 +109,7 @@ class Application(log.Loggable):
         conn.open_conn()
 
         # Get FileObject for 'query.json' file
-        file_obj = jf.get_file_object(file_type='json', file_path=QUERY_FILE, log_filename=self.log_filename)
+        file_obj = jf.get_file_object_from_file_type(file_type='json', file_path=QUERY_FILE, log_filename=self.log_filename)
         file_obj.load()
 
         # QueryBuilder
