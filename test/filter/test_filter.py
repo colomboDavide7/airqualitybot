@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.filter.filter as filt
+import airquality.filter.base as filt
 import airquality.database.util.datatype.timestamp as ts
 import airquality.database.util.postgis.geom as geom
 import airquality.adapter.config as adapt_const

@@ -10,7 +10,7 @@ import airquality.logger.loggable as log
 import airquality.api.fetchwrp as fetch
 import airquality.database.operation.select.sensor as sel_type
 import airquality.database.operation.base as base_wrp
-import airquality.filter.filter as filt
+import airquality.filter.base as filt
 
 
 class BaseBot(log.Loggable):
@@ -28,7 +28,7 @@ class BaseBot(log.Loggable):
     def add_fetch_wrapper(self, wrapper: fetch.FetchWrapper):
         self.fetch_wrapper = wrapper
 
-    def add_sensor_data_filter(self, data_filter: filt.SensorDataFilter):
+    def add_sensor_data_filter(self, data_filter: filt.BaseFilter):
         self.sensor_data_filter = data_filter
 
     ################################ INJECT EXECUTOR DEPENDENCIES ################################

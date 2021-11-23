@@ -16,7 +16,7 @@ import container.sensor as sens_adapt
 import airquality.adapter.api2db.measure as meas_adapt
 import airquality.adapter.db2api.param as par_adapt
 import airquality.database.util.datatype.timestamp as ts
-import airquality.filter.filter as flt
+import airquality.filter.base as flt
 
 
 class FetchCommand(base.Command):
@@ -116,11 +116,11 @@ class FetchCommand(base.Command):
     ############################# FUNCTION 3 ##############################
     @log_decorator.log_decorator()
     def _uniform_filter_insert(self,
-                               sensor_data_flt: flt.SensorDataFilter,
+                               sensor_data_flt: flt.BaseFilter,
                                sensor_id: int,
                                channel_name: str,
                                sensor_data: List[Dict[str, Any]]
-    ):
+                               ):
 
         # Uniform sensor data
         uniformed_sensor_data = [self.api2db_adapter.raw2container(data) for data in sensor_data]

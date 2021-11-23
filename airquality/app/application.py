@@ -16,7 +16,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.bot.util.fact as fact
 import looper.datelooper as loop
 # --------------------- FILTER IMPORT ---------------------
-import airquality.filter.filter as filt
+import airquality.filter.base as filt
 # --------------------- FILE IMPORT ---------------------
 # structured
 import airquality.file.structured.json as jf
