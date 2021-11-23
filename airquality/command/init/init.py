@@ -64,7 +64,7 @@ class InitCommand(c.Command):
             sensor_data_filter.set_console_logger(self.console_logger)
 
             # Filter sensor data
-            sensor_containers = sensor_data_filter.filter(containers=sensor_containers)
+            sensor_containers = sensor_data_filter.filter(to_filter=sensor_containers)
             if not sensor_containers:
                 self.log_warning(f"{InitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
                 return

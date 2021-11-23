@@ -5,26 +5,28 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+from typing import Dict, Any, List
 import airquality.filter.basefilt as base
+import airquality.adapter.api2db.initadapt.initadapt as initadapt
 
 
 class GeoFilter(base.BaseFilter):
 
     def __init__(self, database_active_locations: Dict[str, Any]):
-        super(GeoFilter, self).__init__(log_filename=log_filename)
+        super(GeoFilter, self).__init__()
         self.database_active_locations = database_active_locations
 
-    def filter(self, containers: List[sensor_c.SensorContainer]) -> List[sensor_c.SensorContainer]:
-        filtered_containers = []
-        for container in containers:
-            if container.identity.name in self.database_active_locations:
-                if container.location.postgis_geom.as_text() != self.database_active_locations[container.identity.name]:
-                    filtered_containers.append(container)
-                    self.log_info(f"{GeoFilter.__name__}: add sensor '{container.identity.name}' => new location")
+    def filter(self, to_filter: List[initadapt.InitUniformModel]) -> List[initadapt.InitUniformModel]:
+        filtered_data = []
+        for data in to_filter:
+            if data.name in self.database_active_locations:
+                if data.geolocation.geolocation.as_text() != self.database_active_locations[data.name]:
+                    filtered_data.append(data)
+                    self.log_info(f"{GeoFilter.__name__}: add sensor '{data.name}' => new location")
                 else:
-                    self.log_warning(f"{GeoFilter.__name__}: skip sensor '{container.identity.name}' => same location")
+                    self.log_warning(f"{GeoFilter.__name__}: skip sensor '{data.name}' => same location")
             else:
-                self.log_warning(f"{GeoFilter.__name__}: skip sensor '{container.identity.name}' => inactive")
+                self.log_warning(f"{GeoFilter.__name__}: skip sensor '{data.name}' => inactive")
 
-        self.log_info(f"{GeoFilter.__name__}: found {len(filtered_containers)}/{len(containers)} new locations")
-        return filtered_containers
+        self.log_info(f"{GeoFilter.__name__}: found {len(filtered_data)}/{len(to_filter)} new locations")
+        return filtered_data
