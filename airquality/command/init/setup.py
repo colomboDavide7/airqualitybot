@@ -18,7 +18,7 @@ import airquality.file.util.loader as fl
 import airquality.api.util.extractor as extr
 import airquality.api.util.url as url
 
-import airquality.database.operation.select.type as sel_type
+import airquality.database.operation.select.sensor as sel_type
 import airquality.database.util.datatype.timestamp as ts
 import airquality.database.util.record.location as loc
 import airquality.database.operation.insert.init as ins
@@ -27,7 +27,7 @@ import airquality.database.util.record.record as rec
 import airquality.database.util.record.time as t
 import airquality.database.util.query as qry
 
-import airquality.adapter.api2db.sensor as adapt
+import container.sensor as adapt
 
 
 ################################ PURPLEAIR INIT COMMAND SETUP ################################
@@ -49,7 +49,7 @@ class PurpleairInitSetup(setup.CommandSetup):
 
         # Setup API-side objects
         api_resp_parser = fp.JSONParser(log_filename=self.log_filename)
-        api_data_extractor = extr.PurpleairDataExtractor(log_filename=self.log_filename)
+        api_data_extractor = extr.PurpleairSensorDataExtractor(log_filename=self.log_filename)
         url_builder = url.PurpleairURL(address=address, url_param=url_param, log_filename=self.log_filename)
 
         # FetchWrapper
@@ -89,8 +89,8 @@ class PurpleairInitSetup(setup.CommandSetup):
                                                                 sensor_type=sensor_type)
 
         ################################ ADAPTER-SIDE OBJECTS ################################
-        api2db_adapter = adapt.PurpleairSensorAdapter(
-            postgis_class=geom.PointBuilder,
+        api2db_adapter = adapt.PurpleairSensorContainerBuilder(
+            postgis_class=geom.PostgisPoint,
             timestamp_class=ts.UnixTimestamp,
             log_filename=self.log_filename
         )

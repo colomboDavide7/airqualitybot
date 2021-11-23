@@ -57,7 +57,7 @@ def open_database_connection(connection_string: str, log_filename="log"):
 def get_fetch_wrapper(
         url_builder: url.URLBuilder,
         api_resp_parser: fp.TextParser,
-        api_data_extractor: extr.DataExtractor,
+        api_data_extractor: extr.SensorDataExtractor,
         log_filename="log"
 ) -> fetch.FetchWrapper:
     return fetch.FetchWrapper(url_builder=url_builder,

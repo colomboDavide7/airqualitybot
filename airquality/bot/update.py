@@ -24,7 +24,7 @@ class UpdateBot(base.BaseBot):
             return
 
         # Reshape packets to a uniform interface
-        uniformed_sensor_data = [self.api2db_adapter.reshape(data) for data in sensor_data]
+        uniformed_sensor_data = [self.api2db_adapter.build(data) for data in sensor_data]
 
         # Apply GeoFilter to keep only the fetched sensors that have changed location
         fetched_changed_sensors = [data for data in uniformed_sensor_data if self.sensor_data_filter.filter(data)]

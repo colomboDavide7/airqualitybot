@@ -14,13 +14,13 @@ POINT_GEOMETRY = "POINT({lng} {lat})"
 def get_postgis_class(sensor_type: str):
 
     if sensor_type in ('purpleair', 'atmotube'):
-        return PointBuilder
+        return PostgisPoint
     else:
         return None
 
 
 ################################ GEOMETRY BUILDER CLASS ################################
-class GeometryBuilder(abc.ABC):
+class PostgisGeometry(abc.ABC):
 
     def __init__(self, srid: int = 26918):
         self.srid = srid
@@ -35,10 +35,10 @@ class GeometryBuilder(abc.ABC):
 
 
 ################################ POINT BUILDER CLASS ################################
-class PointBuilder(GeometryBuilder):
+class PostgisPoint(PostgisGeometry):
 
     def __init__(self, lat: str, lng: str, srid: int = 26918):
-        super(PointBuilder, self).__init__(srid=srid)
+        super(PostgisPoint, self).__init__(srid=srid)
         self.lat = lat
         self.lng = lng
 
@@ -51,7 +51,7 @@ class PointBuilder(GeometryBuilder):
 
 
 ################################ NULL GEOMETRY CLASS ################################
-class NullGeometry(GeometryBuilder):
+class NullGeometry(PostgisGeometry):
 
     def __init__(self, srid: int = 26918):
         super(NullGeometry, self).__init__(srid=srid)

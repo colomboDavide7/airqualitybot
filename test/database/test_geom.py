@@ -16,13 +16,13 @@ class TestGeometryBuilder(unittest.TestCase):
     def test_successfully_get_database_string_from_postgis_point(self):
         test_packet = {geom_conf.POINT_INIT_LAT_NAME: '45.1234', geom_conf.POINT_INIT_LNG_NAME: '9.8765'}
         expected_output = f"ST_GeomFromText('POINT(9.8765 45.1234)', 26918)"
-        actual_output = geom.PointBuilder(**test_packet).geom_from_text()
+        actual_output = geom.PostgisPoint(**test_packet).geom_from_text()
         self.assertEqual(actual_output, expected_output)
 
     def test_successfully_get_geomtype_from_postgis_point(self):
         test_packet = {geom_conf.POINT_INIT_LAT_NAME: '45.1234', geom_conf.POINT_INIT_LNG_NAME: '9.8765'}
         expected_output = f"POINT(9.8765 45.1234)"
-        actual_output = geom.PointBuilder(**test_packet).as_text()
+        actual_output = geom.PostgisPoint(**test_packet).as_text()
         self.assertEqual(actual_output, expected_output)
 
     def test_null_object_geom_from_text(self):

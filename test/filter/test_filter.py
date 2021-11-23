@@ -69,7 +69,7 @@ class TestFilter(unittest.TestCase):
     ################################ GEO FILTER ################################
     def test_false_when_geo_filter_is_applied_to_inactive_sensor(self):
         test_data = {adapt_const.SENS_NAME: 'n3 (idx3)',
-                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                              adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45',
                                                               geom_conf.POINT_INIT_LNG_NAME: '9'}}}
         actual_output = self.geo_filter.filter(sensor_data=test_data)
@@ -77,7 +77,7 @@ class TestFilter(unittest.TestCase):
 
     def test_false_when_geo_filter_is_applied_to_active_sensor_with_same_location(self):
         test_data = {adapt_const.SENS_NAME: 'n1 (idx1)',
-                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                              adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45.1232',
                                                               geom_conf.POINT_INIT_LNG_NAME: '8.7876'}}}
         actual_output = self.geo_filter.filter(sensor_data=test_data)
@@ -85,7 +85,7 @@ class TestFilter(unittest.TestCase):
 
     def test_true_when_geo_filter_is_applied_to_active_sensor_with_new_location(self):
         test_data = {adapt_const.SENS_NAME: 'n1 (idx1)',
-                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                              adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '46',
                                                               geom_conf.POINT_INIT_LNG_NAME: '7'}}}
         actual_output = self.geo_filter.filter(sensor_data=test_data)
@@ -93,7 +93,7 @@ class TestFilter(unittest.TestCase):
 
     def test_empty_list_when_database_active_location_is_empty(self):
         test_data = {adapt_const.SENS_NAME: 'n1 (idx1)',
-                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                              adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45',
                                                               geom_conf.POINT_INIT_LNG_NAME: '9'}}}
         geo_filter = filt.GeoFilter(database_active_locations={})
@@ -113,7 +113,7 @@ class TestFilter(unittest.TestCase):
             geo_filter.filter(sensor_data=test_data)
 
     def test_exit_on_missing_class_or_kwargs_items_in_geom_dictionary(self):
-        test_data = {adapt_const.SENS_NAME: 'n1 (idx1)', adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder, 'other': 1}}
+        test_data = {adapt_const.SENS_NAME: 'n1 (idx1)', adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint, 'other': 1}}
         geo_filter = filt.GeoFilter(database_active_locations={'n1 (idx1)': 'POINT(8.7876 45.1232)'})
         with self.assertRaises(SystemExit):
             geo_filter.filter(sensor_data=test_data)

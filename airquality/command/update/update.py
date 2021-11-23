@@ -10,8 +10,8 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.command.command as base
 import airquality.api.fetch as fetch
 import airquality.database.operation.insert.update as ins
-import airquality.database.operation.select.type as sel_type
-import airquality.adapter.api2db.sensor as sens_adapt
+import airquality.database.operation.select.sensor as sel_type
+import container.sensor as sens_adapt
 import airquality.adapter.api2db.measure as meas_adapt
 import airquality.filter.filter as flt
 
@@ -23,10 +23,9 @@ class UpdateCommand(base.Command):
                  fetch_wrapper: fetch.FetchWrapper,
                  insert_wrapper: ins.UpdateInsertWrapper,
                  select_type_wrapper: sel_type.TypeSelectWrapper,
-                 api2db_adapter: Union[sens_adapt.SensorAdapter, meas_adapt.MeasureAdapter],
+                 api2db_adapter: Union[sens_adapt.SensorContainerBuilder, meas_adapt.MeasureAdapter],
                  log_filename="purpleair"
-                 ):
-
+    ):
         super(UpdateCommand, self).__init__(
             fetch_wrapper=fetch_wrapper,
             insert_wrapper=insert_wrapper,
@@ -50,8 +49,11 @@ class UpdateCommand(base.Command):
             self.log_warning(f"{UpdateCommand.__name__}: empty API sensor data => no location updated")
             return
 
-        # Reshape packets to a uniform interface
-        uniformed_sensor_data = [self.api2db_adapter.reshape(data) for data in sensor_data]
+        # Reshape API data
+        sensor_containers = []
+        for data in sensor_data:
+            sensor_containers.append(self.api2db_adapter.raw2container(data=data, sensor_id=max_sensor_id))
+            max_sensor_id += 1
 
         # Create GeoFilter
         sensor_data_filter = flt.GeoFilter(database_active_locations=database_active_locations, log_filename=self.log_filename)

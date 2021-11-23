@@ -24,7 +24,7 @@ import airquality.file.structured.json as jf
 import airquality.file.util.parser as parser
 import airquality.file.util.loader as loader
 # --------------------- ADAPTER IMPORT ---------------------
-import airquality.adapter.api2db.sensor as sens
+import container.sensor as sens
 import airquality.adapter.api2db.measure as meas
 import airquality.adapter.db2api.param as par
 # --------------------- API IMPORT ---------------------
@@ -35,7 +35,7 @@ import airquality.api.util.url as url
 import airquality.api.util.extractor as ext
 # --------------------- DATABASE IMPORT ---------------------
 # operation
-import airquality.database.operation.select.type as sel_type
+import airquality.database.operation.select.sensor as sel_type
 import airquality.database.operation.insert as insert
 # util
 import airquality.database.util.postgis.geom as geom
@@ -185,7 +185,7 @@ class Application(log.Loggable):
             measure_adapter = meas.get_measure_adapter(
                 sensor_type=self.sensor_type,
                 sel_type=type_select_wrapper,
-                geom_cls=geom.PointBuilder,
+                geom_cls=geom.PostgisPoint,
                 timest_cls=ts.get_timestamp_class(sensor_type=self.sensor_type)
             )
 

@@ -12,7 +12,7 @@ import airquality.adapter.config as adapt_const
 import airquality.database.util.postgis.config as geom_conf
 import airquality.database.util.datatype.config as time_conf
 import airquality.adapter.api2db.measure as adapt
-import airquality.database.operation.select.type as sel_type
+import airquality.database.operation.select.sensor as sel_type
 import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
 import airquality.api.config as extr_const
@@ -44,7 +44,7 @@ class TestMeasureAdapter(unittest.TestCase):
     def setUp(self) -> None:
         self.atmotube_adapter = adapt.AtmotubeMeasureAdapter(
             sel_type=AtmotubeTypeSelectWrapperMock(conn=None, query_builder=None, sensor_type=None),
-            geom_cls=geom.PointBuilder,
+            geom_cls=geom.PostgisPoint,
             timest_cls=ts.AtmotubeTimestamp
         )
         self.thingspeak_adapter = adapt.ThingspeakMeasureAdapter(
@@ -85,7 +85,7 @@ class TestMeasureAdapter(unittest.TestCase):
                                                     {adapt_const.PAR_ID: 7, adapt_const.PAR_VAL: 'val7'}],
                            adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
                                                 adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2021-10-11T01:33:44.000Z'}},
-                           adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                           adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                                    adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: 'lat_val',
                                                                     geom_conf.POINT_INIT_LNG_NAME: 'lon_val'}}
                            }

@@ -11,8 +11,8 @@ import airquality.command.command as base
 import airquality.adapter.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.operation.insert.insert as ins
-import airquality.database.operation.select.type as sel_type
-import airquality.adapter.api2db.sensor as sens_adapt
+import airquality.database.operation.select.sensor as sel_type
+import container.sensor as sens_adapt
 import airquality.adapter.api2db.measure as meas_adapt
 import airquality.adapter.db2api.param as par_adapt
 import airquality.database.util.datatype.timestamp as ts
@@ -27,11 +27,11 @@ class FetchCommand(base.Command):
                  insert_wrapper: ins.InsertWrapper,
                  select_type_wrapper: sel_type.TypeSelectWrapper,
                  id_select_wrapper: sel_type.SensorIDSelectWrapper,
-                 api2db_adapter: Union[sens_adapt.SensorAdapter, meas_adapt.MeasureAdapter],
+                 api2db_adapter: Union[sens_adapt.SensorContainerBuilder, meas_adapt.MeasureAdapter],
                  db2api_adapter: par_adapt.ParamAdapter,
                  date_looper_class,
                  log_filename="log"
-    ):
+                 ):
         super(FetchCommand, self).__init__(
             fetch_wrapper=fetch_wrapper,
             insert_wrapper=insert_wrapper,
@@ -87,7 +87,8 @@ class FetchCommand(base.Command):
         sensor_data_filter.set_filter_ts(filter_ts=filter_timestamp)
 
         # DateLooper
-        looper = self.date_looper_class(fetch_wrapper=self.fetch_wrapper, start_ts=filter_timestamp,
+        looper = self.date_looper_class(fetch_wrapper=self.fetch_wrapper,
+                                        start_ts=filter_timestamp,
                                         stop_ts=ts.CurrentTimestamp(),
                                         log_filename=self.log_filename)
         looper.set_file_logger(self.file_logger)
@@ -122,7 +123,7 @@ class FetchCommand(base.Command):
     ):
 
         # Uniform sensor data
-        uniformed_sensor_data = [self.api2db_adapter.reshape(data) for data in sensor_data]
+        uniformed_sensor_data = [self.api2db_adapter.raw2container(data) for data in sensor_data]
 
         # Filter measure to keep only new measurements
         new_data = [data for data in uniformed_sensor_data if sensor_data_flt.filter(data)]

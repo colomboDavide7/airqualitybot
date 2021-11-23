@@ -10,7 +10,7 @@ from typing import Dict, Any, List
 import airquality.adapter.config as adapt_const
 import airquality.database.util.postgis.config as geom_const
 import airquality.database.util.datatype.config as time_conf
-import airquality.database.operation.select.type as sel
+import airquality.database.operation.select.sensor as sel
 import airquality.database.util.postgis.geom as postgis
 import airquality.database.util.datatype.timestamp as ts
 
@@ -27,7 +27,7 @@ def get_measure_adapter(sensor_type: str, sel_type: sel.TypeSelectWrapper, geom_
 
 class MeasureAdapter(abc.ABC):
 
-    def __init__(self, sel_type: sel.TypeSelectWrapper, geom_cls=postgis.GeometryBuilder, timest_cls=ts.Timestamp):
+    def __init__(self, sel_type: sel.TypeSelectWrapper, geom_cls=postgis.PostgisGeometry, timest_cls=ts.Timestamp):
         self.measure_param_map = sel_type.get_measure_param()
         self.geom_cls = geom_cls
         self.timest_cls = timest_cls
@@ -54,7 +54,7 @@ class AtmotubeMeasureAdapter(MeasureAdapter):
 
     ATMOTUBE_PARAM_NAMES = ['voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p']
 
-    def __init__(self, sel_type: sel.TypeSelectWrapper, geom_cls=postgis.PointBuilder, timest_cls=ts.AtmotubeTimestamp):
+    def __init__(self, sel_type: sel.TypeSelectWrapper, geom_cls=postgis.PostgisPoint, timest_cls=ts.AtmotubeTimestamp):
         super(AtmotubeMeasureAdapter, self).__init__(sel_type=sel_type, geom_cls=geom_cls, timest_cls=timest_cls)
         self.record_id = sel_type.get_max_record_id()
 

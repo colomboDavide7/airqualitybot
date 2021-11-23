@@ -18,7 +18,7 @@ import airquality.file.util.loader as fl
 import airquality.api.util.extractor as extr
 import airquality.api.util.url as url
 
-import airquality.database.operation.select.type as sel_type
+import airquality.database.operation.select.sensor as sel_type
 import airquality.database.util.record.location as loc
 import airquality.database.operation.insert.fetch as ins
 import airquality.database.util.record.record as rec
@@ -48,12 +48,12 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         if 'format' not in url_param:
             raise SystemExit(f"{AtmotubeFetchSetup.__name__}: bad 'api.json' file structure => missing key='format'")
 
-        # Take the API response format
+        # Take the API model format
         api_resp_fmt = url_param['format']
 
         # Setup API-side objects
         api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        api_data_extractor = extr.AtmotubeDataExtractor(log_filename=self.log_filename)
+        api_data_extractor = extr.AtmotubeSensorDataExtractor(log_filename=self.log_filename)
         url_builder = url.AtmotubeURL(address=address, url_param=url_param, log_filename=self.log_filename)
 
         # FetchWrapper
@@ -136,12 +136,12 @@ class ThingspeakFetchSetup(setup.CommandSetup):
         if 'format' not in url_param:
             raise SystemExit(f"{ThingspeakFetchSetup.__name__}: bad 'api.json' file structure => missing key='format'")
 
-        # Take the API response format
+        # Take the API model format
         api_resp_fmt = url_param['format']
 
         # Setup API-side objects
         api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        api_data_extractor = extr.ThingspeakDataExtractor(log_filename=self.log_filename)
+        api_data_extractor = extr.ThingspeakAPIResponseModelBuilder(log_filename=self.log_filename)
         url_builder = url.ThingspeakURL(address=address, url_param=url_param, log_filename=self.log_filename)
 
         # FetchWrapper

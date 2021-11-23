@@ -15,7 +15,7 @@ def get_api_param_from_file(sensor_type: str, file_object: jf.JSONFile) -> Tuple
 
     url_param = file_object.url_param
 
-    # 'api_response_format' variable is used to decide which type of TextParser build for parsing API response
+    # 'api_response_format' variable is used to decide which type of TextParser build for parsing API model
     api_response_format = "json"
     if sensor_type in ('atmotube', 'thingspeak'):
         if 'format' not in url_param:

@@ -14,9 +14,9 @@ import airquality.adapter.config as adapt_const
 class TestAPIExtractor(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.purpleair_extractor = extr.PurpleairDataExtractor()
-        self.atmotube_extractor = extr.AtmotubeDataExtractor()
-        self.thingspeak_extractor = extr.ThingspeakDataExtractor()
+        self.purpleair_extractor = extr.PurpleairSensorDataExtractor()
+        self.atmotube_extractor = extr.AtmotubeSensorDataExtractor()
+        self.thingspeak_extractor = extr.ThingspeakAPIResponseModelBuilder()
 
     def test_extract_purpleair_data(self):
         test_api_answer = {

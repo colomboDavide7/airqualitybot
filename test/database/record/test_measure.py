@@ -48,7 +48,7 @@ class TestMeasurementRecord(unittest.TestCase):
                      adapt_const.SENS_PARAM: [{adapt_const.PAR_ID: 1, adapt_const.PAR_VAL: 55}],
                      adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
                                           adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2018-10-11T09:44:00.000Z'}},
-                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                     adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                              adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45',
                                                               geom_conf.POINT_INIT_LNG_NAME: '9'}}}
         actual_output = self.mobile_rec.record(sensor_data=test_data)
@@ -59,7 +59,7 @@ class TestMeasurementRecord(unittest.TestCase):
         test_missing_record_id = {adapt_const.SENS_PARAM: [{adapt_const.PAR_ID: 1, adapt_const.PAR_VAL: 55}],
                                   adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
                                                        adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2018-10-11T09:44:00.000Z'}},
-                                  adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                                  adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                                           adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45',
                                                                            geom_conf.POINT_INIT_LNG_NAME: '9'}}}
         with self.assertRaises(SystemExit):
@@ -69,7 +69,7 @@ class TestMeasurementRecord(unittest.TestCase):
         test_missing_param = {adapt_const.REC_ID: 99,
                               adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
                                                    adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2018-10-11T09:44:00.000Z'}},
-                              adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                              adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                                       adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45',
                                                                        geom_conf.POINT_INIT_LNG_NAME: '9'}}}
         with self.assertRaises(SystemExit):
@@ -80,7 +80,7 @@ class TestMeasurementRecord(unittest.TestCase):
                                   adapt_const.SENS_PARAM: [],
                                   adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
                                                        adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2018-10-11T09:44:00.000Z'}},
-                                  adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                                  adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                                           adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45',
                                                                            geom_conf.POINT_INIT_LNG_NAME: '9'}}}
         with self.assertRaises(SystemExit):
@@ -90,7 +90,7 @@ class TestMeasurementRecord(unittest.TestCase):
         test_missing_param_id = {adapt_const.REC_ID: 99, adapt_const.SENS_PARAM: [{'val': 55}],
                                  adapt_const.TIMEST: {adapt_const.CLS: ts.AtmotubeTimestamp,
                                                       adapt_const.KW: {time_conf.TIMEST_INIT_TIMESTAMP: '2018-10-11T09:44:00.000Z'}},
-                                 adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PointBuilder,
+                                 adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                                          adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45',
                                                                           geom_conf.POINT_INIT_LNG_NAME: '9'}}}
         with self.assertRaises(SystemExit):

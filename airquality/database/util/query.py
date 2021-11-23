@@ -22,7 +22,7 @@ class QueryBuilder:
     def select_api_param_from_sensor_id(self, sensor_id) -> str:
         return self.query_file.s2.format(sensor_id=sensor_id)
 
-    def select_sensor_ids_from_sensor_type(self, sensor_type: str) -> str:
+    def select_sensor_id_name_type_from_type(self, sensor_type: str) -> str:
         return self.query_file.s3.format(personality=sensor_type)
 
     def select_sensor_names_from_sensor_type(self, sensor_type: str) -> str:
@@ -31,8 +31,8 @@ class QueryBuilder:
     def select_measure_param_from_sensor_type(self, sensor_type: str) -> str:
         return self.query_file.s5.format(personality=sensor_type)
 
-    def select_active_locations(self, sensor_type: str) -> str:
-        return self.query_file.s6.format(personality=sensor_type)
+    def select_location_from_sensor_id(self, sensor_id: int) -> str:
+        return self.query_file.s6.format(sensor_id=sensor_id)
 
     def select_sensor_name_id_mapping_from_sensor_type(self, sensor_type: str) -> str:
         return self.query_file.s7.format(personality=sensor_type)
@@ -45,6 +45,9 @@ class QueryBuilder:
 
     def select_max_station_record_id(self):
         return self.query_file.s10
+
+    def select_channel_info_from_sensor_id(self, sensor_id: int):
+        return self.query_file.s11.format(sensor_id=sensor_id)
 
     ################################ INSERT MOBILE MEASUREMENTS ################################
     def insert_mobile_measurements(self, sensor_id: int, channel: str, values: List[str]) -> str:

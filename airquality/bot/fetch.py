@@ -8,7 +8,7 @@
 from typing import Dict, Any
 import airquality.bot.base as base
 import airquality.database.util.datatype.timestamp as ts
-import airquality.database.operation.select.type as select
+import airquality.database.operation.select.sensor as select
 import airquality.adapter.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
 import looper.datelooper as loop
@@ -58,7 +58,7 @@ class FetchBot(base.BaseBot):
         database_api_param = self.sensor_id_select_wrapper.get_sensor_api_param(sensor_id=sensor_id)
 
         # Get a List of the API parameters for each channel of the sensor
-        channel_api_param = self.db2api_adapter.reshape(database_api_param=database_api_param)
+        channel_api_param = self.db2api_adapter.build(database_api_param=database_api_param)
 
         # Cycle on one channel at a time
         for api_param in channel_api_param:
@@ -104,7 +104,7 @@ class FetchBot(base.BaseBot):
     def _uniform_filter_insert(self, sensor_id: int, channel_name: str, sensor_data: Dict[str, Any]):
 
         # Uniform sensor data
-        uniformed_sensor_data = [self.api2db_adapter.reshape(data) for data in sensor_data]
+        uniformed_sensor_data = [self.api2db_adapter.build(data) for data in sensor_data]
 
         # Filter measure to keep only new measurements
         new_data = [data for data in uniformed_sensor_data if self.sensor_data_filter.filter(data)]
