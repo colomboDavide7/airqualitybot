@@ -6,8 +6,8 @@
 #
 ######################################################
 from typing import List
-import airquality.filter.base as base
-import airquality.adapter.api2db.fetch as ftchadpt
+import airquality.filter.basefilt as base
+import airquality.adapter.api2db.fetchadpt.fetchadpt as ftchadpt
 import airquality.database.util.datatype.timestamp as ts
 
 

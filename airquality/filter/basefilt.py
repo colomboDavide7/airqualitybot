@@ -8,7 +8,7 @@
 import abc
 from typing import List
 import airquality.logger.loggable as log
-import airquality.adapter.api2db.base as baseadpt
+import airquality.adapter.api2db.baseadpt as baseadpt
 
 
 ################################ SENSOR DATA FILTER BASE CLASS ################################

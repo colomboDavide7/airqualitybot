@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import Dict, Any, List
-import airquality.api.model.base as base
+import airquality.api.model.baseresp as base
 
 
 ################################ PURPLEAIR API RESPONSE MODEL ################################

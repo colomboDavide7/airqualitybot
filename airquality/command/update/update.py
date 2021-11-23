@@ -13,7 +13,7 @@ import airquality.database.operation.insert.update as ins
 import airquality.database.operation.select.sensor as sel_type
 import container.sensor as sens_adapt
 import airquality.adapter.api2db.measure as meas_adapt
-import airquality.filter.base as flt
+import airquality.filter.basefilt as flt
 
 
 class UpdateCommand(base.Command):

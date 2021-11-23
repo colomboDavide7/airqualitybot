@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import Dict, Any
-import airquality.api.url.base as base
+import airquality.api.url.baseurl as base
 
 
 class PurpleairURL(base.BaseURL):

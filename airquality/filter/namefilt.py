@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import List
-import airquality.filter.base as base
+import airquality.filter.basefilt as base
 
 
 class NameFilter(base.BaseFilter):

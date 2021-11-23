@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import Dict, Any, List, Union
-import airquality.api.model.base as base
+import airquality.api.model.baseresp as base
 
 
 ################################ THINGSPEAK API RESPONSE MODEL ################################

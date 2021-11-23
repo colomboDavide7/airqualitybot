@@ -7,18 +7,11 @@
 ######################################################
 import abc
 from typing import List
-import airquality.api.model.base as mdl
+import airquality.api.model.baseresp as mdl
 
 
 class BaseUniformModel(abc.ABC):
     pass
-
-
-class ParamIDValue:
-
-    def __init__(self, id_: int, value: str):
-        self.id = id_
-        self.value = value
 
 
 class BaseAPI2DBAdapter(abc.ABC):

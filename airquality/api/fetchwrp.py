@@ -6,8 +6,8 @@
 #
 ######################################################
 from typing import List, Dict, Any
-import airquality.api.url.base as url
-import airquality.api.model.base as mdl
+import airquality.api.url.baseurl as url
+import airquality.api.model.baseresp as mdl
 import airquality.file.util.parser as parse
 import airquality.api.request as fetch
 import airquality.logger.loggable as log

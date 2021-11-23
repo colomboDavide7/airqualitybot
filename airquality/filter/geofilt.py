@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.filter.base as base
+import airquality.filter.basefilt as base
 
 
 class GeoFilter(base.BaseFilter):

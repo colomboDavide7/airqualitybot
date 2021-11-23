@@ -16,7 +16,7 @@ import container.sensor as sens_adapt
 import airquality.adapter.api2db.measure as meas_adapt
 import airquality.adapter.db2api.param as par_adapt
 import airquality.database.util.datatype.timestamp as ts
-import airquality.filter.base as flt
+import airquality.filter.basefilt as flt
 
 
 class FetchCommand(base.Command):
