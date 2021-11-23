@@ -9,7 +9,7 @@
 import unittest
 import looper.datelooper as loop
 import airquality.api.util.url as url
-import airquality.api.fetch as fetch
+import airquality.api.fetchwrp as fetch
 import airquality.api.util.extractor as ext
 import airquality.file.util.parser as parse
 import airquality.database.util.datatype.timestamp as ts

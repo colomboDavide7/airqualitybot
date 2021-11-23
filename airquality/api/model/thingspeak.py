@@ -6,6 +6,7 @@
 #
 ######################################################
 from typing import Dict, Any, List, Union
+import airquality.api.model.base as base
 
 
 ################################ THINGSPEAK API RESPONSE MODEL ################################
@@ -81,12 +82,12 @@ RESP_MODEL_TYPE = Union[
 
 
 ################################ THINGSPEAK RESPONSE MODEL BUILDER CLASS ################################
-class ThingspeakAPIResponseModelBuilder:
+class ThingspeakAPIResponseModelBuilder(base.BaseResponseModelBuilder):
 
     def __init__(self, response_model_class=RESP_MODEL_TYPE):
-        self.response_model_class = response_model_class
+        super(ThingspeakAPIResponseModelBuilder, self).__init__(response_model_class=response_model_class)
 
-    def get_responses(self, parsed_response: Dict[str, Any]) -> List[RESP_MODEL_TYPE]:
+    def response(self, parsed_response: Dict[str, Any]) -> List[RESP_MODEL_TYPE]:
         responses = []
         try:
             for feed in parsed_response['feeds']:

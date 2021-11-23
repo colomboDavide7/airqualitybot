@@ -10,7 +10,7 @@ import cmd
 from typing import Tuple, Dict, Any
 import airquality.command.config as cmd_const
 import airquality.file.structured.json as jf
-import airquality.api.fetch as fetch
+import airquality.api.fetchwrp as fetch
 import airquality.file.util.parser as fp
 import airquality.api.util.extractor as extr
 import airquality.api.util.url as url
@@ -32,7 +32,7 @@ class CommandSetup(log.Loggable, abc.ABC):
 def get_api_parameters(sensor_type: str, file_path=cmd_const.API_FILE_PATH, log_filename="log") -> Tuple[str, Dict[str, Any]]:
 
     api_file_obj = load_file(file_path=file_path, path_to_object=[sensor_type], log_filename=log_filename)
-    return api_file_obj.api_address, api_file_obj.url_param
+    return api_file_obj.api_address, api_file_obj.parameters
 
 
 ################################ load_file ################################
@@ -55,7 +55,7 @@ def open_database_connection(connection_string: str, log_filename="log"):
 
 ################################ get_fetch_wrapper ################################
 def get_fetch_wrapper(
-        url_builder: url.URLBuilder,
+        url_builder: url.BaseURL,
         api_resp_parser: fp.TextParser,
         api_data_extractor: extr.SensorDataExtractor,
         log_filename="log"

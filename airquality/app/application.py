@@ -29,7 +29,7 @@ import airquality.adapter.api2db.measure as meas
 import airquality.adapter.db2api.param as par
 # --------------------- API IMPORT ---------------------
 # fetch
-import airquality.api.fetch as fetch
+import airquality.api.fetchwrp as fetch
 # util
 import airquality.api.util.url as url
 import airquality.api.util.extractor as ext

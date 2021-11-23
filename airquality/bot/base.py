@@ -7,7 +7,7 @@
 ######################################################
 import abc
 import airquality.logger.loggable as log
-import airquality.api.fetch as fetch
+import airquality.api.fetchwrp as fetch
 import airquality.database.operation.select.sensor as sel_type
 import airquality.database.operation.base as base_wrp
 import airquality.filter.filter as filt

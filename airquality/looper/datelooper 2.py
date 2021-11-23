@@ -9,7 +9,7 @@ import abc
 from typing import List, Dict, Any
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
-import airquality.api.fetch as fetch
+import airquality.api.fetchwrp as fetch
 import airquality.database.util.datatype.timestamp as ts
 
 

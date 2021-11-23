@@ -6,6 +6,7 @@
 #
 ######################################################
 from typing import Dict, Any, List
+import airquality.api.model.base as base
 
 
 ################################ ATMOTUBE API RESPONSE MODEL ################################
@@ -26,12 +27,12 @@ class AtmotubeResponseModel:
 
 
 ################################ ATMOTUBE RESPONSE MODEL BUILDER CLASS ################################
-class AtmotubeAPIResponseModelBuilder:
+class AtmotubeAPIResponseModelBuilder(base.BaseResponseModelBuilder):
 
     def __init__(self, response_model_class=AtmotubeResponseModel):
-        self.response_model_class = response_model_class
+        super(AtmotubeAPIResponseModelBuilder, self).__init__(response_model_class=response_model_class)
 
-    def get_responses(self, parsed_response: Dict[str, Any]) -> List[AtmotubeResponseModel]:
+    def response(self, parsed_response: Dict[str, Any]) -> List[AtmotubeResponseModel]:
         responses = []
         try:
             for item in parsed_response['data']['items']:

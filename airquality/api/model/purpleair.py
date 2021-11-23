@@ -6,6 +6,7 @@
 #
 ######################################################
 from typing import Dict, Any, List
+import airquality.api.model.base as base
 
 
 ################################ PURPLEAIR API RESPONSE MODEL ################################
@@ -31,12 +32,12 @@ class PurpleairAPIResponseModel:
 
 
 ################################ PURPLEAIR DATA EXTRACTOR ################################
-class PurpleairAPIResponseModelBuilder:
+class PurpleairAPIResponseModelBuilder(base.BaseResponseModelBuilder):
 
     def __init__(self, response_model_class=PurpleairAPIResponseModel):
-        self.response_model_class = response_model_class
+        super(PurpleairAPIResponseModelBuilder, self).__init__(response_model_class=response_model_class)
 
-    def extract(self, parsed_response: Dict[str, Any]) -> List[PurpleairAPIResponseModel]:
+    def response(self, parsed_response: Dict[str, Any]) -> List[PurpleairAPIResponseModel]:
         responses = []
         try:
             for data_packet in parsed_response['data']:

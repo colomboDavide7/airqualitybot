@@ -8,7 +8,7 @@
 import abc
 from typing import Union
 import airquality.logger.loggable as log
-import airquality.api.fetch as fetch
+import airquality.api.fetchwrp as fetch
 import airquality.database.operation.insert.insert as ins
 import airquality.database.operation.select.sensor as sel_type
 import container.sensor as sens_adapt
