@@ -10,20 +10,15 @@ import airquality.api.model.base as base
 
 
 ################################ ATMOTUBE API RESPONSE MODEL ################################
-class AtmotubeResponseModel:
+class AtmotubeResponseModel(base.BaseResponseModel):
+
+    ATMOTUBE_FIELDS = ["voc", "pm1", "pm25", "pm10", "t", "h", "p"]
 
     def __init__(self, data: Dict[str, Any]):
-        try:
-            self.time = data['time']
-            self.voc = data['voc']
-            self.pm1 = data['pm1']
-            self.pm25 = data['pm25']
-            self.pm10 = data['pm10']
-            self.temp = data['t']
-            self.hum = data['h']
-            self.press = data['p']
-        except KeyError as ke:
-            raise SystemExit(f"{AtmotubeResponseModel.__name__}: bad sensor data => missing key='{ke!s}'")
+        self.time = data.get('time')
+        self.parameters = [base.ParamNameValue(name=n, value=data.get(n)) for n in AtmotubeResponseModel.ATMOTUBE_FIELDS]
+        self.lat = data.get('coords')['lat']
+        self.lon = data.get('coords')['lon']
 
 
 ################################ ATMOTUBE RESPONSE MODEL BUILDER CLASS ################################

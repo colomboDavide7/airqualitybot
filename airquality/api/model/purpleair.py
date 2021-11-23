@@ -10,7 +10,7 @@ import airquality.api.model.base as base
 
 
 ################################ PURPLEAIR API RESPONSE MODEL ################################
-class PurpleairAPIResponseModel:
+class PurpleairAPIResponseModel(base.BaseResponseModel):
 
     def __init__(self, data: Dict[str, Any]):
         try:
