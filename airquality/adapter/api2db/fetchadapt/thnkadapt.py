@@ -8,7 +8,7 @@
 from typing import Dict, Any, List
 import airquality.api.model.thnkresp as thk_mdl
 import airquality.database.util.datatype.timestamp as ts
-import airquality.adapter.api2db.fetchadpt.fetchadpt as baseadapt
+import airquality.adapter.api2db.fetchadapt.fetchadapt as baseadapt
 
 
 class ThingspeakFetchAPI2DBAdapter(baseadapt.FetchAPI2DBAdapter):

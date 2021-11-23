@@ -11,7 +11,7 @@ import airquality.logger.loggable as log
 import airquality.adapter.api2db.baseadpt as baseadpt
 
 
-################################ SENSOR DATA FILTER BASE CLASS ################################
+################################ FILTER BASE CLASS ################################
 class BaseFilter(log.Loggable):
 
     def __init__(self, log_filename="log"):

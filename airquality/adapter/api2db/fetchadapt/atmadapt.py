@@ -9,7 +9,7 @@ from typing import Dict, Any, List
 import airquality.api.model.atmresp as atm_mdl
 import airquality.database.util.postgis.geom as geo
 import airquality.database.util.datatype.timestamp as ts
-import airquality.adapter.api2db.fetchadpt.fetchadpt as baseadapt
+import airquality.adapter.api2db.fetchadapt.fetchadapt as baseadapt
 
 
 class AtmotubeFetchAPI2DBAdapter(baseadapt.FetchAPI2DBAdapter):
