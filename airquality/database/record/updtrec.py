@@ -5,7 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import List
 import airquality.database.record.baserec as base
 import airquality.database.util.datatype.timestamp as ts
 import airquality.adapter.api2db.updtadapt.updtadapt as updtadapt
@@ -13,18 +12,17 @@ import airquality.adapter.api2db.updtadapt.updtadapt as updtadapt
 
 class UpdateRecord(base.BaseRecord):
 
-    def __init__(self, sensor_at_loc_values: str, current_timestamp=ts.CurrentTimestamp()):
+    def __init__(self, sensor_at_loc_values: str, update_info: base.ParamIDTimestamp):
         self.sensor_at_loc_values = sensor_at_loc_values
-        self.current_timestamp = current_timestamp
+        self.update_info = update_info
 
 
 class UpdateRecordBuilder(base.BaseRecordBuilder):
 
-    def record(self, sensor_data: List[updtadapt.UpdateUniformModel], sensor_id: int = None) -> UpdateRecord:
-        sensor_at_loc_values = ""
+    def record(self, sensor_data: updtadapt.UpdateUniformModel, sensor_id: int) -> UpdateRecord:
+        g = sensor_data.geolocation
 
-        for data in sensor_data:
-            g = data.geolocation
-            sensor_at_loc_values += f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geolocation.geom_from_text()}),"
-
-        return UpdateRecord(sensor_at_loc_values=sensor_at_loc_values)
+        return UpdateRecord(
+            sensor_at_loc_values=f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geolocation.geom_from_text()}),",
+            update_info=base.ParamIDTimestamp(sensor_id=sensor_id, timestamp=ts.CurrentTimestamp())
+        )

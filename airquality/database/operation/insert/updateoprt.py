@@ -5,42 +5,30 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import List, Dict, Any
-import airquality.adapter.config as adapt_const
+from typing import List
 import airquality.database.operation.insert.insertoprt as base
+import airquality.database.record.updtrec as updtrec
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
-import database.record.record as rec
 
 
 class UpdateInsertWrapper(base.InsertWrapper):
 
-    ################################ __init__ ################################
-    def __init__(self,
-                 conn: connection.DatabaseAdapter,
-                 query_builder: query.QueryBuilder,
-                 sensor_location_rec: rec.SensorLocationRecord,
-                 log_filename="log"
-    ):
+    def __init__(self, conn: connection.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="log"):
         super(UpdateInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
-        self.sensor_location_rec = sensor_location_rec
-        self.name_to_id_map = None
 
-    ################################ set_name_to_id_map ################################
-    def set_name_to_id_map(self, mapping: Dict[str, Any]):
-        self.name_to_id_map = mapping
+    def insert(self, sensor_record: List[updtrec.UpdateRecord]) -> None:
 
-    ################################ insert ################################
-    def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
+        update_info = []
+        sensor_at_loc_values = ""
 
-        location_values = []
-        for data in sensor_data:
-            sensor_id = self.name_to_id_map[data[adapt_const.SENS_NAME]]
-            location_values.append(self.sensor_location_rec.record(sensor_data=data, sensor_id=sensor_id))
-            self.log_info(f"{UpdateInsertWrapper.__name__}: "
-                          f"updated location for sensor '{data[adapt_const.SENS_NAME]}' with sensor_id={sensor_id}")
+        for record in sensor_record:
+            update_info.append(record.update_info)
+            sensor_at_loc_values += record.sensor_at_loc_values
 
-        # Build query to execute
-        exec_query = self.query_builder.update_locations(location_values)
-        # Execute query
+        exec_query = self.query_builder.update_locations(
+            sensor_at_loc_values=sensor_at_loc_values,
+            update_info=update_info
+        )
         self.conn.send(exec_query)
+        self.log_info(f"{UpdateInsertWrapper.__name__}: successfully insert all the records and updated all the locations")

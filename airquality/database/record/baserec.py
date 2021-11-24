@@ -7,8 +7,15 @@
 #
 ######################################################
 import abc
-from typing import List
 import airquality.adapter.api2db.baseadpt as baseadpt
+import airquality.database.util.datatype.timestamp as ts
+
+
+class ParamIDTimestamp:
+
+    def __init__(self, sensor_id: int, timestamp: ts.Timestamp):
+        self.id = sensor_id
+        self.timestamp = timestamp
 
 
 class BaseRecord:
@@ -18,5 +25,5 @@ class BaseRecord:
 class BaseRecordBuilder(abc.ABC):
 
     @abc.abstractmethod
-    def record(self, sensor_data: List[baseadpt.BaseUniformModel], sensor_id: int = None) -> BaseRecord:
+    def record(self, sensor_data: baseadpt.BaseUniformModel, sensor_id: int) -> BaseRecord:
         pass

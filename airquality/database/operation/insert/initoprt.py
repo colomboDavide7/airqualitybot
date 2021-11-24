@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+from typing import List
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.operation.insert.insertoprt as base
 import airquality.database.record.initrec as initrec
@@ -18,13 +19,24 @@ class InitializeInsertWrapper(base.InsertWrapper):
         super(InitializeInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
 
     @log_decorator.log_decorator()
-    def insert(self, sensor_record: initrec.InitRecord) -> None:
+    def insert(self, sensor_record: List[initrec.InitRecord]) -> None:
+
+        sensor_values = ""
+        api_param_values = ""
+        channel_info_values = ""
+        sensor_at_loc_values = ""
+
+        for record in sensor_record:
+            sensor_values += record.sensor_value
+            api_param_values += record.api_param_value
+            channel_info_values += record.channel_info_value
+            sensor_at_loc_values += record.sensor_at_loc_value
 
         exec_query = self.query_builder.initialize_sensors(
-            sensor_values=sensor_record.sensor_value,
-            api_param_values=sensor_record.api_param_values,
-            channel_info_values=sensor_record.channel_info_values,
-            sensor_at_loc_values=sensor_record.sensor_at_loc_values
+            sensor_values=sensor_values,
+            api_param_values=api_param_values,
+            channel_info_values=channel_info_values,
+            sensor_at_loc_values=sensor_at_loc_values
         )
         self.conn.send(exec_query)
         self.log_info(f"{InitializeInsertWrapper.__name__}: successfully inserted all the records")

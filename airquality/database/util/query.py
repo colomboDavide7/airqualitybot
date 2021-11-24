@@ -8,6 +8,7 @@
 #################################################
 from typing import List
 import airquality.file.structured.json as struct
+import airquality.database.record.baserec as baserec
 
 
 class QueryBuilder:
@@ -66,9 +67,9 @@ class QueryBuilder:
         return query
 
     ################################ UPDATE SENSOR AT LOCATION ################################
-    def update_locations(self, values: List[str]) -> str:
-        query = self.__update_valid_to_timestamp(values)
-        query += self.__insert_location_values(values)
+    def update_locations(self, sensor_at_loc_values: str, update_info: List[baserec.ParamIDTimestamp]) -> str:
+        query = self.__update_valid_to_timestamp(update_info)
+        query += self.__insert_location_values(sensor_at_loc_values)
         return query
 
     ################################ INITIALIZE SENSORS ################################
@@ -110,13 +111,10 @@ class QueryBuilder:
         query += values
         return query.strip(',') + ';'
 
-    def __update_valid_to_timestamp(self, values: List[str]):
+    def __update_valid_to_timestamp(self, update_info: List[baserec.ParamIDTimestamp]):
         query = ""
-        for value in values:
-            token = value.split(', ')
-            sensor_id = token[0].strip('(')
-            timestamp = token[1]
-            query += self.query_file.u1.format(ts=timestamp, sens_id=sensor_id)
+        for info in update_info:
+            query += self.query_file.u1.format(ts=info.timestamp.get_formatted_timestamp(), sens_id=info.id)
         return query
 
     def __update_last_acquisition(self, sensor_id: int, channel_name: str, last_timestamp):

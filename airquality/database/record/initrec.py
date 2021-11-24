@@ -5,40 +5,28 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import List
 import airquality.database.record.baserec as base
 import airquality.adapter.api2db.initadapt.initadapt as initadpt
 
 
 class InitRecord(base.BaseRecord):
 
-    def __init__(self, sensor_values: str, api_param_values: str, channel_info_values: str, sensor_at_loc_values: str):
-        self.sensor_value = sensor_values
-        self.api_param_values = api_param_values
-        self.channel_info_values = channel_info_values
-        self.sensor_at_loc_values = sensor_at_loc_values
+    def __init__(self, sensor_value: str, api_param_value: str, channel_info_value: str, sensor_at_loc_value: str):
+        self.sensor_value = sensor_value
+        self.api_param_value = api_param_value
+        self.channel_info_value = channel_info_value
+        self.sensor_at_loc_value = sensor_at_loc_value
 
 
 class InitRecordBuilder(base.BaseRecordBuilder):
 
-    def record(self, sensor_data: List[initadpt.InitUniformModel], sensor_id: int = None) -> InitRecord:
-        sensor_values = ""
-        api_param_values = ""
-        channel_info_values = ""
-        sensor_at_loc_values = ""
-
-        for data in sensor_data:
-            sensor_values += f"({sensor_id}, '{data.type}', '{data.name}'),"
-            for p in data.parameters:
-                api_param_values += f"({sensor_id}, '{p.name}', '{p.value}'),"
-            for c in data.channels:
-                channel_info_values += f"({sensor_id}, '{c.name}', '{c.timestamp.get_formatted_timestamp()}'),"
-            g = data.geolocation
-            sensor_at_loc_values += f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geolocation.geom_from_text()}),"
-
+    def record(self, sensor_data: initadpt.InitUniformModel, sensor_id: int) -> InitRecord:
+        g = sensor_data.geolocation
+        channel_info_values = ','.join(f"({sensor_id}, '{c.name}', '{c.timestamp.get_formatted_timestamp()}')"
+                                       for c in sensor_data.channels)
         return InitRecord(
-            sensor_values=sensor_values,
-            api_param_values=api_param_values,
-            channel_info_values=channel_info_values,
-            sensor_at_loc_values=sensor_at_loc_values
+            sensor_value=f"({sensor_id}, '{sensor_data.type}', '{sensor_data.name}'),",
+            api_param_value=','.join(f"({sensor_id}, '{p.name}', '{p.value}')" for p in sensor_data.parameters),
+            channel_info_value=channel_info_values,
+            sensor_at_loc_value=f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geolocation.geom_from_text()}),"
         )
