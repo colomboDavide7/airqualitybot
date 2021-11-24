@@ -17,13 +17,13 @@ class StationDBResponse(sel.BaseDBResponse):
 
     def __init__(
             self, sensor_id: int, sensor_name: str,
-            channels: List[sel.Channel],
+            api_param: List[sel.ChannelParam],
             geometry: postgis.PostgisGeometry,
             measure_param: List[sel.ParamNameID]
     ):
         self.sensor_id = sensor_id
         self.sensor_name = sensor_name
-        self.channels = channels
+        self.api_param = api_param
         self.geometry = geometry
         self.measure_param = measure_param
 
@@ -50,8 +50,6 @@ class StationSelectWrapper(sel.SelectWrapper):
 
             # Query the API param + channel info
             api_param = self._select_api_param(sensor_id=sensor_id)
-            channel_info = self._select_channel_info(sensor_id=sensor_id)
-            channels = sel.make_channels(api_param=api_param, channel_info=channel_info)
 
             # Query the sensor location
             location_query = self.builder.select_location_from_sensor_id(sensor_id=sensor_id)
@@ -63,7 +61,7 @@ class StationSelectWrapper(sel.SelectWrapper):
 
             # Make the response
             responses.append(StationDBResponse(
-                sensor_id=sensor_id, sensor_name=sensor_name, channels=channels, geometry=geometry, measure_param=measure_param)
+                sensor_id=sensor_id, sensor_name=sensor_name, api_param=api_param, geometry=geometry, measure_param=measure_param)
             )
 
         return responses

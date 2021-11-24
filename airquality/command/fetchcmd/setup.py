@@ -15,18 +15,19 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.file.util.parser as fp
 import airquality.file.util.loader as fl
 
-import airquality.api.util.extractor as extr
-import airquality.api.util.url as url
+import airquality.api.url.atmurl as atmurl
+import airquality.api.url.thnkurl as thnkurl
 
-import airquality.database.op.sel.sensor as sel_type
-import database.rec.georec as loc
+import airquality.api.resp.atmresp as atmresp
+import airquality.api.resp.thnkresp as thnkresp
+
 import airquality.database.op.ins.fetchins as ins
-import database.rec.record as rec
-import database.rec.timerec as t
+import airquality.database.op.sel.mobilesel as mobsel
+import airquality.database.op.sel.stationsel as stsel
+
 import airquality.database.util.query as qry
 import airquality.looper.datelooper as looper
 
-import api2db.measure as adapt
 import airquality.to_delete.db2api.param as par_adapt
 
 
@@ -52,14 +53,14 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         api_resp_fmt = url_param['format']
 
         # Setup API-side objects
-        api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        api_data_extractor = extr.AtmotubeSensorDataExtractor(log_filename=self.log_filename)
-        url_builder = url.AtmotubeURL(address=address, url_param=url_param, log_filename=self.log_filename)
+        response_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
+        response_builder = atmresp.AtmotubeResponseBuilder()
+        url_builder = atmurl.AtmotubeURL(address=address, parameters=url_param)
 
         # FetchWrapper
         fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
-                                                response_parser=api_resp_parser,
-                                                response_builder=api_data_extractor,
+                                                response_parser=response_parser,
+                                                response_builder=response_builder,
                                                 log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
@@ -76,30 +77,17 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
         # InsertWrapper
-        insert_wrapper = ins.FetchMobileInsertWrapper(
-            conn=database_connection,
-            query_builder=query_builder,
-            sensor_measure_rec=rec.MobileMeasureRecord(time_rec=t.TimeRecord(), location_rec=loc.LocationRecord()),
-            log_filename=self.log_filename
-        )
+        insert_wrapper = ins.FetchMobileInsertWrapper(conn=database_connection, query_builder=query_builder, log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 
         # TypeSelectWrapper
-        select_type_wrapper = sel_type.MobileTypeSelectWrapper(conn=database_connection,
-                                                               query_builder=query_builder,
-                                                               sensor_type=sensor_type)
-        # SensorIDSelectWrapper
-        sensor_id_select_wrapper = sel_type.SensorIDSelectWrapper(conn=database_connection,
-                                                                  query_builder=query_builder,
-                                                                  log_filename=self.log_filename)
-
-        ################################ ADAPTER-SIDE OBJECTS ################################
-        # Used for reshaping the sensor data into a proper shape for converting into SQL rec
-        api2db_adapter = adapt.AtmotubeMeasureAdapter(sel_type=select_type_wrapper)
-
-        # Used for reshaping database api parameters for fetching data
-        db2api_adapter = par_adapt.AtmotubeParamAdapter()
+        select_wrapper = mobsel.MobileSelectWrapper(
+            conn=database_connection,
+            query_builder=query_builder,
+            sensor_type=sensor_type,
+            log_filename=self.log_filename
+        )
 
         # Date looper class
         date_looper_class = looper.get_date_looper_class(sensor_type=sensor_type)
@@ -107,14 +95,9 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         # Build command object
         cmd = command.FetchCommand(fetch_wrapper=fetch_wrapper,
                                    insert_wrapper=insert_wrapper,
-                                   select_type_wrapper=select_type_wrapper,
-                                   id_select_wrapper=sensor_id_select_wrapper,
-                                   api2db_adapter=api2db_adapter,
-                                   db2api_adapter=db2api_adapter,
                                    date_looper_class=date_looper_class)
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
-
         return cmd
 
 

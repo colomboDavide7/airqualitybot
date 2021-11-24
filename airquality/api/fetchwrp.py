@@ -29,8 +29,8 @@ class FetchWrapper(log.Loggable):
         self.response_parser = parser
         self.channel_name = ""
 
-    def update_url_param(self, param2update: Dict[str, Any]):
-        self.url_builder.parameters.update(param2update)
+    def add_database_api_param(self, db_api_param: Dict[str, Any]):
+        self.url_builder.parameters.update(db_api_param)
 
     def set_channel_name(self, name: str):
         self.channel_name = name

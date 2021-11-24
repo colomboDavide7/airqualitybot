@@ -20,11 +20,13 @@ class ParamNameID:
         self.name = name
 
 
-class ParamNameValue:
+class ChannelParam:
 
-    def __init__(self, name: str, value: str):
+    def __init__(self, id_: str, key: str, name: str, timestamp: ts.SQLTimestamp):
+        self.id = id_
+        self.key = key
         self.name = name
-        self.value = value
+        self.last_acquisition = timestamp
 
 
 class ParamNameTimestamp:
@@ -32,22 +34,6 @@ class ParamNameTimestamp:
     def __init__(self, name: str, timestamp: ts.SQLTimestamp):
         self.name = name
         self.timestamp = timestamp
-
-
-class Channel:
-
-    def __init__(self, api_param: ParamNameValue, channel_info: ParamNameTimestamp):
-        self.api_param = api_param
-        self.channel_info = channel_info
-
-
-def make_channels(api_param: List[ParamNameValue], channel_info: List[ParamNameTimestamp]) -> List[Channel]:
-    channels = []
-    for p in api_param:
-        for c in channel_info:
-            if p.name == c.name:
-                channels.append(Channel(api_param=p, channel_info=c))
-    return channels
 
 
 class BaseDBResponse(abc.ABC):
@@ -71,23 +57,14 @@ class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
         pass
 
     ################################ protected methods ################################
-    def _select_api_param(self, sensor_id: int) -> List[ParamNameValue]:
+    def _select_api_param(self, sensor_id: int) -> List[ChannelParam]:
         api_param_query = self.builder.select_api_param_from_sensor_id(sensor_id=sensor_id)
         api_param_resp = self.conn.send(api_param_query)
 
         api_param = []
-        for param_name, param_value in api_param_resp:
-            api_param.append(ParamNameValue(name=param_name, value=param_value))
+        for ch_key, ch_id, ch_name, last_acquisition in api_param_resp:
+            api_param.append(ChannelParam(id_=ch_id, key=ch_key, name=ch_name, timestamp=last_acquisition))
         return api_param
-
-    def _select_channel_info(self, sensor_id: int) -> List[ParamNameTimestamp]:
-        channel_info_query = self.builder.select_channel_info_from_sensor_id(sensor_id=sensor_id)
-        channel_info_resp = self.conn.send(channel_info_query)
-
-        channel_info = []
-        for channel_name, last_acquisition in channel_info_resp:
-            channel_info.append(ParamNameTimestamp(name=channel_name, timestamp=last_acquisition))
-        return channel_info
 
     def _select_measure_param(self) -> List[ParamNameID]:
         meas_param_query = self.builder.select_measure_param_from_sensor_type(sensor_type=self.sensor_type)
