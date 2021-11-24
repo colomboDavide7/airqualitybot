@@ -31,7 +31,7 @@ class CommandSetup(log.Loggable, abc.ABC):
 def get_api_parameters(sensor_type: str, file_path=cmd_const.API_FILE_PATH, log_filename="log") -> Tuple[str, Dict[str, Any]]:
 
     api_file_obj = load_file(file_path=file_path, path_to_object=[sensor_type], log_filename=log_filename)
-    return api_file_obj.api_address, api_file_obj.parameters
+    return api_file_obj.api_address, api_file_obj.url_param
 
 
 ################################ load_file ################################

@@ -7,15 +7,15 @@
 ######################################################
 from typing import List
 import airquality.api.resp.purpresp as purpmdl
-import database.ext.postgis as geo
+import airquality.database.ext.postgis as geo
 import airquality.database.dtype.timestamp as ts
 import airquality.api2db.updtunif.updtunif as baseupdt
 
 
-class PurpleairUniformResponseBuilders(baseupdt.UpdateUniformResponseBuilder):
+class PurpleairUniformResponseBuilder(baseupdt.UpdateUniformResponseBuilder):
 
     def __init__(self, timestamp_class=ts.UnixTimestamp, postgis_class=geo.PostgisPoint):
-        super(PurpleairUniformResponseBuilders, self).__init__(timestamp_class=timestamp_class, postgis_class=postgis_class)
+        super(PurpleairUniformResponseBuilder, self).__init__(timestamp_class=timestamp_class, postgis_class=postgis_class)
 
     def build(self, responses: List[purpmdl.PurpleairAPIResponse]) -> List[baseupdt.UpdateUniformResponse]:
         uniformed_responses = []

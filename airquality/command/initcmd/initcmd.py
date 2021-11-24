@@ -58,10 +58,11 @@ class InitCommand(basecmd.Command):
 
         ################################ DATABASE-SIDE ###############################
         max_sensor_id = self.select_wrapper.select_max_sensor_id()
+        self.log_info(f"{InitCommand.__name__}: new insertion starts at sensor_id={max_sensor_id}")
 
         records = []
         for response in uniformed_responses:
-            self.record_builder.record(uniformed_responses=response, sensor_id=max_sensor_id)
+            records.append(self.record_builder.record(uniformed_responses=response, sensor_id=max_sensor_id))
             max_sensor_id += 1
 
         # Execute queries on sensors

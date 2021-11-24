@@ -61,8 +61,8 @@ class UpdateCommand(basecmd.Command):
         uniform_resp_filter.set_console_logger(self.console_logger)
 
         # Filter sensor data
-        fetched_changed_sensors = uniform_resp_filter.filter(resp2filter=uniformed_responses)
-        if not fetched_changed_sensors:
+        filtered_responses = uniform_resp_filter.filter(resp2filter=uniformed_responses)
+        if not filtered_responses:
             self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")
             return
 
@@ -73,7 +73,8 @@ class UpdateCommand(basecmd.Command):
 
         # Build database records
         records = []
-        for api_resp in uniformed_responses:
+        for api_resp in filtered_responses:
+
             records.append(self.record_builder.record(api_resp, sensor_id=name_id_map[api_resp.sensor_name]))
 
         # Update locations

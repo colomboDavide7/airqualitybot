@@ -18,7 +18,7 @@ import airquality.file.util.loader as fl
 import airquality.api.url.purpurl as url
 import airquality.api.resp.purpresp as resp
 
-import airquality.api2db.updtunif.updtunif as unif
+import airquality.api2db.updtunif.purpupdtunif as unif
 
 import airquality.database.op.ins.updtins as ins
 import airquality.database.op.sel.stationsel as sel
@@ -84,7 +84,7 @@ class PurpleairUpdateSetup(setup.CommandSetup):
             fw=fetch_wrapper,
             iw=insert_wrapper,
             sw=select_wrapper,
-            urb=unif.UpdateUniformResponseBuilder(),
+            urb=unif.PurpleairUniformResponseBuilder(),
             rb=rec.UpdateRecordBuilder(),
             log_filename=self.log_filename
         )

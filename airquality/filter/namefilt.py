@@ -20,7 +20,7 @@ class NameFilter(base.BaseFilter):
     def filter(self, resp2filter: List[unif.InitUniformResponse]) -> List[unif.InitUniformResponse]:
         filtered_responses = []
         for response in resp2filter:
-            if response.name in self.database_sensor_names:
+            if response.name not in self.database_sensor_names:
                 filtered_responses.append(response)
                 self.log_info(f"{NameFilter.__name__}: add sensor '{response.name}' => new sensor")
             else:
