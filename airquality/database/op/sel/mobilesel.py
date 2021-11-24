@@ -34,22 +34,3 @@ class MobileSelectWrapper(sel.SelectWrapper):
             channels = sel.make_channels(api_param=api_param, channel_info=channel_info)
             responses.append(MobileDBResponse(sensor_id=sensor_id, channels=channels))
         return responses
-
-    ################################ protected methods ################################
-    def _select_api_param(self, sensor_id: int) -> List[sel.ParamNameValue]:
-        api_param_query = self.builder.select_api_param_from_sensor_id(sensor_id=sensor_id)
-        api_param_resp = self.conn.send(api_param_query)
-
-        api_param = []
-        for param_name, param_value in api_param_resp:
-            api_param.append(sel.ParamNameValue(name=param_name, value=param_value))
-        return api_param
-
-    def _select_channel_info(self, sensor_id: int) -> List[sel.ParamNameTimestamp]:
-        channel_info_query = self.builder.select_channel_info_from_sensor_id(sensor_id=sensor_id)
-        channel_info_resp = self.conn.send(channel_info_query)
-
-        channel_info = []
-        for channel_name, last_acquisition in channel_info_resp:
-            channel_info.append(sel.ParamNameTimestamp(name=channel_name, timestamp=last_acquisition))
-        return channel_info

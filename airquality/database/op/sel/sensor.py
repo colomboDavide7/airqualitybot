@@ -48,7 +48,7 @@ class StationSensorDataSelector(SensorDataSelector):
     @log_decorator.log_decorator()
     def select(self) -> List[Dict[str, Any]]:
         sensor_data = []
-        exec_query = self.builder.select_sensor_id_name_type_from_type(self.sensor_type)
+        exec_query = self.builder.select_sensor_id_name_from_type(self.sensor_type)
         sensors = self.conn.send(exec_query)
         for sensor_id, sensor_name, sensor_type in sensors:
             data = {"sensor_id": sensor_id, "sensor_name": sensor_name, "sensor_type": sensor_type}

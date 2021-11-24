@@ -23,7 +23,7 @@ class QueryBuilder:
     def select_api_param_from_sensor_id(self, sensor_id) -> str:
         return self.query_file.s2.format(sensor_id=sensor_id)
 
-    def select_sensor_id_name_type_from_type(self, sensor_type: str) -> str:
+    def select_sensor_id_name_from_type(self, sensor_type: str) -> str:
         return self.query_file.s3.format(personality=sensor_type)
 
     def select_sensor_names_from_sensor_type(self, sensor_type: str) -> str:
