@@ -29,13 +29,6 @@ class ChannelParam:
         self.last_acquisition = timestamp
 
 
-class ParamNameTimestamp:
-
-    def __init__(self, name: str, timestamp: ts.SQLTimestamp):
-        self.name = name
-        self.timestamp = timestamp
-
-
 class BaseDBResponse(abc.ABC):
     pass
 

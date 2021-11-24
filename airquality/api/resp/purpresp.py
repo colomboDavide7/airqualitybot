@@ -7,16 +7,16 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.api.resp.baseresp as baseresp
+import airquality.database.op.sel.sel as sel
 
 
 ################################ PURPLEAIR API RESPONSE ################################
 class PurpleairResponse(baseresp.BaseResponse):
 
-    API_PARAM = ["primary_key_a", 'primary_id_a', 'primary_key_b', 'primary_id_b',
-                 'secondary_key_a', 'secondary_id_a', 'secondary_key_b', 'secondary_id_b']
-
-    CHANNELS = ['Primary data - Channel A', 'Primary data - Channel B',
-                'Secondary data - Channel A', 'Secondary data - Channel B']
+    CHANNEL_PARAM = [{'name': 'Primary data - Channel A', 'key': 'primary_key_a', 'id': 'primary_id_a'},
+                     {'name': 'Primary data - Channel B', 'key': 'primary_key_b', 'id': 'primary_id_b'},
+                     {'name': 'Secondary data - Channel A', 'key': 'secondary_key_a', 'id': 'secondary_id_a'},
+                     {'name': 'Secondary data - Channel B', 'key': 'secondary_key_b', 'id': 'secondary_id_b'}]
 
     def __init__(self, data: Dict[str, Any]):
         try:
@@ -24,8 +24,8 @@ class PurpleairResponse(baseresp.BaseResponse):
             self.sensor_index = data['sensor_index']
             self.latitude = data['latitude']
             self.longitude = data['longitude']
-            self.date_created = data['date_created']
-            self.parameters = [baseresp.ParamNameValue(name=p, value=data[p]) for p in PurpleairResponse.API_PARAM]
+            self.channel_param = [sel.ChannelParam(name=c['name'], key=c['key'], id_=c['id'], timestamp=data['date_created'])
+                                  for c in PurpleairResponse.CHANNEL_PARAM]
         except KeyError as ke:
             raise SystemExit(f"{PurpleairResponse.__name__}: bad sensor data => missing key='{ke!s}'")
 

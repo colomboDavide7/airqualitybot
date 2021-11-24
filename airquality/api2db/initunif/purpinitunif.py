@@ -24,21 +24,16 @@ class PurpleairUniformResponseBuilder(baseadapt.InitUniformResponseBuilder):
             name = f"{response.name} ({response.sensor_index})".replace("'", "")
             type_ = "Purpleair/Thingspeak"
 
-            # Create channel info List
-            channels = [baseadapt.base.ParamNameTimestamp(name=ch, timestamp=self.timestamp_class(timest=response.date_created))
-                        for ch in response.CHANNELS]
-
             # Create sensor geometry
             geometry = self.postgis_class(lat=response.latitude, lng=response.longitude)
             # Create sensor geolocation
-            geolocation = baseadapt.base.ParamLocationTimestamp(geometry=geometry, timestamp=ts.CurrentTimestamp())
+            geolocation = baseadapt.baseunif.ParamLocationTimestamp(geometry=geometry, timestamp=ts.CurrentTimestamp())
 
             # Append Uniformed Model
             uniformed_responses.append(
                 baseadapt.InitUniformResponse(
                     name=name, type_=type_,
-                    parameters=response.parameters,
-                    channels=channels,
+                    channel_param=response.channel_param,
                     geolocation=geolocation
                 )
             )

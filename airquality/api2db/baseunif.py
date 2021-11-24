@@ -12,13 +12,6 @@ import airquality.database.ext.postgis as geo
 import airquality.database.dtype.timestamp as ts
 
 
-class ParamNameTimestamp:
-
-    def __init__(self, name: str, timestamp: ts.Timestamp):
-        self.name = name
-        self.timestamp = timestamp
-
-
 class ParamLocationTimestamp:
 
     def __init__(self, timestamp: ts.Timestamp, geometry: geo.PostgisGeometry):
