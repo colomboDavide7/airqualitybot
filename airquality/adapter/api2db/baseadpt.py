@@ -8,6 +8,8 @@
 import abc
 from typing import List
 import airquality.api.model.baseresp as mdl
+import airquality.database.util.postgis.geom as geo
+import airquality.database.util.datatype.timestamp as ts
 
 
 class ParamNameTimestamp:
