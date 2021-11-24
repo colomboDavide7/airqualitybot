@@ -14,7 +14,7 @@ import airquality.logger.util.decorator as log_decorator
 
 
 ################################ SENSOR DATA SELECTOR BASE CLASS ################################
-class SensorDataSelector(base.DatabaseOperationWrapper, abc.ABC):
+class SensorDataSelector(base.DatabaseWrapper, abc.ABC):
 
     def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, sensor_type: str):
         super(SensorDataSelector, self).__init__(conn=conn, query_builder=query_builder)
@@ -66,22 +66,3 @@ class StationSensorDataSelector(SensorDataSelector):
             data["longitude"] = longitude
             data["latitude"] = latitude
         return data
-
-
-################################ MOBILE SENSOR DATA SELECTOR ################################
-class MobileSensorDataSelector(SensorDataSelector):
-
-    def __init__(self, conn: db.DatabaseAdapter, query_builder: query.QueryBuilder, sensor_type: str):
-        super(MobileSensorDataSelector, self).__init__(conn=conn, query_builder=query_builder, sensor_type=sensor_type)
-
-    def select(self) -> List[Dict[str, Any]]:
-        sensor_data = []
-        exec_query = self.builder.select_sensor_id_name_type_from_type(sensor_type=self.sensor_type)
-        sensors = self.conn.send(exec_query)
-        for sensor_id, sensor_name, sensor_type in sensors:
-            data = {"sensor_id": sensor_id, "sensor_name": sensor_name, "sensor_type": sensor_type}
-            data = self._select_api_param(data=data, sensor_id=sensor_id)
-            data = self._select_channel_info(data=data, sensor_id=sensor_id)
-            sensor_data.append(data)
-        self.log_info(f"{MobileSensorDataSelector.__name__}: found {len(sensor_data)} database sensors")
-        return sensor_data

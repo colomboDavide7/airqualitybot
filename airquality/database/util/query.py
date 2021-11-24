@@ -50,6 +50,9 @@ class QueryBuilder:
     def select_channel_info_from_sensor_id(self, sensor_id: int):
         return self.query_file.s11.format(sensor_id=sensor_id)
 
+    def select_sensor_id_from_type(self, type_: str):
+        return self.query_file.s12.format(type=type_)
+
     ################################ INSERT MOBILE MEASUREMENTS ################################
     def insert_mobile_measurements(self, sensor_id: int, channel: str, values: List[str]) -> str:
         query = ""
