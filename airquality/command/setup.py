@@ -6,14 +6,13 @@
 #
 ######################################################
 import abc
-import cmd
 from typing import Tuple, Dict, Any
 import airquality.command.config as cmd_const
 import airquality.file.structured.json as jf
 import airquality.api.fetchwrp as fetch
 import airquality.file.util.parser as fp
-import airquality.api.util.extractor as extr
-import airquality.api.util.url as url
+import airquality.api.model.baseresp as baseresp
+import airquality.api.url.baseurl as baseurl
 import airquality.database.util.conn as db_conn
 import airquality.logger.loggable as log
 
@@ -55,12 +54,13 @@ def open_database_connection(connection_string: str, log_filename="log"):
 
 ################################ get_fetch_wrapper ################################
 def get_fetch_wrapper(
-        url_builder: url.BaseURL,
-        api_resp_parser: fp.TextParser,
-        api_data_extractor: extr.SensorDataExtractor,
+        url_builder: baseurl.BaseURL,
+        response_parser: fp.TextParser,
+        response_builder: baseresp.BaseResponseModelBuilder,
         log_filename="log"
 ) -> fetch.FetchWrapper:
+
     return fetch.FetchWrapper(url_builder=url_builder,
-                              extractor=api_data_extractor,
-                              parser=api_resp_parser,
+                              response_builder=response_builder,
+                              parser=response_parser,
                               log_filename=log_filename)

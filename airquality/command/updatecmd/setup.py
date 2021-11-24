@@ -1,12 +1,12 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 21/11/21 11:13
+# Date: 21/11/21 16:41
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
 import os
-import airquality.command.init.init as command
+import airquality.command.updatecmd.update as command
 import airquality.command.config as comm_const
 import airquality.command.setup as setup
 
@@ -21,7 +21,7 @@ import airquality.api.util.url as url
 import airquality.database.operation.select.sensor as sel_type
 import airquality.database.util.datatype.timestamp as ts
 import database.record.georec as loc
-import airquality.database.operation.insert.initoprt as ins
+import airquality.database.operation.insert.updateoprt as ins
 import airquality.database.util.postgis.geom as geom
 import database.record.record as rec
 import database.record.timerec as t
@@ -30,15 +30,13 @@ import airquality.database.util.query as qry
 import container.sensor as adapt
 
 
-################################ PURPLEAIR INIT COMMAND SETUP ################################
-class PurpleairInitSetup(setup.CommandSetup):
+class PurpleairUpdateSetup(setup.CommandSetup):
 
-    def __init__(self, log_filename="purpleair"):
-        super(PurpleairInitSetup, self).__init__(log_filename=log_filename)
+    def __init__(self, log_filename="log"):
+        super(PurpleairUpdateSetup, self).__init__(log_filename=log_filename)
 
     @log_decorator.log_decorator()
     def setup(self, sensor_type: str):
-
         # Load environment file
         fl.load_environment_file(file_path=comm_const.ENV_FILE_PATH, sensor_type=sensor_type)
 
@@ -54,8 +52,8 @@ class PurpleairInitSetup(setup.CommandSetup):
 
         # FetchWrapper
         fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
-                                                api_resp_parser=api_resp_parser,
-                                                api_data_extractor=api_data_extractor,
+                                                response_parser=api_resp_parser,
+                                                response_builder=api_data_extractor,
                                                 log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
@@ -71,15 +69,13 @@ class PurpleairInitSetup(setup.CommandSetup):
         # QueryBuilder
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
-        # Insert Wrapper
-        insert_wrapper = ins.InitializeInsertWrapper(
+        # InsertWrapper
+        insert_wrapper = ins.UpdateInsertWrapper(
             conn=database_connection,
             query_builder=query_builder,
-            sensor_rec=rec.SensorRecord(),
-            sensor_api_rec=rec.APIParamRecord(),
-            sensor_info_rec=rec.SensorInfoRecord(time_rec=t.TimeRecord()),
             sensor_location_rec=rec.SensorLocationRecord(time_rec=t.TimeRecord(), location_rec=loc.LocationRecord()),
-            log_filename=self.log_filename)
+            log_filename=self.log_filename
+        )
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 
@@ -87,7 +83,6 @@ class PurpleairInitSetup(setup.CommandSetup):
         select_type_wrapper = sel_type.StationTypeSelectWrapper(conn=database_connection,
                                                                 query_builder=query_builder,
                                                                 sensor_type=sensor_type)
-
         ################################ ADAPTER-SIDE OBJECTS ################################
         api2db_adapter = adapt.PurpleairSensorContainerBuilder(
             postgis_class=geom.PostgisPoint,
@@ -96,10 +91,10 @@ class PurpleairInitSetup(setup.CommandSetup):
         )
 
         # Build command object
-        cmd = command.InitCommand(fetch_wrapper=fetch_wrapper,
-                                  insert_wrapper=insert_wrapper,
-                                  select_type_wrapper=select_type_wrapper,
-                                  api2db_adapter=api2db_adapter)
+        cmd = command.UpdateCommand(fetch_wrapper=fetch_wrapper,
+                                    insert_wrapper=insert_wrapper,
+                                    select_type_wrapper=select_type_wrapper,
+                                    api2db_adapter=api2db_adapter)
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
 

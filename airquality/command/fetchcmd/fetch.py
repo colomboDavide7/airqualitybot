@@ -7,7 +7,7 @@
 ######################################################
 from typing import Union, Dict, Any, List
 import airquality.api.fetchwrp as fetch
-import airquality.command.command as base
+import airquality.command.basecmd as base
 import airquality.adapter.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.operation.insert.insertoprt as ins

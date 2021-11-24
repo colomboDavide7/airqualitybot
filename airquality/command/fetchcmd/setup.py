@@ -6,7 +6,7 @@
 #
 ######################################################
 import os
-import airquality.command.fetch.fetch as command
+import airquality.command.fetchcmd.fetch as command
 import airquality.command.config as comm_const
 import airquality.command.setup as setup
 
@@ -58,8 +58,8 @@ class AtmotubeFetchSetup(setup.CommandSetup):
 
         # FetchWrapper
         fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
-                                                api_resp_parser=api_resp_parser,
-                                                api_data_extractor=api_data_extractor,
+                                                response_parser=api_resp_parser,
+                                                response_builder=api_data_extractor,
                                                 log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
@@ -146,8 +146,8 @@ class ThingspeakFetchSetup(setup.CommandSetup):
 
         # FetchWrapper
         fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
-                                                api_resp_parser=api_resp_parser,
-                                                api_data_extractor=api_data_extractor,
+                                                response_parser=api_resp_parser,
+                                                response_builder=api_data_extractor,
                                                 log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)

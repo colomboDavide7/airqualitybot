@@ -17,12 +17,12 @@ class UpdateInsertWrapper(base.InsertWrapper):
     def __init__(self, conn: connection.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="log"):
         super(UpdateInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
 
-    def insert(self, sensor_record: List[updtrec.UpdateRecord]) -> None:
+    def insert(self, records: List[updtrec.UpdateRecord]) -> None:
 
         update_info = []
         sensor_at_loc_values = ""
 
-        for record in sensor_record:
+        for record in records:
             update_info.append(record.update_info)
             sensor_at_loc_values += record.sensor_at_loc_values
 

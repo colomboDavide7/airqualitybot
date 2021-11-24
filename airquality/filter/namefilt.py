@@ -12,8 +12,8 @@ import airquality.adapter.api2db.initadapt.initadapt as initadapt
 
 class NameFilter(base.BaseFilter):
 
-    def __init__(self, database_sensor_names: List[str]):
-        super(NameFilter, self).__init__()
+    def __init__(self, database_sensor_names: List[str], log_filename="log"):
+        super(NameFilter, self).__init__(log_filename=log_filename)
         self.database_sensor_names = database_sensor_names
 
     def filter(self, to_filter: List[initadapt.InitUniformModel]) -> List[initadapt.InitUniformModel]:

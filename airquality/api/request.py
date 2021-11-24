@@ -3,7 +3,7 @@
 # @Author: Davide Colombo
 # @Date: mer, 20-10-2021, 08:09
 # @Description: this script defines an adapter class that wraps the 'urllib' module functionality for connecting
-#               to sensor's API and fetch data.
+#               to sensor's API and fetchcmd data.
 #
 #################################################
 import urllib.request as r

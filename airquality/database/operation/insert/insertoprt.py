@@ -21,5 +21,5 @@ class InsertWrapper(base.DatabaseOperationWrapper, abc.ABC):
         self.query_builder = query_builder
 
     @abc.abstractmethod
-    def insert(self, sensor_record: List[baserec.BaseRecord]) -> None:
+    def insert(self, records: List[baserec.BaseRecord]) -> None:
         pass

@@ -7,7 +7,7 @@
 ######################################################
 from typing import Union
 import airquality.logger.util.decorator as log_decorator
-import airquality.command.command as base
+import airquality.command.basecmd as base
 import airquality.api.fetchwrp as fetch
 import airquality.database.operation.insert.updateoprt as ins
 import airquality.database.operation.select.sensor as sel_type
