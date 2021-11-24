@@ -12,7 +12,7 @@ import airquality.api.fetchwrp as fetch
 import airquality.database.operation.insert.updateoprt as ins
 import airquality.database.operation.select.sensor as sel_type
 import container.sensor as sens_adapt
-import airquality.adapter.api2db.measure as meas_adapt
+import api2db.measure as meas_adapt
 import airquality.filter.basefilt as flt
 
 
@@ -44,7 +44,7 @@ class UpdateCommand(base.Command):
             return
 
         # Fetch API data
-        sensor_data = self.fetch_wrapper.get_sensor_data()
+        sensor_data = self.fetch_wrapper.get_api_responses()
         if not sensor_data:
             self.log_warning(f"{UpdateCommand.__name__}: empty API sensor data => no location updated")
             return

@@ -7,7 +7,7 @@
 ######################################################
 from typing import List, Dict, Any
 import airquality.api.url.baseurl as url
-import airquality.api.model.baseresp as mdl
+import airquality.api.resp.baseresp as mdl
 import airquality.file.util.parser as parse
 import airquality.api.request as fetch
 import airquality.logger.loggable as log
@@ -19,7 +19,7 @@ class FetchWrapper(log.Loggable):
     def __init__(
             self,
             url_builder: url.BaseURL,
-            response_builder: mdl.BaseResponseModelBuilder,
+            response_builder: mdl.BaseAPIResponseBuilder,
             parser: parse.TextParser,
             log_filename="log"
     ):
@@ -36,13 +36,13 @@ class FetchWrapper(log.Loggable):
         self.channel_name = name
 
     @log_decorator.log_decorator
-    def get_sensor_data(self) -> List[mdl.BaseResponseModel]:
+    def get_api_responses(self) -> List[mdl.BaseAPIResponse]:
         uniform_resource_locator = self.url_builder.url()
         response_text = fetch.fetch_from_url(uniform_resource_locator)
         parsed_response = self.response_parser.parse(response_text)
-        responses = self.response_builder.response(parsed_response=parsed_response)
+        api_responses = self.response_builder.build(parsed_response=parsed_response)
 
-        msg = f"{FetchWrapper.__name__}: fetched {len(responses)} sensor data"
-        self.log_warning(msg) if len(responses) == 0 else self.log_info(msg)
+        msg = f"{FetchWrapper.__name__}: fetched {len(api_responses)} sensor data"
+        self.log_warning(msg) if len(api_responses) == 0 else self.log_info(msg)
 
-        return responses
+        return api_responses

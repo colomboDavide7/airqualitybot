@@ -19,10 +19,10 @@ import airquality.api.util.extractor as extr
 import airquality.api.util.url as url
 
 import airquality.database.operation.select.sensor as sel_type
-import airquality.database.util.datatype.timestamp as ts
+import database.datatype.timestamp as ts
 import database.record.georec as loc
 import airquality.database.operation.insert.updateoprt as ins
-import airquality.database.util.postgis.geom as geom
+import database.postgis.geom as geom
 import database.record.record as rec
 import database.record.timerec as t
 import airquality.database.util.query as qry

@@ -7,9 +7,10 @@
 ######################################################
 import abc
 from typing import List, Dict, Any
-import airquality.adapter.api2db.baseadpt as base
-import airquality.database.util.datatype.timestamp as ts
-import airquality.database.util.postgis.geom as geo
+import airquality.api2db.baseunif as baseadpt
+import airquality.api.resp.baseresp as basersp
+import airquality.database.datatype.timestamp as ts
+import airquality.database.postgis.geom as geo
 
 
 class ParamIDValue:
@@ -19,7 +20,7 @@ class ParamIDValue:
         self.value = value
 
 
-class FetchUniformModel(base.BaseUniformModel):
+class FetchUniformResponse(baseadpt.BaseUniformResponse):
 
     def __init__(self, timestamp: ts.Timestamp, parameters: List[ParamIDValue], geolocation=geo.NullGeometry()):
         self.timestamp = timestamp
@@ -28,8 +29,12 @@ class FetchUniformModel(base.BaseUniformModel):
 
 
 ################################ FETCH ADAPTER BASE CLASS ###############################
-class FetchAPI2DBAdapter(base.BaseAPI2DBAdapter, abc.ABC):
+class FetchUniformResponseBuilder(baseadpt.BaseUniformResponseBuilder, abc.ABC):
 
     def __init__(self, measure_param_map: Dict[str, Any], timestamp_class=ts.Timestamp):
         self.measure_param_map = measure_param_map
         self.timestamp_class = timestamp_class
+
+    @abc.abstractmethod
+    def build(self, responses: List[basersp.BaseAPIResponse]) -> List[FetchUniformResponse]:
+        pass

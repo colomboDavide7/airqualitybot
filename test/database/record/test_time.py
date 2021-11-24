@@ -7,9 +7,9 @@
 ######################################################
 import unittest
 import database.record.timerec as t
-import airquality.database.util.datatype.timestamp as ts
+import database.datatype.timestamp as ts
 import airquality.adapter.config as adapt_const
-import airquality.database.util.datatype.config as time_conf
+import database.datatype.config as time_conf
 
 
 class TestTimeRecord(unittest.TestCase):

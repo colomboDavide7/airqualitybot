@@ -7,14 +7,14 @@
 ######################################################
 import abc
 from typing import List
-import airquality.api.model.baseresp as basemdl
-import airquality.adapter.api2db.baseadpt as base
-import airquality.database.util.postgis.geom as geo
-import airquality.database.util.datatype.timestamp as ts
+import airquality.api.resp.baseresp as basemdl
+import airquality.api2db.baseunif as base
+import airquality.database.postgis.geom as geo
+import airquality.database.datatype.timestamp as ts
 
 
 ################################ INIT UNIFORM MODEL ################################
-class InitUniformModel(base.BaseUniformModel):
+class InitUniformResponse(base.BaseUniformResponse):
 
     def __init__(
             self, name: str, type_: str,
@@ -30,12 +30,12 @@ class InitUniformModel(base.BaseUniformModel):
 
 
 ################################ INIT API 2 DB ADAPTER ################################
-class InitAPI2DBAdapter(base.BaseAPI2DBAdapter, abc.ABC):
+class InitUniformResponseBuilder(base.BaseUniformResponseBuilder, abc.ABC):
 
     def __init__(self, timestamp_class=ts.Timestamp, postgis_class=geo.PostgisPoint):
         self.timestamp_class = timestamp_class
         self.postgis_class = postgis_class
 
     @abc.abstractmethod
-    def adapt(self, responses: List[basemdl.BaseResponseModel]) -> List[InitUniformModel]:
+    def build(self, responses: List[basemdl.BaseAPIResponse]) -> List[InitUniformResponse]:
         pass

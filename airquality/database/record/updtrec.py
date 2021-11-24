@@ -6,8 +6,8 @@
 #
 ######################################################
 import airquality.database.record.baserec as base
-import airquality.database.util.datatype.timestamp as ts
-import airquality.adapter.api2db.updtadapt.updtadapt as updtadapt
+import airquality.database.datatype.timestamp as ts
+import airquality.api2db.updtunif.updtunif as updtunif
 
 
 class UpdateRecord(base.BaseRecord):
@@ -19,7 +19,7 @@ class UpdateRecord(base.BaseRecord):
 
 class UpdateRecordBuilder(base.BaseRecordBuilder):
 
-    def record(self, sensor_data: updtadapt.UpdateUniformModel, sensor_id: int) -> UpdateRecord:
+    def record(self, sensor_data: updtunif.UpdateUniformResponse, sensor_id: int) -> UpdateRecord:
         g = sensor_data.geolocation
 
         return UpdateRecord(

@@ -7,9 +7,9 @@
 ######################################################
 import abc
 from typing import List
-import airquality.api.model.baseresp as mdl
-import airquality.database.util.postgis.geom as geo
-import airquality.database.util.datatype.timestamp as ts
+import airquality.api.resp.baseresp as mdl
+import airquality.database.postgis.geom as geo
+import airquality.database.datatype.timestamp as ts
 
 
 class ParamNameTimestamp:
@@ -26,12 +26,12 @@ class ParamLocationTimestamp:
         self.geolocation = geolocation
 
 
-class BaseUniformModel(abc.ABC):
+class BaseUniformResponse(abc.ABC):
     pass
 
 
-class BaseAPI2DBAdapter(abc.ABC):
+class BaseUniformResponseBuilder(abc.ABC):
 
     @abc.abstractmethod
-    def adapt(self, responses: List[mdl.BaseResponseModel]) -> List[BaseUniformModel]:
+    def build(self, responses: List[mdl.BaseAPIResponse]) -> List[BaseUniformResponse]:
         pass

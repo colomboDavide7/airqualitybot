@@ -7,7 +7,7 @@
 ######################################################
 from typing import List
 import airquality.filter.basefilt as base
-import airquality.adapter.api2db.initadapt.initadapt as initadapt
+import api2db.initunif.initunif as initadapt
 
 
 class NameFilter(base.BaseFilter):
@@ -16,7 +16,7 @@ class NameFilter(base.BaseFilter):
         super(NameFilter, self).__init__(log_filename=log_filename)
         self.database_sensor_names = database_sensor_names
 
-    def filter(self, to_filter: List[initadapt.InitUniformModel]) -> List[initadapt.InitUniformModel]:
+    def filter(self, to_filter: List[initadapt.InitUniformResponse]) -> List[initadapt.InitUniformResponse]:
         filtered_data = []
         for data in to_filter:
             if data.name in self.database_sensor_names:

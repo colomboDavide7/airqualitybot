@@ -11,7 +11,7 @@ import airquality.command.config as cmd_const
 import airquality.file.structured.json as jf
 import airquality.api.fetchwrp as fetch
 import airquality.file.util.parser as fp
-import airquality.api.model.baseresp as baseresp
+import airquality.api.resp.baseresp as baseresp
 import airquality.api.url.baseurl as baseurl
 import airquality.database.util.conn as db_conn
 import airquality.logger.loggable as log
@@ -56,7 +56,7 @@ def open_database_connection(connection_string: str, log_filename="log"):
 def get_fetch_wrapper(
         url_builder: baseurl.BaseURL,
         response_parser: fp.TextParser,
-        response_builder: baseresp.BaseResponseModelBuilder,
+        response_builder: baseresp.BaseAPIResponseBuilder,
         log_filename="log"
 ) -> fetch.FetchWrapper:
 

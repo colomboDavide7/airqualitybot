@@ -8,7 +8,7 @@
 import abc
 from typing import List
 import airquality.logger.loggable as log
-import airquality.adapter.api2db.baseadpt as baseadpt
+import api2db.baseunif as baseadpt
 
 
 ################################ FILTER BASE CLASS ################################
@@ -18,5 +18,5 @@ class BaseFilter(log.Loggable):
         super(BaseFilter, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
-    def filter(self, to_filter: List[baseadpt.BaseUniformModel]) -> List[baseadpt.BaseUniformModel]:
+    def filter(self, to_filter: List[baseadpt.BaseUniformResponse]) -> List[baseadpt.BaseUniformResponse]:
         pass

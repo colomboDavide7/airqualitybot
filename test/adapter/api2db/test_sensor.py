@@ -8,11 +8,11 @@
 ######################################################
 import unittest
 import airquality.adapter.config as adapt_const
-import airquality.database.util.postgis.config as geom_conf
-import airquality.database.util.datatype.config as time_conf
+import database.postgis.config as geom_conf
+import database.datatype.config as time_conf
 import container.sensor as sens
-import airquality.database.util.postgis.geom as geom
-import airquality.database.util.datatype.timestamp as ts
+import database.postgis.geom as geom
+import database.datatype.timestamp as ts
 
 
 class TestSensorAdapter(unittest.TestCase):

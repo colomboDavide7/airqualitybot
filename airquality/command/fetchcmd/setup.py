@@ -26,7 +26,7 @@ import database.record.timerec as t
 import airquality.database.util.query as qry
 import airquality.looper.datelooper as looper
 
-import airquality.adapter.api2db.measure as adapt
+import api2db.measure as adapt
 import airquality.adapter.db2api.param as par_adapt
 
 
@@ -48,7 +48,7 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         if 'format' not in url_param:
             raise SystemExit(f"{AtmotubeFetchSetup.__name__}: bad 'api.json' file structure => missing key='format'")
 
-        # Take the API model format
+        # Take the API resp format
         api_resp_fmt = url_param['format']
 
         # Setup API-side objects
@@ -136,12 +136,12 @@ class ThingspeakFetchSetup(setup.CommandSetup):
         if 'format' not in url_param:
             raise SystemExit(f"{ThingspeakFetchSetup.__name__}: bad 'api.json' file structure => missing key='format'")
 
-        # Take the API model format
+        # Take the API resp format
         api_resp_fmt = url_param['format']
 
         # Setup API-side objects
         api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        api_data_extractor = extr.ThingspeakAPIResponseModelBuilder(log_filename=self.log_filename)
+        api_data_extractor = extr.ThingspeakAPIResponseBuilder(log_filename=self.log_filename)
         url_builder = url.ThingspeakURL(address=address, url_param=url_param, log_filename=self.log_filename)
 
         # FetchWrapper

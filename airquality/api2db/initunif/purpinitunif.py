@@ -6,18 +6,18 @@
 #
 ######################################################
 from typing import List
-import airquality.adapter.api2db.initadapt.initadapt as baseadapt
-import airquality.api.model.purpresp as purpmdl
-import airquality.database.util.postgis.geom as geo
-import airquality.database.util.datatype.timestamp as ts
+import airquality.api2db.initunif.initunif as baseadapt
+import airquality.api.resp.purpresp as purpmdl
+import airquality.database.postgis.geom as geo
+import airquality.database.datatype.timestamp as ts
 
 
-class PurpleairInitAdapter(baseadapt.InitAPI2DBAdapter):
+class PurpleairUniformResponseBuilder(baseadapt.InitUniformResponseBuilder):
 
     def __init__(self, timestamp_class=ts.UnixTimestamp, postgis_class=geo.PostgisPoint):
-        super(PurpleairInitAdapter, self).__init__(timestamp_class=timestamp_class, postgis_class=postgis_class)
+        super(PurpleairUniformResponseBuilder, self).__init__(timestamp_class=timestamp_class, postgis_class=postgis_class)
 
-    def adapt(self, responses: List[purpmdl.PurpleairAPIResponseModel]) -> List[baseadapt.InitUniformModel]:
+    def build(self, responses: List[purpmdl.PurpleairAPIResponse]) -> List[baseadapt.InitUniformResponse]:
         uniformed_responses = []
         for response in responses:
             # Create Name
@@ -35,7 +35,7 @@ class PurpleairInitAdapter(baseadapt.InitAPI2DBAdapter):
 
             # Append Uniformed Model
             uniformed_responses.append(
-                baseadapt.InitUniformModel(
+                baseadapt.InitUniformResponse(
                     name=name, type_=type_,
                     parameters=response.parameters,
                     channels=channels,

@@ -11,7 +11,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.database.operation.insert.insertoprt as base
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
-import database.record.record as rec
+import airquality.database.record.record as rec
 
 
 ################################ CLASS FOR MOBILE STATION ################################

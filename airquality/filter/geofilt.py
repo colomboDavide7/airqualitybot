@@ -7,7 +7,7 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.filter.basefilt as base
-import airquality.adapter.api2db.initadapt.initadapt as initadapt
+import api2db.initunif.initunif as initadapt
 
 
 class GeoFilter(base.BaseFilter):
@@ -16,7 +16,7 @@ class GeoFilter(base.BaseFilter):
         super(GeoFilter, self).__init__()
         self.database_active_locations = database_active_locations
 
-    def filter(self, to_filter: List[initadapt.InitUniformModel]) -> List[initadapt.InitUniformModel]:
+    def filter(self, to_filter: List[initadapt.InitUniformResponse]) -> List[initadapt.InitUniformResponse]:
         filtered_data = []
         for data in to_filter:
             if data.name in self.database_active_locations:

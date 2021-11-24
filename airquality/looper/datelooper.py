@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetchwrp as fetch
-import airquality.database.util.datatype.timestamp as ts
+import database.datatype.timestamp as ts
 
 
 def get_date_looper_class(sensor_type: str):
@@ -67,7 +67,7 @@ class AtmotubeDateLooper(DateLooper):
         next_date = self._get_next_date_url_param()
         self.log_info(f"{AtmotubeDateLooper.__name__}: looking for new sensor data on date='{next_date['date']}'")
         self.fetch_wrapper.update_url_param(next_date)
-        return self.fetch_wrapper.get_sensor_data()
+        return self.fetch_wrapper.get_api_responses()
 
     def _get_next_date_url_param(self) -> Dict[str, Any]:
         date = self.start
@@ -96,7 +96,7 @@ class ThingspeakDateLooper(DateLooper):
         self.log_info(f"{ThingspeakDateLooper.__name__}: looking for new measurements within date range "
                       f"[{next_time_window['start']} - {next_time_window['end']}]")
         self.fetch_wrapper.update_url_param(next_time_window)
-        return self.fetch_wrapper.get_sensor_data()
+        return self.fetch_wrapper.get_api_responses()
 
     def _get_next_date_url_param(self) -> Dict[str, Any]:
         date = self.start

@@ -5,11 +5,11 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.database.record.baserec as base
-import airquality.adapter.api2db.initadapt.initadapt as initadpt
+import airquality.database.record.baserec as baserec
+import airquality.api2db.initunif.initunif as initunif
 
 
-class InitRecord(base.BaseRecord):
+class InitRecord(baserec.BaseRecord):
 
     def __init__(self, sensor_value: str, api_param_value: str, channel_info_value: str, sensor_at_loc_value: str):
         self.sensor_value = sensor_value
@@ -18,9 +18,9 @@ class InitRecord(base.BaseRecord):
         self.sensor_at_loc_value = sensor_at_loc_value
 
 
-class InitRecordBuilder(base.BaseRecordBuilder):
+class InitRecordBuilder(baserec.BaseRecordBuilder):
 
-    def record(self, sensor_data: initadpt.InitUniformModel, sensor_id: int) -> InitRecord:
+    def record(self, sensor_data: initunif.InitUniformResponse, sensor_id: int) -> InitRecord:
         g = sensor_data.geolocation
         channel_info_values = ','.join(f"({sensor_id}, '{c.name}', '{c.timestamp.get_formatted_timestamp()}')"
                                        for c in sensor_data.channels)

@@ -7,8 +7,8 @@
 #
 ######################################################
 import unittest
-import airquality.database.util.postgis.geom as geom
-import airquality.database.util.postgis.config as geom_conf
+import database.postgis.geom as geom
+import database.postgis.config as geom_conf
 
 
 class TestGeometryBuilder(unittest.TestCase):
