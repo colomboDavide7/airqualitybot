@@ -13,6 +13,13 @@ import airquality.database.util.query as query
 import airquality.database.dtype.timestamp as ts
 
 
+class ParamNameID:
+
+    def __init__(self, id_: int, name: str):
+        self.id = id_
+        self.name = name
+
+
 class ParamNameValue:
 
     def __init__(self, name: str, value: str):
@@ -81,3 +88,11 @@ class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
         for channel_name, last_acquisition in channel_info_resp:
             channel_info.append(ParamNameTimestamp(name=channel_name, timestamp=last_acquisition))
         return channel_info
+
+    def _select_measure_param(self) -> List[ParamNameID]:
+        meas_param_query = self.builder.select_measure_param_from_sensor_type(sensor_type=self.sensor_type)
+        measure_param_resp = self.conn.send(meas_param_query)
+        measure_param = []
+        for param_code, param_id in measure_param_resp:
+            measure_param.append(ParamNameID(id_=param_id, name=param_code))
+        return measure_param
