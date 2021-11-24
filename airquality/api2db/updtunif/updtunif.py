@@ -26,5 +26,5 @@ class UpdateUniformResponseBuilder(base.BaseUniformResponseBuilder, abc.ABC):
         self.postgis_class = postgis_class
 
     @abc.abstractmethod
-    def build(self, responses: List[base.mdl.BaseAPIResponse]) -> List[UpdateUniformResponse]:
+    def uniform(self, responses: List[base.mdl.BaseResponse]) -> List[UpdateUniformResponse]:
         pass

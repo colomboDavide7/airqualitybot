@@ -8,7 +8,7 @@
 ######################################################
 import unittest
 from typing import Dict, Any
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.config as adapt_const
 import database.ext.config as geom_conf
 import database.dtype.config as time_conf
 import api2db.measure as adapt

@@ -25,5 +25,5 @@ class BaseRecord:
 class BaseRecordBuilder(abc.ABC):
 
     @abc.abstractmethod
-    def record(self, uniformed_responses: baseunif.BaseUniformResponse, sensor_id: int) -> BaseRecord:
+    def record(self, uniform_response: baseunif.BaseUniformResponse, sensor_id: int) -> BaseRecord:
         pass

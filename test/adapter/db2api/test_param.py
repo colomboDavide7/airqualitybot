@@ -7,8 +7,8 @@
 #
 ######################################################
 import unittest
-import airquality.adapter.db2api.param as par
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.db2api.param as par
+import airquality.to_delete.config as adapt_const
 
 
 class TestParamAdapter(unittest.TestCase):

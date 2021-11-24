@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.config as adapt_const
 import database.ext.config as geom_conf
 import database.dtype.config as time_conf
 import container.sensor as sens
@@ -64,7 +64,7 @@ class TestSensorAdapter(unittest.TestCase):
                                                     {adapt_const.PAR_NAME: 'secondary_key_a', adapt_const.PAR_VAL: 'key2A'},
                                                     {adapt_const.PAR_NAME: 'secondary_key_b', adapt_const.PAR_VAL: 'key2B'}],
                            adapt_const.SENS_TYPE: 'PurpleAir/ThingSpeak'}
-        actual_output = self.purpleair_adapter.build(test_packet)
+        actual_output = self.purpleair_adapter.uniform(test_packet)
         self.assertEqual(actual_output, expected_output)
 
     def test_exit_on_missing_purpleair_api_param(self):
@@ -72,7 +72,7 @@ class TestSensorAdapter(unittest.TestCase):
                                   'primary_id_a': 'id1A', 'primary_id_b': 'id1B', 'primary_key_a': 'key1A',
                                   'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A'}
         with self.assertRaises(SystemExit):
-            self.purpleair_adapter.build(test_missing_api_param)
+            self.purpleair_adapter.uniform(test_missing_api_param)
 
     def test_exit_on_missing_sensor_name(self):
         test_missing_name = {'latitude': 'lat_val', 'longitude': 'lng_val',
@@ -80,7 +80,7 @@ class TestSensorAdapter(unittest.TestCase):
                              'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A', 'secondary_key_b': 'key2B',
                              'date_created': 'd'}
         with self.assertRaises(SystemExit):
-            self.purpleair_adapter.build(test_missing_name)
+            self.purpleair_adapter.uniform(test_missing_name)
 
     def test_exit_on_missing_geolocation(self):
         test_missing_geom = {'name': 'n1', 'sensor_index': 'idx1',
@@ -89,7 +89,7 @@ class TestSensorAdapter(unittest.TestCase):
                              'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A',
                              'secondary_key_b': 'key2B', 'date_created': 'd'}
         with self.assertRaises(SystemExit):
-            self.purpleair_adapter.build(test_missing_geom)
+            self.purpleair_adapter.uniform(test_missing_geom)
 
     def test_exit_on_missing_date_created(self):
         test_missing_date_created = {'name': 'n1', 'sensor_index': 'idx1', 'latitude': 'lat_val',
@@ -99,7 +99,7 @@ class TestSensorAdapter(unittest.TestCase):
                                      'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A',
                                      'secondary_key_b': 'key2B'}
         with self.assertRaises(SystemExit):
-            self.purpleair_adapter.build(test_missing_date_created)
+            self.purpleair_adapter.uniform(test_missing_date_created)
 
     def test_exit_on_missing_api_param(self):
         test_packet = {'name': 'n1', 'sensor_index': 'idx1', 'latitude': 'lat_val', 'longitude': 'lng_val',
@@ -108,7 +108,7 @@ class TestSensorAdapter(unittest.TestCase):
                        'secondary_id_a': 'id2A', 'secondary_id_b': 'id2B', 'secondary_key_a': 'key2A',
                        'secondary_key_b': 'key2B', 'date_created': 'd'}
         with self.assertRaises(SystemExit):
-            self.purpleair_adapter.build(test_packet)
+            self.purpleair_adapter.uniform(test_packet)
 
 
 if __name__ == '__main__':

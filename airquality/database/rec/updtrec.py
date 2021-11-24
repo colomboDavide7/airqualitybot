@@ -19,8 +19,8 @@ class UpdateRecord(base.BaseRecord):
 
 class UpdateRecordBuilder(base.BaseRecordBuilder):
 
-    def record(self, uniformed_responses: updtunif.UpdateUniformResponse, sensor_id: int) -> UpdateRecord:
-        g = uniformed_responses.geolocation
+    def record(self, uniform_response: updtunif.UpdateUniformResponse, sensor_id: int) -> UpdateRecord:
+        g = uniform_response.geolocation
 
         return UpdateRecord(
             sensor_at_loc_values=f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geometry.geom_from_text()}),",

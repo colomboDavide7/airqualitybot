@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import List, Dict, Any
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.op.ins.ins as base
 import airquality.database.util.conn as connection
@@ -34,7 +34,7 @@ class FetchMobileInsertWrapper(base.InsertWrapper):
     def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
 
         # Create measure values
-        measure_values = [self.sensor_measure_rec.record(uniformed_responses=data) for data in sensor_data]
+        measure_values = [self.sensor_measure_rec.record(uniform_response=data) for data in sensor_data]
 
         # Build query
         exec_query = self.query_builder.insert_mobile_measurements(values=measure_values, sensor_id=sensor_id, channel=sensor_channel)
@@ -68,7 +68,7 @@ class FetchStationInsertWrapper(base.InsertWrapper):
     def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
 
         # Create measure values
-        measure_values = [self.sensor_measure_rec.record(uniformed_responses=data, sensor_id=sensor_id) for data in sensor_data]
+        measure_values = [self.sensor_measure_rec.record(uniform_response=data, sensor_id=sensor_id) for data in sensor_data]
 
         # Build query
         exec_query = self.query_builder.insert_station_measurements(values=measure_values,

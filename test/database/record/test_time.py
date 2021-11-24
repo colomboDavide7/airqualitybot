@@ -8,7 +8,7 @@
 import unittest
 import database.rec.timerec as t
 import database.dtype.timestamp as ts
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.config as adapt_const
 import database.dtype.config as time_conf
 
 

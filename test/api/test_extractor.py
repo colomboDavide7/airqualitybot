@@ -8,7 +8,7 @@
 import unittest
 import airquality.api.util.extractor as extr
 import airquality.api.config as extr_const
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.config as adapt_const
 
 
 class TestAPIExtractor(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestAPIExtractor(unittest.TestCase):
     def setUp(self) -> None:
         self.purpleair_extractor = extr.PurpleairSensorDataExtractor()
         self.atmotube_extractor = extr.AtmotubeSensorDataExtractor()
-        self.thingspeak_extractor = extr.ThingspeakAPIResponseBuilder()
+        self.thingspeak_extractor = extr.ThingspeakResponseBuilder()
 
     def test_extract_purpleair_data(self):
         test_api_answer = {
@@ -28,7 +28,7 @@ class TestAPIExtractor(unittest.TestCase):
         }
 
         expected_answer = [{"name": "n1", "sensor_index": "idx1"}, {"name": "n2", "sensor_index": "idx2"}]
-        actual_answer = self.purpleair_extractor.build(parsed_response=test_api_answer)
+        actual_answer = self.purpleair_extractor.uniform(parsed_response=test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
     def test_extract_empty_list_purpleair(self):
@@ -37,18 +37,18 @@ class TestAPIExtractor(unittest.TestCase):
             'data': []
         }
         expected_answer = []
-        actual_answer = self.purpleair_extractor.build(parsed_response=test_api_answer)
+        actual_answer = self.purpleair_extractor.uniform(parsed_response=test_api_answer)
         self.assertEqual(actual_answer, expected_answer)
 
     def test_exit_on_missing_data_item(self):
         test_api_answer = {'fields': ["f1", "f2"]}
         with self.assertRaises(SystemExit):
-            self.purpleair_extractor.build(parsed_response=test_api_answer)
+            self.purpleair_extractor.uniform(parsed_response=test_api_answer)
 
     def test_exit_on_missing_fields_item(self):
         test_api_answer = {'data': [['p1', 'p2', 'p3'], ['p4', 'p5', 'p6']]}
         with self.assertRaises(SystemExit):
-            self.purpleair_extractor.build(parsed_response=test_api_answer)
+            self.purpleair_extractor.uniform(parsed_response=test_api_answer)
 
     ################################ TEST THINGSPEAK EXTRACTOR ################################
 
@@ -84,26 +84,26 @@ class TestAPIExtractor(unittest.TestCase):
                                  {extr_const.FIELD_NAME: 'humidity_a', extr_const.FIELD_VALUE: '60'}],
              }]
 
-        actual_output = self.thingspeak_extractor.build(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)
+        actual_output = self.thingspeak_extractor.uniform(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)
         self.assertEqual(actual_output, expected_answer)
 
     def test_extract_empty_list_thingspeak(self):
         test_api_answer = {"channel": {'param1': 'val1'},
                            "feeds": []}
         expected_answer = []
-        actual_output = self.thingspeak_extractor.build(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)
+        actual_output = self.thingspeak_extractor.uniform(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)
         self.assertEqual(actual_output, expected_answer)
 
     def test_exit_on_missing_feeds(self):
         test_api_answer = {"channel": {'param1': 'val1'}}
         with self.assertRaises(SystemExit):
-            self.thingspeak_extractor.build(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)
+            self.thingspeak_extractor.uniform(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)
 
     def test_exit_on_missing_created_at_data_item(self):
         test_api_answer = {"channel": {'param1': 'val1'},
                            "feeds": [{'other': 'v'}]}
         with self.assertRaises(SystemExit):
-            self.thingspeak_extractor.build(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)
+            self.thingspeak_extractor.uniform(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)
 
     def test_system_exit_when_missing_channel_name_thingspeak_extractor(self):
         test_api_answer = {"feeds": [
@@ -122,10 +122,10 @@ class TestAPIExtractor(unittest.TestCase):
         ]}
 
         with self.assertRaises(SystemExit):
-            self.thingspeak_extractor.build(parsed_response=test_api_answer, channel_name="bad name")
+            self.thingspeak_extractor.uniform(parsed_response=test_api_answer, channel_name="bad name")
 
         with self.assertRaises(SystemExit):
-            self.thingspeak_extractor.build(parsed_response=test_api_answer)
+            self.thingspeak_extractor.uniform(parsed_response=test_api_answer)
 
     ################################ TEST ATMOTUBE EXTRACTOR ################################
 
@@ -133,24 +133,24 @@ class TestAPIExtractor(unittest.TestCase):
         test_api_answer = {"data": {"items": [{'time': "2021-10-02T00:00:00.000Z"}, {'time': "2021-10-02T00:01:00.000Z"}]}}
 
         expected_output = [{'time': "2021-10-02T00:00:00.000Z"}, {'time': "2021-10-02T00:01:00.000Z"}]
-        actual_output = self.atmotube_extractor.build(parsed_response=test_api_answer)
+        actual_output = self.atmotube_extractor.uniform(parsed_response=test_api_answer)
         self.assertEqual(actual_output, expected_output)
 
     def test_extract_empty_list_atmotube(self):
         test_api_answer = {"data": {"items": []}}
         expected_output = []
-        actual_output = self.atmotube_extractor.build(parsed_response=test_api_answer)
+        actual_output = self.atmotube_extractor.uniform(parsed_response=test_api_answer)
         self.assertEqual(actual_output, expected_output)
 
     def test_exit_on_missing_atmotube_data_item(self):
         test_api_answer = {'some': 'v'}
         with self.assertRaises(SystemExit):
-            self.atmotube_extractor.build(parsed_response=test_api_answer)
+            self.atmotube_extractor.uniform(parsed_response=test_api_answer)
 
     def test_exit_on_missing_atmotube_items_within_data_item(self):
         test_api_answer = {"data": {"other": 'v'}}
         with self.assertRaises(SystemExit):
-            self.atmotube_extractor.build(parsed_response=test_api_answer)
+            self.atmotube_extractor.uniform(parsed_response=test_api_answer)
 
 
 if __name__ == '__main__':

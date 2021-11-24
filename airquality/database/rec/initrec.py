@@ -20,13 +20,13 @@ class InitRecord(baserec.BaseRecord):
 
 class InitRecordBuilder(baserec.BaseRecordBuilder):
 
-    def record(self, uniformed_responses: initunif.InitUniformResponse, sensor_id: int) -> InitRecord:
-        g = uniformed_responses.geolocation
+    def record(self, uniform_response: initunif.InitUniformResponse, sensor_id: int) -> InitRecord:
+        g = uniform_response.geolocation
         channel_info_values = ','.join(f"({sensor_id}, '{c.name}', '{c.timestamp.get_formatted_timestamp()}')"
-                                       for c in uniformed_responses.channels) + ','
+                                       for c in uniform_response.channels) + ','
         return InitRecord(
-            sensor_value=f"({sensor_id}, '{uniformed_responses.type}', '{uniformed_responses.name}'),",
-            api_param_value=','.join(f"({sensor_id}, '{p.name}', '{p.value}')" for p in uniformed_responses.parameters) + ',',
+            sensor_value=f"({sensor_id}, '{uniform_response.type}', '{uniform_response.name}'),",
+            api_param_value=','.join(f"({sensor_id}, '{p.name}', '{p.value}')" for p in uniform_response.parameters) + ',',
             channel_info_value=channel_info_values,
             sensor_at_loc_value=f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geometry.geom_from_text()}),"
         )

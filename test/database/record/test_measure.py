@@ -11,7 +11,7 @@ import database.rec.timerec as t
 import database.dtype.timestamp as ts
 import database.rec.georec as loc
 import database.ext.postgis as geom
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.config as adapt_const
 import database.dtype.config as time_conf
 import database.ext.config as geom_conf
 
@@ -51,7 +51,7 @@ class TestMeasurementRecord(unittest.TestCase):
                      adapt_const.SENS_GEOM: {adapt_const.CLS: geom.PostgisPoint,
                                              adapt_const.KW: {geom_conf.POINT_INIT_LAT_NAME: '45',
                                                               geom_conf.POINT_INIT_LNG_NAME: '9'}}}
-        actual_output = self.mobile_rec.record(uniformed_responses=test_data)
+        actual_output = self.mobile_rec.record(uniform_response=test_data)
         expected_output = "(99, 1, '55', '2018-10-11 09:44:00', ST_GeomFromText('POINT(9 45)', 26918))"
         self.assertEqual(actual_output, expected_output)
 

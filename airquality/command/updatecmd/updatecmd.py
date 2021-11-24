@@ -48,7 +48,7 @@ class UpdateCommand(basecmd.Command):
             return
 
         # Reshape API data
-        uniformed_responses = self.uniform_response_builder.build(responses=api_responses)
+        uniformed_responses = self.uniform_response_builder.uniform(responses=api_responses)
 
         # Create the Database Locations Dict
         database_active_locations = {}

@@ -18,7 +18,7 @@ class AtmotubeUniformResponseBuilder(baseadapt.FetchUniformResponseBuilder):
         super(AtmotubeUniformResponseBuilder, self).__init__(measure_param_map=measure_param_map, timestamp_class=timestamp_class)
         self.postgis_class = postgis_class
 
-    def build(self, responses: List[atm_mdl.AtmotubeAPIResponse]) -> List[baseadapt.FetchUniformResponse]:
+    def uniform(self, responses: List[atm_mdl.AtmotubeResponse]) -> List[baseadapt.FetchUniformResponse]:
         uniformed_responses = []
         for response in responses:
             timestamp = self.timestamp_class(timest=response.time)

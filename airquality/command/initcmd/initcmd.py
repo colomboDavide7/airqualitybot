@@ -36,7 +36,7 @@ class InitCommand(basecmd.Command):
             return
 
         ####################### UNIFORM API RESPONSES TO APPLY ANY USEFUL INTERMEDIATE OPERATION #######################
-        uniformed_responses = self.uniform_response_builder.build(api_responses)
+        uniformed_responses = self.uniform_response_builder.uniform(api_responses)
 
         ################################ FILTERING OPERATION ###############################
         db_responses = self.select_wrapper.select()
@@ -62,7 +62,7 @@ class InitCommand(basecmd.Command):
 
         records = []
         for response in uniformed_responses:
-            records.append(self.record_builder.record(uniformed_responses=response, sensor_id=max_sensor_id))
+            records.append(self.record_builder.record(uniform_response=response, sensor_id=max_sensor_id))
             max_sensor_id += 1
 
         # Execute queries on sensors

@@ -19,7 +19,7 @@ class FetchWrapper(log.Loggable):
     def __init__(
             self,
             url_builder: url.BaseURL,
-            response_builder: mdl.BaseAPIResponseBuilder,
+            response_builder: mdl.BaseResponseBuilder,
             parser: parse.TextParser,
             log_filename="log"
     ):
@@ -36,7 +36,7 @@ class FetchWrapper(log.Loggable):
         self.channel_name = name
 
     @log_decorator.log_decorator
-    def fetch(self) -> List[mdl.BaseAPIResponse]:
+    def fetch(self) -> List[mdl.BaseResponse]:
         uniform_resource_locator = self.url_builder.url()
         response_text = fetch.fetch_from_url(uniform_resource_locator)
         parsed_response = self.response_parser.parse(response_text)

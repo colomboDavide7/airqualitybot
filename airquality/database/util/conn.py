@@ -2,7 +2,7 @@
 #
 # @Author: davidecolombo
 # @Date: mar, 19-10-2021, 12:37
-# @Description: this script defines an Abstract Base Class adapter that wraps the 'psycopg2' module for connecting to
+# @Description: this script defines an Abstract Base Class to_delete that wraps the 'psycopg2' module for connecting to
 #               the database and execute SQL query.
 #
 #################################################

@@ -36,5 +36,5 @@ class FetchUniformResponseBuilder(baseadpt.BaseUniformResponseBuilder, abc.ABC):
         self.timestamp_class = timestamp_class
 
     @abc.abstractmethod
-    def build(self, responses: List[basersp.BaseAPIResponse]) -> List[FetchUniformResponse]:
+    def uniform(self, responses: List[basersp.BaseResponse]) -> List[FetchUniformResponse]:
         pass

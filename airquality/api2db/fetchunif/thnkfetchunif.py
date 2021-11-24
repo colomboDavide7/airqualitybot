@@ -16,7 +16,7 @@ class ThingspeakUniformResponseBuilder(baseadapt.FetchUniformResponseBuilder):
     def __init__(self, measure_param_map: Dict[str, Any], timestamp_class=ts.ThingspeakTimestamp):
         super(ThingspeakUniformResponseBuilder, self).__init__(measure_param_map=measure_param_map, timestamp_class=timestamp_class)
 
-    def build(self, responses: List[thk_mdl.RESP_MODEL_TYPE]) -> List[baseadapt.FetchUniformResponse]:
+    def uniform(self, responses: List[thk_mdl.RESP_MODEL_TYPE]) -> List[baseadapt.FetchUniformResponse]:
         uniformed_responses = []
         for response in responses:
             timestamp = self.timestamp_class(timest=response.created_at)

@@ -17,7 +17,7 @@ class PurpleairUniformResponseBuilder(baseupdt.UpdateUniformResponseBuilder):
     def __init__(self, timestamp_class=ts.UnixTimestamp, postgis_class=geo.PostgisPoint):
         super(PurpleairUniformResponseBuilder, self).__init__(timestamp_class=timestamp_class, postgis_class=postgis_class)
 
-    def build(self, responses: List[purpmdl.PurpleairAPIResponse]) -> List[baseupdt.UpdateUniformResponse]:
+    def uniform(self, responses: List[purpmdl.PurpleairResponse]) -> List[baseupdt.UpdateUniformResponse]:
         uniformed_responses = []
         for response in responses:
             sensor_name = f"{response.name} ({response.sensor_index})".replace("'", "")

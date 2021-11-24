@@ -7,20 +7,20 @@
 ######################################################
 import abc
 from typing import List
-import airquality.api.resp.baseresp as basemdl
-import airquality.api2db.baseunif as base
-import airquality.database.ext.postgis as geo
+import airquality.api.resp.baseresp as baseresp
+import airquality.api2db.baseunif as baseunif
+import airquality.database.ext.postgis as postgis
 import airquality.database.dtype.timestamp as ts
 
 
 ################################ INIT UNIFORM MODEL ################################
-class InitUniformResponse(base.BaseUniformResponse):
+class InitUniformResponse(baseunif.BaseUniformResponse):
 
     def __init__(
             self, name: str, type_: str,
-            parameters: List[basemdl.ParamNameValue],
-            channels: List[base.ParamNameTimestamp],
-            geolocation: base.ParamLocationTimestamp
+            parameters: List[baseresp.ParamNameValue],
+            channels: List[baseunif.ParamNameTimestamp],
+            geolocation: baseunif.ParamLocationTimestamp
     ):
         self.name = name
         self.type = type_
@@ -30,12 +30,12 @@ class InitUniformResponse(base.BaseUniformResponse):
 
 
 ################################ INIT API 2 DB ADAPTER ################################
-class InitUniformResponseBuilder(base.BaseUniformResponseBuilder, abc.ABC):
+class InitUniformResponseBuilder(baseunif.BaseUniformResponseBuilder, abc.ABC):
 
-    def __init__(self, timestamp_class=ts.UnixTimestamp, postgis_class=geo.PostgisPoint):
+    def __init__(self, timestamp_class=ts.UnixTimestamp, postgis_class=postgis.PostgisPoint):
         self.timestamp_class = timestamp_class
         self.postgis_class = postgis_class
 
     @abc.abstractmethod
-    def build(self, responses: List[basemdl.BaseAPIResponse]) -> List[InitUniformResponse]:
+    def uniform(self, responses: List[baseresp.BaseResponse]) -> List[InitUniformResponse]:
         pass

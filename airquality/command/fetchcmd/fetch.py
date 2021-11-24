@@ -8,13 +8,13 @@
 from typing import Union, Dict, Any, List
 import airquality.api.fetchwrp as fetch
 import airquality.command.basecmd as base
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.op.ins.ins as ins
 import airquality.database.op.sel.sensor as sel_type
 import container.sensor as sens_adapt
 import api2db.measure as meas_adapt
-import airquality.adapter.db2api.param as par_adapt
+import airquality.to_delete.db2api.param as par_adapt
 import database.dtype.timestamp as ts
 import airquality.filter.basefilt as flt
 

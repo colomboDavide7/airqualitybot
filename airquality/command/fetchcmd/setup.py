@@ -27,7 +27,7 @@ import airquality.database.util.query as qry
 import airquality.looper.datelooper as looper
 
 import api2db.measure as adapt
-import airquality.adapter.db2api.param as par_adapt
+import airquality.to_delete.db2api.param as par_adapt
 
 
 class AtmotubeFetchSetup(setup.CommandSetup):
@@ -141,7 +141,7 @@ class ThingspeakFetchSetup(setup.CommandSetup):
 
         # Setup API-side objects
         api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        api_data_extractor = extr.ThingspeakAPIResponseBuilder(log_filename=self.log_filename)
+        api_data_extractor = extr.ThingspeakResponseBuilder(log_filename=self.log_filename)
         url_builder = url.ThingspeakURL(address=address, url_param=url_param, log_filename=self.log_filename)
 
         # FetchWrapper

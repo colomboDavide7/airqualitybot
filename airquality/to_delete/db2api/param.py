@@ -7,7 +7,7 @@
 ######################################################
 import abc
 from typing import Dict, Any, List
-import airquality.adapter.config as adapt_const
+import airquality.to_delete.config as adapt_const
 
 
 def get_param_adapter(sensor_type: str):

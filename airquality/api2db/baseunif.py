@@ -33,5 +33,5 @@ class BaseUniformResponse(abc.ABC):
 class BaseUniformResponseBuilder(abc.ABC):
 
     @abc.abstractmethod
-    def build(self, responses: List[mdl.BaseAPIResponse]) -> List[BaseUniformResponse]:
+    def uniform(self, responses: List[mdl.BaseResponse]) -> List[BaseUniformResponse]:
         pass
