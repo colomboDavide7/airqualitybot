@@ -56,7 +56,7 @@ class InitCommand(basecmd.Command):
 
         records = []
         for response in uniformed_responses:
-            self.record_builder.record(sensor_data=response, sensor_id=max_sensor_id)
+            self.record_builder.record(uniformed_responses=response, sensor_id=max_sensor_id)
             max_sensor_id += 1
 
         # Execute queries on sensors

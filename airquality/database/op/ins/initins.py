@@ -32,7 +32,7 @@ class InitInsertWrapper(base.InsertWrapper):
             channel_info_values += record.channel_info_value
             sensor_at_loc_values += record.sensor_at_loc_value
 
-        exec_query = self.query_builder.initialize_sensors(
+        exec_query = self.builder.initialize_sensors(
             sensor_values=sensor_values,
             api_param_values=api_param_values,
             channel_info_values=channel_info_values,

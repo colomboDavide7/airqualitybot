@@ -9,19 +9,17 @@ import abc
 import airquality.logger.loggable as log
 import airquality.api.fetchwrp as apiwrp
 import airquality.database.op.ins.ins as ins
-import airquality.database.op.sel.sel as sel
 
 
 class Command(log.Loggable, abc.ABC):
 
     ################################ __init__ ###############################
     def __init__(
-            self, fw: apiwrp.FetchWrapper, iw: ins.InsertWrapper, sw: sel.SelectWrapper, log_filename="log"
+            self, fw: apiwrp.FetchWrapper, iw: ins.InsertWrapper, log_filename="log"
     ):
         super(Command, self).__init__(log_filename=log_filename)
         self.fetch_wrapper = fw
         self.insert_wrapper = iw
-        self.select_wrapper = sw
 
     ################################ execute ###############################
     @abc.abstractmethod

@@ -6,7 +6,7 @@
 #
 ######################################################
 import os
-import airquality.command.updatecmd.update as command
+import airquality.command.updatecmd.updatecmd as command
 import airquality.command.cmdconf as comm_const
 import airquality.command.basecmdsetup as setup
 

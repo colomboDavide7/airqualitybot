@@ -34,7 +34,7 @@ class FetchMobileInsertWrapper(base.InsertWrapper):
     def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
 
         # Create measure values
-        measure_values = [self.sensor_measure_rec.record(sensor_data=data) for data in sensor_data]
+        measure_values = [self.sensor_measure_rec.record(uniformed_responses=data) for data in sensor_data]
 
         # Build query
         exec_query = self.query_builder.insert_mobile_measurements(values=measure_values, sensor_id=sensor_id, channel=sensor_channel)
@@ -68,7 +68,7 @@ class FetchStationInsertWrapper(base.InsertWrapper):
     def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
 
         # Create measure values
-        measure_values = [self.sensor_measure_rec.record(sensor_data=data, sensor_id=sensor_id) for data in sensor_data]
+        measure_values = [self.sensor_measure_rec.record(uniformed_responses=data, sensor_id=sensor_id) for data in sensor_data]
 
         # Build query
         exec_query = self.query_builder.insert_station_measurements(values=measure_values,

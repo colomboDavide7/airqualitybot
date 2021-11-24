@@ -26,7 +26,7 @@ class UpdateInsertWrapper(base.InsertWrapper):
             update_info.append(record.update_info)
             sensor_at_loc_values += record.sensor_at_loc_values
 
-        exec_query = self.query_builder.update_locations(
+        exec_query = self.builder.update_locations(
             sensor_at_loc_values=sensor_at_loc_values,
             update_info=update_info
         )
