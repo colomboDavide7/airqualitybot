@@ -8,7 +8,7 @@
 import abc
 from typing import List
 import airquality.logger.loggable as log
-import api2db.baseunif as baseadpt
+import airquality.api2db.baseunif as baseadpt
 
 
 ################################ FILTER BASE CLASS ################################

@@ -42,13 +42,18 @@ class UpdateCommand(basecmd.Command):
             return
 
         # Fetch API data
-        api_responses = self.fetch_wrapper.get_api_responses()
+        api_responses = self.fetch_wrapper.fetch()
         if not api_responses:
             self.log_warning(f"{UpdateCommand.__name__}: empty API response => no location updated")
             return
 
         # Reshape API data
         uniformed_responses = self.uniform_response_builder.build(responses=api_responses)
+
+        # Create the Database Locations Dict
+        database_active_locations = {}
+        for resp in db_responses:
+            database_active_locations[resp.sensor_name] = resp.geometry.as_text()
 
         # Create GeoFilter
         uniform_resp_filter = flt.GeoFilter(database_active_locations=database_active_locations, log_filename=self.log_filename)
@@ -61,12 +66,15 @@ class UpdateCommand(basecmd.Command):
             self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")
             return
 
+        # Create sensor_name - sensor_id map
+        name_id_map = {}
+        for resp in db_responses:
+            name_id_map[resp.sensor_name] = resp.sensor_id
+
         # Build database records
         records = []
         for api_resp in uniformed_responses:
-            for db_resp in db_responses:
-                if api_resp.sensor_name == db_resp.sensor_name:
-                    records.append(self.record_builder.record(api_resp, sensor_id=db_resp.sensor_id))
+            records.append(self.record_builder.record(api_resp, sensor_id=name_id_map[api_resp.sensor_name]))
 
         # Update locations
         self.insert_wrapper.insert(records=records)

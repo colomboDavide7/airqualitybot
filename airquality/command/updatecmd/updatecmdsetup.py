@@ -15,19 +15,15 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.file.util.parser as fp
 import airquality.file.util.loader as fl
 
-import airquality.api.util.extractor as extr
-import airquality.api.util.url as url
+import airquality.api.url.purpurl as url
+import airquality.api.resp.purpresp as resp
 
-import airquality.database.op.sel.sensor as sel_type
-import database.dtype.timestamp as ts
-import database.rec.georec as loc
+import airquality.api2db.updtunif.updtunif as unif
+
 import airquality.database.op.ins.updtins as ins
-import database.ext.postgis as geom
-import database.rec.record as rec
-import database.rec.timerec as t
+import airquality.database.op.sel.stationsel as sel
 import airquality.database.util.query as qry
-
-import container.sensor as adapt
+import airquality.database.rec.updtrec as rec
 
 
 class PurpleairUpdateSetup(setup.CommandSetup):
@@ -46,22 +42,21 @@ class PurpleairUpdateSetup(setup.CommandSetup):
         url_param.update({'api_key': os.environ['PURPLEAIR_KEY1']})
 
         # Setup API-side objects
-        api_resp_parser = fp.JSONParser(log_filename=self.log_filename)
-        api_data_extractor = extr.PurpleairSensorDataExtractor(log_filename=self.log_filename)
-        url_builder = url.PurpleairURL(address=address, url_param=url_param, log_filename=self.log_filename)
+        response_parser = fp.JSONParser(log_filename=self.log_filename)
+        response_builder = resp.PurpleairAPIResponseBuilder()
+        url_builder = url.PurpleairURL(address=address, parameters=url_param, log_filename=self.log_filename)
 
         # FetchWrapper
         fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
-                                                response_parser=api_resp_parser,
-                                                response_builder=api_data_extractor,
+                                                response_parser=response_parser,
+                                                response_builder=response_builder,
                                                 log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
 
         ################################ DATABASE-SIDE OBJECTS ################################
         # Database Connection
-        database_connection = setup.open_database_connection(connection_string=os.environ['DBCONN'],
-                                                             log_filename=self.log_filename)
+        database_connection = setup.open_database_connection(connection_string=os.environ['DBCONN'], log_filename=self.log_filename)
 
         # Load SQL query file
         query_file_obj = setup.load_file(file_path=comm_const.QUERY_FILE_PATH, log_filename=self.log_filename)
@@ -70,31 +65,29 @@ class PurpleairUpdateSetup(setup.CommandSetup):
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
         # InsertWrapper
-        insert_wrapper = ins.UpdateInsertWrapper(
-            conn=database_connection,
-            query_builder=query_builder,
-            sensor_location_rec=rec.SensorLocationRecord(time_rec=t.TimeRecord(), location_rec=loc.LocationRecord()),
-            log_filename=self.log_filename
-        )
+        insert_wrapper = ins.UpdateInsertWrapper(conn=database_connection,
+                                                 query_builder=query_builder,
+                                                 log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 
-        # TypeSelectWrapper
-        select_type_wrapper = sel_type.StationTypeSelectWrapper(conn=database_connection,
-                                                                query_builder=query_builder,
-                                                                sensor_type=sensor_type)
-        ################################ ADAPTER-SIDE OBJECTS ################################
-        api2db_adapter = adapt.PurpleairSensorContainerBuilder(
-            postgis_class=geom.PostgisPoint,
-            timestamp_class=ts.UnixTimestamp,
+        # SelectWrapper
+        select_wrapper = sel.StationSelectWrapper(
+            conn=database_connection,
+            query_builder=query_builder,
+            sensor_type=sensor_type,
             log_filename=self.log_filename
         )
 
-        # Build command object
-        cmd = command.UpdateCommand(fetch_wrapper=fetch_wrapper,
-                                    insert_wrapper=insert_wrapper,
-                                    select_type_wrapper=select_type_wrapper,
-                                    api2db_adapter=api2db_adapter)
+        ################################ COMMAND OBJECT ################################
+        cmd = command.UpdateCommand(
+            fw=fetch_wrapper,
+            iw=insert_wrapper,
+            sw=select_wrapper,
+            urb=unif.UpdateUniformResponseBuilder(),
+            rb=rec.UpdateRecordBuilder(),
+            log_filename=self.log_filename
+        )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
 

@@ -21,15 +21,16 @@ class InitCommand(basecmd.Command):
             self, fw: apiwrp.FetchWrapper, urb: initunif.InitUniformResponseBuilder, rb: initrec.InitRecordBuilder,
             iw: ins.InitInsertWrapper, sw: sel.StationSelectWrapper, log_filename="log"
     ):
-        super(InitCommand, self).__init__(fw=fw, iw=iw, sw=sw, log_filename=log_filename)
+        super(InitCommand, self).__init__(fw=fw, iw=iw, log_filename=log_filename)
         self.uniform_response_builder = urb
         self.record_builder = rb
+        self.select_wrapper = sw
 
     @log_decorator.log_decorator()
     def execute(self):
 
         ################################ API-SIDE ###############################
-        api_responses = self.fetch_wrapper.get_api_responses()
+        api_responses = self.fetch_wrapper.fetch()
         if not api_responses:
             self.log_warning(f"{InitCommand.__name__}: empty API sensor data => no sensor inserted")
             return
@@ -39,7 +40,11 @@ class InitCommand(basecmd.Command):
 
         ################################ FILTERING OPERATION ###############################
         db_responses = self.select_wrapper.select()
+
         if db_responses:
+            database_sensor_names = []
+            for resp in db_responses:
+                database_sensor_names.append(resp.sensor_name)
             uniform_response_filter = nameflt.NameFilter(database_sensor_names=database_sensor_names, log_filename=self.log_filename)
             uniform_response_filter.set_file_logger(self.file_logger)
             uniform_response_filter.set_console_logger(self.console_logger)
