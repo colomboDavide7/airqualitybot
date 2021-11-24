@@ -7,7 +7,7 @@
 ######################################################
 import abc
 from typing import Tuple, Dict, Any
-import airquality.command.config as cmd_const
+import airquality.command.cmdconf as cmd_const
 import airquality.file.structured.json as jf
 import airquality.api.fetchwrp as fetch
 import airquality.file.util.parser as fp

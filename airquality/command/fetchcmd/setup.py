@@ -7,8 +7,8 @@
 ######################################################
 import os
 import airquality.command.fetchcmd.fetch as command
-import airquality.command.config as comm_const
-import airquality.command.setup as setup
+import airquality.command.cmdconf as comm_const
+import airquality.command.basecmdsetup as setup
 
 import airquality.logger.util.decorator as log_decorator
 

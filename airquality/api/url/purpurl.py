@@ -11,8 +11,8 @@ import airquality.api.url.baseurl as base
 
 class PurpleairURL(base.BaseURL):
 
-    def __init__(self, address: str, parameters: Dict[str, Any]):
-        super(PurpleairURL, self).__init__(address=address, parameters=parameters)
+    def __init__(self, address: str, parameters: Dict[str, Any], log_filename="log"):
+        super(PurpleairURL, self).__init__(address=address, parameters=parameters, log_filename=log_filename)
 
     def url(self) -> str:
         self._exit_on_bad_url_parameters()

@@ -7,11 +7,13 @@
 ######################################################
 import abc
 from typing import Dict, Any
+import airquality.logger.loggable as log
 
 
-class BaseURL(abc.ABC):
+class BaseURL(log.Loggable, abc.ABC):
 
-    def __init__(self, address: str, parameters: Dict[str, Any]):
+    def __init__(self, address: str, parameters: Dict[str, Any], log_filename="log"):
+        super(BaseURL, self).__init__(log_filename=log_filename)
         self.address = address
         self.parameters = parameters
 

@@ -8,7 +8,7 @@
 import sys
 from typing import List, Tuple
 import airquality.logger.util.log as log
-import airquality.command.initcmd.setup as init_setup
+import airquality.command.initcmd.initcmdsetup as init_setup
 import airquality.command.updatecmd.setup as upd_setup
 import airquality.command.fetchcmd.setup as ftc_setup
 
