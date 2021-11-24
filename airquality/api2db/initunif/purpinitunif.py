@@ -10,6 +10,7 @@ import airquality.api2db.initunif.initunif as baseadapt
 import airquality.api.resp.purpresp as purpmdl
 import airquality.database.ext.postgis as geo
 import airquality.database.dtype.timestamp as ts
+import airquality.database.op.sel.sel as sel
 
 
 class PurpleairUniformResponseBuilder(baseadapt.InitUniformResponseBuilder):
@@ -24,6 +25,13 @@ class PurpleairUniformResponseBuilder(baseadapt.InitUniformResponseBuilder):
             name = f"{response.name} ({response.sensor_index})".replace("'", "")
             type_ = "Purpleair/Thingspeak"
 
+            # Channel parameters
+            channel_param = [sel.ChannelParam(name=c['name'],
+                                              key=response.data[c['key']],
+                                              id_=response.data[c['id']],
+                                              timestamp=self.timestamp_class(timest=response.date_created)
+                                              ) for c in purpmdl.PurpleairResponse.CHANNEL_PARAM]
+
             # Create sensor geometry
             geometry = self.postgis_class(lat=response.latitude, lng=response.longitude)
             # Create sensor geolocation
@@ -33,7 +41,7 @@ class PurpleairUniformResponseBuilder(baseadapt.InitUniformResponseBuilder):
             uniformed_responses.append(
                 baseadapt.InitUniformResponse(
                     name=name, type_=type_,
-                    channel_param=response.channel_param,
+                    channel_param=channel_param,
                     geolocation=geolocation
                 )
             )

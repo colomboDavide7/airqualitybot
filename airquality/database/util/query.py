@@ -76,11 +76,10 @@ class QueryBuilder:
         return query
 
     ################################ INITIALIZE SENSORS ################################
-    def initialize_sensors(self, sensor_values: str, api_param_values: str, channel_info_values: str, sensor_at_loc_values: str):
+    def initialize_sensors(self, sensor_values: str, api_param_values: str, sensor_at_loc_values: str):
         query = self.__insert_into_sensor(sensor_values)
         query += self.__insert_into_api_param(api_param_values)
         query += self.__insert_location_values(sensor_at_loc_values)
-        query += self.__insert_sensor_info_values(channel_info_values)
         return query
 
     ################################ PRIVATE METHODS ################################
@@ -106,11 +105,6 @@ class QueryBuilder:
 
     def __insert_location_values(self, values: str) -> str:
         query = self.query_file.i5
-        query += values
-        return query.strip(',') + ';'
-
-    def __insert_sensor_info_values(self, values: str) -> str:
-        query = self.query_file.i6
         query += values
         return query.strip(',') + ';'
 

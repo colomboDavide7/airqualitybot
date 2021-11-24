@@ -23,19 +23,16 @@ class InitInsertWrapper(base.InsertWrapper):
 
         sensor_values = ""
         api_param_values = ""
-        channel_info_values = ""
         sensor_at_loc_values = ""
 
         for record in records:
             sensor_values += record.sensor_value
             api_param_values += record.api_param_value
-            channel_info_values += record.channel_info_value
             sensor_at_loc_values += record.sensor_at_loc_value
 
         exec_query = self.builder.initialize_sensors(
             sensor_values=sensor_values,
             api_param_values=api_param_values,
-            channel_info_values=channel_info_values,
             sensor_at_loc_values=sensor_at_loc_values
         )
         self.conn.send(exec_query)

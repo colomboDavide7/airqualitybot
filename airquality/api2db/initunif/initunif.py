@@ -18,7 +18,9 @@ import airquality.database.op.sel.sel as sel
 class InitUniformResponse(baseunif.BaseUniformResponse):
 
     def __init__(
-            self, name: str, type_: str,
+            self,
+            name: str,
+            type_: str,
             channel_param: List[sel.ChannelParam],
             geolocation: baseunif.ParamLocationTimestamp
     ):

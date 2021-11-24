@@ -7,7 +7,6 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.api.resp.baseresp as baseresp
-import airquality.database.op.sel.sel as sel
 
 
 ################################ PURPLEAIR API RESPONSE ################################
@@ -24,8 +23,8 @@ class PurpleairResponse(baseresp.BaseResponse):
             self.sensor_index = data['sensor_index']
             self.latitude = data['latitude']
             self.longitude = data['longitude']
-            self.channel_param = [sel.ChannelParam(name=c['name'], key=c['key'], id_=c['id'], timestamp=data['date_created'])
-                                  for c in PurpleairResponse.CHANNEL_PARAM]
+            self.date_created = data['date_created']
+            self.data = data
         except KeyError as ke:
             raise SystemExit(f"{PurpleairResponse.__name__}: bad sensor data => missing key='{ke!s}'")
 
