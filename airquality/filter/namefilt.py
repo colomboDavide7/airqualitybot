@@ -16,14 +16,15 @@ class NameFilter(base.BaseFilter):
         super(NameFilter, self).__init__(log_filename=log_filename)
         self.database_sensor_names = database_sensor_names
 
-    def filter(self, to_filter: List[initadapt.InitUniformResponse]) -> List[initadapt.InitUniformResponse]:
-        filtered_data = []
-        for data in to_filter:
-            if data.name in self.database_sensor_names:
-                filtered_data.append(data)
-                self.log_info(f"{NameFilter.__name__}: add sensor '{data.name}' => new sensor")
+    # ************************************ filter ************************************
+    def filter(self, resp2filter: List[initadapt.InitUniformResponse]) -> List[initadapt.InitUniformResponse]:
+        filtered_responses = []
+        for response in resp2filter:
+            if response.name in self.database_sensor_names:
+                filtered_responses.append(response)
+                self.log_info(f"{NameFilter.__name__}: add sensor '{response.name}' => new sensor")
             else:
-                self.log_warning(f"{NameFilter.__name__}: skip sensor '{data.name}' => already present")
+                self.log_warning(f"{NameFilter.__name__}: skip sensor '{response.name}' => already present")
 
-        self.log_info(f"{NameFilter.__name__}: found {len(filtered_data)}/{len(to_filter)} new sensors")
-        return filtered_data
+        self.log_info(f"{NameFilter.__name__}: found {len(filtered_responses)}/{len(resp2filter)} new sensors")
+        return filtered_responses

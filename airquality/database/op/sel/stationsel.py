@@ -12,6 +12,7 @@ import airquality.database.util.query as query
 import airquality.database.ext.postgis as postgis
 
 
+################################ STATION DATABASE RESPONSE ################################
 class StationDBResponse(sel.BaseDBResponse):
 
     def __init__(self, sensor_id: int, sensor_name: str, channels: List[sel.Channel], geometry: postgis.PostgisGeometry):
@@ -21,6 +22,7 @@ class StationDBResponse(sel.BaseDBResponse):
         self.geometry = geometry
 
 
+################################ STATION SELECT WRAPPER ################################
 class StationSelectWrapper(sel.SelectWrapper):
 
     def __init__(
@@ -32,6 +34,7 @@ class StationSelectWrapper(sel.SelectWrapper):
         super(StationSelectWrapper, self).__init__(conn=conn, query_builder=query_builder, sensor_type=sensor_type, log_filename=log_filename)
         self.postgis_class = postgis_class
 
+    # ************************************ select ************************************
     def select(self) -> List[StationDBResponse]:
         responses = []
 

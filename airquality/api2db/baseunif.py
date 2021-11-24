@@ -21,9 +21,9 @@ class ParamNameTimestamp:
 
 class ParamLocationTimestamp:
 
-    def __init__(self, timestamp: ts.Timestamp, geolocation: geo.PostgisGeometry):
+    def __init__(self, timestamp: ts.Timestamp, geometry: geo.PostgisGeometry):
         self.timestamp = timestamp
-        self.geolocation = geolocation
+        self.geometry = geometry
 
 
 class BaseUniformResponse(abc.ABC):

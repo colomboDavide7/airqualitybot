@@ -28,5 +28,5 @@ class InitRecordBuilder(baserec.BaseRecordBuilder):
             sensor_value=f"({sensor_id}, '{uniformed_responses.type}', '{uniformed_responses.name}'),",
             api_param_value=','.join(f"({sensor_id}, '{p.name}', '{p.value}')" for p in uniformed_responses.parameters),
             channel_info_value=channel_info_values,
-            sensor_at_loc_value=f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geolocation.geom_from_text()}),"
+            sensor_at_loc_value=f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geometry.geom_from_text()}),"
         )

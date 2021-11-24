@@ -7,8 +7,8 @@
 ######################################################
 from typing import List
 import airquality.filter.basefilt as base
-import api2db as ftchadpt
-import database.dtype.timestamp as ts
+import airquality.api2db.fetchunif.fetchunif as unif
+import airquality.database.dtype.timestamp as ts
 
 
 class TimestampFilter(base.BaseFilter):
@@ -20,11 +20,12 @@ class TimestampFilter(base.BaseFilter):
     def set_filter_ts(self, filter_ts=ts.SQLTimestamp):
         self.filter_ts = filter_ts
 
-    def filter(self, to_filter: List[ftchadpt.FetchUniformModel]) -> List[ftchadpt.FetchUniformModel]:
-        filtered_data = []
-        for data in to_filter:
-            if data.timestamp.is_after(self.filter_ts):
-                filtered_data.append(data)
+    # ************************************ filter ************************************
+    def filter(self, resp2filter: List[unif.FetchUniformResponse]) -> List[unif.FetchUniformResponse]:
+        filtered_responses = []
+        for response in resp2filter:
+            if response.timestamp.is_after(self.filter_ts):
+                filtered_responses.append(response)
 
-        self.log_info(f"{TimestampFilter.__name__}: found {len(filtered_data)}/{len(to_filter)} new measurements")
-        return filtered_data
+        self.log_info(f"{TimestampFilter.__name__}: found {len(filtered_responses)}/{len(resp2filter)} new measurements")
+        return filtered_responses

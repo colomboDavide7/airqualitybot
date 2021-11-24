@@ -17,7 +17,6 @@ import airquality.filter.geofilt as flt
 
 class UpdateCommand(basecmd.Command):
 
-    ################################ __init__ ################################
     def __init__(
             self,
             fw: apiwrp.FetchWrapper,
@@ -32,7 +31,7 @@ class UpdateCommand(basecmd.Command):
         self.record_builder = rb
         self.select_wrapper = sw
 
-    ################################ execute ################################
+    # ************************************ execute ************************************
     @log_decorator.log_decorator()
     def execute(self):
 
@@ -57,7 +56,7 @@ class UpdateCommand(basecmd.Command):
         uniform_resp_filter.set_console_logger(self.console_logger)
 
         # Filter sensor data
-        fetched_changed_sensors = uniform_resp_filter.filter(to_filter=uniformed_responses)
+        fetched_changed_sensors = uniform_resp_filter.filter(resp2filter=uniformed_responses)
         if not fetched_changed_sensors:
             self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")
             return

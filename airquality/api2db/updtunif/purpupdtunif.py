@@ -22,6 +22,6 @@ class PurpleairUniformResponseBuilders(baseupdt.UpdateUniformResponseBuilder):
         for response in responses:
             sensor_name = f"{response.name} ({response.sensor_index})".replace("'", "")
             geometry = self.postgis_class(lat=response.latitude, lng=response.longitude)
-            geolocation = baseupdt.base.ParamLocationTimestamp(geolocation=geometry, timestamp=ts.CurrentTimestamp())
+            geolocation = baseupdt.base.ParamLocationTimestamp(geometry=geometry, timestamp=ts.CurrentTimestamp())
             uniformed_responses.append(baseupdt.UpdateUniformResponse(sensor_name=sensor_name, geolocation=geolocation))
         return uniformed_responses

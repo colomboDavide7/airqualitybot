@@ -31,7 +31,7 @@ class PurpleairUniformResponseBuilder(baseadapt.InitUniformResponseBuilder):
             # Create sensor geometry
             geometry = self.postgis_class(lat=response.latitude, lng=response.longitude)
             # Create sensor geolocation
-            geolocation = baseadapt.base.ParamLocationTimestamp(geolocation=geometry, timestamp=ts.CurrentTimestamp())
+            geolocation = baseadapt.base.ParamLocationTimestamp(geometry=geometry, timestamp=ts.CurrentTimestamp())
 
             # Append Uniformed Model
             uniformed_responses.append(

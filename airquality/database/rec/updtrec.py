@@ -23,6 +23,6 @@ class UpdateRecordBuilder(base.BaseRecordBuilder):
         g = uniformed_responses.geolocation
 
         return UpdateRecord(
-            sensor_at_loc_values=f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geolocation.geom_from_text()}),",
+            sensor_at_loc_values=f"({sensor_id}, '{g.timestamp.get_formatted_timestamp()}', {g.geometry.geom_from_text()}),",
             update_info=base.ParamIDTimestamp(sensor_id=sensor_id, timestamp=ts.CurrentTimestamp())
         )

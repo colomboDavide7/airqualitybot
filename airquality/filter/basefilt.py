@@ -18,5 +18,5 @@ class BaseFilter(log.Loggable):
         super(BaseFilter, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
-    def filter(self, to_filter: List[baseadpt.BaseUniformResponse]) -> List[baseadpt.BaseUniformResponse]:
+    def filter(self, resp2filter: List[baseadpt.BaseUniformResponse]) -> List[baseadpt.BaseUniformResponse]:
         pass

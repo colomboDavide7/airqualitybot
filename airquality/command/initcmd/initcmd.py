@@ -44,7 +44,7 @@ class InitCommand(basecmd.Command):
             uniform_response_filter.set_file_logger(self.file_logger)
             uniform_response_filter.set_console_logger(self.console_logger)
 
-            filtered_responses = uniform_response_filter.filter(to_filter=uniformed_responses)
+            filtered_responses = uniform_response_filter.filter(resp2filter=uniformed_responses)
             if not filtered_responses:
                 self.log_warning(f"{InitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
                 return
