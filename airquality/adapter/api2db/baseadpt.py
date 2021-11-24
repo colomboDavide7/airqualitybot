@@ -10,6 +10,20 @@ from typing import List
 import airquality.api.model.baseresp as mdl
 
 
+class ParamNameTimestamp:
+
+    def __init__(self, name: str, timestamp: ts.Timestamp):
+        self.name = name
+        self.timestamp = timestamp
+
+
+class ParamLocationTimestamp:
+
+    def __init__(self, timestamp: ts.Timestamp, geolocation: geo.PostgisGeometry):
+        self.timestamp = timestamp
+        self.geolocation = geolocation
+
+
 class BaseUniformModel(abc.ABC):
     pass
 

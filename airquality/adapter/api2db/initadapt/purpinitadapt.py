@@ -12,10 +12,10 @@ import airquality.database.util.postgis.geom as geo
 import airquality.database.util.datatype.timestamp as ts
 
 
-class PurpleairAPI2DBAdapter(baseadapt.InitAPI2DBAdapter):
+class PurpleairInitAdapter(baseadapt.InitAPI2DBAdapter):
 
     def __init__(self, timestamp_class=ts.UnixTimestamp, postgis_class=geo.PostgisPoint):
-        super(PurpleairAPI2DBAdapter, self).__init__(timestamp_class=timestamp_class, postgis_class=postgis_class)
+        super(PurpleairInitAdapter, self).__init__(timestamp_class=timestamp_class, postgis_class=postgis_class)
 
     def adapt(self, responses: List[purpmdl.PurpleairAPIResponseModel]) -> List[baseadapt.InitUniformModel]:
         uniformed_responses = []
@@ -25,14 +25,14 @@ class PurpleairAPI2DBAdapter(baseadapt.InitAPI2DBAdapter):
             type_ = "Purpleair/Thingspeak"
 
             # Create channel info List
-            channels = [baseadapt.ParamNameTimestamp(name=ch, timestamp=self.timestamp_class(timest=response.date_created))
+            channels = [baseadapt.base.ParamNameTimestamp(name=ch, timestamp=self.timestamp_class(timest=response.date_created))
                         for ch in response.CHANNELS]
 
             # Create sensor geometry
             geometry = self.postgis_class(lat=response.latitude, lng=response.longitude)
             # Create sensor geolocation
-            geolocation = baseadapt.ParamLocationTimestamp(geolocation=geometry,
-                                                           timestamp=ts.CurrentTimestamp())
+            geolocation = baseadapt.base.ParamLocationTimestamp(geolocation=geometry, timestamp=ts.CurrentTimestamp())
+
             # Append Uniformed Model
             uniformed_responses.append(
                 baseadapt.InitUniformModel(
