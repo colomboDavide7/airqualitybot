@@ -53,6 +53,12 @@ class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
         super(SelectWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
         self.sensor_type = sensor_type
 
+    def select_max_sensor_id(self):
+        sel_query = self.builder.select_max_sensor_id()
+        response = self.conn.send(sel_query)
+        max_id = response[0][0]
+        return 1 if max_id is None else (max_id+1)
+
     @abc.abstractmethod
     def select(self) -> List[BaseDBResponse]:
         pass

@@ -11,16 +11,17 @@ import airquality.api.fetchwrp as apiwrp
 import airquality.api2db.initunif.initunif as initunif
 import airquality.filter.namefilt as nameflt
 import airquality.database.rec.initrec as initrec
-import airquality.database.op.ins.initins as initoprt
+import airquality.database.op.ins.initins as ins
+import airquality.database.op.sel.stationsel as sel
 
 
 class InitCommand(basecmd.Command):
 
     def __init__(
             self, fw: apiwrp.FetchWrapper, urb: initunif.InitUniformResponseBuilder, rb: initrec.InitRecordBuilder,
-            iw: initoprt.InitInsertWrapper, stw: sel_type.TypeSelectWrapper, log_filename="log"
+            iw: ins.InitInsertWrapper, sw: sel.StationSelectWrapper, log_filename="log"
     ):
-        super(InitCommand, self).__init__(fw=fw, iw=iw, stw=stw, log_filename=log_filename)
+        super(InitCommand, self).__init__(fw=fw, iw=iw, sw=sw, log_filename=log_filename)
         self.uniform_response_builder = urb
         self.record_builder = rb
 
@@ -37,8 +38,8 @@ class InitCommand(basecmd.Command):
         uniformed_responses = self.uniform_response_builder.build(api_responses)
 
         ################################ FILTERING OPERATION ###############################
-        database_sensor_names = self.select_type_wrapper.get_sensor_names()
-        if database_sensor_names:
+        db_responses = self.select_wrapper.select()
+        if db_responses:
             uniform_response_filter = nameflt.NameFilter(database_sensor_names=database_sensor_names, log_filename=self.log_filename)
             uniform_response_filter.set_file_logger(self.file_logger)
             uniform_response_filter.set_console_logger(self.console_logger)
@@ -51,7 +52,7 @@ class InitCommand(basecmd.Command):
             uniformed_responses = filtered_responses
 
         ################################ DATABASE-SIDE ###############################
-        max_sensor_id = self.select_type_wrapper.get_max_sensor_id()
+        max_sensor_id = self.select_wrapper.select_max_sensor_id()
 
         records = []
         for response in uniformed_responses:

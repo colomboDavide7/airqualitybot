@@ -15,13 +15,15 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.file.util.parser as fp
 import airquality.file.util.loader as fl
 
-import airquality.api.resp.purpresp as purpresp
-import airquality.api.url.purpurl as purpurl
-import airquality.api2db.initunif.purpinitunif as purpinitunif
+import airquality.api.resp.purpresp as resp
+import airquality.api.url.purpurl as url
+import airquality.api2db.initunif.purpinitunif as unif
 
 import airquality.database.op.ins.initins as ins
+import airquality.database.op.sel.stationsel as sel
+import airquality.database.ext.postgis as postgis
 import airquality.database.util.query as qry
-import airquality.database.rec.initrec as initrec
+import airquality.database.rec.initrec as rec
 
 
 ################################ PURPLEAIR INIT COMMAND SETUP ################################
@@ -43,8 +45,8 @@ class PurpleairInitSetup(setup.CommandSetup):
 
         # Setup API-side objects
         response_parser = fp.JSONParser(log_filename=self.log_filename)
-        response_builder = purpresp.PurpleairAPIResponseBuilder()
-        url_builder = purpurl.PurpleairURL(address=address, parameters=url_param, log_filename=self.log_filename)
+        response_builder = resp.PurpleairAPIResponseBuilder()
+        url_builder = url.PurpleairURL(address=address, parameters=url_param, log_filename=self.log_filename)
 
         # FetchWrapper
         fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
@@ -58,32 +60,36 @@ class PurpleairInitSetup(setup.CommandSetup):
         # Database Connection
         database_connection = setup.open_database_connection(connection_string=os.environ['DBCONN'],
                                                              log_filename=self.log_filename)
-
         # Load SQL query file
         query_file_obj = setup.load_file(file_path=comm_const.QUERY_FILE_PATH, log_filename=self.log_filename)
 
         # QueryBuilder
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
-        # Insert Wrapper
+        # InsertWrapper
         insert_wrapper = ins.InitInsertWrapper(conn=database_connection, query_builder=query_builder, log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 
-        # TypeSelectWrapper
-        # select_type_wrapper = sel_type.StationTypeSelectWrapper(conn=database_connection,
-        #                                                         query_builder=query_builder,
-        #                                                         sensor_type=sensor_type)
+        # SelectWrapper
+        select_wrapper = sel.StationSelectWrapper(
+            conn=database_connection,
+            query_builder=query_builder,
+            postgis_class=postgis.PostgisPoint,
+            sensor_type=sensor_type,
+            log_filename=self.log_filename
+        )
+        select_wrapper.set_file_logger(self.file_logger)
+        select_wrapper.set_console_logger(self.console_logger)
 
         ################################ COMMAND OBJECT ################################
-        # Build command object
         cmd = command.InitCommand(
             fw=fetch_wrapper,
             iw=insert_wrapper,
-            urb=purpinitunif.PurpleairUniformResponseBuilder(),
-            rb=initrec.InitRecordBuilder(),
+            urb=unif.PurpleairUniformResponseBuilder(),
+            rb=rec.InitRecordBuilder(),
             log_filename=self.log_filename,
-            stw=None
+            sw=select_wrapper
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)

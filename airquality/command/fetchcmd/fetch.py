@@ -47,7 +47,7 @@ class FetchCommand(base.Command):
     def execute(self):
 
         # Query sensor ids from database
-        database_sensor_ids = self.select_type_wrapper.get_sensor_id()
+        database_sensor_ids = self.select_wrapper.get_sensor_id()
         if not database_sensor_ids:
             self.log_warning(f"{FetchCommand.__name__}: no sensor found inside the database => no measure inserted")
             return

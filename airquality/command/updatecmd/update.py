@@ -38,7 +38,7 @@ class UpdateCommand(base.Command):
     def execute(self):
 
         # Query database active locations
-        database_active_locations = self.select_type_wrapper.get_active_locations()
+        database_active_locations = self.select_wrapper.get_active_locations()
         if not database_active_locations:
             self.log_warning(f"{UpdateCommand.__name__}: empty database active locations => no location updated")
             return
@@ -67,7 +67,7 @@ class UpdateCommand(base.Command):
             return
 
         # Query the (sensor_name, sensor_id) tuples
-        name2id_map = self.select_type_wrapper.get_name_id_map()
+        name2id_map = self.select_wrapper.get_name_id_map()
 
         # Update locations
         self.insert_wrapper.insert(sensor_data=fetched_changed_sensors)
