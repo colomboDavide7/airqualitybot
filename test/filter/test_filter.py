@@ -8,11 +8,11 @@
 ######################################################
 import unittest
 import airquality.filter.basefilt as filt
-import database.datatype.timestamp as ts
-import database.postgis.geom as geom
+import database.dtype.timestamp as ts
+import database.ext.postgis as geom
 import airquality.adapter.config as adapt_const
-import database.datatype.config as time_conf
-import database.postgis.config as geom_conf
+import database.dtype.config as time_conf
+import database.ext.config as geom_conf
 
 
 class TestFilter(unittest.TestCase):

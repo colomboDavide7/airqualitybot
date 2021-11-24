@@ -18,11 +18,11 @@ import airquality.file.util.loader as fl
 import airquality.api.util.extractor as extr
 import airquality.api.util.url as url
 
-import airquality.database.operation.select.sensor as sel_type
-import database.record.georec as loc
-import airquality.database.operation.insert.fetchoprt as ins
-import database.record.record as rec
-import database.record.timerec as t
+import airquality.database.op.sel.sensor as sel_type
+import database.rec.georec as loc
+import airquality.database.op.ins.fetchins as ins
+import database.rec.record as rec
+import database.rec.timerec as t
 import airquality.database.util.query as qry
 import airquality.looper.datelooper as looper
 
@@ -95,7 +95,7 @@ class AtmotubeFetchSetup(setup.CommandSetup):
                                                                   log_filename=self.log_filename)
 
         ################################ ADAPTER-SIDE OBJECTS ################################
-        # Used for reshaping the sensor data into a proper shape for converting into SQL record
+        # Used for reshaping the sensor data into a proper shape for converting into SQL rec
         api2db_adapter = adapt.AtmotubeMeasureAdapter(sel_type=select_type_wrapper)
 
         # Used for reshaping database api parameters for fetching data
@@ -183,7 +183,7 @@ class ThingspeakFetchSetup(setup.CommandSetup):
                                                                   log_filename=self.log_filename)
 
         ################################ ADAPTER-SIDE OBJECTS ################################
-        # Used for reshaping the sensor data into a proper shape for converting into SQL record
+        # Used for reshaping the sensor data into a proper shape for converting into SQL rec
         api2db_adapter = adapt.ThingspeakMeasureAdapter(sel_type=select_type_wrapper)
 
         # Used for reshaping database api parameters for fetching data

@@ -7,10 +7,10 @@
 ######################################################
 import abc
 from typing import List
-import airquality.database.operation.baseoprt as base
+import airquality.database.op.baseop as base
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
-import airquality.database.record.baserec as baserec
+import airquality.database.rec.baserec as baserec
 
 
 class InsertWrapper(base.DatabaseOperationWrapper, abc.ABC):

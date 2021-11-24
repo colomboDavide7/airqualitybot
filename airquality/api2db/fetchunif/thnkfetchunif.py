@@ -7,7 +7,7 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.api.resp.thnkresp as thk_mdl
-import airquality.database.datatype.timestamp as ts
+import airquality.database.dtype.timestamp as ts
 import airquality.api2db.fetchunif.fetchunif as baseadapt
 
 

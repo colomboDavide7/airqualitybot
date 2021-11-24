@@ -8,8 +8,8 @@
 from typing import List
 import airquality.api2db.initunif.initunif as baseadapt
 import airquality.api.resp.purpresp as purpmdl
-import airquality.database.postgis.geom as geo
-import airquality.database.datatype.timestamp as ts
+import airquality.database.ext.postgis as geo
+import airquality.database.dtype.timestamp as ts
 
 
 class PurpleairUniformResponseBuilder(baseadapt.InitUniformResponseBuilder):

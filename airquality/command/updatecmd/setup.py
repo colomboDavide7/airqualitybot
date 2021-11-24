@@ -18,13 +18,13 @@ import airquality.file.util.loader as fl
 import airquality.api.util.extractor as extr
 import airquality.api.util.url as url
 
-import airquality.database.operation.select.sensor as sel_type
-import database.datatype.timestamp as ts
-import database.record.georec as loc
-import airquality.database.operation.insert.updateoprt as ins
-import database.postgis.geom as geom
-import database.record.record as rec
-import database.record.timerec as t
+import airquality.database.op.sel.sensor as sel_type
+import database.dtype.timestamp as ts
+import database.rec.georec as loc
+import airquality.database.op.ins.updtins as ins
+import database.ext.postgis as geom
+import database.rec.record as rec
+import database.rec.timerec as t
 import airquality.database.util.query as qry
 
 import container.sensor as adapt

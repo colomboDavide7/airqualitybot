@@ -8,7 +8,7 @@
 from typing import List
 import airquality.filter.basefilt as base
 import api2db as ftchadpt
-import database.datatype.timestamp as ts
+import database.dtype.timestamp as ts
 
 
 class TimestampFilter(base.BaseFilter):

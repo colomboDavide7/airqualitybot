@@ -8,8 +8,8 @@
 import abc
 import airquality.logger.loggable as log
 import airquality.api.fetchwrp as apiwrp
-import airquality.database.operation.insert.insertoprt as insertoprt
-import airquality.database.operation.select.sensor as sel_type
+import airquality.database.op.ins.ins as insertoprt
+import airquality.database.op.sel.sensor as sel_type
 
 
 class Command(log.Loggable, abc.ABC):

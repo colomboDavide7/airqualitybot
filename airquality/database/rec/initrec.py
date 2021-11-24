@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.database.record.baserec as baserec
+import airquality.database.rec.baserec as baserec
 import airquality.api2db.initunif.initunif as initunif
 
 

@@ -8,10 +8,10 @@
 from typing import List, Dict, Any
 import airquality.adapter.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
-import airquality.database.operation.insert.insertoprt as base
+import airquality.database.op.ins.ins as base
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
-import airquality.database.record.record as rec
+import airquality.database.rec.record as rec
 
 
 ################################ CLASS FOR MOBILE STATION ################################
@@ -29,7 +29,7 @@ class FetchMobileInsertWrapper(base.InsertWrapper):
         super(FetchMobileInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
         self.sensor_measure_rec = sensor_measure_rec
 
-    ################################ insert ################################
+    ################################ ins ################################
     @log_decorator.log_decorator()
     def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
 
@@ -63,7 +63,7 @@ class FetchStationInsertWrapper(base.InsertWrapper):
         super(FetchStationInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
         self.sensor_measure_rec = sensor_measure_rec
 
-    ################################ insert ################################
+    ################################ ins ################################
     @log_decorator.log_decorator()
     def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
 

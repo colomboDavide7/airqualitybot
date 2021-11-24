@@ -6,8 +6,8 @@
 #
 ######################################################
 from typing import List
-import airquality.database.operation.insert.insertoprt as base
-import airquality.database.record.updtrec as updtrec
+import airquality.database.op.ins.ins as base
+import airquality.database.rec.updtrec as updtrec
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
 

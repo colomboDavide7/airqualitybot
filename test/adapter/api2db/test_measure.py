@@ -9,12 +9,12 @@
 import unittest
 from typing import Dict, Any
 import airquality.adapter.config as adapt_const
-import database.postgis.config as geom_conf
-import database.datatype.config as time_conf
+import database.ext.config as geom_conf
+import database.dtype.config as time_conf
 import api2db.measure as adapt
-import airquality.database.operation.select.sensor as sel_type
-import database.postgis.geom as geom
-import database.datatype.timestamp as ts
+import airquality.database.op.sel.sensor as sel_type
+import database.ext.postgis as geom
+import database.dtype.timestamp as ts
 import airquality.api.config as extr_const
 
 

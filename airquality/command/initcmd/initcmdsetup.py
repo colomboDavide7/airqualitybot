@@ -19,9 +19,9 @@ import airquality.api.resp.purpresp as purpresp
 import airquality.api.url.purpurl as purpurl
 import airquality.api2db.initunif.purpinitunif as purpinitunif
 
-import airquality.database.operation.insert.initoprt as ins
+import airquality.database.op.ins.initins as ins
 import airquality.database.util.query as qry
-import airquality.database.record.initrec as initrec
+import airquality.database.rec.initrec as initrec
 
 
 ################################ PURPLEAIR INIT COMMAND SETUP ################################

@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetchwrp as fetch
-import database.datatype.timestamp as ts
+import database.dtype.timestamp as ts
 
 
 def get_date_looper_class(sensor_type: str):

@@ -10,12 +10,12 @@ import airquality.api.fetchwrp as fetch
 import airquality.command.basecmd as base
 import airquality.adapter.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
-import airquality.database.operation.insert.insertoprt as ins
-import airquality.database.operation.select.sensor as sel_type
+import airquality.database.op.ins.ins as ins
+import airquality.database.op.sel.sensor as sel_type
 import container.sensor as sens_adapt
 import api2db.measure as meas_adapt
 import airquality.adapter.db2api.param as par_adapt
-import database.datatype.timestamp as ts
+import database.dtype.timestamp as ts
 import airquality.filter.basefilt as flt
 
 
@@ -105,7 +105,7 @@ class FetchCommand(base.Command):
                 self.log_warning(f"{FetchCommand.__name__}: empty API sensor data => continue")
                 continue
 
-            # Filter and insert measurements
+            # Filter and ins measurements
             self._uniform_filter_insert(
                 sensor_data_flt=sensor_data_filter,
                 sensor_id=sensor_id,

@@ -6,11 +6,11 @@
 #
 ######################################################
 import unittest
-import database.record.record as rec
-import database.record.timerec as t
-import database.datatype.timestamp as ts
+import database.rec.record as rec
+import database.rec.timerec as t
+import database.dtype.timestamp as ts
 import airquality.adapter.config as adapt_const
-import database.datatype.config as time_conf
+import database.dtype.config as time_conf
 
 
 class TestSensorRecord(unittest.TestCase):

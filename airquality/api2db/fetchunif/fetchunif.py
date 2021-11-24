@@ -9,8 +9,8 @@ import abc
 from typing import List, Dict, Any
 import airquality.api2db.baseunif as baseadpt
 import airquality.api.resp.baseresp as basersp
-import airquality.database.datatype.timestamp as ts
-import airquality.database.postgis.geom as geo
+import airquality.database.dtype.timestamp as ts
+import airquality.database.ext.postgis as geo
 
 
 class ParamIDValue:

@@ -7,8 +7,8 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.api.resp.atmresp as atm_mdl
-import airquality.database.postgis.geom as geo
-import airquality.database.datatype.timestamp as ts
+import airquality.database.ext.postgis as geo
+import airquality.database.dtype.timestamp as ts
 import airquality.api2db.fetchunif.fetchunif as baseadapt
 
 

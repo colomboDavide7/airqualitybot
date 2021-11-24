@@ -2,13 +2,13 @@
 #
 # @Author: davidecolombo
 # @Date: mer, 20-10-2021, 10:29
-# @Description: this script defines a class for dynamically build valid record queries. The query are read from the
+# @Description: this script defines a class for dynamically build valid rec queries. The query are read from the
 #               'properties/query.json' file.
 #
 #################################################
 from typing import List
 import airquality.file.structured.json as struct
-import airquality.database.record.baserec as baserec
+import airquality.database.rec.baserec as baserec
 
 
 class QueryBuilder:

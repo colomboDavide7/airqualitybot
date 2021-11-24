@@ -9,8 +9,8 @@ import abc
 from typing import List
 import airquality.api.resp.baseresp as basemdl
 import airquality.api2db.baseunif as base
-import airquality.database.postgis.geom as geo
-import airquality.database.datatype.timestamp as ts
+import airquality.database.ext.postgis as geo
+import airquality.database.dtype.timestamp as ts
 
 
 ################################ INIT UNIFORM MODEL ################################
@@ -32,7 +32,7 @@ class InitUniformResponse(base.BaseUniformResponse):
 ################################ INIT API 2 DB ADAPTER ################################
 class InitUniformResponseBuilder(base.BaseUniformResponseBuilder, abc.ABC):
 
-    def __init__(self, timestamp_class=ts.Timestamp, postgis_class=geo.PostgisPoint):
+    def __init__(self, timestamp_class=ts.UnixTimestamp, postgis_class=geo.PostgisPoint):
         self.timestamp_class = timestamp_class
         self.postgis_class = postgis_class
 

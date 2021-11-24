@@ -6,10 +6,10 @@
 #
 ######################################################
 import unittest
-import database.record.georec as loc
-import database.postgis.geom as geom
+import database.rec.georec as loc
+import database.ext.postgis as geom
 import airquality.adapter.config as adapt_const
-import database.postgis.config as geom_const
+import database.ext.config as geom_const
 
 
 class TestLocationRecord(unittest.TestCase):

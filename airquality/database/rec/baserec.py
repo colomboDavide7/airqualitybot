@@ -8,7 +8,7 @@
 ######################################################
 import abc
 import airquality.api2db.baseunif as baseunif
-import airquality.database.datatype.timestamp as ts
+import airquality.database.dtype.timestamp as ts
 
 
 class ParamIDTimestamp:

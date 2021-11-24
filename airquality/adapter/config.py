@@ -54,7 +54,7 @@ CHANNEL_NAMES = [FST_CH_A, FST_CH_B, SND_CH_A, SND_CH_B]
 ATMOTUBE_CHANNEL = "main"
 
 # Purpleair/Thingspeak api parameters name. These names are used by the SensorAdapter for building the correct
-# sensor packet that will be translated into SQL record by the APIParamRecord class. When these parameters are queried
+# sensor packet that will be translated into SQL rec by the APIParamRecord class. When these parameters are queried
 # for fetching API data, ParamAdapter came in the game and uses them to get the correct channel parameters and build
 # the URL.
 

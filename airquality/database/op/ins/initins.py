@@ -7,8 +7,8 @@
 ######################################################
 from typing import List
 import airquality.logger.util.decorator as log_decorator
-import airquality.database.operation.insert.insertoprt as base
-import airquality.database.record.initrec as initrec
+import airquality.database.op.ins.ins as base
+import airquality.database.rec.initrec as initrec
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
 

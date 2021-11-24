@@ -5,8 +5,8 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.database.record.baserec as base
-import airquality.database.datatype.timestamp as ts
+import airquality.database.rec.baserec as base
+import airquality.database.dtype.timestamp as ts
 import airquality.api2db.updtunif.updtunif as updtunif
 
 

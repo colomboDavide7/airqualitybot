@@ -7,8 +7,8 @@
 #
 ######################################################
 import unittest
-import database.postgis.geom as geom
-import database.postgis.config as geom_conf
+import database.ext.postgis as geom
+import database.ext.config as geom_conf
 
 
 class TestGeometryBuilder(unittest.TestCase):

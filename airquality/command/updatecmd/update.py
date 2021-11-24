@@ -9,8 +9,8 @@ from typing import Union
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as base
 import airquality.api.fetchwrp as fetch
-import airquality.database.operation.insert.updateoprt as ins
-import airquality.database.operation.select.sensor as sel_type
+import airquality.database.op.ins.updtins as ins
+import airquality.database.op.sel.sensor as sel_type
 import container.sensor as sens_adapt
 import api2db.measure as meas_adapt
 import airquality.filter.basefilt as flt
@@ -68,9 +68,6 @@ class UpdateCommand(base.Command):
 
         # Query the (sensor_name, sensor_id) tuples
         name2id_map = self.select_type_wrapper.get_name_id_map()
-
-        # Inject external dependency to InsertWrapper
-        self.insert_wrapper.set_name_to_id_map(name2id_map)
 
         # Update locations
         self.insert_wrapper.insert(sensor_data=fetched_changed_sensors)

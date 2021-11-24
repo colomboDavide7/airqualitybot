@@ -10,8 +10,8 @@ import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
 import airquality.api2db.initunif.initunif as initunif
 import airquality.filter.namefilt as nameflt
-import airquality.database.record.initrec as initrec
-import airquality.database.operation.insert.initoprt as initoprt
+import airquality.database.rec.initrec as initrec
+import airquality.database.op.ins.initins as initoprt
 
 
 class InitCommand(basecmd.Command):
