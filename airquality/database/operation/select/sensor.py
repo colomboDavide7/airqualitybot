@@ -7,7 +7,7 @@
 ######################################################
 import abc
 from typing import List, Dict, Any
-import airquality.database.operation.base as base
+import airquality.database.operation.baseoprt as base
 import airquality.database.util.conn as db
 import airquality.database.util.query as query
 import airquality.logger.util.decorator as log_decorator

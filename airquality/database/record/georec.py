@@ -6,11 +6,11 @@
 #
 ######################################################
 from typing import Dict, Any
-import airquality.database.util.record.base as base
+import database.record.baserec as base
 import airquality.adapter.config as adapt_const
 
 
-class LocationRecord(base.RecordBuilder):
+class LocationRecord(base.BaseRecordBuilder):
 
     def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
         self._exit_on_bad_sensor_data(sensor_data=sensor_data)

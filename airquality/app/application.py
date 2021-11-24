@@ -40,9 +40,9 @@ import airquality.database.operation.insert as insert
 # util
 import airquality.database.util.postgis.geom as geom
 import airquality.database.util.datatype.timestamp as ts
-import airquality.database.util.record.location as loc
-import airquality.database.util.record.time as t
-import airquality.database.util.record.record as rec
+import database.record.georec as loc
+import database.record.timerec as t
+import database.record.record as rec
 import airquality.database.util.conn as db_conn
 import airquality.database.util.query as qry
 

@@ -72,11 +72,11 @@ class QueryBuilder:
         return query
 
     ################################ INITIALIZE SENSORS ################################
-    def initialize_sensors(self, sensor_values: List[str], api_param_values: List[str], location_values: List[str], sensor_info_values: List[str]):
+    def initialize_sensors(self, sensor_values: str, api_param_values: str, channel_info_values: str, sensor_at_loc_values: str):
         query = self.__insert_into_sensor(sensor_values)
         query += self.__insert_into_api_param(api_param_values)
-        query += self.__insert_location_values(location_values)
-        query += self.__insert_sensor_info_values(sensor_info_values)
+        query += self.__insert_location_values(sensor_at_loc_values)
+        query += self.__insert_sensor_info_values(channel_info_values)
         return query
 
     ################################ PRIVATE METHODS ################################
@@ -90,24 +90,24 @@ class QueryBuilder:
         query += ','.join(f"{v}" for v in values)
         return query.strip(',') + ';'
 
-    def __insert_into_sensor(self, values: List[str]) -> str:
+    def __insert_into_sensor(self, values: str) -> str:
         query = self.query_file.i3
-        query += ','.join(f"{v}" for v in values)
+        query += values
         return query.strip(',') + ';'
 
-    def __insert_into_api_param(self, values: List[str]) -> str:
+    def __insert_into_api_param(self, values: str) -> str:
         query = self.query_file.i4
-        query += ','.join(f"{v}" for v in values)
+        query += values
         return query.strip(',') + ';'
 
-    def __insert_location_values(self, values: List[str]) -> str:
+    def __insert_location_values(self, values: str) -> str:
         query = self.query_file.i5
-        query += ','.join(f"{v}" for v in values)
+        query += values
         return query.strip(',') + ';'
 
-    def __insert_sensor_info_values(self, values: List[str]) -> str:
+    def __insert_sensor_info_values(self, values: str) -> str:
         query = self.query_file.i6
-        query += ','.join(f"{v}" for v in values)
+        query += values
         return query.strip(',') + ';'
 
     def __update_valid_to_timestamp(self, values: List[str]):

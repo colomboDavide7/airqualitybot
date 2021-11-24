@@ -7,15 +7,16 @@
 #
 ######################################################
 import abc
-from typing import Dict, Any
+from typing import List
+import airquality.adapter.api2db.baseadpt as baseadpt
 
 
-class RecordBuilder(abc.ABC):
+class BaseRecord:
+    pass
+
+
+class BaseRecordBuilder(abc.ABC):
 
     @abc.abstractmethod
-    def record(self, sensor_data: Dict[str, Any], sensor_id: int = None) -> str:
-        pass
-
-    @abc.abstractmethod
-    def _exit_on_bad_sensor_data(self, sensor_data: Dict[str, Any]):
+    def record(self, sensor_data: List[baseadpt.BaseUniformModel], sensor_id: int = None) -> BaseRecord:
         pass

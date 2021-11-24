@@ -19,10 +19,10 @@ import airquality.api.util.extractor as extr
 import airquality.api.util.url as url
 
 import airquality.database.operation.select.sensor as sel_type
-import airquality.database.util.record.location as loc
-import airquality.database.operation.insert.fetch as ins
-import airquality.database.util.record.record as rec
-import airquality.database.util.record.time as t
+import database.record.georec as loc
+import airquality.database.operation.insert.fetchoprt as ins
+import database.record.record as rec
+import database.record.timerec as t
 import airquality.database.util.query as qry
 import airquality.looper.datelooper as looper
 

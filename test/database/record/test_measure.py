@@ -6,10 +6,10 @@
 #
 ######################################################
 import unittest
-import airquality.database.util.record.record as rec
-import airquality.database.util.record.time as t
+import database.record.record as rec
+import database.record.timerec as t
 import airquality.database.util.datatype.timestamp as ts
-import airquality.database.util.record.location as loc
+import database.record.georec as loc
 import airquality.database.util.postgis.geom as geom
 import airquality.adapter.config as adapt_const
 import airquality.database.util.datatype.config as time_conf

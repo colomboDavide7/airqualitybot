@@ -10,7 +10,7 @@ import airquality.api.fetchwrp as fetch
 import airquality.command.command as base
 import airquality.adapter.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
-import airquality.database.operation.insert.insert as ins
+import airquality.database.operation.insert.insertoprt as ins
 import airquality.database.operation.select.sensor as sel_type
 import container.sensor as sens_adapt
 import airquality.adapter.api2db.measure as meas_adapt

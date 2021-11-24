@@ -36,7 +36,7 @@ class FetchWrapper(log.Loggable):
         self.channel_name = name
 
     @log_decorator.log_decorator
-    def get_sensor_data(self) -> List[mdl.RESP_MODEL_TYPE]:
+    def get_sensor_data(self) -> List[mdl.BaseResponseModel]:
         uniform_resource_locator = self.url_builder.url()
         response_text = fetch.fetch_from_url(uniform_resource_locator)
         parsed_response = self.response_parser.parse(response_text)

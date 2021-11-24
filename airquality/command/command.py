@@ -9,7 +9,7 @@ import abc
 from typing import Union
 import airquality.logger.loggable as log
 import airquality.api.fetchwrp as fetch
-import airquality.database.operation.insert.insert as ins
+import airquality.database.operation.insert.insertoprt as ins
 import airquality.database.operation.select.sensor as sel_type
 import container.sensor as sens_adapt
 import airquality.adapter.api2db.measure as meas_adapt

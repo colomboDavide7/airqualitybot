@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.database.util.record.location as loc
+import database.record.georec as loc
 import airquality.database.util.postgis.geom as geom
 import airquality.adapter.config as adapt_const
 import airquality.database.util.postgis.config as geom_const

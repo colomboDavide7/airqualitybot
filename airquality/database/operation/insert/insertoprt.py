@@ -6,10 +6,10 @@
 #
 ######################################################
 import abc
-from typing import List, Dict, Any
-import airquality.database.operation.base as base
+import airquality.database.operation.baseoprt as base
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
+import airquality.database.record.baserec as baserec
 
 
 class InsertWrapper(base.DatabaseOperationWrapper, abc.ABC):
@@ -20,5 +20,5 @@ class InsertWrapper(base.DatabaseOperationWrapper, abc.ABC):
         self.query_builder = query_builder
 
     @abc.abstractmethod
-    def insert(self, sensor_data: List[Dict[str, Any]], sensor_id: int = None, sensor_channel: str = None):
+    def insert(self, sensor_record: baserec.BaseRecord) -> None:
         pass

@@ -8,10 +8,10 @@
 from typing import List, Dict, Any
 import airquality.adapter.config as adapt_const
 import airquality.logger.util.decorator as log_decorator
-import airquality.database.operation.insert.insert as base
+import airquality.database.operation.insert.insertoprt as base
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
-import airquality.database.util.record.record as rec
+import database.record.record as rec
 
 
 ################################ CLASS FOR MOBILE STATION ################################
