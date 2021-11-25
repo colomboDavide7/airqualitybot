@@ -6,11 +6,11 @@
 #
 ######################################################
 from typing import Dict, Any, List
-import airquality.api.resp.baseresp as baseresp
+import airquality.api.resp.resp as resp
 
 
 ################################ PURPLEAIR API RESPONSE ################################
-class PurpleairResponse(baseresp.BaseResponse):
+class PurpAPIResp(resp.APIResp):
 
     CHANNEL_PARAM = [{'name': 'Primary data - Channel A', 'key': 'primary_key_a', 'id': 'primary_id_a'},
                      {'name': 'Primary data - Channel B', 'key': 'primary_key_b', 'id': 'primary_id_b'},
@@ -26,20 +26,20 @@ class PurpleairResponse(baseresp.BaseResponse):
             self.date_created = data['date_created']
             self.data = data
         except KeyError as ke:
-            raise SystemExit(f"{PurpleairResponse.__name__}: bad sensor data => missing key='{ke!s}'")
+            raise SystemExit(f"{PurpAPIResp.__name__}: bad API response => missing key='{ke!s}'")
 
 
 ################################ PURPLEAIR RESPONSE BUILDER ################################
-class PurpleairResponseBuilder(baseresp.BaseResponseBuilder):
+class PurpAPIRespBuilder(resp.APIRespBuilder):
 
-    def __init__(self, api_response_class=PurpleairResponse):
-        super(PurpleairResponseBuilder, self).__init__(api_response_class=api_response_class)
+    def __init__(self, api_resp_cls=PurpAPIResp):
+        super(PurpAPIRespBuilder, self).__init__(api_resp_cls=api_resp_cls)
 
-    def build(self, parsed_response: Dict[str, Any]) -> List[PurpleairResponse]:
+    def build(self, parsed_resp: Dict[str, Any]) -> List[PurpAPIResp]:
         responses = []
         try:
-            for data_packet in parsed_response['data']:
-                responses.append(self.api_response_class(dict(zip(parsed_response['fields'], data_packet))))
+            for data_packet in parsed_resp['data']:
+                responses.append(self.api_response_class(dict(zip(parsed_resp['fields'], data_packet))))
         except KeyError as ke:
-            raise SystemExit(f"{PurpleairResponseBuilder.__name__}: bas sensor data => missing key={ke!s}")
+            raise SystemExit(f"{PurpAPIRespBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses

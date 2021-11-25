@@ -9,7 +9,7 @@ import abc
 from typing import Dict, Any, List
 
 
-class BaseResponse(abc.ABC):
+class APIResp(abc.ABC):
     pass
 
 
@@ -20,11 +20,11 @@ class ParamNameValue:
         self.value = value
 
 
-class BaseResponseBuilder(abc.ABC):
+class APIRespBuilder(abc.ABC):
 
-    def __init__(self, api_response_class=BaseResponse):
-        self.api_response_class = api_response_class
+    def __init__(self, api_resp_cls=APIResp):
+        self.api_response_class = api_resp_cls
 
     @abc.abstractmethod
-    def build(self, parsed_response: Dict[str, Any]) -> List[BaseResponse]:
+    def build(self, parsed_resp: Dict[str, Any]) -> List[APIResp]:
         pass

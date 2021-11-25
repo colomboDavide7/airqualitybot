@@ -10,7 +10,7 @@ import airquality.looper.datelooper as dtloop
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.dtype.timestamp as ts
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.resp.baseresp as resp
+import airquality.api.resp.resp as resp
 
 
 class ThingspeakDateLooper(dtloop.DateLooper):
@@ -22,7 +22,7 @@ class ThingspeakDateLooper(dtloop.DateLooper):
         return not self.ended
 
     @log_decorator.log_decorator()
-    def get_next_api_responses(self) -> List[resp.BaseResponse]:
+    def get_next_api_responses(self) -> List[resp.APIResp]:
         next_time_window = self._get_next_date_url_param()
         self.log_info(f"{ThingspeakDateLooper.__name__}: looking for new measurements within date range "
                       f"[{next_time_window['start']} - {next_time_window['end']}]")

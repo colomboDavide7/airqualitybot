@@ -12,6 +12,8 @@ import airquality.command.basecmdsetup as setup
 
 import airquality.logger.util.decorator as log_decorator
 
+import airquality.api.fetchwrp as apiwrp
+
 import airquality.file.util.parser as fp
 import airquality.file.util.loader as fl
 
@@ -43,25 +45,23 @@ class AtmotubeFetchSetup(setup.CommandSetup):
 
         ################################ API-SIDE OBJECTS ################################
         # API parameters
-        address, url_param = setup.get_api_parameters(sensor_type=sensor_type, log_filename=self.log_filename)
+        api_file_obj = setup.load_file(
+            file_path=comm_const.API_FILE_PATH, path_to_object=[sensor_type], log_filename=self.log_filename
+        )
 
-        # Check if 'format' argument is not missing from 'url_param'
-        if 'format' not in url_param:
-            raise SystemExit(f"{AtmotubeFetchSetup.__name__}: bad 'api.json' file structure => missing key='format'")
+        # API parameters from file
+        address = api_file_obj.address
+        resp_fmt = api_file_obj.format
+        options = api_file_obj.options
 
-        # Take the API resp format
-        api_resp_fmt = url_param['format']
-
-        # Setup API-side objects
-        response_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        response_builder = atmresp.AtmotubeResponseBuilder()
-        url_builder = atmurl.AtmotubeURLBuilder(address=address, parameters=url_param)
+        # url_builder = atmurl.AtmotubeURLBuilder(address=address, key=, mac=)
 
         # FetchWrapper
-        fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
-                                                response_parser=response_parser,
-                                                response_builder=response_builder,
-                                                log_filename=self.log_filename)
+        fetch_wrapper = apiwrp.FetchWrapper(
+            resp_builder=atmresp.AtmoAPIRespBuilder(),
+            resp_parser=fp.get_text_parser(file_ext=resp_fmt, log_filename=self.log_filename),
+            log_filename=self.log_filename
+        )
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
 
@@ -124,7 +124,7 @@ class ThingspeakFetchSetup(setup.CommandSetup):
 
         # Setup API-side objects
         api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        api_data_extractor = extr.ThingspeakResponseBuilder(log_filename=self.log_filename)
+        api_data_extractor = extr.ThnkRespBuilder(log_filename=self.log_filename)
         url_builder = url.ThingspeakURLBuilder(address=address, url_param=url_param, log_filename=self.log_filename)
 
         # FetchWrapper

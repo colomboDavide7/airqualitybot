@@ -8,7 +8,7 @@
 import abc
 from typing import List, Dict, Any
 import airquality.api2db.baseunif as baseadpt
-import airquality.api.resp.baseresp as basersp
+import airquality.api.resp.resp as basersp
 import airquality.database.dtype.timestamp as ts
 import airquality.database.ext.postgis as geo
 
@@ -36,5 +36,5 @@ class FetchUniformResponseBuilder(baseadpt.BaseUniformResponseBuilder, abc.ABC):
         self.timestamp_class = timestamp_class
 
     @abc.abstractmethod
-    def uniform(self, responses: List[basersp.BaseResponse]) -> List[FetchUniformResponse]:
+    def uniform(self, responses: List[basersp.APIResp]) -> List[FetchUniformResponse]:
         pass

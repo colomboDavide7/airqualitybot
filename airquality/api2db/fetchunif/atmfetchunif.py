@@ -18,11 +18,11 @@ class AtmotubeUniformResponseBuilder(baseadapt.FetchUniformResponseBuilder):
         super(AtmotubeUniformResponseBuilder, self).__init__(measure_param_map=measure_param_map, timestamp_class=timestamp_class)
         self.postgis_class = postgis_class
 
-    def uniform(self, responses: List[atm_mdl.AtmotubeResponse]) -> List[baseadapt.FetchUniformResponse]:
+    def uniform(self, responses: List[atm_mdl.AtmoAPIResp]) -> List[baseadapt.FetchUniformResponse]:
         uniformed_responses = []
         for response in responses:
             timestamp = self.timestamp_class(timest=response.time)
-            parameters = [baseadapt.ParamIDValue(id_=self.measure_param_map[p.sensor_name], value=p.value) for p in response.parameters]
+            parameters = [baseadapt.ParamIDValue(id_=self.measure_param_map[p.sensor_name], value=p.value) for p in response.measures]
             geolocation = geo.NullGeometry()
             if response.lat is not None and response.lon is not None:
                 geolocation = self.postgis_class(lat=response.lat, lng=response.lon)

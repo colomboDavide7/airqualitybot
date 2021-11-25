@@ -25,7 +25,7 @@ class TestLooper(unittest.TestCase):
         self.atmotube_fetch = fetch.FetchWrapper(
             url_builder=self.atmotube_builder,
             extractor=self.atmotube_extractor,
-            parser=self.json_parser)
+            resp_parser=self.json_parser)
 
     ################################ ATMOTUBE DATE LOOPER ################################
     def test_single_next_atmotube_sensor_data(self):

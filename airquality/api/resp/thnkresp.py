@@ -6,11 +6,11 @@
 #
 ######################################################
 from typing import Dict, Any, List, Union
-import airquality.api.resp.baseresp as baseresp
+import airquality.api.resp.resp as resp
 
 
 ################################ THINGSPEAK API RESPONSE ################################
-class ThingspeakChannel1AResponse(baseresp.BaseResponse):
+class ThnkCH1AResp(resp.APIResp):
     FIELD_MAP = {"field1": "pm1.0_atm_a", "field2": "pm2.5_atm_a", "field3": "pm10.0_atm_a", "field6": "temperature_a",
                  "field7": "humidity_a"}
 
@@ -19,12 +19,12 @@ class ThingspeakChannel1AResponse(baseresp.BaseResponse):
     def __init__(self, data: Dict[str, Any]):
         try:
             self.created_at = data['created_at']
-            self.parameters = [baseresp.ParamNameValue(name=n, value=data.get(n)) for n in ThingspeakChannel1AResponse.FIELDS]
+            self.parameters = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH1AResp.FIELDS]
         except KeyError as ke:
-            raise SystemExit(f"{ThingspeakChannel1AResponse.__name__}: bad sensor data => missing key='{ke!s}'")
+            raise SystemExit(f"{ThnkCH1AResp.__name__}: bad API response => missing key='{ke!s}'")
 
 
-class ThingspeakChannel1BResponse(baseresp.BaseResponse):
+class ThnkCH1BResp(resp.APIResp):
     FIELD_MAP = {"field1": "pm1.0_atm_b", "field2": "pm2.5_atm_b", "field3": "pm10.0_atm_b", "field6": "pressure_b"}
 
     FIELDS = ["pm1.0_atm_b", "pm2.5_atm_b", "pm10.0_atm_b", "pressure_b"]
@@ -32,13 +32,13 @@ class ThingspeakChannel1BResponse(baseresp.BaseResponse):
     def __init__(self, data: Dict[str, Any]):
         try:
             self.created_at = data['created_at']
-            self.parameters = [baseresp.ParamNameValue(name=n, value=data.get(n)) for n in
-                               ThingspeakChannel1BResponse.FIELDS]
+            self.parameters = [resp.ParamNameValue(name=n, value=data.get(n)) for n in
+                               ThnkCH1BResp.FIELDS]
         except KeyError as ke:
-            raise SystemExit(f"{ThingspeakChannel1BResponse.__name__}: bad sensor data => missing key='{ke!s}'")
+            raise SystemExit(f"{ThnkCH1BResp.__name__}: bad API response => missing key='{ke!s}'")
 
 
-class ThingspeakChannel2AResponse(baseresp.BaseResponse):
+class ThnkCH2AResp(resp.APIResp):
     FIELD_MAP = {"field1": "0.3_um_count_a", "field2": "0.5_um_count_a", "field3": "1.0_um_count_a",
                  "field4": "2.5_um_count_a", "field5": "5.0_um_count_a", "field6": "10.0_um_count_a"}
 
@@ -48,12 +48,12 @@ class ThingspeakChannel2AResponse(baseresp.BaseResponse):
     def __init__(self, data: Dict[str, Any]):
         try:
             self.created_at = data['created_at']
-            self.parameters = [baseresp.ParamNameValue(name=n, value=data.get(n)) for n in ThingspeakChannel2AResponse.FIELDS]
+            self.parameters = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH2AResp.FIELDS]
         except KeyError as ke:
-            raise SystemExit(f"{ThingspeakChannel2AResponse.__name__}: bad sensor data => missing key='{ke!s}'")
+            raise SystemExit(f"{ThnkCH2AResp.__name__}: bad API response => missing key='{ke!s}'")
 
 
-class ThingspeakChannel2BResponse(baseresp.BaseResponse):
+class ThnkCH2BResp(resp.APIResp):
     FIELD_MAP = {"field1": "0.3_um_count_b", "field2": "0.5_um_count_b", "field3": "1.0_um_count_b",
                  "field4": "2.5_um_count_b", "field5": "5.0_um_count_b", "field6": "10.0_um_count_b"}
 
@@ -63,28 +63,24 @@ class ThingspeakChannel2BResponse(baseresp.BaseResponse):
     def __init__(self, data: Dict[str, Any]):
         try:
             self.created_at = data['created_at']
-            self.parameters = [baseresp.ParamNameValue(name=n, value=data.get(n)) for n in ThingspeakChannel2BResponse.FIELDS]
+            self.parameters = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH2BResp.FIELDS]
         except KeyError as ke:
-            raise SystemExit(f"{ThingspeakChannel2BResponse.__name__}: bad sensor data => missing key='{ke!s}'")
-
-
-RESP_MODEL_TYPE = Union[
-    ThingspeakChannel1AResponse,
-    ThingspeakChannel1BResponse,
-    ThingspeakChannel2AResponse,
-    ThingspeakChannel2BResponse]
+            raise SystemExit(f"{ThnkCH2BResp.__name__}: bad API response => missing key='{ke!s}'")
 
 
 ################################ THINGSPEAK RESPONSE BUILDER ################################
-class ThingspeakResponseBuilder(baseresp.BaseResponseBuilder):
+RESP_TYPE = Union[ThnkCH1AResp, ThnkCH1BResp, ThnkCH2AResp, ThnkCH2BResp]
 
-    def __init__(self, api_response_class=RESP_MODEL_TYPE):
-        super(ThingspeakResponseBuilder, self).__init__(api_response_class=api_response_class)
 
-    def build(self, parsed_response: Dict[str, Any]) -> List[RESP_MODEL_TYPE]:
+class ThnkRespBuilder(resp.APIRespBuilder):
+
+    def __init__(self, api_resp_cls=RESP_TYPE):
+        super(ThnkRespBuilder, self).__init__(api_resp_cls=api_resp_cls)
+
+    def build(self, parsed_resp: Dict[str, Any]) -> List[RESP_TYPE]:
         responses = []
         try:
-            for feed in parsed_response['feeds']:
+            for feed in parsed_resp['feeds']:
                 data = {'created_at': feed['created_at']}
                 for field in self.api_response_class.FIELD_MAP:
                     field_name = self.api_response_class.FIELD_MAP[field]
@@ -92,5 +88,5 @@ class ThingspeakResponseBuilder(baseresp.BaseResponseBuilder):
                     data[field_name] = field_value
                 responses.append(self.api_response_class(data))
         except KeyError as ke:
-            raise SystemExit(f"{ThingspeakResponseBuilder.__name__}: bas sensor data => missing key={ke!s}")
+            raise SystemExit(f"{ThnkRespBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses

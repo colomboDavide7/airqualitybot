@@ -10,7 +10,7 @@ from typing import List, Dict, Any
 import airquality.logger.loggable as log
 import airquality.api.fetchwrp as apiwrp
 import airquality.database.dtype.timestamp as ts
-import airquality.api.resp.baseresp as resp
+import airquality.api.resp.resp as resp
 
 
 class DateLooper(log.Loggable):
@@ -27,7 +27,7 @@ class DateLooper(log.Loggable):
         pass
 
     @abc.abstractmethod
-    def get_next_api_responses(self) -> List[resp.BaseResponse]:
+    def get_next_api_responses(self) -> List[resp.APIResp]:
         pass
 
     @abc.abstractmethod

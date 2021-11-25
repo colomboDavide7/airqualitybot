@@ -7,7 +7,7 @@
 ######################################################
 import abc
 from typing import List
-import airquality.api.resp.baseresp as baseresp
+import airquality.api.resp.resp as baseresp
 import airquality.api2db.baseunif as baseunif
 import airquality.database.ext.postgis as postgis
 import airquality.database.dtype.timestamp as ts
@@ -38,5 +38,5 @@ class InitUniformResponseBuilder(baseunif.BaseUniformResponseBuilder, abc.ABC):
         self.postgis_class = postgis_class
 
     @abc.abstractmethod
-    def uniform(self, responses: List[baseresp.BaseResponse]) -> List[InitUniformResponse]:
+    def uniform(self, responses: List[baseresp.APIResp]) -> List[InitUniformResponse]:
         pass

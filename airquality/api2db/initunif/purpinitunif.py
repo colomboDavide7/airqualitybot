@@ -18,7 +18,7 @@ class PurpleairUniformResponseBuilder(baseadapt.InitUniformResponseBuilder):
     def __init__(self, timestamp_class=ts.UnixTimestamp, postgis_class=geo.PostgisPoint):
         super(PurpleairUniformResponseBuilder, self).__init__(timestamp_class=timestamp_class, postgis_class=postgis_class)
 
-    def uniform(self, responses: List[resp.PurpleairResponse]) -> List[baseadapt.InitUniformResponse]:
+    def uniform(self, responses: List[resp.PurpAPIResp]) -> List[baseadapt.InitUniformResponse]:
         uniformed_responses = []
         for response in responses:
             # Create Name

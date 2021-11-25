@@ -6,12 +6,10 @@
 #
 ######################################################
 import abc
-from typing import Tuple, Dict, Any
-import airquality.command.cmdconf as cmd_const
 import airquality.file.structured.json as jf
 import airquality.api.fetchwrp as fetch
 import airquality.file.util.parser as fp
-import airquality.api.resp.baseresp as baseresp
+import airquality.api.resp.resp as baseresp
 import airquality.api.url.baseurl as baseurl
 import airquality.database.util.conn as db_conn
 import airquality.logger.loggable as log
@@ -25,13 +23,6 @@ class CommandSetup(log.Loggable, abc.ABC):
     @abc.abstractmethod
     def setup(self, sensor_type: str):
         pass
-
-
-################################ get_api_parameters ################################
-def get_api_parameters(sensor_type: str, file_path=cmd_const.API_FILE_PATH, log_filename="log") -> Tuple[str, Dict[str, Any]]:
-
-    api_file_obj = load_file(file_path=file_path, path_to_object=[sensor_type], log_filename=log_filename)
-    return api_file_obj.api_address, api_file_obj.url_param
 
 
 ################################ load_file ################################
@@ -51,16 +42,3 @@ def open_database_connection(connection_string: str, log_filename="log"):
     conn.open_conn()
     return conn
 
-
-################################ get_fetch_wrapper ################################
-def get_fetch_wrapper(
-        url_builder: baseurl.BaseURLBuilder,
-        response_parser: fp.TextParser,
-        response_builder: baseresp.BaseResponseBuilder,
-        log_filename="log"
-) -> fetch.FetchWrapper:
-
-    return fetch.FetchWrapper(url_builder=url_builder,
-                              response_builder=response_builder,
-                              parser=response_parser,
-                              log_filename=log_filename)

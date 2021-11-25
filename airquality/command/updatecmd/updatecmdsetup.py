@@ -43,7 +43,7 @@ class PurpleairUpdateSetup(setup.CommandSetup):
 
         # Setup API-side objects
         response_parser = fp.JSONParser(log_filename=self.log_filename)
-        response_builder = resp.PurpleairResponseBuilder()
+        response_builder = resp.PurpAPIRespBuilder()
         url_builder = url.PurpleairURLBuilder(address=address, parameters=url_param, log_filename=self.log_filename)
 
         # FetchWrapper

@@ -10,7 +10,7 @@ import airquality.looper.datelooper as dtloop
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.dtype.timestamp as ts
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.resp.baseresp as resp
+import airquality.api.resp.resp as resp
 
 
 class AtmotubeDateLooper(dtloop.DateLooper):
@@ -22,7 +22,7 @@ class AtmotubeDateLooper(dtloop.DateLooper):
         return not self.ended
 
     @log_decorator.log_decorator()
-    def get_next_api_responses(self) -> List[resp.BaseResponse]:
+    def get_next_api_responses(self) -> List[resp.APIResp]:
         next_date = self._get_next_date_url_param()
         self.log_info(f"{AtmotubeDateLooper.__name__}: looking for new sensor data on date='{next_date['date']}'")
         self.fetch_wrapper.update_url_param(next_date)
