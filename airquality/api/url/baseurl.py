@@ -11,14 +11,17 @@ from typing import Dict, Any
 
 class BaseURLBuilder(abc.ABC):
 
-    def __init__(self, address: str):
-        self.url = address
+    def __init__(self, address: str, options: Dict[str, Any]):
+        self.address = address
+        self.options = options
 
     @abc.abstractmethod
     def build(self) -> str:
         pass
 
     def with_options(self, options: Dict[str, Any]):
-        for key, val in options.items():
-            self.url += f"&{key}={val}"
+        self.options = options
         return self
+
+    def _get_options_querystring(self) -> str:
+        return '&'.join(f"{k}={v}" for k, v in self.options.items())

@@ -15,9 +15,7 @@ import airquality.logger.util.decorator as log_decorator
 
 class FetchWrapper(log.Loggable):
 
-    def __init__(
-            self, resp_builder: resp.APIRespBuilder, resp_parser: parse.TextParser, log_filename="log"
-    ):
+    def __init__(self, resp_builder: resp.APIRespBuilder, resp_parser: parse.TextParser, log_filename="log"):
         super(FetchWrapper, self).__init__(log_filename=log_filename)
         self.resp_builder = resp_builder
         self.resp_parser = resp_parser

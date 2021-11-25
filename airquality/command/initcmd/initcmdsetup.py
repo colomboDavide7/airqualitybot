@@ -17,13 +17,12 @@ import airquality.file.util.loader as fl
 
 import airquality.api.resp.purpresp as resp
 import airquality.api.url.purpurl as url
-import airquality.api2db.initunif.purpinitunif as unif
+import airquality.api.fetchwrp as apiwrp
 
 import airquality.database.op.ins.stinfoins as ins
 import airquality.database.op.sel.stationsel as sel
 import airquality.database.ext.postgis as postgis
 import airquality.database.util.query as qry
-import airquality.database.rec.initrec as rec
 
 
 ################################ PURPLEAIR INIT COMMAND SETUP ################################
@@ -40,25 +39,31 @@ class PurpleairInitSetup(setup.CommandSetup):
 
         ################################ API-SIDE OBJECTS ################################
         # API parameters
-        address, url_param = setup.get_api_parameters(sensor_type=sensor_type, log_filename=self.log_filename)
-        url_param.update({'api_key': os.environ['PURPLEAIR_KEY1']})
+        api_file_obj = setup.load_file(
+            file_path=comm_const.API_FILE_PATH, path_to_object=[sensor_type], log_filename=self.log_filename
+        )
+
+        # API parameters from file
+        address = api_file_obj.address
+        fields = api_file_obj.fields
+        options = api_file_obj.options
+
+        # URL Builder
+        url_builder = url.PurpleairURLBuilder(address=address, fields=fields, key=os.environ['PURPLEAIR_KEY1'])
+        url_builder = url_builder.with_options(options)
 
         # Setup API-side objects
-        response_parser = fp.JSONParser(log_filename=self.log_filename)
-        response_builder = resp.PurpAPIRespBuilder()
-        url_builder = url.PurpleairURLBuilder(address=address, parameters=url_param, log_filename=self.log_filename)
+        resp_parser = fp.JSONParser(log_filename=self.log_filename)
+        resp_builder = resp.PurpAPIRespBuilder()
 
         # FetchWrapper
-        fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
-                                                response_parser=response_parser,
-                                                response_builder=response_builder,
-                                                log_filename=self.log_filename)
+        fetch_wrapper = apiwrp.FetchWrapper(resp_builder=resp_builder, resp_parser=resp_parser, log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
 
         ################################ DATABASE-SIDE OBJECTS ################################
         # Database Connection
-        database_connection = setup.open_database_connection(connection_string=os.environ['DBCONN'],
+        database_conn = setup.open_database_connection(connection_string=os.environ['DBCONN'],
                                                              log_filename=self.log_filename)
         # Load SQL query file
         query_file_obj = setup.load_file(file_path=comm_const.QUERY_FILE_PATH, log_filename=self.log_filename)
@@ -67,14 +72,14 @@ class PurpleairInitSetup(setup.CommandSetup):
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
         # InsertWrapper
-        insert_wrapper = ins.StationInfoInsertWrapper(conn=database_connection, query_builder=query_builder, log_filename=self.log_filename)
+        insert_wrapper = ins.StationInfoInsertWrapper(conn=database_conn, builder=query_builder, log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 
         # SelectWrapper
         select_wrapper = sel.StationSelectWrapper(
-            conn=database_connection,
-            query_builder=query_builder,
+            conn=database_conn,
+            builder=query_builder,
             postgis_class=postgis.PostgisPoint,
             sensor_type=sensor_type,
             log_filename=self.log_filename

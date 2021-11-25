@@ -15,15 +15,15 @@ import airquality.database.util.query as query
 
 class StationGeoInsertWrapper(base.InsertWrapper):
 
-    def __init__(self, conn: connection.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="log"):
-        super(StationGeoInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
+    def __init__(self, conn: connection.DatabaseAdapter, builder: query.QueryBuilder, log_filename="log"):
+        super(StationGeoInsertWrapper, self).__init__(conn=conn, builder=builder, log_filename=log_filename)
 
     @log_decorator.log_decorator()
     def concat_location_query(self, records: List[rec.StationInfoRecord]) -> None:
 
-        self.query_to_execute += self.builder.insert_locations(records)
+        self.query_to_execute += self.query_builder.insert_locations(records)
         self.log_info(f"{StationGeoInsertWrapper.__name__}: inserted {len(records)}/{len(records)} new locations")
 
     @log_decorator.log_decorator()
     def concat_update_valid_to_timestamp(self, records: List[rec.StationInfoRecord]):
-        self.query_to_execute += self.builder.update_valid_to_timestamp(records)
+        self.query_to_execute += self.query_builder.update_valid_to_timestamp(records)

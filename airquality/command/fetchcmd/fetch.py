@@ -53,6 +53,8 @@ class FetchCommand(base.Command):
                 last_acquisition = channel.last_acquisition
                 self.log_info(f"{FetchCommand.__name__}: last acquisition => {last_acquisition.get_formatted_timestamp()}")
 
+                # self.url_builder.with_api_key()
+
                 # URL BUILDER => build url
 
                 # Pass URL to FetchWrapper

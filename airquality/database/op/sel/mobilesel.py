@@ -20,14 +20,14 @@ class MobileDBResponse(sel.BaseDBResponse):
 
 class MobileSelectWrapper(sel.SelectWrapper):
 
-    def __init__(self, conn: connection.DatabaseAdapter, query_builder: query.QueryBuilder, sensor_type: str, log_filename="log"):
-        super(MobileSelectWrapper, self).__init__(conn=conn, query_builder=query_builder, sensor_type=sensor_type, log_filename=log_filename)
+    def __init__(self, conn: connection.DatabaseAdapter, builder: query.QueryBuilder, sensor_type: str, log_filename="log"):
+        super(MobileSelectWrapper, self).__init__(conn=conn, builder=builder, sensor_type=sensor_type, log_filename=log_filename)
 
     def select(self) -> List[MobileDBResponse]:
         responses = []
 
-        sensor_query = self.builder.select_sensor_id_from_type(type_=self.sensor_type)
-        sensor_ids = self.conn.send(sensor_query)
+        sensor_query = self.query_builder.select_sensor_id_from_type(type_=self.sensor_type)
+        sensor_ids = self.database_conn.send(sensor_query)
         for sensor_id in sensor_ids:
             api_param = self._select_api_param(sensor_id=sensor_id)
             responses.append(MobileDBResponse(sensor_id=sensor_id, api_param=api_param))

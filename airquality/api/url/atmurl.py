@@ -5,18 +5,15 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.api.url.baseurl as base
+from typing import Dict, Any
+import airquality.api.url.dynurl as dyn
 
 
-class AtmotubeURLBuilder(base.BaseURLBuilder):
+class AtmotubeURLBuilder(dyn.DynamicURL):
 
-    def __init__(self, address: str, key: str, mac: str):
-        super(AtmotubeURLBuilder, self).__init__(address=address)
-        self.url += f"?api_key={key}&mac={mac}"
+    def __init__(self, address: str, options: Dict[str, Any]):
+        super(AtmotubeURLBuilder, self).__init__(address=address, options=options)
+        self.date = None
 
     def build(self) -> str:
-        return self.url
-
-    def with_date(self, date: str):
-        self.url += f"&date={date}"
-        return self
+        return f"{self.address}?api_key={self.api_key}&mac={self.identifier}&{self._get_options_querystring()}"

@@ -26,11 +26,11 @@ class StationDBResponse(sel.BaseDBResponse):
 class StationSelectWrapper(sel.SelectWrapper):
 
     def __init__(
-            self, conn: db.DatabaseAdapter, query_builder: qry.QueryBuilder, sensor_type: str, log_filename="log",
+            self, conn: db.DatabaseAdapter, builder: qry.QueryBuilder, sensor_type: str, log_filename="log",
             postgis_class=pgis.PostgisPoint
     ):
         super(StationSelectWrapper, self).__init__(
-            conn=conn, query_builder=query_builder, sensor_type=sensor_type, log_filename=log_filename
+            conn=conn, builder=builder, sensor_type=sensor_type, log_filename=log_filename
         )
         self.postgis_class = postgis_class
 
@@ -38,16 +38,16 @@ class StationSelectWrapper(sel.SelectWrapper):
     def select(self) -> List[StationDBResponse]:
         responses = []
 
-        sensor_query = self.builder.select_sensor_id_name_from_type(sensor_type=self.sensor_type)
-        sensor_resp = self.conn.send(sensor_query)
+        sensor_query = self.query_builder.select_sensor_id_name_from_type(sensor_type=self.sensor_type)
+        sensor_resp = self.database_conn.send(sensor_query)
         for sensor_id, sensor_name in sensor_resp:
 
             # Query the API param + channel info
             api_param = self._select_api_param(sensor_id=sensor_id)
 
             # Query the sensor location
-            location_query = self.builder.select_location_from_sensor_id(sensor_id=sensor_id)
-            location_resp = self.conn.send(location_query)
+            location_query = self.query_builder.select_location_from_sensor_id(sensor_id=sensor_id)
+            location_resp = self.database_conn.send(location_query)
             geometry = self.postgis_class(lat=location_resp[0][1], lng=location_resp[0][0])
 
             # Make the response

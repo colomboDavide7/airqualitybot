@@ -8,9 +8,7 @@
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
-import airquality.api2db.initunif.initunif as initunif
 import airquality.filter.namefilt as nameflt
-import airquality.database.rec.initrec as initrec
 import airquality.database.op.ins.stinfoins as ins
 import airquality.database.op.sel.stationsel as sel
 

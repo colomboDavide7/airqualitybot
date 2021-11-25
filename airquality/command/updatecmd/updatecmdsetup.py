@@ -66,7 +66,7 @@ class PurpleairUpdateSetup(setup.CommandSetup):
 
         # InsertWrapper
         insert_wrapper = ins.StationGeoInsertWrapper(conn=database_connection,
-                                                     query_builder=query_builder,
+                                                     builder=query_builder,
                                                      log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
@@ -74,7 +74,7 @@ class PurpleairUpdateSetup(setup.CommandSetup):
         # SelectWrapper
         select_wrapper = sel.StationSelectWrapper(
             conn=database_connection,
-            query_builder=query_builder,
+            builder=query_builder,
             sensor_type=sensor_type,
             log_filename=self.log_filename
         )

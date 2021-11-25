@@ -77,14 +77,14 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
         # InsertWrapper
-        insert_wrapper = ins.MobileMeasureInsertWrapper(conn=database_connection, query_builder=query_builder, log_filename=self.log_filename)
+        insert_wrapper = ins.MobileMeasureInsertWrapper(conn=database_connection, builder=query_builder, log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 
         # TypeSelectWrapper
         select_wrapper = mobsel.MobileSelectWrapper(
             conn=database_connection,
-            query_builder=query_builder,
+            builder=query_builder,
             sensor_type=sensor_type,
             log_filename=self.log_filename
         )
