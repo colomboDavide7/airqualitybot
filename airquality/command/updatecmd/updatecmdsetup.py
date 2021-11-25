@@ -20,7 +20,7 @@ import airquality.api.resp.purpresp as resp
 
 import airquality.api2db.updtunif.purpupdtunif as unif
 
-import airquality.database.op.ins.updtins as ins
+import airquality.database.op.ins.stgeoins as ins
 import airquality.database.op.sel.stationsel as sel
 import airquality.database.util.query as qry
 import airquality.database.rec.updtrec as rec
@@ -65,9 +65,9 @@ class PurpleairUpdateSetup(setup.CommandSetup):
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
         # InsertWrapper
-        insert_wrapper = ins.UpdateInsertWrapper(conn=database_connection,
-                                                 query_builder=query_builder,
-                                                 log_filename=self.log_filename)
+        insert_wrapper = ins.StationGeoInsertWrapper(conn=database_connection,
+                                                     query_builder=query_builder,
+                                                     log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 

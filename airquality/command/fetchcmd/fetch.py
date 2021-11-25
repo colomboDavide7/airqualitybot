@@ -9,7 +9,7 @@ from typing import Union
 import airquality.command.basecmd as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetchwrp as apiwrp
-import airquality.database.op.ins.fetchins as ins
+import airquality.database.op.ins.mbmeasins as ins
 import airquality.database.op.sel.mobilesel as mbsel
 import airquality.database.op.sel.stationsel as stsel
 import database.dtype.timestamp as ts
@@ -25,7 +25,7 @@ class FetchCommand(base.Command):
     def __init__(
             self,
             fw: apiwrp.FetchWrapper,
-            iw: ins.FetchMobileInsertWrapper,
+            iw: ins.MobileMeasureInsertWrapper,
             sw: Union[mbsel.MobileSelectWrapper, stsel.StationSelectWrapper],
             urb: unif.FetchUniformResponseBuilder,
             dtlpc=dlp.DateLooper,

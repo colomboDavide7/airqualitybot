@@ -23,7 +23,7 @@ import airquality.api.url.thnkurl as thnkurl
 import airquality.api.resp.atmresp as atmresp
 import airquality.api.resp.thnkresp as thnkresp
 
-import airquality.database.op.ins.fetchins as ins
+import airquality.database.op.ins.mbmeasins as ins
 import airquality.database.op.sel.mobilesel as mobsel
 import airquality.database.op.sel.stationsel as stsel
 
@@ -77,7 +77,7 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
         # InsertWrapper
-        insert_wrapper = ins.FetchMobileInsertWrapper(conn=database_connection, query_builder=query_builder, log_filename=self.log_filename)
+        insert_wrapper = ins.MobileMeasureInsertWrapper(conn=database_connection, query_builder=query_builder, log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 

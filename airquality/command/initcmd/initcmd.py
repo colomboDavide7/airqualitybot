@@ -11,7 +11,7 @@ import airquality.api.fetchwrp as apiwrp
 import airquality.api2db.initunif.initunif as initunif
 import airquality.filter.namefilt as nameflt
 import airquality.database.rec.initrec as initrec
-import airquality.database.op.ins.initins as ins
+import airquality.database.op.ins.stinfoins as ins
 import airquality.database.op.sel.stationsel as sel
 
 
@@ -19,7 +19,7 @@ class InitCommand(basecmd.Command):
 
     def __init__(
             self, fw: apiwrp.FetchWrapper, urb: initunif.InitUniformResponseBuilder, rb: initrec.InitRecordBuilder,
-            iw: ins.InitInsertWrapper, sw: sel.StationSelectWrapper, log_filename="log"
+            iw: ins.StationInfoInsertWrapper, sw: sel.StationSelectWrapper, log_filename="log"
     ):
         super(InitCommand, self).__init__(fw=fw, iw=iw, log_filename=log_filename)
         self.uniform_response_builder = urb

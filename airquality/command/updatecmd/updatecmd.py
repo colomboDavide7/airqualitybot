@@ -9,7 +9,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
 import airquality.api2db.updtunif.updtunif as unif
-import airquality.database.op.ins.updtins as ins
+import airquality.database.op.ins.stgeoins as ins
 import airquality.database.op.sel.stationsel as sel
 import airquality.database.rec.updtrec as rec
 import airquality.filter.geofilt as flt
@@ -20,7 +20,7 @@ class UpdateCommand(basecmd.Command):
     def __init__(
             self,
             fw: apiwrp.FetchWrapper,
-            iw: ins.UpdateInsertWrapper,
+            iw: ins.StationGeoInsertWrapper,
             sw: sel.StationSelectWrapper,
             urb: unif.UpdateUniformResponseBuilder,
             rb: rec.UpdateRecordBuilder,
