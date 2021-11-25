@@ -19,9 +19,5 @@ class BaseURLBuilder(abc.ABC):
     def build(self) -> str:
         pass
 
-    def with_options(self, options: Dict[str, Any]):
-        self.options = options
-        return self
-
     def _get_options_querystring(self) -> str:
         return '&'.join(f"{k}={v}" for k, v in self.options.items())

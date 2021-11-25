@@ -35,8 +35,8 @@ class AtmoAPIRespAdapt(adpt.APIRespAdapt):
     def _get_geolocation(self, r: resp.AtmoAPIResp) -> adptype.Geolocation:
         return adptype.Geolocation(timestamp=self.timestamp_cls(r.time), geometry=self.postgis_cls(lat=r.lat, lng=r.lon))
 
-    def _get_measures(self, r: resp.AtmoAPIResp) -> List[adptype.Measure]:
+    def _get_measures(self, r: resp.AtmoAPIResp) -> List[adptype.ParamIDName]:
         measure_dict = {}
         for m in self.measure_id_name:
             measure_dict[m.name] = m.id
-        return [adptype.Measure(id_=measure_dict[m.name], value=m.value) for m in r.measures]
+        return [adptype.ParamIDName(id_=measure_dict[m.name], value=m.value) for m in r.measures]

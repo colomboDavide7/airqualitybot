@@ -74,7 +74,7 @@ class QueryBuilder:
         return f"{self.query_file.i5} {geolocation_values};"
 
     def update_valid_to_timestamp(self, records: List[stinforec.StationInfoRecord]):
-        return ' '.join(self.query_file.u1.format(ts=r.station_info.geolocation.timestamp.get_formatted_timestamp(),
+        return ' '.join(self.query_file.u1.format(ts=r.api_adpt_resp.geolocation.timestamp.get_formatted_timestamp(),
                                                   sens_id=r.sensor_id) for r in records)
 
     ################################ INITIALIZE SENSORS ################################

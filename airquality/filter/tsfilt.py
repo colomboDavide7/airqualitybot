@@ -7,7 +7,7 @@
 ######################################################
 from typing import List
 import airquality.filter.basefilt as base
-import airquality.api2db.fetchunif.fetchunif as unif
+import airquality.api2db.adptype as adptype
 import airquality.database.dtype.timestamp as ts
 
 
@@ -21,7 +21,7 @@ class TimestampFilter(base.BaseFilter):
         self.filter_ts = filter_ts
 
     # ************************************ filter ************************************
-    def filter(self, resp2filter: List[unif.FetchUniformResponse]) -> List[unif.FetchUniformResponse]:
+    def filter(self, resp2filter: List[adptype.Measure]) -> List[adptype.Measure]:
         filtered_responses = []
         for response in resp2filter:
             if response.timestamp.is_after(self.filter_ts):

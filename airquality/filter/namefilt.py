@@ -7,7 +7,7 @@
 ######################################################
 from typing import List
 import airquality.filter.basefilt as base
-import airquality.api2db.initunif.initunif as unif
+import airquality.api2db.adptype as adptype
 
 
 class NameFilter(base.BaseFilter):
@@ -17,7 +17,7 @@ class NameFilter(base.BaseFilter):
         self.database_sensor_names = database_sensor_names
 
     # ************************************ filter ************************************
-    def filter(self, resp2filter: List[unif.InitUniformResponse]) -> List[unif.InitUniformResponse]:
+    def filter(self, resp2filter: List[adptype.StationInfo]) -> List[adptype.StationInfo]:
         filtered_responses = []
         for response in resp2filter:
             if response.sensor_name not in self.database_sensor_names:

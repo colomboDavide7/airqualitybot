@@ -11,59 +11,76 @@ import airquality.api.fetchwrp as apiwrp
 import airquality.filter.namefilt as nameflt
 import airquality.database.op.ins.stinfoins as ins
 import airquality.database.op.sel.stationsel as sel
+import airquality.api.url.purpurl as purl
+import airquality.api2db.purpadpt as padpt
+import airquality.database.rec.stinforec as rec
 
 
 class InitCommand(basecmd.Command):
 
     def __init__(
-            self, fw: apiwrp.FetchWrapper, urb: initunif.InitUniformResponseBuilder, rb: initrec.InitRecordBuilder,
-            iw: ins.StationInfoInsertWrapper, sw: sel.StationSelectWrapper, log_filename="log"
+            self,
+            ub: purl.PurpleairURLBuilder,
+            fw: apiwrp.FetchWrapper,
+            ara: padpt.PurpAPIRespAdpt,
+            iw: ins.StationInfoInsertWrapper,
+            sw: sel.StationSelectWrapper,
+            log_filename="log",
+            rb_cls=rec.StationInfoRecord
     ):
-        super(InitCommand, self).__init__(fw=fw, iw=iw, log_filename=log_filename)
-        self.uniform_response_builder = urb
-        self.record_builder = rb
+        super(InitCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
+        self.api_resp_adapter = ara
+        self.insert_wrapper = iw
         self.select_wrapper = sw
+        self.record_builder_cls = rb_cls
 
     @log_decorator.log_decorator()
     def execute(self):
 
         ################################ API-SIDE ###############################
-        api_responses = self.fetch_wrapper.fetch()
+        # Build the URL
+        url = self.url_builder.build()
+
+        api_responses = self.fetch_wrapper.fetch(url=url)
         if not api_responses:
             self.log_warning(f"{InitCommand.__name__}: empty API sensor data => no sensor inserted")
             return
 
-        ####################### UNIFORM API RESPONSES TO APPLY ANY USEFUL INTERMEDIATE OPERATION #######################
-        uniformed_responses = self.uniform_response_builder.uniform(api_responses)
+        # Adapt API responses
+        adapted_responses = self.api_resp_adapter.adapt(api_responses)
 
-        ################################ FILTERING OPERATION ###############################
+        # Select sensor data from the database
         db_responses = self.select_wrapper.select()
 
+        # If there are any existing sensor within the database
         if db_responses:
             database_sensor_names = []
             for resp in db_responses:
                 database_sensor_names.append(resp.sensor_name)
-            uniform_response_filter = nameflt.NameFilter(database_sensor_names=database_sensor_names, log_filename=self.log_filename)
-            uniform_response_filter.set_file_logger(self.file_logger)
-            uniform_response_filter.set_console_logger(self.console_logger)
 
-            filtered_responses = uniform_response_filter.filter(resp2filter=uniformed_responses)
+            # Apply a filter for filtering out all the sensors that are already present into the database
+            api_resp_filter = nameflt.NameFilter(database_sensor_names=database_sensor_names, log_filename=self.log_filename)
+            api_resp_filter.set_file_logger(self.file_logger)
+            api_resp_filter.set_console_logger(self.console_logger)
+
+            filtered_responses = api_resp_filter.filter(resp2filter=adapted_responses)
             if not filtered_responses:
                 self.log_warning(f"{InitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
                 return
 
-            uniformed_responses = filtered_responses
+            adapted_responses = filtered_responses
 
         ################################ DATABASE-SIDE ###############################
         max_sensor_id = self.select_wrapper.select_max_sensor_id()
         self.log_info(f"{InitCommand.__name__}: new insertion starts at sensor_id={max_sensor_id}")
 
         records = []
-        for response in uniformed_responses:
+        for response in adapted_responses:
             records.append(
-                self.record_builder.record(uniform_response=response, sensor_id=max_sensor_id)
+                self.record_builder_cls(sensor_id=max_sensor_id, api_adpt_resp=response)
             )
             max_sensor_id += 1
 
-        # Execute queries on sensors
-        self.insert_wrapper.insert(records=records)
+        # Concatenate all the queries and then execute once all of them
+        self.insert_wrapper.concat_initialize_sensor_query(records=records)
+        self.insert_wrapper.insert()

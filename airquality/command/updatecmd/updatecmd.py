@@ -8,28 +8,31 @@
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
-import airquality.api2db.updtunif.updtunif as unif
+import airquality.api2db.purpadpt as padpt
+import airquality.api.url.purpurl as purl
 import airquality.database.op.ins.stgeoins as ins
 import airquality.database.op.sel.stationsel as sel
-import airquality.database.rec.updtrec as rec
 import airquality.filter.geofilt as flt
+import airquality.database.rec.stinforec as rec
 
 
 class UpdateCommand(basecmd.Command):
 
     def __init__(
             self,
+            ara: padpt.PurpAPIRespAdpt,
+            ub: purl.PurpleairURLBuilder,
             fw: apiwrp.FetchWrapper,
             iw: ins.StationGeoInsertWrapper,
             sw: sel.StationSelectWrapper,
-            urb: unif.UpdateUniformResponseBuilder,
-            rb: rec.UpdateRecordBuilder,
-            log_filename="purpleair"
+            log_filename="log",
+            rb_cls=rec.StationInfoRecord
     ):
-        super(UpdateCommand, self).__init__(fw=fw, iw=iw, log_filename=log_filename)
-        self.uniform_response_builder = urb
-        self.record_builder = rb
+        super(UpdateCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
+        self.api_resp_adapter = ara
+        self.insert_wrapper = iw
         self.select_wrapper = sw
+        self.record_builder_cls = rb_cls
 
     # ************************************ execute ************************************
     @log_decorator.log_decorator()
@@ -41,14 +44,17 @@ class UpdateCommand(basecmd.Command):
             self.log_warning(f"{UpdateCommand.__name__}: empty database response => no location updated")
             return
 
+        # Build url for fetching data from API
+        url = self.url_builder.build()
+
         # Fetch API data
-        api_responses = self.fetch_wrapper.fetch()
+        api_responses = self.fetch_wrapper.fetch(url=url)
         if not api_responses:
             self.log_warning(f"{UpdateCommand.__name__}: empty API response => no location updated")
             return
 
         # Reshape API data
-        uniformed_responses = self.uniform_response_builder.uniform(responses=api_responses)
+        api_adapted_responses = self.api_resp_adapter.adapt(api_responses)
 
         # Create the Database Locations Dict
         database_active_locations = {}
@@ -56,12 +62,12 @@ class UpdateCommand(basecmd.Command):
             database_active_locations[resp.sensor_name] = resp.geometry.as_text()
 
         # Create GeoFilter
-        uniform_resp_filter = flt.GeoFilter(database_active_locations=database_active_locations, log_filename=self.log_filename)
-        uniform_resp_filter.set_file_logger(self.file_logger)
-        uniform_resp_filter.set_console_logger(self.console_logger)
+        api_resp_filter = flt.GeoFilter(database_active_locations=database_active_locations, log_filename=self.log_filename)
+        api_resp_filter.set_file_logger(self.file_logger)
+        api_resp_filter.set_console_logger(self.console_logger)
 
         # Filter sensor data
-        filtered_responses = uniform_resp_filter.filter(resp2filter=uniformed_responses)
+        filtered_responses = api_resp_filter.filter(resp2filter=api_adapted_responses)
         if not filtered_responses:
             self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")
             return
@@ -74,8 +80,12 @@ class UpdateCommand(basecmd.Command):
         # Build database records
         records = []
         for api_resp in filtered_responses:
+            sensor_id = name_id_map[api_resp.sensor_name]
+            records.append(self.record_builder_cls(api_adpt_resp=api_resp, sensor_id=sensor_id))
 
-            records.append(self.record_builder.record(api_resp, sensor_id=name_id_map[api_resp.sensor_name]))
-
-        # Update locations
-        self.insert_wrapper.insert(records=records)
+        # Concat update valid to timestamp for changed locations
+        self.insert_wrapper.concat_update_valid_to_timestamp(records=records)
+        # Concat insert new records for changed locations
+        self.insert_wrapper.concat_location_query(records=records)
+        # Execute all-in-one the queries (this is much safer)
+        self.insert_wrapper.insert()

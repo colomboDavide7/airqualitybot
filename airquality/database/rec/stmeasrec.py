@@ -16,7 +16,5 @@ class StationMeasureRecord:
         self.rec_id = record_id
 
     def get_station_measurement_value(self) -> str:
-        return ','.join(
-            f"({self.rec_id}, {m.param_id}, {self.sensor_id}, '{m.param_val}', {self.st_meas.timestamp.get_formatted_timestamp()})"
-            for m in self.st_meas.measures
-        )
+        fmt_ts = self.st_meas.timestamp.get_formatted_timestamp()
+        return ','.join(f"({self.rec_id}, {m.param_id}, {self.sensor_id}, '{m.param_val}', {fmt_ts})" for m in self.st_meas.measures)

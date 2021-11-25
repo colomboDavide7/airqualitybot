@@ -15,8 +15,6 @@ class MobileMeasureRecord:
         self.mb_meas = mb_meas
 
     def get_mobile_measurement_value(self) -> str:
-        geo = self.mb_meas.geolocation
-        return ','.join(
-            f"({self.rec_id}, {m.param_id}, '{m.param_val}', '{geo.timestamp.get_formatted_timestamp()}', {geo.geometry.geom_from_text()})"
-            for m in self.mb_meas.measures
-        )
+        fmt_ts = self.mb_meas.timestamp.get_formatted_timestamp()
+        geom = self.mb_meas.geometry.geom_from_text()
+        return ','.join(f"({self.rec_id}, {m.param_id}, '{m.param_val}', '{fmt_ts}', {geom})" for m in self.mb_meas.measures)

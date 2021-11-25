@@ -18,6 +18,7 @@ import airquality.file.util.loader as fl
 import airquality.api.resp.purpresp as resp
 import airquality.api.url.purpurl as url
 import airquality.api.fetchwrp as apiwrp
+import airquality.api2db.purpadpt as padpt
 
 import airquality.database.op.ins.stinfoins as ins
 import airquality.database.op.sel.stationsel as sel
@@ -33,7 +34,6 @@ class PurpleairInitSetup(setup.CommandSetup):
 
     @log_decorator.log_decorator()
     def setup(self, sensor_type: str):
-
         # Load environment file
         fl.load_environment_file(file_path=comm_const.ENV_FILE_PATH, sensor_type=sensor_type)
 
@@ -47,31 +47,31 @@ class PurpleairInitSetup(setup.CommandSetup):
         address = api_file_obj.address
         fields = api_file_obj.fields
         options = api_file_obj.options
+        bounding_box = api_file_obj.bounding_box
 
         # URL Builder
-        url_builder = url.PurpleairURLBuilder(address=address, fields=fields, key=os.environ['PURPLEAIR_KEY1'])
-        url_builder = url_builder.with_options(options)
-
-        # Setup API-side objects
-        resp_parser = fp.JSONParser(log_filename=self.log_filename)
-        resp_builder = resp.PurpAPIRespBuilder()
+        url_builder = url.PurpleairURLBuilder(
+            address=address, fields=fields, key=os.environ['PURPLEAIR_KEY1'], bounding_box=bounding_box, options=options
+        )
 
         # FetchWrapper
-        fetch_wrapper = apiwrp.FetchWrapper(resp_builder=resp_builder, resp_parser=resp_parser, log_filename=self.log_filename)
+        fetch_wrapper = apiwrp.FetchWrapper(
+            resp_builder=resp.PurpAPIRespBuilder(),
+            resp_parser=fp.JSONParser(log_filename=self.log_filename),
+            log_filename=self.log_filename
+        )
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
 
         ################################ DATABASE-SIDE OBJECTS ################################
         # Database Connection
-        database_conn = setup.open_database_connection(connection_string=os.environ['DBCONN'],
-                                                             log_filename=self.log_filename)
-        # Load SQL query file
-        query_file_obj = setup.load_file(file_path=comm_const.QUERY_FILE_PATH, log_filename=self.log_filename)
+        database_conn = setup.open_database_connection(connection_string=os.environ['DBCONN'], log_filename=self.log_filename)
 
-        # QueryBuilder
+        # Load query file
+        query_file_obj = setup.load_file(file_path=comm_const.QUERY_FILE_PATH, log_filename=self.log_filename)
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
-        # InsertWrapper
+        # Station Info Insert Wrapper
         insert_wrapper = ins.StationInfoInsertWrapper(conn=database_conn, builder=query_builder, log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
@@ -89,12 +89,12 @@ class PurpleairInitSetup(setup.CommandSetup):
 
         ################################ COMMAND OBJECT ################################
         cmd = command.InitCommand(
-            fw=fetch_wrapper,
-            iw=insert_wrapper,
-            urb=unif.PurpleairUniformResponseBuilder(),
-            rb=rec.InitRecordBuilder(),
-            log_filename=self.log_filename,
-            sw=select_wrapper
+            ara=padpt.PurpAPIRespAdpt(),            # for adapt for reshaping api responses
+            ub=url_builder,                         # for building api url for fetching sensor data from api
+            fw=fetch_wrapper,                       # for fetching api sensor data
+            iw=insert_wrapper,                      # for inserting sensor data fetched from api
+            sw=select_wrapper,                      # for selecting sensor data from the database
+            log_filename=self.log_filename          # name of the logging file used by the log decorator
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)

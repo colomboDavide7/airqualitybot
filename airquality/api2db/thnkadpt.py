@@ -30,8 +30,8 @@ class ThnkAPIRespAdapt(adpt.APIRespAdapt):
             )
         return adapted_resp
 
-    def _get_measures(self, r: resp.RESP_TYPE) -> List[adptype.Measure]:
+    def _get_measures(self, r: resp.RESP_TYPE) -> List[adptype.ParamIDName]:
         measure_dict = {}
         for m in self.measure_id_name:
             measure_dict[m.name] = m.id
-        return [adptype.Measure(id_=measure_dict[m.name], value=m.value) for m in r.measures]
+        return [adptype.ParamIDName(id_=measure_dict[m.name], value=m.value) for m in r.measures]
