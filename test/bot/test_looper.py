@@ -19,7 +19,7 @@ class TestLooper(unittest.TestCase):
 
     def setUp(self) -> None:
         self.atmotube_url_param = {'p1': 'v1', 'api_key': 'some_key', 'mac': 'some_mac'}
-        self.atmotube_builder = url.AtmotubeURL(address='some_address', url_param=self.atmotube_url_param)
+        self.atmotube_builder = url.AtmotubeURLBuilder(address='some_address', url_param=self.atmotube_url_param)
         self.atmotube_extractor = ext.AtmotubeSensorDataExtractor()
         self.json_parser = parse.JSONParser()
         self.atmotube_fetch = fetch.FetchWrapper(

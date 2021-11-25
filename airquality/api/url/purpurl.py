@@ -5,26 +5,20 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import Dict, Any
+from typing import List
 import airquality.api.url.baseurl as base
 
 
-class PurpleairURL(base.BaseURL):
+class PurpleairURLBuilder(base.BaseURLBuilder):
 
-    def __init__(self, address: str, parameters: Dict[str, Any], log_filename="log"):
-        super(PurpleairURL, self).__init__(address=address, parameters=parameters, log_filename=log_filename)
+    def __init__(self, address: str, key: str, fields: List[str]):
+        super(PurpleairURLBuilder, self).__init__(address=address)
+        fields_string = ','.join(f"{f}" for f in fields)
+        self.url += f"?api_key={key}&fields={fields_string}"
 
-    def url(self) -> str:
-        self._exit_on_bad_url_parameters()
-        return f"{self.address}?{self._get_fields_string()}&{self._get_querystring()}"
+    def build(self) -> str:
+        return self.url
 
-    def _get_fields_string(self) -> str:
-        return "fields=" + ','.join(f"{f}" for f in self.parameters.pop('fields'))
-
-    def _exit_on_bad_url_parameters(self):
-        if 'api_key' not in self.parameters:
-            raise SystemExit(f"{PurpleairURL.__name__}: bad url param => missing key='api_key'")
-        elif 'fields' not in self.parameters:
-            raise SystemExit(f"{PurpleairURL.__name__}: bad url param => missing key='fields'")
-        elif not self.parameters['fields']:
-            raise SystemExit(f"{PurpleairURL.__name__}: bad url param => empty fields.")
+    def with_bounding_box(self, nwlat: float, nwlng: float, selat: float, selng: float):
+        self.url += f"&nwlat={nwlat}&nwlng={nwlng}&selat={selat}&selng={selng}"
+        return self

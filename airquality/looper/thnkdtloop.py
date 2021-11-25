@@ -10,26 +10,23 @@ import airquality.looper.datelooper as dtloop
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.dtype.timestamp as ts
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.resp.baseresp as baseresp
+import airquality.api.resp.baseresp as resp
 
 
 class ThingspeakDateLooper(dtloop.DateLooper):
 
-    def __init__(self, fetch_wrapper: apiwrp.FetchWrapper, start_ts: ts.SQLTimestamp, stop_ts: ts.SQLTimestamp, log_filename="app"):
-        super(ThingspeakDateLooper, self).__init__(fetch_wrapper=fetch_wrapper, log_filename=log_filename)
-        self.start = start_ts
-        self.stop = stop_ts
-        self.ended = False
+    def __init__(self, fw: apiwrp.FetchWrapper, strt: ts.SQLTimestamp, stp: ts.SQLTimestamp, log_filename="log"):
+        super(ThingspeakDateLooper, self).__init__(fw=fw, strt=strt, stp=stp, log_filename=log_filename)
 
     def has_next(self):
         return not self.ended
 
     @log_decorator.log_decorator()
-    def get_next_sensor_data(self) -> List[baseresp.BaseResponse]:
+    def get_next_api_responses(self) -> List[resp.BaseResponse]:
         next_time_window = self._get_next_date_url_param()
         self.log_info(f"{ThingspeakDateLooper.__name__}: looking for new measurements within date range "
                       f"[{next_time_window['start']} - {next_time_window['end']}]")
-        self.fetch_wrapper.add_database_api_param(next_time_window)
+        self.fetch_wrapper.update_url_param(next_time_window)
         return self.fetch_wrapper.fetch()
 
     def _get_next_date_url_param(self) -> Dict[str, Any]:

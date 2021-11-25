@@ -19,13 +19,13 @@ class InitUniformResponse(baseunif.BaseUniformResponse):
 
     def __init__(
             self,
-            name: str,
-            type_: str,
+            sensor_name: str,
+            sensor_type: str,
             channel_param: List[sel.ChannelParam],
             geolocation: baseunif.ParamLocationTimestamp
     ):
-        self.name = name
-        self.type = type_
+        self.sensor_name = sensor_name
+        self.sensor_type = sensor_type
         self.channel_param = channel_param
         self.geolocation = geolocation
 

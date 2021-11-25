@@ -54,7 +54,7 @@ def open_database_connection(connection_string: str, log_filename="log"):
 
 ################################ get_fetch_wrapper ################################
 def get_fetch_wrapper(
-        url_builder: baseurl.BaseURL,
+        url_builder: baseurl.BaseURLBuilder,
         response_parser: fp.TextParser,
         response_builder: baseresp.BaseResponseBuilder,
         log_filename="log"

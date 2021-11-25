@@ -22,7 +22,7 @@ class AtmotubeUniformResponseBuilder(baseadapt.FetchUniformResponseBuilder):
         uniformed_responses = []
         for response in responses:
             timestamp = self.timestamp_class(timest=response.time)
-            parameters = [baseadapt.ParamIDValue(id_=self.measure_param_map[p.name], value=p.value) for p in response.parameters]
+            parameters = [baseadapt.ParamIDValue(id_=self.measure_param_map[p.sensor_name], value=p.value) for p in response.parameters]
             geolocation = geo.NullGeometry()
             if response.lat is not None and response.lon is not None:
                 geolocation = self.postgis_class(lat=response.lat, lng=response.lon)

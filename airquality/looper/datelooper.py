@@ -9,26 +9,25 @@ import abc
 from typing import List, Dict, Any
 import airquality.logger.loggable as log
 import airquality.api.fetchwrp as apiwrp
+import airquality.database.dtype.timestamp as ts
+import airquality.api.resp.baseresp as resp
 
 
 class DateLooper(log.Loggable):
 
-    def __init__(self, fetch_wrapper: apiwrp.FetchWrapper, log_filename="app"):
+    def __init__(self, fw: apiwrp.FetchWrapper, strt: ts.SQLTimestamp, stp: ts.SQLTimestamp, log_filename="log"):
         super(DateLooper, self).__init__(log_filename=log_filename)
-        self.fetch_wrapper = fetch_wrapper
-
-    def update_url_param(self, param2update: Dict[str, Any]):
-        self.fetch_wrapper.add_database_api_param(param2update)
-
-    def set_channel_name(self, channel_name: str):
-        self.fetch_wrapper.set_channel_name(channel_name)
+        self.fetch_wrapper = fw
+        self.start = strt
+        self.stop = stp
+        self.ended = False
 
     @abc.abstractmethod
     def has_next(self) -> bool:
         pass
 
     @abc.abstractmethod
-    def get_next_sensor_data(self) -> List[Dict[str, Any]]:
+    def get_next_api_responses(self) -> List[resp.BaseResponse]:
         pass
 
     @abc.abstractmethod

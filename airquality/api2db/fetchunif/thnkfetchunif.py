@@ -20,6 +20,6 @@ class ThingspeakUniformResponseBuilder(baseadapt.FetchUniformResponseBuilder):
         uniformed_responses = []
         for response in responses:
             timestamp = self.timestamp_class(timest=response.created_at)
-            parameters = [baseadapt.ParamIDValue(id_=self.measure_param_map[p.name], value=p.value) for p in response.parameters]
+            parameters = [baseadapt.ParamIDValue(id_=self.measure_param_map[p.sensor_name], value=p.value) for p in response.parameters]
             uniformed_responses.append(baseadapt.FetchUniformResponse(timestamp=timestamp, parameters=parameters))
         return uniformed_responses

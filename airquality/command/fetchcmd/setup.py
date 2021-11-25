@@ -55,7 +55,7 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         # Setup API-side objects
         response_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
         response_builder = atmresp.AtmotubeResponseBuilder()
-        url_builder = atmurl.AtmotubeURL(address=address, parameters=url_param)
+        url_builder = atmurl.AtmotubeURLBuilder(address=address, parameters=url_param)
 
         # FetchWrapper
         fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
@@ -125,7 +125,7 @@ class ThingspeakFetchSetup(setup.CommandSetup):
         # Setup API-side objects
         api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
         api_data_extractor = extr.ThingspeakResponseBuilder(log_filename=self.log_filename)
-        url_builder = url.ThingspeakURL(address=address, url_param=url_param, log_filename=self.log_filename)
+        url_builder = url.ThingspeakURLBuilder(address=address, url_param=url_param, log_filename=self.log_filename)
 
         # FetchWrapper
         fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,

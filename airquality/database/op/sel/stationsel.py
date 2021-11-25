@@ -7,18 +7,16 @@
 ######################################################
 from typing import List
 import airquality.database.op.sel.sel as sel
-import airquality.database.util.conn as connection
-import airquality.database.util.query as query
-import airquality.database.ext.postgis as postgis
+import airquality.database.util.conn as db
+import airquality.database.util.query as qry
+import airquality.database.ext.postgis as pgis
 
 
 ################################ STATION DATABASE RESPONSE ################################
 class StationDBResponse(sel.BaseDBResponse):
 
     def __init__(
-            self, sensor_id: int, sensor_name: str,
-            api_param: List[sel.ChannelParam],
-            geometry: postgis.PostgisGeometry,
+            self, sensor_id: int, sensor_name: str, api_param: List[sel.ChannelParam], geometry: pgis.PostgisGeometry,
             measure_param: List[sel.ParamNameID]
     ):
         self.sensor_id = sensor_id
@@ -32,12 +30,12 @@ class StationDBResponse(sel.BaseDBResponse):
 class StationSelectWrapper(sel.SelectWrapper):
 
     def __init__(
-            self, conn: connection.DatabaseAdapter,
-            query_builder: query.QueryBuilder,
-            sensor_type: str, log_filename="log",
-            postgis_class=postgis.PostgisPoint
+            self, conn: db.DatabaseAdapter, query_builder: qry.QueryBuilder, sensor_type: str, log_filename="log",
+            postgis_class=pgis.PostgisPoint
     ):
-        super(StationSelectWrapper, self).__init__(conn=conn, query_builder=query_builder, sensor_type=sensor_type, log_filename=log_filename)
+        super(StationSelectWrapper, self).__init__(
+            conn=conn, query_builder=query_builder, sensor_type=sensor_type, log_filename=log_filename
+        )
         self.postgis_class = postgis_class
 
     # ************************************ select ************************************

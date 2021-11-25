@@ -7,7 +7,7 @@
 ######################################################
 from typing import List, Dict, Any
 import airquality.api.url.baseurl as url
-import airquality.api.resp.baseresp as mdl
+import airquality.api.resp.baseresp as resp
 import airquality.file.util.parser as parse
 import airquality.api.request as fetch
 import airquality.logger.loggable as log
@@ -17,26 +17,18 @@ import airquality.logger.util.decorator as log_decorator
 class FetchWrapper(log.Loggable):
 
     def __init__(
-            self,
-            url_builder: url.BaseURL,
-            response_builder: mdl.BaseResponseBuilder,
-            parser: parse.TextParser,
-            log_filename="log"
+            self, url_builder: url.BaseURLBuilder, response_builder: resp.BaseResponseBuilder, parser: parse.TextParser, log_filename="log"
     ):
         super(FetchWrapper, self).__init__(log_filename=log_filename)
         self.url_builder = url_builder
         self.response_builder = response_builder
         self.response_parser = parser
-        self.channel_name = ""
 
-    def add_database_api_param(self, db_api_param: Dict[str, Any]):
+    def update_url_param(self, db_api_param: Dict[str, Any]):
         self.url_builder.parameters.update(db_api_param)
 
-    def set_channel_name(self, name: str):
-        self.channel_name = name
-
     @log_decorator.log_decorator
-    def fetch(self) -> List[mdl.BaseResponse]:
+    def fetch(self) -> List[resp.BaseResponse]:
         uniform_resource_locator = self.url_builder.url()
         response_text = fetch.fetch_from_url(uniform_resource_locator)
         parsed_response = self.response_parser.parse(response_text)

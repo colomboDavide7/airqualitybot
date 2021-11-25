@@ -22,11 +22,11 @@ class ParamNameID:
 
 class ChannelParam:
 
-    def __init__(self, id_: str, key: str, name: str, timestamp: ts.SQLTimestamp):
-        self.id = id_
-        self.key = key
-        self.name = name
-        self.last_acquisition = timestamp
+    def __init__(self, ch_id: str, ch_key: str, ch_name: str, last_acquisition: ts.SQLTimestamp):
+        self.ch_id = ch_id
+        self.ch_key = ch_key
+        self.ch_name = ch_name
+        self.last_acquisition = last_acquisition
 
 
 class BaseDBResponse(abc.ABC):
@@ -56,7 +56,7 @@ class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
 
         api_param = []
         for ch_key, ch_id, ch_name, last_acquisition in api_param_resp:
-            api_param.append(ChannelParam(id_=ch_id, key=ch_key, name=ch_name, timestamp=last_acquisition))
+            api_param.append(ChannelParam(ch_id=ch_id, ch_key=ch_key, ch_name=ch_name, last_acquisition=last_acquisition))
         return api_param
 
     def _select_measure_param(self) -> List[ParamNameID]:

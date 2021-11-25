@@ -5,22 +5,18 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import Dict, Any
 import airquality.api.url.baseurl as base
 
 
-################################ ATMOTUBE URL BUILDER ################################
-class AtmotubeURL(base.BaseURL):
+class AtmotubeURLBuilder(base.BaseURLBuilder):
 
-    def __init__(self, address: str, parameters: Dict[str, Any]):
-        super(AtmotubeURL, self).__init__(address=address, parameters=parameters)
+    def __init__(self, address: str, key: str, mac: str):
+        super(AtmotubeURLBuilder, self).__init__(address=address)
+        self.url += f"?api_key={key}&mac={mac}"
 
-    def url(self) -> str:
-        self._exit_on_bad_url_parameters()
-        return f"{self.address}?{self._get_querystring()}"
+    def build(self) -> str:
+        return self.url
 
-    def _exit_on_bad_url_parameters(self):
-        if 'api_key' not in self.parameters:
-            raise SystemExit(f"{AtmotubeURL.__name__}: bad url param => missing key='api_key'")
-        elif 'mac' not in self.parameters:
-            raise SystemExit(f"{AtmotubeURL.__name__}: bad url param => missing key='mac'")
+    def with_date(self, date: str):
+        self.url += f"&date={date}"
+        return self
