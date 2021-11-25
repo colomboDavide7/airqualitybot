@@ -45,6 +45,14 @@ class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
         max_id = response[0][0]
         return 1 if max_id is None else (max_id+1)
 
+    def select_measure_param(self) -> List[ParamNameID]:
+        meas_param_query = self.builder.select_measure_param_from_sensor_type(sensor_type=self.sensor_type)
+        measure_param_resp = self.conn.send(meas_param_query)
+        measure_param = []
+        for param_code, param_id in measure_param_resp:
+            measure_param.append(ParamNameID(id_=param_id, name=param_code))
+        return measure_param
+
     @abc.abstractmethod
     def select(self) -> List[BaseDBResponse]:
         pass
@@ -58,11 +66,3 @@ class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
         for ch_key, ch_id, ch_name, last_acquisition in api_param_resp:
             api_param.append(ChannelParam(ch_id=ch_id, ch_key=ch_key, ch_name=ch_name, last_acquisition=last_acquisition))
         return api_param
-
-    def _select_measure_param(self) -> List[ParamNameID]:
-        meas_param_query = self.builder.select_measure_param_from_sensor_type(sensor_type=self.sensor_type)
-        measure_param_resp = self.conn.send(meas_param_query)
-        measure_param = []
-        for param_code, param_id in measure_param_resp:
-            measure_param.append(ParamNameID(id_=param_id, name=param_code))
-        return measure_param

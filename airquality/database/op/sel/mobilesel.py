@@ -13,10 +13,9 @@ import airquality.database.util.query as query
 
 class MobileDBResponse(sel.BaseDBResponse):
 
-    def __init__(self, sensor_id: int, api_param: List[sel.ChannelParam], measure_param: List[sel.ParamNameID]):
+    def __init__(self, sensor_id: int, api_param: List[sel.ChannelParam]):
         self.sensor_id = sensor_id
         self.api_param = api_param
-        self.measure_param = measure_param
 
 
 class MobileSelectWrapper(sel.SelectWrapper):
@@ -31,8 +30,5 @@ class MobileSelectWrapper(sel.SelectWrapper):
         sensor_ids = self.conn.send(sensor_query)
         for sensor_id in sensor_ids:
             api_param = self._select_api_param(sensor_id=sensor_id)
-            measure_param = self._select_measure_param()
-            responses.append(
-                MobileDBResponse(sensor_id=sensor_id, api_param=api_param, measure_param=measure_param)
-            )
+            responses.append(MobileDBResponse(sensor_id=sensor_id, api_param=api_param))
         return responses

@@ -15,15 +15,11 @@ import airquality.database.ext.postgis as pgis
 ################################ STATION DATABASE RESPONSE ################################
 class StationDBResponse(sel.BaseDBResponse):
 
-    def __init__(
-            self, sensor_id: int, sensor_name: str, api_param: List[sel.ChannelParam], geometry: pgis.PostgisGeometry,
-            measure_param: List[sel.ParamNameID]
-    ):
+    def __init__(self, sensor_id: int, sensor_name: str, api_param: List[sel.ChannelParam], geometry: pgis.PostgisGeometry):
         self.sensor_id = sensor_id
         self.sensor_name = sensor_name
         self.api_param = api_param
         self.geometry = geometry
-        self.measure_param = measure_param
 
 
 ################################ STATION SELECT WRAPPER ################################
@@ -54,12 +50,7 @@ class StationSelectWrapper(sel.SelectWrapper):
             location_resp = self.conn.send(location_query)
             geometry = self.postgis_class(lat=location_resp[0][1], lng=location_resp[0][0])
 
-            # Query the measure param
-            measure_param = self._select_measure_param()
-
             # Make the response
-            responses.append(StationDBResponse(
-                sensor_id=sensor_id, sensor_name=sensor_name, api_param=api_param, geometry=geometry, measure_param=measure_param)
-            )
+            responses.append(StationDBResponse(sensor_id=sensor_id, sensor_name=sensor_name, api_param=api_param, geometry=geometry))
 
         return responses

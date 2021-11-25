@@ -19,7 +19,7 @@ class ThnkCH1AResp(resp.APIResp):
     def __init__(self, data: Dict[str, Any]):
         try:
             self.created_at = data['created_at']
-            self.parameters = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH1AResp.FIELDS]
+            self.measures = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH1AResp.FIELDS]
         except KeyError as ke:
             raise SystemExit(f"{ThnkCH1AResp.__name__}: bad API response => missing key='{ke!s}'")
 
@@ -32,8 +32,8 @@ class ThnkCH1BResp(resp.APIResp):
     def __init__(self, data: Dict[str, Any]):
         try:
             self.created_at = data['created_at']
-            self.parameters = [resp.ParamNameValue(name=n, value=data.get(n)) for n in
-                               ThnkCH1BResp.FIELDS]
+            self.measures = [resp.ParamNameValue(name=n, value=data.get(n)) for n in
+                             ThnkCH1BResp.FIELDS]
         except KeyError as ke:
             raise SystemExit(f"{ThnkCH1BResp.__name__}: bad API response => missing key='{ke!s}'")
 
@@ -48,7 +48,7 @@ class ThnkCH2AResp(resp.APIResp):
     def __init__(self, data: Dict[str, Any]):
         try:
             self.created_at = data['created_at']
-            self.parameters = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH2AResp.FIELDS]
+            self.measures = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH2AResp.FIELDS]
         except KeyError as ke:
             raise SystemExit(f"{ThnkCH2AResp.__name__}: bad API response => missing key='{ke!s}'")
 
@@ -63,7 +63,7 @@ class ThnkCH2BResp(resp.APIResp):
     def __init__(self, data: Dict[str, Any]):
         try:
             self.created_at = data['created_at']
-            self.parameters = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH2BResp.FIELDS]
+            self.measures = [resp.ParamNameValue(name=n, value=data.get(n)) for n in ThnkCH2BResp.FIELDS]
         except KeyError as ke:
             raise SystemExit(f"{ThnkCH2BResp.__name__}: bad API response => missing key='{ke!s}'")
 

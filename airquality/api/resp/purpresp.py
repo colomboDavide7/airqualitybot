@@ -17,6 +17,8 @@ class PurpAPIResp(resp.APIResp):
                      {'name': 'Secondary data - Channel A', 'key': 'secondary_key_a', 'id': 'secondary_id_a'},
                      {'name': 'Secondary data - Channel B', 'key': 'secondary_key_b', 'id': 'secondary_id_b'}]
 
+    TYPE = "Purpleair/Thingspeak"
+
     def __init__(self, data: Dict[str, Any]):
         try:
             self.name = data['name']
