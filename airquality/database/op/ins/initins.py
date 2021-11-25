@@ -8,7 +8,7 @@
 from typing import List
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.op.ins.ins as base
-import airquality.database.rec.initrec as initrec
+import airquality.database.rec.stinforec as rec
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
 
@@ -19,21 +19,16 @@ class InitInsertWrapper(base.InsertWrapper):
         super(InitInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
 
     @log_decorator.log_decorator()
-    def insert(self, records: List[initrec.InitRecord]) -> None:
+    def insert(self, records: List[rec.StationInfoRecord]) -> None:
 
-        sensor_values = ""
-        api_param_values = ""
-        sensor_at_loc_values = ""
-
-        for record in records:
-            sensor_values += record.sensor_value
-            api_param_values += record.api_param_value
-            sensor_at_loc_values += record.sensor_at_loc_value
+        sensor_values = ','.join(f"{r.get_sensor_value()}" for r in records)
+        api_param_values = ','.join(f"{r.get_channel_param_value()}" for r in records)
+        geolocation_values = ','.join(f"{r.get_geolocation_value()}" for r in records)
 
         exec_query = self.builder.initialize_sensors(
             sensor_values=sensor_values,
             api_param_values=api_param_values,
-            sensor_at_loc_values=sensor_at_loc_values
+            geolocation_values=geolocation_values
         )
         self.conn.send(exec_query)
         self.log_info(f"{InitInsertWrapper.__name__}: successfully inserted all the records")

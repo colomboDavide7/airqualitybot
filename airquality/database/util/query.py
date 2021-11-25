@@ -72,14 +72,14 @@ class QueryBuilder:
     ################################ UPDATE SENSOR AT LOCATION ################################
     def update_locations(self, sensor_at_loc_values: str, update_info: List[baserec.ParamIDTimestamp]) -> str:
         query = self.__update_valid_to_timestamp(update_info)
-        query += self.__insert_location_values(sensor_at_loc_values)
+        query += self.__insert_geolocation_values(sensor_at_loc_values)
         return query
 
     ################################ INITIALIZE SENSORS ################################
-    def initialize_sensors(self, sensor_values: str, api_param_values: str, sensor_at_loc_values: str):
+    def initialize_sensors(self, sensor_values: str, api_param_values: str, geolocation_values: str):
         query = self.__insert_into_sensor(sensor_values)
         query += self.__insert_into_api_param(api_param_values)
-        query += self.__insert_location_values(sensor_at_loc_values)
+        query += self.__insert_geolocation_values(geolocation_values)
         return query
 
     ################################ PRIVATE METHODS ################################
@@ -94,19 +94,13 @@ class QueryBuilder:
         return query.strip(',') + ';'
 
     def __insert_into_sensor(self, values: str) -> str:
-        query = self.query_file.i3
-        query += values
-        return query.strip(',') + ';'
+        return f"{self.query_file.i3} {values};"
 
     def __insert_into_api_param(self, values: str) -> str:
-        query = self.query_file.i4
-        query += values
-        return query.strip(',') + ';'
+        return f"{self.query_file.i4} {values};"
 
-    def __insert_location_values(self, values: str) -> str:
-        query = self.query_file.i5
-        query += values
-        return query.strip(',') + ';'
+    def __insert_geolocation_values(self, values: str) -> str:
+        return f"{self.query_file.i5} {values};"
 
     def __update_valid_to_timestamp(self, update_info: List[baserec.ParamIDTimestamp]):
         query = ""
