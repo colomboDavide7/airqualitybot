@@ -8,7 +8,7 @@
 #################################################
 from typing import List
 import airquality.file.structured.json as struct
-import airquality.database.rec.baserec as baserec
+import airquality.database.rec.stinforec as stinforec
 
 
 class QueryBuilder:
@@ -70,9 +70,9 @@ class QueryBuilder:
         return query
 
     ################################ UPDATE SENSOR AT LOCATION ################################
-    def update_locations(self, sensor_at_loc_values: str, update_info: List[baserec.ParamIDTimestamp]) -> str:
-        query = self.__update_valid_to_timestamp(update_info)
-        query += self.__insert_geolocation_values(sensor_at_loc_values)
+    def update_locations(self, geolocation_values: str, records: List[stinforec.StationInfoRecord]) -> str:
+        query = self.__update_valid_to_timestamp(records)
+        query += self.__insert_geolocation_values(geolocation_values)
         return query
 
     ################################ INITIALIZE SENSORS ################################
@@ -102,11 +102,11 @@ class QueryBuilder:
     def __insert_geolocation_values(self, values: str) -> str:
         return f"{self.query_file.i5} {values};"
 
-    def __update_valid_to_timestamp(self, update_info: List[baserec.ParamIDTimestamp]):
-        query = ""
-        for info in update_info:
-            query += self.query_file.u1.format(ts=info.timestamp.get_formatted_timestamp(), sens_id=info.id)
-        return query
+    def __update_valid_to_timestamp(self, records: List[stinforec.StationInfoRecord]):
+        return ' '.join(
+            f"{self.query_file.u1.format(ts=r.station_info.geolocation.timestamp.get_formatted_timestamp(), sens_id=r.sensor_id)}"
+            for r in records
+        )
 
     def __update_last_acquisition(self, sensor_id: int, channel_name: str, last_timestamp):
         return self.query_file.u2.format(ts=last_timestamp, sensor_id=sensor_id, channel=channel_name)

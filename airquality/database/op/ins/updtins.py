@@ -6,8 +6,9 @@
 #
 ######################################################
 from typing import List
+import airquality.logger.util.decorator as log_decorator
 import airquality.database.op.ins.ins as base
-import airquality.database.rec.updtrec as updtrec
+import airquality.database.rec.stinforec as rec
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
 
@@ -17,18 +18,11 @@ class UpdateInsertWrapper(base.InsertWrapper):
     def __init__(self, conn: connection.DatabaseAdapter, query_builder: query.QueryBuilder, log_filename="log"):
         super(UpdateInsertWrapper, self).__init__(conn=conn, query_builder=query_builder, log_filename=log_filename)
 
-    def insert(self, records: List[updtrec.UpdateRecord]) -> None:
+    @log_decorator.log_decorator()
+    def insert(self, records: List[rec.StationInfoRecord]) -> None:
 
-        update_info = []
-        sensor_at_loc_values = ""
+        geolocation_values = ','.join(f"{r.get_geolocation_value()}" for r in records)
 
-        for record in records:
-            update_info.append(record.update_info)
-            sensor_at_loc_values += record.sensor_at_loc_values
-
-        exec_query = self.builder.update_locations(
-            sensor_at_loc_values=sensor_at_loc_values,
-            update_info=update_info
-        )
+        exec_query = self.builder.update_locations(geolocation_values=geolocation_values, records=records)
         self.conn.send(exec_query)
         self.log_info(f"{UpdateInsertWrapper.__name__}: successfully insert all the records and updated all the locations")
