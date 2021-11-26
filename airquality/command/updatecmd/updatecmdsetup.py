@@ -17,9 +17,7 @@ import airquality.file.util.loader as fl
 
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as url
-import airquality.api.resp.base as apirespbuild
-
-import airquality.api2db.purpadpt as padpt
+import airquality.api.resp.info as inforesp
 
 import airquality.database.op.ins.geo as ins
 import airquality.database.op.sel.stationsel as sel
@@ -55,7 +53,7 @@ class PurpleairUpdateSetup(setup.CommandSetup):
 
         # FetchWrapper
         fetch_wrapper = apiwrp.FetchWrapper(
-            resp_builder=apirespbuild.PurpAPIRespBuilder(),
+            resp_builder=inforesp.PurpleairSensorInfoBuilder(),
             resp_parser=fp.JSONParser(log_filename=self.log_filename),
             log_filename=self.log_filename
         )
@@ -85,7 +83,6 @@ class PurpleairUpdateSetup(setup.CommandSetup):
 
         ################################ COMMAND OBJECT ################################
         cmd = command.UpdateCommand(
-            ara=padpt.PurpAPIRespAdpt(),
             ub=url_builder,
             fw=fetch_wrapper,
             iw=insert_wrapper,

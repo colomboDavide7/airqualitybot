@@ -12,7 +12,6 @@ import airquality.filter.namefilt as nameflt
 import airquality.database.op.ins.info as ins
 import airquality.database.op.sel.stationsel as sel
 import airquality.api.url.purpurl as purl
-import airquality.api2db.purpadpt as padpt
 import airquality.database.rec.info as rec
 
 
@@ -22,14 +21,12 @@ class InitCommand(basecmd.Command):
             self,
             ub: purl.PurpleairURLBuilder,
             fw: apiwrp.FetchWrapper,
-            ara: padpt.PurpAPIRespAdpt,
             iw: ins.StationInfoInsertWrapper,
             sw: sel.StationSelectWrapper,
             log_filename="log",
             rb_cls=rec.SensorInfoRecord
     ):
         super(InitCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
-        self.api_resp_adapter = ara
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.record_builder_cls = rb_cls
@@ -46,9 +43,6 @@ class InitCommand(basecmd.Command):
             self.log_warning(f"{InitCommand.__name__}: empty API sensor data => no sensor inserted")
             return
 
-        # Adapt API responses
-        adapted_responses = self.api_resp_adapter.adapt(api_responses)
-
         # Select sensor data from the database
         db_responses = self.select_wrapper.select()
 
@@ -63,22 +57,21 @@ class InitCommand(basecmd.Command):
             api_resp_filter.set_file_logger(self.file_logger)
             api_resp_filter.set_console_logger(self.console_logger)
 
-            filtered_responses = api_resp_filter.filter(resp2filter=adapted_responses)
+            filtered_responses = api_resp_filter.filter(resp2filter=api_responses)
             if not filtered_responses:
                 self.log_warning(f"{InitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
                 return
 
-            adapted_responses = filtered_responses
+            # update the api responses with the filtered ones
+            api_responses = filtered_responses
 
         ################################ DATABASE-SIDE ###############################
         max_sensor_id = self.select_wrapper.select_max_sensor_id()
         self.log_info(f"{InitCommand.__name__}: new insertion starts at sensor_id={max_sensor_id}")
 
         records = []
-        for response in adapted_responses:
-            records.append(
-                self.record_builder_cls(sensor_id=max_sensor_id, api_adpt_resp=response)
-            )
+        for response in api_responses:
+            records.append(self.record_builder_cls(sensor_id=max_sensor_id, info_resp=response))
             max_sensor_id += 1
 
         # Concatenate all the queries and then execute once all of them

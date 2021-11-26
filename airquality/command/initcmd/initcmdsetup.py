@@ -15,10 +15,9 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.file.util.parser as fp
 import airquality.file.util.loader as fl
 
-import airquality.api.resp.base as apirespbuild
+import airquality.api.resp.info as inforesp
 import airquality.api.url.purpurl as url
 import airquality.api.fetchwrp as apiwrp
-import airquality.api2db.purpadpt as padpt
 
 import airquality.database.op.ins.info as ins
 import airquality.database.op.sel.stationsel as sel
@@ -56,7 +55,7 @@ class PurpleairInitSetup(setup.CommandSetup):
 
         # FetchWrapper
         fetch_wrapper = apiwrp.FetchWrapper(
-            resp_builder=apirespbuild.PurpAPIRespBuilder(),
+            resp_builder=inforesp.PurpleairSensorInfoBuilder(),
             resp_parser=fp.JSONParser(log_filename=self.log_filename),
             log_filename=self.log_filename
         )
@@ -89,7 +88,6 @@ class PurpleairInitSetup(setup.CommandSetup):
 
         ################################ COMMAND OBJECT ################################
         cmd = command.InitCommand(
-            ara=padpt.PurpAPIRespAdpt(),            # for adapt for reshaping api responses
             ub=url_builder,                         # for building api url for fetching sensor data from api
             fw=fetch_wrapper,                       # for fetching api sensor data
             iw=insert_wrapper,                      # for inserting sensor data fetched from api
