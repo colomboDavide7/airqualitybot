@@ -17,7 +17,7 @@ import airquality.file.util.loader as fl
 
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as url
-import airquality.api.resp.purpresp as resp
+import airquality.api.resp.builder as apirespbuild
 
 import airquality.api2db.purpadpt as padpt
 
@@ -55,7 +55,7 @@ class PurpleairUpdateSetup(setup.CommandSetup):
 
         # FetchWrapper
         fetch_wrapper = apiwrp.FetchWrapper(
-            resp_builder=resp.PurpAPIRespBuilder(),
+            resp_builder=apirespbuild.PurpAPIRespBuilder(),
             resp_parser=fp.JSONParser(log_filename=self.log_filename),
             log_filename=self.log_filename
         )
