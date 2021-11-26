@@ -7,10 +7,6 @@
 ######################################################
 import abc
 import airquality.file.structured.json as jf
-import airquality.api.fetchwrp as fetch
-import airquality.file.util.parser as fp
-import airquality.api.resp.resp as baseresp
-import airquality.api.url.baseurl as baseurl
 import airquality.database.util.conn as db_conn
 import airquality.logger.loggable as log
 
@@ -41,4 +37,3 @@ def open_database_connection(connection_string: str, log_filename="log"):
     conn = db_conn.get_database_adapter(connection_string=connection_string, log_filename=log_filename)
     conn.open_conn()
     return conn
-

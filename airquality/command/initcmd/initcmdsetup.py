@@ -20,8 +20,8 @@ import airquality.api.url.purpurl as url
 import airquality.api.fetchwrp as apiwrp
 
 import airquality.database.op.ins.info as ins
-import airquality.database.op.sel.stationsel as sel
-import types.postgis as postgis
+import airquality.database.op.sel.info as sel
+import airquality.types.postgis as postgis
 import airquality.database.util.query as qry
 
 
@@ -76,10 +76,10 @@ class PurpleairInitSetup(setup.CommandSetup):
         insert_wrapper.set_console_logger(self.console_logger)
 
         # SelectWrapper
-        select_wrapper = sel.StationSelectWrapper(
+        select_wrapper = sel.SensorInfoSelectWrapper(
             conn=database_conn,
             builder=query_builder,
-            postgis_class=postgis.PostgisPoint,
+            pgis_cls=postgis.PostgisPoint,
             sensor_type=sensor_type,
             log_filename=self.log_filename
         )

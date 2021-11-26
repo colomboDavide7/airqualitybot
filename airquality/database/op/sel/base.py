@@ -20,10 +20,6 @@ class ParamNameID:
         self.name = name
 
 
-class BaseDBResponse(abc.ABC):
-    pass
-
-
 class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
 
     def __init__(self, conn: connection.DatabaseAdapter, builder: query.QueryBuilder, sensor_type: str, log_filename="log"):
@@ -45,7 +41,7 @@ class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
         return measure_param
 
     @abc.abstractmethod
-    def select(self) -> List[BaseDBResponse]:
+    def select(self):
         pass
 
     ################################ protected methods ################################

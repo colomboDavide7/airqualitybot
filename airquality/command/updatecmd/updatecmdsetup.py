@@ -20,7 +20,7 @@ import airquality.api.url.purpurl as url
 import airquality.api.resp.info as inforesp
 
 import airquality.database.op.ins.geo as ins
-import airquality.database.op.sel.stationsel as sel
+import airquality.database.op.sel.info as sel
 import airquality.database.util.query as qry
 
 
@@ -74,7 +74,7 @@ class PurpleairUpdateSetup(setup.CommandSetup):
         insert_wrapper.set_console_logger(self.console_logger)
 
         # SelectWrapper
-        select_wrapper = sel.StationSelectWrapper(
+        select_wrapper = sel.SensorInfoSelectWrapper(
             conn=database_conn,
             builder=query_builder,
             sensor_type=sensor_type,

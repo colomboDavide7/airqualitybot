@@ -1,44 +1,43 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 24/11/21 14:37
+# Date: 26/11/21 12:59
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
 from typing import List
-import airquality.database.op.sel.base as sel
+import airquality.database.op.sel.base as base
 import airquality.database.util.conn as db
 import airquality.database.util.query as qry
 import airquality.types.postgis as pgis
+import airquality.types.channel as chtype
 
 
-################################ STATION DATABASE RESPONSE ################################
-class StationDBResponse(sel.BaseDBResponse):
+class InfoDatabaseResponse:
 
-    def __init__(self, sensor_id: int, sensor_name: str, api_param: List[sel.ChannelParam], geometry: pgis.PostgisGeometry):
+    def __init__(self, sensor_id: int, sensor_name: str, api_param: List[chtype.Channel], geometry: pgis.PostgisGeometry):
         self.sensor_id = sensor_id
         self.sensor_name = sensor_name
         self.api_param = api_param
         self.geometry = geometry
 
 
-################################ STATION SELECT WRAPPER ################################
-class StationSelectWrapper(sel.SelectWrapper):
+class SensorInfoSelectWrapper(base.SelectWrapper):
 
     def __init__(
-            self, conn: db.DatabaseAdapter, builder: qry.QueryBuilder, sensor_type: str, log_filename="log",
-            postgis_class=pgis.PostgisPoint
+            self, conn: db.DatabaseAdapter, builder: qry.QueryBuilder, sensor_type: str, pgis_cls=pgis.PostgisPoint, log_filename="log"
     ):
-        super(StationSelectWrapper, self).__init__(conn=conn, builder=builder, sensor_type=sensor_type, log_filename=log_filename)
-        self.postgis_class = postgis_class
+        super(SensorInfoSelectWrapper, self).__init__(conn=conn, builder=builder, sensor_type=sensor_type, log_filename=log_filename)
+        self.postgis_class = pgis_cls
 
     # ************************************ select ************************************
-    def select(self) -> List[StationDBResponse]:
+    def select(self) -> List[InfoDatabaseResponse]:
         responses = []
 
         sensor_query = self.query_builder.select_sensor_id_name_from_type(sensor_type=self.sensor_type)
         sensor_resp = self.database_conn.send(sensor_query)
         for sensor_id, sensor_name in sensor_resp:
+
             # Query the API param + channel info
             api_param = self._select_api_param(sensor_id=sensor_id)
 
@@ -48,6 +47,6 @@ class StationSelectWrapper(sel.SelectWrapper):
             geometry = self.postgis_class(lat=location_resp[0][1], lng=location_resp[0][0])
 
             # Make the response
-            responses.append(StationDBResponse(sensor_id=sensor_id, sensor_name=sensor_name, api_param=api_param, geometry=geometry))
+            responses.append(InfoDatabaseResponse(sensor_id=sensor_id, sensor_name=sensor_name, api_param=api_param, geometry=geometry))
 
         return responses

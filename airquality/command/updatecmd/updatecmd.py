@@ -10,7 +10,7 @@ import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as purl
 import airquality.database.op.ins.geo as ins
-import airquality.database.op.sel.stationsel as sel
+import airquality.database.op.sel.info as sel
 import airquality.filter.geofilt as flt
 import airquality.database.rec.info as rec
 
@@ -22,7 +22,7 @@ class UpdateCommand(basecmd.Command):
             ub: purl.PurpleairURLBuilder,
             fw: apiwrp.FetchWrapper,
             iw: ins.StationGeoInsertWrapper,
-            sw: sel.StationSelectWrapper,
+            sw: sel.SensorInfoSelectWrapper,
             log_filename="log",
             rb_cls=rec.SensorInfoRecord
     ):

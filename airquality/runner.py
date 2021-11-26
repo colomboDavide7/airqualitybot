@@ -23,13 +23,19 @@ def main():
         command_name, sensor_type = get_commandline_arguments(sys.argv[1:])
 
         if command_name == 'init':
-            setup_obj = init_setup.PurpleairInitSetup(log_filename="purpleair")
-            logger_file_path = "log/init/purpleair.log"
-            logger_name = "purpleair_init"
+            if sensor_type == 'purpleair':
+                setup_obj = init_setup.PurpleairInitSetup(log_filename="purpleair")
+                logger_file_path = "log/init/purpleair.log"
+                logger_name = "purpleair_init"
+            else:
+                raise SystemExit(f"{main.__name__}: bad sensor type '{sensor_type}' for command '{command_name}'")
         elif command_name == 'update':
-            setup_obj = upd_setup.PurpleairUpdateSetup(log_filename="purpleair")
-            logger_file_path = "log/update/purpleair.log"
-            logger_name = "purpleair_update"
+            if sensor_type == 'purpleair':
+                setup_obj = upd_setup.PurpleairUpdateSetup(log_filename="purpleair")
+                logger_file_path = "log/update/purpleair.log"
+                logger_name = "purpleair_update"
+            else:
+                raise SystemExit(f"{main.__name__}: bad sensor type '{sensor_type}' for command '{command_name}'")
         # elif command_name == 'fetch':
         #     if sensor_type == 'atmotube':
         #         setup_obj = ftc_setup.AtmotubeFetchSetup(log_filename="atmotube")
