@@ -8,7 +8,7 @@
 from typing import List
 import airquality.api2db.adptype as adptype
 import airquality.api2db.adpt as adpt
-import airquality.api.resp.atmresp as resp
+import airquality.api.resp.resp as resp
 import airquality.database.ext.postgis as pgis
 import airquality.database.dtype.timestamp as ts
 import airquality.database.op.sel.sel as sel
@@ -27,13 +27,11 @@ class AtmoAPIRespAdapt(adpt.APIRespAdapt):
             adapted_resp.append(
                 adptype.MobileMeasure(
                     measures=self._get_measures(r),
-                    geolocation=self._get_geolocation(r)
+                    geometry=self.postgis_cls(lat=r.lat, lng=r.lon),
+                    timestamp=self.timestamp_cls(r.time)
                 )
             )
         return adapted_resp
-
-    def _get_geolocation(self, r: resp.AtmoAPIResp) -> adptype.Geolocation:
-        return adptype.Geolocation(timestamp=self.timestamp_cls(r.time), geometry=self.postgis_cls(lat=r.lat, lng=r.lon))
 
     def _get_measures(self, r: resp.AtmoAPIResp) -> List[adptype.ParamIDName]:
         measure_dict = {}

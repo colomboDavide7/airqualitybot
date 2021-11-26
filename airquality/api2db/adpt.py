@@ -7,12 +7,12 @@
 ######################################################
 import abc
 from typing import List
-import airquality.api2db.adptype as type_
+import airquality.api2db.adptype as adptype
 import airquality.api.resp.resp as resp
 
 
 class APIRespAdapt(abc.ABC):
 
     @abc.abstractmethod
-    def adapt(self, api_resp: List[resp.APIResp]) -> List[type_.ADPTYPE]:
+    def adapt(self, api_resp: List[resp.APIRESPTYPE]) -> List[adptype.ADPTYPE]:
         pass

@@ -8,7 +8,7 @@
 from typing import List
 import airquality.api2db.adptype as adptype
 import airquality.api2db.adpt as adpt
-import airquality.api.resp.thnkresp as resp
+import airquality.api.resp.resp as resp
 import airquality.database.dtype.timestamp as ts
 import airquality.database.op.sel.sel as sel
 
@@ -19,7 +19,7 @@ class ThnkAPIRespAdapt(adpt.APIRespAdapt):
         self.measure_id_name = measure_id_name
         self.timestamp_cls = timestamp_cls
 
-    def adapt(self, api_resp: List[resp.RESP_TYPE]) -> List[adptype.StationMeasure]:
+    def adapt(self, api_resp: List[resp.THNKRESPTYPE]) -> List[adptype.StationMeasure]:
         adapted_resp = []
         for r in api_resp:
             adapted_resp.append(
@@ -30,7 +30,7 @@ class ThnkAPIRespAdapt(adpt.APIRespAdapt):
             )
         return adapted_resp
 
-    def _get_measures(self, r: resp.RESP_TYPE) -> List[adptype.ParamIDName]:
+    def _get_measures(self, r: resp.THNKRESPTYPE) -> List[adptype.ParamIDName]:
         measure_dict = {}
         for m in self.measure_id_name:
             measure_dict[m.name] = m.id

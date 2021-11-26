@@ -8,7 +8,7 @@
 from typing import List
 import airquality.api2db.adptype as adptype
 import airquality.api2db.adpt as adpt
-import airquality.api.resp.purpresp as resp
+import airquality.api.resp.resp as resp
 import airquality.database.ext.postgis as pgis
 import airquality.database.dtype.timestamp as ts
 

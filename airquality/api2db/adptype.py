@@ -33,6 +33,7 @@ class Geolocation:
         self.geometry = geometry
 
 
+################################ INFO RESPONSE ADAPTER ################################
 class StationInfo:
 
     def __init__(self, sensor_name: str, sensor_type: str, ch_param: List[ChannelParam], geolocation: Geolocation):
@@ -42,6 +43,7 @@ class StationInfo:
         self.geolocation = geolocation
 
 
+################################ MEASURE RESPONSE ADAPTER ################################
 class Measure:
 
     def __init__(self, measures: List[ParamIDName], timestamp: ts.Timestamp):
