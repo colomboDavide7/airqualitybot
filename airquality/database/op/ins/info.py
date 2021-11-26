@@ -21,5 +21,9 @@ class StationInfoInsertWrapper(base.InsertWrapper):
     @log_decorator.log_decorator()
     def concat_initialize_sensor_query(self, records: List[rec.SensorInfoRecord]) -> None:
 
-        self.query_to_execute += self.query_builder.initialize_sensors(records=records)
+        self.query_to_execute += self.query_builder.build_initialize_sensor_query(
+            sensor_values=','.join(f"{r.get_sensor_value()}" for r in records),
+            api_param_values=','.join(f"{r.get_channel_param_value()}" for r in records),
+            geolocation_values=','.join(f"{r.get_geolocation_value()}" for r in records)
+        )
         self.log_info(f"{StationInfoInsertWrapper.__name__}: inserted {len(records)}/{len(records)} new sensors")

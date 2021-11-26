@@ -6,9 +6,6 @@
 #               'properties/query.json' file.
 #
 #################################################
-from typing import List
-import airquality.database.rec.measure as measrec
-import airquality.database.rec.info as stinforec
 import airquality.file.structured.json as struct
 
 
@@ -54,35 +51,26 @@ class QueryBuilder:
     def select_sensor_id_from_type(self, type_: str):
         return self.query_file.s12.format(type=type_)
 
-    ################################ INSERT MOBILE MEASUREMENTS ################################
-    def insert_mobile_measurements(self, records: List[measrec.MobileMeasureRecord]) -> str:
-        mobile_measure_values = ','.join(f"{r.get_measure_values()}" for r in records)
-        return f"{self.query_file.i1} {mobile_measure_values};"
-
-    def update_last_acquisition(self, sensor_id: int, channel_name: str, last_timestamp: str):
-        return self.query_file.u2.format(ts=last_timestamp, sensor_id=sensor_id, channel=channel_name)
-
-    ################################ INSERT STATION MEASUREMENTS ################################
-    def insert_station_measurements(self, records: List[measrec.StationMeasureRecord]):
-        station_measure_values = ','.join(f"{r.get_measure_values()}" for r in records)
-        return f"{self.query_file.i2} {station_measure_values};"
-
-    ################################ INSERT LOCATIONS ################################
-    def insert_locations(self, records: List[stinforec.SensorInfoRecord]) -> str:
-        geolocation_values = ','.join(f"{r.get_geolocation_value()}" for r in records)
-        return f"{self.query_file.i5} {geolocation_values};"
-
-    def update_valid_to_timestamp(self, records: List[stinforec.SensorInfoRecord]):
-        return ' '.join(self.query_file.u1.format(ts=r.api_adpt_resp.geolocation.timestamp.get_formatted_timestamp(),
-                                                  sens_id=r.sensor_id) for r in records)
-
-    ################################ INITIALIZE SENSORS ################################
-    def initialize_sensors(self, records: List[stinforec.SensorInfoRecord]):
-        sensor_values = ','.join(f"{r.get_sensor_value()}" for r in records)
-        api_param_values = ','.join(f"{r.get_channel_param_value()}" for r in records)
-        geolocation_values = ','.join(f"{r.get_geolocation_value()}" for r in records)
-
+    ################################ INIT COMMAND QUERY ################################
+    def build_initialize_sensor_query(self, sensor_values: str, api_param_values: str, geolocation_values: str):
         query = f"{self.query_file.i3} {sensor_values};"
         query += f"{self.query_file.i4} {api_param_values};"
         query += f"{self.query_file.i5} {geolocation_values};"
         return query
+
+    ################################ UPDATE COMMAND QUERIES ################################
+    def build_insert_sensor_location_query(self, geolocation_values: str) -> str:
+        return f"{self.query_file.i5} {geolocation_values};"
+
+    def build_update_location_validity_query(self, valid_to: str, sensor_id: int):
+        return self.query_file.u1.format(ts=valid_to, sens_id=sensor_id)
+
+    ################################ FETCH COMMAND QUERIES ################################
+    def build_insert_mobile_measure_query(self, mobile_measure_values: str) -> str:
+        return f"{self.query_file.i1} {mobile_measure_values};"
+
+    def build_insert_station_measure_query(self, station_measure_values: str):
+        return f"{self.query_file.i2} {station_measure_values};"
+
+    def build_update_last_channel_acquisition_query(self, sensor_id: int, channel_name: str, last_timestamp: str):
+        return self.query_file.u2.format(ts=last_timestamp, sensor_id=sensor_id, channel=channel_name)
