@@ -10,7 +10,7 @@ import airquality.command.basecmd as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.dynurl as url
-import airquality.api.url.timeurl as tmurl
+import airquality.api.url.timedecor as urldec
 import airquality.database.op.ins.mbmeasins as ins
 import airquality.database.op.sel.mobilesel as mbsel
 import airquality.database.op.sel.stationsel as stsel
@@ -26,7 +26,7 @@ class FetchCommand(base.Command):
     ################################ __init__ ###############################
     def __init__(
             self,
-            tmub: tmurl.TimeURLBuilder,
+            tud: urldec.URLTimeDecorator,
             ub: url.DynamicURLBuilder,
             ara: adptype.Measure,
             fw: apiwrp.FetchWrapper,
@@ -41,7 +41,7 @@ class FetchCommand(base.Command):
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.record_class = rb_cls
-        self.time_url_builder = tmub
+        self.time_url_decorator = tud
 
     ################################ execute ###############################
     @log_decorator.log_decorator()
@@ -63,11 +63,11 @@ class FetchCommand(base.Command):
                 self.url_builder.with_identifier(channel.ch_id).with_api_key(channel.ch_key)
 
                 # Set start and stop time range
-                self.time_url_builder.with_start_ts(start=last_acquisition).with_stop_ts(ts.CurrentTimestamp())
+                self.time_url_decorator.with_start_ts(start=last_acquisition).with_stop_ts(ts.CurrentTimestamp())
 
-                while self.time_url_builder.has_next_date():
+                while self.time_url_decorator.has_next_date():
                     # Fetch API data
-                    api_responses = self.fetch_wrapper.fetch(url=self.time_url_builder.build())
+                    api_responses = self.fetch_wrapper.fetch(url=self.time_url_decorator.build())
                     if not api_responses:
                         self.log_warning(f"{FetchCommand.__name__}: empty API sensor data => continue")
                         continue
