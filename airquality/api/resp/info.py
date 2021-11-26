@@ -30,7 +30,9 @@ class PurpleairSensorInfoBuilder(base.APIRespBuilder):
     def build(self, parsed_resp: Dict[str, Any]) -> List[resp.SensorInfoResponse]:
         responses = []
         try:
-            for item in parsed_resp['data']:
+            for data in parsed_resp['data']:
+                item = dict(zip(parsed_resp['fields'], data))
+
                 # Sensor name
                 sensor_name = f"{item['name']} ({item['sensor_index']})"
 
@@ -43,7 +45,7 @@ class PurpleairSensorInfoBuilder(base.APIRespBuilder):
                                                   geometry=self.postgis_cls(lat=item['latitude'], lng=item['longitude']))
 
                 responses.append(resp.SensorInfoResponse(
-                    sensor_name=sensor_name, sensor_type=self.TYPE,channels=channels, geolocation=geolocation)
+                    sensor_name=sensor_name, sensor_type=self.TYPE, channels=channels, geolocation=geolocation)
                 )
         except KeyError as ke:
             raise SystemExit(f"{PurpleairSensorInfoBuilder.__name__}: bad API response => missing key={ke!s}")
