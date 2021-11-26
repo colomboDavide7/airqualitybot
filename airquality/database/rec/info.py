@@ -5,13 +5,13 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.api2db.adptype as adptype
+import airquality.types.apiresp.inforesp as resp
 
 
-class StationInfoRecord:
+class SensorInfoRecord:
 
-    def __init__(self, api_adpt_resp: adptype.StationInfo, sensor_id: int):
-        self.api_adpt_resp = api_adpt_resp
+    def __init__(self, info_resp: resp.SensorInfoResponse, sensor_id: int):
+        self.api_adpt_resp = info_resp
         self.sensor_id = sensor_id
 
     def get_sensor_value(self) -> str:
@@ -20,7 +20,7 @@ class StationInfoRecord:
     def get_channel_param_value(self) -> str:
         return ','.join(
             f"({self.sensor_id}, '{c.ch_key}', '{c.ch_id}', '{c.ch_name}', '{c.last_acquisition.get_formatted_timestamp()}')"
-            for c in self.api_adpt_resp.ch_param
+            for c in self.api_adpt_resp.channels
         )
 
     def get_geolocation_value(self) -> str:

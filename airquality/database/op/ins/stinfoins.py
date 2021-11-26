@@ -19,7 +19,7 @@ class StationInfoInsertWrapper(base.InsertWrapper):
         super(StationInfoInsertWrapper, self).__init__(conn=conn, builder=builder, log_filename=log_filename)
 
     @log_decorator.log_decorator()
-    def concat_initialize_sensor_query(self, records: List[rec.StationInfoRecord]) -> None:
+    def concat_initialize_sensor_query(self, records: List[rec.SensorInfoRecord]) -> None:
 
         self.query_to_execute += self.query_builder.initialize_sensors(records=records)
         self.log_info(f"{StationInfoInsertWrapper.__name__}: inserted {len(records)}/{len(records)} new sensors")

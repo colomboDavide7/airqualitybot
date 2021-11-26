@@ -26,7 +26,7 @@ class InitCommand(basecmd.Command):
             iw: ins.StationInfoInsertWrapper,
             sw: sel.StationSelectWrapper,
             log_filename="log",
-            rb_cls=rec.StationInfoRecord
+            rb_cls=rec.SensorInfoRecord
     ):
         super(InitCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
         self.api_resp_adapter = ara

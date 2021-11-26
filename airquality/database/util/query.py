@@ -69,16 +69,16 @@ class QueryBuilder:
         return f"{self.query_file.i2} {station_measure_values};"
 
     ################################ INSERT LOCATIONS ################################
-    def insert_locations(self, records: List[stinforec.StationInfoRecord]) -> str:
+    def insert_locations(self, records: List[stinforec.SensorInfoRecord]) -> str:
         geolocation_values = ','.join(f"{r.get_geolocation_value()}" for r in records)
         return f"{self.query_file.i5} {geolocation_values};"
 
-    def update_valid_to_timestamp(self, records: List[stinforec.StationInfoRecord]):
+    def update_valid_to_timestamp(self, records: List[stinforec.SensorInfoRecord]):
         return ' '.join(self.query_file.u1.format(ts=r.api_adpt_resp.geolocation.timestamp.get_formatted_timestamp(),
                                                   sens_id=r.sensor_id) for r in records)
 
     ################################ INITIALIZE SENSORS ################################
-    def initialize_sensors(self, records: List[stinforec.StationInfoRecord]):
+    def initialize_sensors(self, records: List[stinforec.SensorInfoRecord]):
         sensor_values = ','.join(f"{r.get_sensor_value()}" for r in records)
         api_param_values = ','.join(f"{r.get_channel_param_value()}" for r in records)
         geolocation_values = ','.join(f"{r.get_geolocation_value()}" for r in records)
