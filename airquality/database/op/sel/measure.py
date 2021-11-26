@@ -30,7 +30,10 @@ class MeasureSelectWrapper(base.SelectWrapper):
         sensor_query = self.query_builder.select_sensor_id_from_type(type_=self.sensor_type)
         sensor_ids = self.database_conn.send(sensor_query)
         for sensor_id in sensor_ids:
-            api_param = self._select_api_param(sensor_id=sensor_id)
-
-            responses.append(MeasureDatabaseResponse(sensor_id=sensor_id, api_param=api_param))
+            responses.append(
+                MeasureDatabaseResponse(
+                    sensor_id=sensor_id,
+                    api_param=self._select_api_param(sensor_id=sensor_id)
+                )
+            )
         return responses
