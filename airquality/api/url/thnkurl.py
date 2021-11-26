@@ -9,7 +9,7 @@ from typing import Dict, Any
 import airquality.api.url.dynurl as dyn
 
 
-class ThingspeakURLBuilder(dyn.DynamicURL):
+class ThingspeakURLBuilder(dyn.DynamicURLBuilder):
 
     def __init__(self, address: str, options: Dict[str, Any], fmt: str):
         super(ThingspeakURLBuilder, self).__init__(address=address, options=options)

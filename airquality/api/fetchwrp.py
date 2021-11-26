@@ -6,22 +6,23 @@
 #
 ######################################################
 from typing import List
-import airquality.api.resp.resp as resp
-import airquality.file.util.parser as parse
-import airquality.api.request as fetch
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
+import airquality.api.request as fetch
+import airquality.api.resp.builder as respbld
+import airquality.api.resp.resp as resp
+import airquality.file.util.parser as parse
 
 
 class FetchWrapper(log.Loggable):
 
-    def __init__(self, resp_builder: resp.APIRespBuilder, resp_parser: parse.TextParser, log_filename="log"):
+    def __init__(self, resp_builder: respbld.APIRespBuilder, resp_parser: parse.TextParser, log_filename="log"):
         super(FetchWrapper, self).__init__(log_filename=log_filename)
         self.resp_builder = resp_builder
         self.resp_parser = resp_parser
 
     @log_decorator.log_decorator
-    def fetch(self, url: str) -> List[resp.APIResp]:
+    def fetch(self, url: str) -> List[resp.APIRESPTYPE]:
         raw_resp = fetch.fetch_from_url(url)
         parsed_resp = self.resp_parser.parse(raw_resp)
         api_responses = self.resp_builder.build(parsed_resp)

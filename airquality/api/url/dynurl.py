@@ -10,10 +10,10 @@ from typing import Dict, Any
 import airquality.api.url.baseurl as base
 
 
-class DynamicURL(base.BaseURLBuilder, abc.ABC):
+class DynamicURLBuilder(base.BaseURLBuilder, abc.ABC):
 
     def __init__(self, address: str, options: Dict[str, Any]):
-        super(DynamicURL, self).__init__(address=address, options=options)
+        super(DynamicURLBuilder, self).__init__(address=address, options=options)
         self.api_key = None
         self.identifier = None
 

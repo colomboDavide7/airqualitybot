@@ -9,14 +9,16 @@ from typing import Union
 import airquality.command.basecmd as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetchwrp as apiwrp
+import airquality.api.url.dynurl as url
+import airquality.api.url.timeurl as tmurl
 import airquality.database.op.ins.mbmeasins as ins
 import airquality.database.op.sel.mobilesel as mbsel
 import airquality.database.op.sel.stationsel as stsel
-import database.dtype.timestamp as ts
+import airquality.database.dtype.timestamp as ts
 import airquality.filter.tsfilt as flt
-import airquality.api2db.fetchunif.fetchunif as unif
-# import airquality.database.rec.
-import airquality.looper.datelooper as dlp
+import airquality.database.rec.mbmeasrec as mbrec
+import airquality.database.rec.stmeasrec as strec
+import airquality.api2db.adptype as adptype
 
 
 class FetchCommand(base.Command):
@@ -24,18 +26,22 @@ class FetchCommand(base.Command):
     ################################ __init__ ###############################
     def __init__(
             self,
+            tmub: tmurl.TimeURLBuilder,
+            ub: url.DynamicURLBuilder,
+            ara: adptype.Measure,
             fw: apiwrp.FetchWrapper,
             iw: ins.MobileMeasureInsertWrapper,
             sw: Union[mbsel.MobileSelectWrapper, stsel.StationSelectWrapper],
-            urb: unif.FetchUniformResponseBuilder,
-            dtlpc=dlp.DateLooper,
-            # rb:
+            rb_cls=Union[mbrec.MobileMeasureRecord, strec.StationMeasureRecord],
             log_filename="log"
     ):
-        super(FetchCommand, self).__init__(fw=fw, iw=iw, log_filename=log_filename)
-        self.date_looper_class = dtlpc
+        super(FetchCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
+        self.url_builder = ub
+        self.api_resp_adpt = ara
+        self.insert_wrapper = iw
         self.select_wrapper = sw
-        self.uniform_response_builder = urb
+        self.record_class = rb_cls
+        self.time_url_builder = tmub
 
     ################################ execute ###############################
     @log_decorator.log_decorator()
@@ -53,28 +59,20 @@ class FetchCommand(base.Command):
                 last_acquisition = channel.last_acquisition
                 self.log_info(f"{FetchCommand.__name__}: last acquisition => {last_acquisition.get_formatted_timestamp()}")
 
-                # self.url_builder.with_api_key()
+                # Set mandated parameters
+                self.url_builder.with_identifier(channel.ch_id).with_api_key(channel.ch_key)
 
-                # URL BUILDER => build url
+                # Set start and stop time range
+                self.time_url_builder.with_start_ts(start=last_acquisition).with_stop_ts(ts.CurrentTimestamp())
 
-                # Pass URL to FetchWrapper
-
-                date_looper = self.date_looper_class(
-                    fw = self.fetch_wrapper,
-                    strt = last_acquisition,
-                    stp = ts.CurrentTimestamp(),
-                    log_filename = self.log_filename
-                )
-                date_looper.set_file_logger(self.file_logger)
-                date_looper.set_console_logger(self.console_logger)
-
-                while date_looper.has_next():
-
-                    api_responses = date_looper.get_next_api_responses()
+                while self.time_url_builder.has_next_date():
+                    # Fetch API data
+                    api_responses = self.fetch_wrapper.fetch(url=self.time_url_builder.build())
                     if not api_responses:
                         self.log_warning(f"{FetchCommand.__name__}: empty API sensor data => continue")
                         continue
 
+                    # if api_responses[0].
 
 # ############################# FUNCTION 3 ##############################
 # @log_decorator.log_decorator()
