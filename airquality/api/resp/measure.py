@@ -39,7 +39,11 @@ class AtmotubeMeasureBuilder(MeasureBuilder):
             for item in parsed_resp['data']['items']:
                 timestamp = self.timestamp_cls(timest=item['time'])
                 measures = [resp.ParamNameValue(name=n, value=item.get(n)) for n in self.CHANNEL_FIELDS[self.channel_name]]
-                geometry = self.postgis_cls(lat=item.get('coords')['lat'], lng=item.get('coords')['lon'])
+
+                geometry = pgis.NullGeometry()
+                if item.get('coords') is not None:
+                    geometry = self.postgis_cls(lat=item.get('coords')['lat'], lng=item.get('coords')['lon'])
+
                 responses.append(resp.MobileSensorAPIResp(timestamp=timestamp, measures=measures, geometry=geometry))
         except KeyError as ke:
             raise SystemExit(f"{AtmotubeMeasureBuilder.__name__}: bad API response => missing key={ke!s}")

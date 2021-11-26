@@ -53,7 +53,6 @@ class PurpleairUpdateSetup(setup.CommandSetup):
 
         # FetchWrapper
         fetch_wrapper = apiwrp.FetchWrapper(
-            resp_builder=inforesp.PurpleairSensorInfoBuilder(),
             resp_parser=fp.JSONParser(log_filename=self.log_filename),
             log_filename=self.log_filename
         )
@@ -87,7 +86,8 @@ class PurpleairUpdateSetup(setup.CommandSetup):
             fw=fetch_wrapper,
             iw=insert_wrapper,
             sw=select_wrapper,
-            log_filename=self.log_filename
+            log_filename=self.log_filename,
+            arb=inforesp.PurpleairSensorInfoBuilder()
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)

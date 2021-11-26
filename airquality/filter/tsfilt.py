@@ -20,7 +20,6 @@ class TimestampFilter(base.BaseFilter):
     def set_filter_ts(self, filter_ts=ts.SQLTimestamp):
         self.filter_ts = filter_ts
 
-    # ************************************ filter ************************************
     def filter(self, resp2filter: List[resp.MeasureAPIResp]) -> List[resp.MeasureAPIResp]:
         filtered_responses = []
         for response in resp2filter:

@@ -13,17 +13,6 @@ ATMOTUBE_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 SQL_TIMEST_FMT = "%Y-%m-%d %H:%M:%S"
 
 
-def get_timestamp_class(sensor_type: str):
-
-    if sensor_type == 'atmotube':
-        return AtmotubeTimestamp
-    elif sensor_type == 'thingspeak':
-        return ThingspeakTimestamp
-    elif sensor_type == 'purpleair':
-        return UnixTimestamp
-    else:
-        raise SystemExit(f"'{get_timestamp_class.__name__}():' bad type '{sensor_type}'")
-
 
 ################################ TIMESTAMP CLASS ################################
 class Timestamp(abc.ABC):
@@ -154,3 +143,9 @@ class UnixTimestamp(SQLTimestamp):
 
     def is_same_day(self, other) -> bool:
         return super(UnixTimestamp, self).is_same_day(other)
+
+
+################################ USEFUL CONVERSION METHOD ################################
+
+def from_database_timestamp_to_timestamp(database_timestamp: dt.datetime) -> SQLTimestamp:
+    return SQLTimestamp(timest=database_timestamp.strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)

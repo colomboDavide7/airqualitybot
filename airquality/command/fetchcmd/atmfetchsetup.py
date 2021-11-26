@@ -16,13 +16,16 @@ import airquality.file.util.parser as fp
 import airquality.file.util.loader as fl
 
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.url.dynurl as atmurl
-import airquality.api.resp.base as atmresp
+import airquality.api.url.dynurl as url
+import airquality.api.url.timedecor as urldec
+import airquality.api.resp.measure as resp
 
-import airquality.database.op.ins.mbmeasins as ins
-import airquality.database.op.sel.mobilesel as sel
+import airquality.database.op.ins.measure as ins
+import airquality.database.op.sel.measure as sel
+import airquality.database.rec.measure as rec
 
 import airquality.database.util.query as qry
+import airquality.filter.tsfilt as flt
 
 
 class AtmotubeFetchSetup(setup.CommandSetup):
@@ -45,11 +48,10 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         address = api_file_obj.address
         options = api_file_obj.options
 
-        url_builder = atmurl.AtmotubeURLBuilder(address=address, options=options)
+        url_builder = url.AtmotubeURLBuilder(address=address, options=options)
 
         # FetchWrapper
         fetch_wrapper = apiwrp.FetchWrapper(
-            resp_builder=atmresp.AtmoAPIRespBuilder(),
             resp_parser=fp.get_text_parser(file_ext=options.get('format'), log_filename=self.log_filename),
             log_filename=self.log_filename
         )
@@ -70,15 +72,29 @@ class AtmotubeFetchSetup(setup.CommandSetup):
         insert_wrapper.set_console_logger(self.console_logger)
 
         # TypeSelectWrapper
-        select_wrapper = sel.MobileSelectWrapper(
+        select_wrapper = sel.MobileMeasureSelectWrapper(
             conn=database_conn,
             builder=query_builder,
             sensor_type=sensor_type,
             log_filename=self.log_filename
         )
 
+        # Create a TimestampFilter for filtering measures
+        response_filter = flt.TimestampFilter(log_filename=self.log_filename)
+        response_filter.set_file_logger(self.file_logger)
+        response_filter.set_console_logger(self.console_logger)
+
         # Build command object
-        cmd = command.FetchCommand()
+        cmd = command.FetchCommand(
+            tud=urldec.AtmotubeURLTimeDecorator(to_decorate=url_builder),
+            ub=url_builder,
+            iw=insert_wrapper,
+            sw=select_wrapper,
+            fw=fetch_wrapper,
+            flt=response_filter,
+            arb=resp.AtmotubeMeasureBuilder(),
+            rb_cls=rec.MobileMeasureRecord
+        )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
         return cmd

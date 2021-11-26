@@ -9,6 +9,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as purl
+import airquality.api.resp.info as resp
 import airquality.database.op.ins.geo as ins
 import airquality.database.op.sel.info as sel
 import airquality.filter.geofilt as flt
@@ -23,6 +24,7 @@ class UpdateCommand(basecmd.Command):
             fw: apiwrp.FetchWrapper,
             iw: ins.StationGeoInsertWrapper,
             sw: sel.SensorInfoSelectWrapper,
+            arb: resp.PurpleairSensorInfoBuilder,
             log_filename="log",
             rb_cls=rec.SensorInfoRecord
     ):
@@ -30,6 +32,7 @@ class UpdateCommand(basecmd.Command):
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.record_builder_cls = rb_cls
+        self.api_resp_builder = arb
 
     # ************************************ execute ************************************
     @log_decorator.log_decorator()
@@ -45,15 +48,17 @@ class UpdateCommand(basecmd.Command):
         url = self.url_builder.build()
 
         # Fetch API data
-        api_responses = self.fetch_wrapper.fetch(url=url)
+        parsed_response = self.fetch_wrapper.fetch(url=url)
+
+        api_responses = self.api_resp_builder.build(parsed_resp=parsed_response)
         if not api_responses:
             self.log_warning(f"{UpdateCommand.__name__}: empty API response => no location updated")
             return
 
         # Create the Database Locations Dict
         database_active_locations = {}
-        for resp in db_responses:
-            database_active_locations[resp.sensor_name] = resp.geometry.as_text()
+        for dbresp in db_responses:
+            database_active_locations[dbresp.sensor_name] = dbresp.geometry.as_text()
 
         # Create GeoFilter
         api_resp_filter = flt.GeoFilter(database_active_locations=database_active_locations, log_filename=self.log_filename)
@@ -68,8 +73,8 @@ class UpdateCommand(basecmd.Command):
 
         # Create sensor_name - sensor_id map
         name_id_map = {}
-        for resp in db_responses:
-            name_id_map[resp.sensor_name] = resp.sensor_id
+        for dbresp in db_responses:
+            name_id_map[dbresp.sensor_name] = dbresp.sensor_id
 
         # Build database records
         records = []

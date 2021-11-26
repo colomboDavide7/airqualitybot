@@ -8,10 +8,11 @@
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
+import airquality.api.url.purpurl as purl
+import airquality.api.resp.info as resp
 import airquality.filter.namefilt as nameflt
 import airquality.database.op.ins.info as ins
 import airquality.database.op.sel.info as sel
-import airquality.api.url.purpurl as purl
 import airquality.database.rec.info as rec
 
 
@@ -23,6 +24,7 @@ class InitCommand(basecmd.Command):
             fw: apiwrp.FetchWrapper,
             iw: ins.StationInfoInsertWrapper,
             sw: sel.SensorInfoSelectWrapper,
+            arb: resp.PurpleairSensorInfoBuilder,
             log_filename="log",
             rb_cls=rec.SensorInfoRecord
     ):
@@ -30,6 +32,7 @@ class InitCommand(basecmd.Command):
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.record_builder_cls = rb_cls
+        self.api_resp_builder = arb
 
     @log_decorator.log_decorator()
     def execute(self):
@@ -38,7 +41,9 @@ class InitCommand(basecmd.Command):
         # Build the URL
         url = self.url_builder.build()
 
-        api_responses = self.fetch_wrapper.fetch(url=url)
+        parsed_response = self.fetch_wrapper.fetch(url=url)
+
+        api_responses = self.api_resp_builder.build(parsed_resp=parsed_response)
         if not api_responses:
             self.log_warning(f"{InitCommand.__name__}: empty API sensor data => no sensor inserted")
             return
@@ -49,8 +54,9 @@ class InitCommand(basecmd.Command):
         # If there are any existing sensor within the database
         if db_responses:
             database_sensor_names = []
-            for resp in db_responses:
-                database_sensor_names.append(resp.sensor_name)
+
+            for dbresp in db_responses:
+                database_sensor_names.append(dbresp.sensor_name)
 
             # Apply a filter for filtering out all the sensors that are already present into the database
             api_resp_filter = nameflt.NameFilter(database_sensor_names=database_sensor_names, log_filename=self.log_filename)

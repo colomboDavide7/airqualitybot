@@ -19,3 +19,4 @@ class InsertWrapper(base.DatabaseWrapper, abc.ABC):
 
     def insert(self) -> None:
         self.database_conn.send(self.query_to_execute)
+        self.query_to_execute = ""

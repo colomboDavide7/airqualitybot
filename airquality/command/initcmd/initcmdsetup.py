@@ -55,7 +55,6 @@ class PurpleairInitSetup(setup.CommandSetup):
 
         # FetchWrapper
         fetch_wrapper = apiwrp.FetchWrapper(
-            resp_builder=inforesp.PurpleairSensorInfoBuilder(),
             resp_parser=fp.JSONParser(log_filename=self.log_filename),
             log_filename=self.log_filename
         )
@@ -92,7 +91,8 @@ class PurpleairInitSetup(setup.CommandSetup):
             fw=fetch_wrapper,                       # for fetching api sensor data
             iw=insert_wrapper,                      # for inserting sensor data fetched from api
             sw=select_wrapper,                      # for selecting sensor data from the database
-            log_filename=self.log_filename          # name of the logging file used by the log decorator
+            log_filename=self.log_filename,         # name of the logging file used by the log decorator
+            arb=inforesp.PurpleairSensorInfoBuilder()
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
