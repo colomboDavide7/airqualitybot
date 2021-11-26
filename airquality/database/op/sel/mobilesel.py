@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import List
-import airquality.database.op.sel.sel as sel
+import airquality.database.op.sel.base as sel
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
 

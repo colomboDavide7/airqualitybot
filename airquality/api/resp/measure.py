@@ -13,7 +13,7 @@ import airquality.types.postgis as pgis
 import airquality.types.apiresp.measresp as resp
 
 
-class MeasureAPIRespBuilder(base.APIRespBuilder, abc.ABC):
+class MeasureBuilder(base.APIRespBuilder, abc.ABC):
 
     def __init__(self, timestamp_cls):
         self.timestamp_cls = timestamp_cls
@@ -25,12 +25,12 @@ class MeasureAPIRespBuilder(base.APIRespBuilder, abc.ABC):
 
 
 ################################ ATMOTUBE API RESPONSE BUILDER ################################
-class AtmoAPIRespBuilder(MeasureAPIRespBuilder):
+class AtmotubeMeasureBuilder(MeasureBuilder):
 
     CHANNEL_FIELDS = {"main": ["voc", "pm1", "pm25", "pm10", "t", "h", "p"]}
 
     def __init__(self, timestamp_cls=ts.AtmotubeTimestamp, postgis_cls=pgis.PostgisPoint):
-        super(AtmoAPIRespBuilder, self).__init__(timestamp_cls=timestamp_cls)
+        super(AtmotubeMeasureBuilder, self).__init__(timestamp_cls=timestamp_cls)
         self.postgis_cls = postgis_cls
 
     def build(self, parsed_resp: Dict[str, Any]) -> List[resp.MobileSensorAPIResp]:
@@ -42,12 +42,12 @@ class AtmoAPIRespBuilder(MeasureAPIRespBuilder):
                 geometry = self.postgis_cls(lat=item.get('coords')['lat'], lng=item.get('coords')['lon'])
                 responses.append(resp.MobileSensorAPIResp(timestamp=timestamp, measures=measures, geometry=geometry))
         except KeyError as ke:
-            raise SystemExit(f"{AtmoAPIRespBuilder.__name__}: bad API response => missing key={ke!s}")
+            raise SystemExit(f"{AtmotubeMeasureBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses
 
 
 ################################ THINGSPEAK API RESPONSE BUILDER ################################
-class ThnkRespBuilder(MeasureAPIRespBuilder):
+class ThingspeakMeasureBuilder(MeasureBuilder):
 
     CHANNEL_FIELDS = {
         "Primary data - Channel A": {
@@ -65,7 +65,7 @@ class ThnkRespBuilder(MeasureAPIRespBuilder):
     }
 
     def __init__(self, timestamp_cls=ts.ThingspeakTimestamp):
-        super(ThnkRespBuilder, self).__init__(timestamp_cls=timestamp_cls)
+        super(ThingspeakMeasureBuilder, self).__init__(timestamp_cls=timestamp_cls)
 
     def build(self, parsed_resp: Dict[str, Any]) -> List[resp.MeasureAPIResp]:
         channel_field_map = self.CHANNEL_FIELDS[self.channel_name]
@@ -80,5 +80,5 @@ class ThnkRespBuilder(MeasureAPIRespBuilder):
 
                 responses.append(resp.MeasureAPIResp(timestamp=timestamp, measures=measures))
         except KeyError as ke:
-            raise SystemExit(f"{ThnkRespBuilder.__name__}: bad API response => missing key={ke!s}")
+            raise SystemExit(f"{ThingspeakMeasureBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses

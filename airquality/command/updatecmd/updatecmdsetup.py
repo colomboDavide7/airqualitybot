@@ -21,7 +21,7 @@ import airquality.api.resp.base as apirespbuild
 
 import airquality.api2db.purpadpt as padpt
 
-import airquality.database.op.ins.stgeoins as ins
+import airquality.database.op.ins.geo as ins
 import airquality.database.op.sel.stationsel as sel
 import airquality.database.util.query as qry
 

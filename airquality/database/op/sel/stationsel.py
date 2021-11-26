@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import List
-import airquality.database.op.sel.sel as sel
+import airquality.database.op.sel.base as sel
 import airquality.database.util.conn as db
 import airquality.database.util.query as qry
 import types.postgis as pgis

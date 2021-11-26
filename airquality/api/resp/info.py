@@ -14,7 +14,7 @@ import airquality.types.geolocation as geotype
 import airquality.types.channel as chtype
 
 
-class PurpAPIRespBuilder(base.APIRespBuilder):
+class PurpleairSensorInfoBuilder(base.APIRespBuilder):
 
     TYPE = "Purpleair/Thingspeak"
 
@@ -46,5 +46,5 @@ class PurpAPIRespBuilder(base.APIRespBuilder):
                     sensor_name=sensor_name, sensor_type=self.TYPE,channels=channels, geolocation=geolocation)
                 )
         except KeyError as ke:
-            raise SystemExit(f"{PurpAPIRespBuilder.__name__}: bad API response => missing key={ke!s}")
+            raise SystemExit(f"{PurpleairSensorInfoBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses

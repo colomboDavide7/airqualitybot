@@ -16,7 +16,7 @@ class TestAPIExtractor(unittest.TestCase):
     def setUp(self) -> None:
         self.purpleair_extractor = extr.PurpleairSensorDataExtractor()
         self.atmotube_extractor = extr.AtmotubeSensorDataExtractor()
-        self.thingspeak_extractor = extr.ThnkRespBuilder()
+        self.thingspeak_extractor = extr.ThingspeakMeasureBuilder()
 
     def test_extract_purpleair_data(self):
         test_api_answer = {

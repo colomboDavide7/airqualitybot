@@ -7,9 +7,8 @@
 #
 #################################################
 from typing import List
-import airquality.database.rec.mobile as mbmeasrec
+import airquality.database.rec.measure as measrec
 import airquality.database.rec.info as stinforec
-import airquality.database.rec.station as stmeasrec
 import airquality.file.structured.json as struct
 
 
@@ -56,16 +55,16 @@ class QueryBuilder:
         return self.query_file.s12.format(type=type_)
 
     ################################ INSERT MOBILE MEASUREMENTS ################################
-    def insert_mobile_measurements(self, records: List[mbmeasrec.MobileMeasureRecord]) -> str:
-        mobile_measure_values = ','.join(f"{r.get_mobile_measurement_value()}" for r in records)
+    def insert_mobile_measurements(self, records: List[measrec.MobileMeasureRecord]) -> str:
+        mobile_measure_values = ','.join(f"{r.get_measure_values()}" for r in records)
         return f"{self.query_file.i1} {mobile_measure_values};"
 
     def update_last_acquisition(self, sensor_id: int, channel_name: str, last_timestamp: str):
         return self.query_file.u2.format(ts=last_timestamp, sensor_id=sensor_id, channel=channel_name)
 
     ################################ INSERT STATION MEASUREMENTS ################################
-    def insert_station_measurements(self, records: List[stmeasrec.StationMeasureRecord]):
-        station_measure_values = ','.join(f"{r.get_station_measurement_value()}" for r in records)
+    def insert_station_measurements(self, records: List[measrec.StationMeasureRecord]):
+        station_measure_values = ','.join(f"{r.get_measure_values()}" for r in records)
         return f"{self.query_file.i2} {station_measure_values};"
 
     ################################ INSERT LOCATIONS ################################

@@ -49,7 +49,7 @@ class ThingspeakFetchSetup(setup.CommandSetup):
 
         # Setup API-side objects
         api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        api_data_extractor = extr.ThnkRespBuilder(log_filename=self.log_filename)
+        api_data_extractor = extr.ThingspeakMeasureBuilder(log_filename=self.log_filename)
         url_builder = url.ThingspeakURLBuilder(address=address, url_param=url_param, log_filename=self.log_filename)
 
         # FetchWrapper

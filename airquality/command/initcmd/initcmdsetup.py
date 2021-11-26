@@ -20,7 +20,7 @@ import airquality.api.url.purpurl as url
 import airquality.api.fetchwrp as apiwrp
 import airquality.api2db.purpadpt as padpt
 
-import airquality.database.op.ins.stinfoins as ins
+import airquality.database.op.ins.info as ins
 import airquality.database.op.sel.stationsel as sel
 import types.postgis as postgis
 import airquality.database.util.query as qry

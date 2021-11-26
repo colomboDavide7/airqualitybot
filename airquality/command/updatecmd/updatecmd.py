@@ -10,7 +10,7 @@ import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
 import airquality.api2db.purpadpt as padpt
 import airquality.api.url.purpurl as purl
-import airquality.database.op.ins.stgeoins as ins
+import airquality.database.op.ins.geo as ins
 import airquality.database.op.sel.stationsel as sel
 import airquality.filter.geofilt as flt
 import airquality.database.rec.info as rec
