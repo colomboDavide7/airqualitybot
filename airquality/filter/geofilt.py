@@ -7,7 +7,7 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.filter.basefilt as base
-import airquality.api2db.adptype as adptype
+import airquality.types.apiresp.inforesp as resp
 
 
 class GeoFilter(base.BaseFilter):
@@ -17,7 +17,7 @@ class GeoFilter(base.BaseFilter):
         self.database_active_locations = database_active_locations
 
     # ************************************ filter ************************************
-    def filter(self, resp2filter: List[adptype.StationInfo]) -> List[adptype.StationInfo]:
+    def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
         filtered_responses = []
         for response in resp2filter:
             if response.sensor_name in self.database_active_locations:

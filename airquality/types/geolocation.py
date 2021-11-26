@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import types.postgis as pgis
+import airquality.types.postgis as pgis
 import airquality.types.timestamp as ts
 
 

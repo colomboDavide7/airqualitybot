@@ -10,7 +10,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.database.op.ins.ins as ins
 import airquality.database.util.conn as db
 import airquality.database.util.query as qry
-import airquality.database.rec.mbmeasrec as mbrec
+import airquality.database.rec.mobile as mbrec
 
 
 class MobileMeasureInsertWrapper(ins.InsertWrapper):

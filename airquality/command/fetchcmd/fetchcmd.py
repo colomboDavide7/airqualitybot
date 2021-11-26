@@ -15,8 +15,8 @@ import airquality.database.op.ins.mbmeasins as ins
 import airquality.database.op.sel.mobilesel as mbsel
 import airquality.database.op.sel.stationsel as stsel
 import types.timestamp as ts
-import airquality.database.rec.mbmeasrec as mbrec
-import airquality.database.rec.stmeasrec as strec
+import airquality.database.rec.mobile as mbrec
+import airquality.database.rec.station as strec
 import airquality.api2db.adptype as adptype
 
 

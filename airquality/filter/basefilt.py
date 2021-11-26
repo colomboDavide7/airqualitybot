@@ -6,9 +6,12 @@
 #
 ######################################################
 import abc
-from typing import List
+from typing import List, Union
 import airquality.logger.loggable as log
-import airquality.api2db.adptype as adptype
+import airquality.types.apiresp.measresp as measresp
+import airquality.types.apiresp.inforesp as inforesp
+
+RETURNED_TYPE = Union[measresp.MeasureAPIResp, inforesp.SensorInfoResponse]
 
 
 ################################ FILTER BASE CLASS ################################
@@ -18,5 +21,5 @@ class BaseFilter(log.Loggable):
         super(BaseFilter, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
-    def filter(self, resp2filter: List[adptype.ADPTYPE]) -> List[adptype.ADPTYPE]:
+    def filter(self, resp2filter: List[RETURNED_TYPE]) -> List[RETURNED_TYPE]:
         pass

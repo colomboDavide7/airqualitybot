@@ -13,7 +13,7 @@ import airquality.database.op.ins.stinfoins as ins
 import airquality.database.op.sel.stationsel as sel
 import airquality.api.url.purpurl as purl
 import airquality.api2db.purpadpt as padpt
-import airquality.database.rec.stinforec as rec
+import airquality.database.rec.info as rec
 
 
 class InitCommand(basecmd.Command):

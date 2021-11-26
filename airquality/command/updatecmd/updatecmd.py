@@ -13,7 +13,7 @@ import airquality.api.url.purpurl as purl
 import airquality.database.op.ins.stgeoins as ins
 import airquality.database.op.sel.stationsel as sel
 import airquality.filter.geofilt as flt
-import airquality.database.rec.stinforec as rec
+import airquality.database.rec.info as rec
 
 
 class UpdateCommand(basecmd.Command):

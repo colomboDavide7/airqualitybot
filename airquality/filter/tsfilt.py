@@ -7,8 +7,8 @@
 ######################################################
 from typing import List
 import airquality.filter.basefilt as base
-import airquality.api2db.adptype as adptype
-import types.timestamp as ts
+import airquality.types.timestamp as ts
+import airquality.types.apiresp.measresp as resp
 
 
 class TimestampFilter(base.BaseFilter):
@@ -21,7 +21,7 @@ class TimestampFilter(base.BaseFilter):
         self.filter_ts = filter_ts
 
     # ************************************ filter ************************************
-    def filter(self, resp2filter: List[adptype.Measure]) -> List[adptype.Measure]:
+    def filter(self, resp2filter: List[resp.MeasureAPIResp]) -> List[resp.MeasureAPIResp]:
         filtered_responses = []
         for response in resp2filter:
             if response.timestamp.is_after(self.filter_ts):

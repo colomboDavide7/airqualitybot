@@ -7,9 +7,9 @@
 #
 #################################################
 from typing import List
-import airquality.database.rec.mbmeasrec as mbmeasrec
-import airquality.database.rec.stinforec as stinforec
-import airquality.database.rec.stmeasrec as stmeasrec
+import airquality.database.rec.mobile as mbmeasrec
+import airquality.database.rec.info as stinforec
+import airquality.database.rec.station as stmeasrec
 import airquality.file.structured.json as struct
 
 
