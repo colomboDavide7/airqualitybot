@@ -7,7 +7,7 @@
 ######################################################
 import unittest
 import database.rec.georec as loc
-import database.ext.postgis as geom
+import types.postgis as geom
 import airquality.to_delete.config as adapt_const
 import database.ext.config as geom_const
 

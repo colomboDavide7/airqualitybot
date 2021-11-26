@@ -13,8 +13,8 @@ import database.ext.config as geom_conf
 import database.dtype.config as time_conf
 import api2db.measure as adapt
 import airquality.database.op.sel.sensor as sel_type
-import database.ext.postgis as geom
-import database.dtype.timestamp as ts
+import types.postgis as geom
+import types.timestamp as ts
 import airquality.api.config as extr_const
 
 
@@ -126,8 +126,8 @@ class TestMeasureAdapter(unittest.TestCase):
     ############################## TEST THINGSPEAK MEASURE ADAPTER #############################
     def test_successfully_adapt_thingspeak_data(self):
         test_packet = {'created_at': '2021-10-11T01:33:44Z',
-                       extr_const.FIELDS: [{extr_const.FIELD_NAME: 'f1', extr_const.FIELD_VALUE: 'val1'},
-                                           {extr_const.FIELD_NAME: 'f2', extr_const.FIELD_VALUE: 'val2'}]}
+                       extr_const.CHANNEL_FIELDS: [{extr_const.FIELD_NAME: 'f1', extr_const.FIELD_VALUE: 'val1'},
+                                                   {extr_const.FIELD_NAME: 'f2', extr_const.FIELD_VALUE: 'val2'}]}
 
         expected_output = {adapt_const.REC_ID: 99,
                            adapt_const.SENS_PARAM: [{adapt_const.PAR_ID: 9, adapt_const.PAR_VAL: 'val1'},
@@ -139,8 +139,8 @@ class TestMeasureAdapter(unittest.TestCase):
 
     def test_none_value_when_measure_is_missing(self):
         test_packet = {'created_at': '2021-10-11T01:33:44Z',
-                       extr_const.FIELDS: [{extr_const.FIELD_NAME: 'f1', extr_const.FIELD_VALUE: None},
-                                           {extr_const.FIELD_NAME: 'f2', extr_const.FIELD_VALUE: 'val2'}]}
+                       extr_const.CHANNEL_FIELDS: [{extr_const.FIELD_NAME: 'f1', extr_const.FIELD_VALUE: None},
+                                                   {extr_const.FIELD_NAME: 'f2', extr_const.FIELD_VALUE: 'val2'}]}
         expected_output = {adapt_const.REC_ID: 99,
                            adapt_const.SENS_PARAM: [{adapt_const.PAR_ID: 9, adapt_const.PAR_VAL: None},
                                                     {adapt_const.PAR_ID: 10, adapt_const.PAR_VAL: 'val2'}],
@@ -151,15 +151,15 @@ class TestMeasureAdapter(unittest.TestCase):
 
     def test_exit_on_missing_value_item_within_fields(self):
         test_packet = {'created_at': '2021-10-11T01:33:44Z',
-                       extr_const.FIELDS: [{extr_const.FIELD_NAME: 'f1', 'bad_key': 'val1'},
-                                           {extr_const.FIELD_NAME: 'f2', 'bad_key': 'val2'}]}
+                       extr_const.CHANNEL_FIELDS: [{extr_const.FIELD_NAME: 'f1', 'bad_key': 'val1'},
+                                                   {extr_const.FIELD_NAME: 'f2', 'bad_key': 'val2'}]}
         with self.assertRaises(SystemExit):
             self.thingspeak_adapter.reshape(test_packet)
 
     def test_exit_on_missing_name_item_within_fields(self):
         test_packet = {'created_at': '2021-10-11T01:33:44Z',
-                       extr_const.FIELDS: [{'bad_key': 'f1', extr_const.FIELD_VALUE: 'val1'},
-                                           {'bad_key': 'f2', extr_const.FIELD_VALUE: 'val2'}]}
+                       extr_const.CHANNEL_FIELDS: [{'bad_key': 'f1', extr_const.FIELD_VALUE: 'val1'},
+                                                   {'bad_key': 'f2', extr_const.FIELD_VALUE: 'val2'}]}
         with self.assertRaises(SystemExit):
             self.thingspeak_adapter.reshape(test_packet)
 
@@ -169,8 +169,8 @@ class TestMeasureAdapter(unittest.TestCase):
             self.thingspeak_adapter.reshape(test_packet)
 
     def test_exit_on_missing_created_at_item(self):
-        test_packet = {extr_const.FIELDS: [{extr_const.FIELD_NAME: 'f1', extr_const.FIELD_VALUE: None},
-                                           {extr_const.FIELD_NAME: 'f2', extr_const.FIELD_VALUE: 'val2'}]}
+        test_packet = {extr_const.CHANNEL_FIELDS: [{extr_const.FIELD_NAME: 'f1', extr_const.FIELD_VALUE: None},
+                                                   {extr_const.FIELD_NAME: 'f2', extr_const.FIELD_VALUE: 'val2'}]}
         with self.assertRaises(SystemExit):
             self.thingspeak_adapter.reshape(test_packet)
 

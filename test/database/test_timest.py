@@ -6,7 +6,7 @@
 #
 #################################################
 import unittest
-import database.dtype.timestamp as ts
+import types.timestamp as ts
 
 
 class TestTimestampBuilder(unittest.TestCase):

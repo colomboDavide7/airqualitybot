@@ -17,7 +17,7 @@ import airquality.file.util.loader as fl
 
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.dynurl as atmurl
-import airquality.api.resp.builder as atmresp
+import airquality.api.resp.base as atmresp
 
 import airquality.database.op.ins.mbmeasins as ins
 import airquality.database.op.sel.mobilesel as sel

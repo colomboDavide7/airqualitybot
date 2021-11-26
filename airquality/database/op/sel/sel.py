@@ -10,7 +10,7 @@ from typing import List
 import airquality.database.op.baseop as baseop
 import airquality.database.util.conn as connection
 import airquality.database.util.query as query
-import airquality.database.dtype.timestamp as ts
+import airquality.types.channel as chtype
 
 
 class ParamNameID:
@@ -18,15 +18,6 @@ class ParamNameID:
     def __init__(self, id_: int, name: str):
         self.id = id_
         self.name = name
-
-
-class ChannelParam:
-
-    def __init__(self, ch_id: str, ch_key: str, ch_name: str, last_acquisition: ts.SQLTimestamp):
-        self.ch_id = ch_id
-        self.ch_key = ch_key
-        self.ch_name = ch_name
-        self.last_acquisition = last_acquisition
 
 
 class BaseDBResponse(abc.ABC):
@@ -58,11 +49,11 @@ class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
         pass
 
     ################################ protected methods ################################
-    def _select_api_param(self, sensor_id: int) -> List[ChannelParam]:
+    def _select_api_param(self, sensor_id: int) -> List[chtype.Channel]:
         api_param_query = self.query_builder.select_api_param_from_sensor_id(sensor_id=sensor_id)
         api_param_resp = self.database_conn.send(api_param_query)
 
         api_param = []
         for ch_key, ch_id, ch_name, last_acquisition in api_param_resp:
-            api_param.append(ChannelParam(ch_id=ch_id, ch_key=ch_key, ch_name=ch_name, last_acquisition=last_acquisition))
+            api_param.append(chtype.Channel(ch_id=ch_id, ch_key=ch_key, ch_name=ch_name, last_acquisition=last_acquisition))
         return api_param

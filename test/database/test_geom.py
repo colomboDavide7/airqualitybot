@@ -7,7 +7,7 @@
 #
 ######################################################
 import unittest
-import database.ext.postgis as geom
+import types.postgis as geom
 import database.ext.config as geom_conf
 
 

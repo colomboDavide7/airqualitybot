@@ -8,7 +8,7 @@
 from typing import List
 import airquality.filter.basefilt as base
 import airquality.api2db.adptype as adptype
-import airquality.database.dtype.timestamp as ts
+import types.timestamp as ts
 
 
 class TimestampFilter(base.BaseFilter):

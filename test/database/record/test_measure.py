@@ -8,9 +8,9 @@
 import unittest
 import database.rec.record as rec
 import database.rec.timerec as t
-import database.dtype.timestamp as ts
+import types.timestamp as ts
 import database.rec.georec as loc
-import database.ext.postgis as geom
+import types.postgis as geom
 import airquality.to_delete.config as adapt_const
 import database.dtype.config as time_conf
 import database.ext.config as geom_conf

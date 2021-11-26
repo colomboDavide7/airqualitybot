@@ -17,7 +17,7 @@ import airquality.file.util.loader as fl
 
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as url
-import airquality.api.resp.builder as apirespbuild
+import airquality.api.resp.base as apirespbuild
 
 import airquality.api2db.purpadpt as padpt
 

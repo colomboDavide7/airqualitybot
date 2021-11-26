@@ -11,8 +11,8 @@ import airquality.to_delete.config as adapt_const
 import database.ext.config as geom_conf
 import database.dtype.config as time_conf
 import container.sensor as sens
-import database.ext.postgis as geom
-import database.dtype.timestamp as ts
+import types.postgis as geom
+import types.timestamp as ts
 
 
 class TestSensorAdapter(unittest.TestCase):

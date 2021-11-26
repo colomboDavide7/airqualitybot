@@ -9,7 +9,7 @@ from typing import List
 import airquality.database.op.sel.sel as sel
 import airquality.database.util.conn as db
 import airquality.database.util.query as qry
-import airquality.database.ext.postgis as pgis
+import types.postgis as pgis
 
 
 ################################ STATION DATABASE RESPONSE ################################

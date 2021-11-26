@@ -7,7 +7,7 @@
 ######################################################
 import abc
 import airquality.api.url.dynurl as dyn
-import airquality.database.dtype.timestamp as ts
+import airquality.types.timestamp as ts
 
 
 ############################# TIME URL DECORATOR BASE CLASS ##############################

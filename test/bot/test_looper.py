@@ -12,7 +12,7 @@ import airquality.api.util.url as url
 import airquality.api.fetchwrp as fetch
 import airquality.api.util.extractor as ext
 import airquality.file.util.parser as parse
-import database.dtype.timestamp as ts
+import types.timestamp as ts
 
 
 class TestLooper(unittest.TestCase):

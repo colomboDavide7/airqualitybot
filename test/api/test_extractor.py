@@ -70,18 +70,18 @@ class TestAPIExtractor(unittest.TestCase):
 
         expected_answer = [
             {"created_at": "2021-10-27T05:36:59Z",
-             extr_const.FIELDS: [{extr_const.FIELD_NAME: 'pm1.0_atm_a', extr_const.FIELD_VALUE: '42.35'},
-                                 {extr_const.FIELD_NAME: 'pm2.5_atm_a', extr_const.FIELD_VALUE: '63.05'},
-                                 {extr_const.FIELD_NAME: 'pm10.0_atm_a', extr_const.FIELD_VALUE: '76.32'},
-                                 {extr_const.FIELD_NAME: 'temperature_a', extr_const.FIELD_VALUE: '50'},
-                                 {extr_const.FIELD_NAME: 'humidity_a', extr_const.FIELD_VALUE: '60'}],
+             extr_const.CHANNEL_FIELDS: [{extr_const.FIELD_NAME: 'pm1.0_atm_a', extr_const.FIELD_VALUE: '42.35'},
+                                         {extr_const.FIELD_NAME: 'pm2.5_atm_a', extr_const.FIELD_VALUE: '63.05'},
+                                         {extr_const.FIELD_NAME: 'pm10.0_atm_a', extr_const.FIELD_VALUE: '76.32'},
+                                         {extr_const.FIELD_NAME: 'temperature_a', extr_const.FIELD_VALUE: '50'},
+                                         {extr_const.FIELD_NAME: 'humidity_a', extr_const.FIELD_VALUE: '60'}],
              },
             {"created_at": "2021-10-27T05:38:59Z",
-             extr_const.FIELDS: [{extr_const.FIELD_NAME: 'pm1.0_atm_a', extr_const.FIELD_VALUE: '41.07'},
-                                 {extr_const.FIELD_NAME: 'pm2.5_atm_a', extr_const.FIELD_VALUE: '61.54'},
-                                 {extr_const.FIELD_NAME: 'pm10.0_atm_a', extr_const.FIELD_VALUE: '70.31'},
-                                 {extr_const.FIELD_NAME: 'temperature_a', extr_const.FIELD_VALUE: '50'},
-                                 {extr_const.FIELD_NAME: 'humidity_a', extr_const.FIELD_VALUE: '60'}],
+             extr_const.CHANNEL_FIELDS: [{extr_const.FIELD_NAME: 'pm1.0_atm_a', extr_const.FIELD_VALUE: '41.07'},
+                                         {extr_const.FIELD_NAME: 'pm2.5_atm_a', extr_const.FIELD_VALUE: '61.54'},
+                                         {extr_const.FIELD_NAME: 'pm10.0_atm_a', extr_const.FIELD_VALUE: '70.31'},
+                                         {extr_const.FIELD_NAME: 'temperature_a', extr_const.FIELD_VALUE: '50'},
+                                         {extr_const.FIELD_NAME: 'humidity_a', extr_const.FIELD_VALUE: '60'}],
              }]
 
         actual_output = self.thingspeak_extractor.uniform(parsed_response=test_api_answer, channel_name=adapt_const.FST_CH_A)

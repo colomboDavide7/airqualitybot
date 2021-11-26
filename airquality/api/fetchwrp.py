@@ -9,7 +9,7 @@ from typing import List
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.request as fetch
-import airquality.api.resp.builder as respbld
+import airquality.api.resp.base as respbld
 import airquality.api.resp.resp as resp
 import airquality.file.util.parser as parse
 

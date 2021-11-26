@@ -15,14 +15,14 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.file.util.parser as fp
 import airquality.file.util.loader as fl
 
-import airquality.api.resp.builder as apirespbuild
+import airquality.api.resp.base as apirespbuild
 import airquality.api.url.purpurl as url
 import airquality.api.fetchwrp as apiwrp
 import airquality.api2db.purpadpt as padpt
 
 import airquality.database.op.ins.stinfoins as ins
 import airquality.database.op.sel.stationsel as sel
-import airquality.database.ext.postgis as postgis
+import types.postgis as postgis
 import airquality.database.util.query as qry
 
 
