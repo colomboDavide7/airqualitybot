@@ -57,11 +57,14 @@ class FetchCommand(base.Command):
                 last_acquisition = channel.last_acquisition
                 self.log_info(f"{FetchCommand.__name__}: last acquisition => {last_acquisition.get_formatted_timestamp()}")
 
-                # Set start and stop time range
+                # Reset state of the time URL decorator 'engine'
+                self.time_url_decorator.reset()
+
+                # Set external required parameters for starting the time URL decorator 'engine'
                 self.time_url_decorator.with_start_ts(start=last_acquisition).with_stop_ts(ts.CurrentTimestamp())
 
                 # Update the decorated URL identifier and api key + reset the flag that tells whether it has finished or not
-                self.time_url_decorator.url_to_decorate.with_identifier(channel.ch_id).with_api_key(channel.ch_key).reset()
+                self.time_url_decorator.url_to_decorate.with_identifier(channel.ch_id).with_api_key(channel.ch_key)
 
                 while self.time_url_decorator.has_next_date():
 

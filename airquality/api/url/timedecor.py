@@ -18,8 +18,8 @@ class URLTimeDecorator(base.BaseURLBuilder, abc.ABC):
         super(URLTimeDecorator, self).__init__(address=to_decorate.address, options=to_decorate.options)
         self.url_to_decorate = to_decorate
         self.step_size_in_days = step_size_in_days
-        self.start_ts: ts.SQLTimestamp = ts.CurrentTimestamp()
-        self.stop_ts: ts.SQLTimestamp = ts.CurrentTimestamp()
+        self.start_ts: ts.SQLTimestamp = ts.NullTimestamp()
+        self.stop_ts: ts.SQLTimestamp = ts.NullTimestamp()
         self.ended = False
 
     def with_start_ts(self, start: ts.SQLTimestamp):

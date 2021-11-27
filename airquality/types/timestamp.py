@@ -13,7 +13,6 @@ ATMOTUBE_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 SQL_TIMEST_FMT = "%Y-%m-%d %H:%M:%S"
 
 
-
 ################################ TIMESTAMP CLASS ################################
 class Timestamp(abc.ABC):
 
@@ -110,7 +109,7 @@ class ThingspeakTimestamp(SQLTimestamp):
 class CurrentTimestamp(SQLTimestamp):
 
     def __init__(self):
-        super().__init__(timest=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
+        super(CurrentTimestamp, self).__init__(timest=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
 
     def get_formatted_timestamp(self) -> str:
         return super(CurrentTimestamp, self).get_formatted_timestamp()
@@ -143,6 +142,23 @@ class UnixTimestamp(SQLTimestamp):
 
     def is_same_day(self, other) -> bool:
         return super(UnixTimestamp, self).is_same_day(other)
+
+
+################################ NULL TIMESTAMP CLASS ################################
+class NullTimestamp(SQLTimestamp):
+
+    def __init__(self, timest="NULL"):
+        super(NullTimestamp, self).__init__(timest=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
+        self.ts = timest
+
+    def is_after(self, other) -> bool:
+        raise SystemExit(f"{NullTimestamp.__name__}: not implemented")
+
+    def add_days(self, days: int):
+        raise SystemExit(f"{NullTimestamp.__name__}: not implemented")
+
+    def get_formatted_timestamp(self) -> str:
+        return self.ts
 
 
 ################################ USEFUL CONVERSION METHOD ################################
