@@ -49,7 +49,7 @@ class SQLTimestamp(Timestamp):
         return SQLTimestamp(my_dt.strftime(SQL_TIMEST_FMT), SQL_TIMEST_FMT)
 
     def is_after(self, other) -> bool:
-        if not isinstance(other, SQLTimestamp):
+        if not isinstance(other, SQLTimestamp) or isinstance(other, NullTimestamp):
             raise SystemExit(
                 f"{SQLTimestamp.__name__}: bad type => cannot compare with object of type='{other.__class__.__name__}'")
 
@@ -58,7 +58,7 @@ class SQLTimestamp(Timestamp):
         return (self_dt - other_dt).total_seconds() > 0
 
     def is_same_day(self, other) -> bool:
-        if not isinstance(other, SQLTimestamp):
+        if not isinstance(other, SQLTimestamp) or isinstance(other, NullTimestamp):
             raise SystemExit(f"{SQLTimestamp.__name__}: bad type => cannot compare with object of "
                              f"type='{other.__class__.__name__}'")
 

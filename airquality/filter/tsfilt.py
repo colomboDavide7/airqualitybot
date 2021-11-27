@@ -15,7 +15,7 @@ class TimestampFilter(base.BaseFilter):
 
     def __init__(self, log_filename="log"):
         super(TimestampFilter, self).__init__(log_filename=log_filename)
-        self.filter_ts = None
+        self.filter_ts = ts.NullTimestamp()
 
     def set_filter_ts(self, filter_ts=ts.SQLTimestamp):
         self.filter_ts = filter_ts
