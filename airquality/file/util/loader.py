@@ -13,7 +13,7 @@ def load_environment_file(file_path: str, sensor_type: str):
 
     dotenv.load_dotenv(dotenv_path=file_path)
 
-    if not os.environ.get('DBCONN'):
+    if 'DBCONN' not in os.environ:
         raise SystemExit(f"'{load_environment_file.__name__}()': bad '.env' file structure => missing 'DBCONN'")
 
     if sensor_type == 'purpleair':
