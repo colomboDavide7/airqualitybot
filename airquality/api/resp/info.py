@@ -31,19 +31,21 @@ class PurpleairSensorInfoBuilder(base.APIRespBuilder):
         responses = []
         try:
             for data in parsed_resp['data']:
+
+                # Reshape the API data into {field_name: field_value}
                 item = dict(zip(parsed_resp['fields'], data))
 
                 # Sensor name
-                sensor_name = f"{item['name']} ({item['sensor_index']})"
+                sensor_name = f"{item['name']} ({item['sensor_index']})".replace("'", "")
 
                 # Last acquisition timestamp
                 timestamp = self.timestamp_cls(timest=item['date_created'])
-                channels = [chtype.Channel(ch_key=item[c['key']], ch_id=item[c['id']], ch_name=c['name'],
-                                           last_acquisition=timestamp) for c in self.CHANNEL_PARAM]
+                channels = [chtype.Channel(ch_key=item[c['key']], ch_id=item[c['id']], ch_name=c['name'], last_acquisition=timestamp)
+                            for c in self.CHANNEL_PARAM]
                 # Geolocation
                 geolocation = geotype.Geolocation(timestamp=ts.CurrentTimestamp(),
                                                   geometry=self.postgis_cls(lat=item['latitude'], lng=item['longitude']))
-
+                # Append the response object to the list of responses
                 responses.append(resp.SensorInfoResponse(
                     sensor_name=sensor_name, sensor_type=self.TYPE, channels=channels, geolocation=geolocation)
                 )
