@@ -102,7 +102,7 @@ class FetchCommand(base.Command):
                     records = []
                     for api_resp in api_responses:
                         records.append(
-                            self.record_class(record_id=max_record_id, name2id=name2id, response=api_resp)
+                            self.record_class(record_id=max_record_id, sensor_id=dbresp.sensor_id, name2id=name2id, response=api_resp)
                         )
                         max_record_id += 1
 
@@ -115,9 +115,5 @@ class FetchCommand(base.Command):
                         channel_name=channel.ch_name,
                         last_acquisition=current_last_acquisition
                     )
-                    
-                    
-                    
-                    
 
                     self.insert_wrapper.insert()

@@ -11,7 +11,7 @@ import airquality.logger.util.log as log
 import airquality.command.initcmd.initcmdsetup as init_setup
 import airquality.command.updatecmd.updatecmdsetup as upd_setup
 import airquality.command.fetchcmd.atmfetchsetup as atmsetup
-# import airquality.command.fetchcmd.thnkfetchsetup as thnksetup
+import airquality.command.fetchcmd.thnkfetchsetup as thnksetup
 
 
 # Create error logger and debugger
@@ -42,10 +42,10 @@ def main():
                 setup_obj = atmsetup.AtmotubeFetchSetup(log_filename="atmotube")
                 logger_file_path = "log/fetch/atmotube.log"
                 logger_name = "atmotube_fetch"
-            # elif sensor_type == "thingspeak":
-            #     setup_obj = ftc_setup.ThingspeakFetchSetup(log_filename="thingspeak")
-            #     logger_file_path = "log/fetch/thingspeak.log"
-            #     logger_name = "thingspeak_fetch"
+            elif sensor_type == "thingspeak":
+                setup_obj = thnksetup.ThingspeakFetchSetup(log_filename="thingspeak")
+                logger_file_path = "log/fetch/thingspeak.log"
+                logger_name = "thingspeak_fetch"
             else:
                 raise SystemExit(f"{main.__name__}: bad sensor type '{sensor_type}' for command '{command_name}'")
         else:

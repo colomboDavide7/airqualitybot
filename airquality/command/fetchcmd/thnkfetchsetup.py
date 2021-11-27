@@ -16,14 +16,15 @@ import airquality.file.util.parser as fp
 import airquality.file.util.loader as fl
 
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.url.thnkurl as thnkurl
-import airquality.api.resp.thnkresp as thnkresp
+import airquality.api.url.dynurl as dynurl
+import airquality.api.url.timedecor as urldec
+import airquality.api.resp.measure as resp
 
-import airquality.database.op.ins.stmeasins as ins
-import airquality.database.op.sel.stationsel as sel
-
+import airquality.database.op.ins.measure as ins
+import airquality.database.op.sel.measure as sel
 import airquality.database.util.query as qry
-import airquality.looper.datelooper as looper
+import airquality.database.rec.measure as rec
+import airquality.filter.tsfilt as flt
 
 
 class ThingspeakFetchSetup(setup.CommandSetup):
@@ -38,25 +39,23 @@ class ThingspeakFetchSetup(setup.CommandSetup):
 
         ################################ API-SIDE OBJECTS ################################
         # API parameters
-        address, url_param = setup.get_api_parameters(sensor_type=sensor_type, log_filename=self.log_filename)
+        api_file_obj = setup.load_file(
+            file_path=comm_const.API_FILE_PATH, path_to_object=[sensor_type], log_filename=self.log_filename
+        )
 
-        # Check if 'format' argument is not missing from 'url_param'
-        if 'format' not in url_param:
-            raise SystemExit(f"{ThingspeakFetchSetup.__name__}: bad 'api.json' file structure => missing key='format'")
+        # API parameters from file
+        address = api_file_obj.address
+        fmt = api_file_obj.format
+        options = api_file_obj.options
 
-        # Take the API resp format
-        api_resp_fmt = url_param['format']
-
-        # Setup API-side objects
-        api_resp_parser = fp.get_text_parser(file_ext=api_resp_fmt, log_filename=self.log_filename)
-        api_data_extractor = extr.ThingspeakMeasureBuilder(log_filename=self.log_filename)
-        url_builder = url.ThingspeakURLBuilder(address=address, url_param=url_param, log_filename=self.log_filename)
+        # URL builder
+        url_builder = dynurl.ThingspeakURLBuilder(address=address, options=options, fmt=fmt)
 
         # FetchWrapper
-        fetch_wrapper = setup.get_fetch_wrapper(url_builder=url_builder,
-                                                response_parser=api_resp_parser,
-                                                response_builder=api_data_extractor,
-                                                log_filename=self.log_filename)
+        fetch_wrapper = apiwrp.FetchWrapper(
+            resp_parser=fp.get_text_parser(file_ext=fmt, log_filename=self.log_filename),
+            log_filename=self.log_filename
+        )
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
 
@@ -64,50 +63,38 @@ class ThingspeakFetchSetup(setup.CommandSetup):
         # Database Connection
         database_connection = setup.open_database_connection(connection_string=os.environ['DBCONN'],
                                                              log_filename=self.log_filename)
-
         # Load SQL query file
         query_file_obj = setup.load_file(file_path=comm_const.QUERY_FILE_PATH, log_filename=self.log_filename)
-
-        # QueryBuilder
         query_builder = qry.QueryBuilder(query_file=query_file_obj)
 
         # InsertWrapper
-        insert_wrapper = ins.FetchStationInsertWrapper(
-            conn=database_connection,
-            query_builder=query_builder,
-            sensor_measure_rec=rec.StationMeasureRecord(time_rec=t.TimeRecord()),
-            log_filename=self.log_filename
-        )
+        insert_wrapper = ins.StationMeasureInsertWrapper(conn=database_connection, builder=query_builder,
+                                                         log_filename=self.log_filename)
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
 
         # TypeSelectWrapper
-        select_type_wrapper = sel_type.StationTypeSelectWrapper(conn=database_connection,
-                                                                query_builder=query_builder,
-                                                                sensor_type=sensor_type)
-        # SensorIDSelectWrapper
-        sensor_id_select_wrapper = sel_type.SensorIDSelectWrapper(conn=database_connection,
-                                                                  query_builder=query_builder,
-                                                                  log_filename=self.log_filename)
-
-        ################################ ADAPTER-SIDE OBJECTS ################################
-        # Used for reshaping the sensor data into a proper shape for converting into SQL rec
-        api2db_adapter = adapt.ThingspeakMeasureAdapter(sel_type=select_type_wrapper)
-
-        # Used for reshaping database api parameters for fetching data
-        db2api_adapter = par_adapt.ThingspeakParamAdapter()
-
-        # Date looper class
-        date_looper_class = looper.get_date_looper_class(sensor_type=sensor_type)
+        select_wrapper = sel.StationMeasureSelectWrapper(conn=database_connection,
+                                                         builder=query_builder,
+                                                         sensor_type=sensor_type,
+                                                         log_filename=self.log_filename)
+        # Create a TimestampFilter for filtering measures
+        response_filter = flt.TimestampFilter(log_filename=self.log_filename)
+        response_filter.set_file_logger(self.file_logger)
+        response_filter.set_console_logger(self.console_logger)
 
         # Build command object
-        cmd = command.FetchCommand(fetch_wrapper=fetch_wrapper,
-                                   insert_wrapper=insert_wrapper,
-                                   select_type_wrapper=select_type_wrapper,
-                                   id_select_wrapper=sensor_id_select_wrapper,
-                                   api2db_adapter=api2db_adapter,
-                                   db2api_adapter=db2api_adapter,
-                                   date_looper_class=date_looper_class)
+        # Build command object
+        cmd = command.FetchCommand(
+            tud=urldec.ThingspeakURLTimeDecorator(to_decorate=url_builder),
+            ub=url_builder,
+            iw=insert_wrapper,
+            sw=select_wrapper,
+            fw=fetch_wrapper,
+            flt=response_filter,
+            arb=resp.ThingspeakMeasureBuilder(),
+            rb_cls=rec.StationMeasureRecord
+        )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
 

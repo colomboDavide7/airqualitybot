@@ -77,11 +77,10 @@ class ThingspeakMeasureBuilder(MeasureBuilder):
         try:
             for feed in parsed_resp['feeds']:
                 timestamp = self.timestamp_cls(timest=feed['created_at'])
-
                 measures = []
-                for field in feed.keys():
-                    measures = resp.ParamNameValue(name=channel_field_map[field], value=feed[field])
-
+                for field in channel_field_map.keys():
+                    if field in feed.keys():
+                        measures.append(resp.ParamNameValue(name=channel_field_map[field], value=feed.get(field)))
                 responses.append(resp.MeasureAPIResp(timestamp=timestamp, measures=measures))
         except KeyError as ke:
             raise SystemExit(f"{ThingspeakMeasureBuilder.__name__}: bad API response => missing key={ke!s}")
