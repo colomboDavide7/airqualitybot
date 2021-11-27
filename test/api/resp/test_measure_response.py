@@ -15,7 +15,6 @@ class TestMeasureResponse(unittest.TestCase):
 
     def setUp(self) -> None:
         self.atm_resp_builder = resp.AtmotubeMeasureBuilder()
-        self.thnk_resp_builder = resp.ThingspeakMeasureBuilder()
 
     def test_successfully_build_atmotube_response(self):
         test_channel_name = 'main'

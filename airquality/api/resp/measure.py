@@ -12,12 +12,18 @@ import airquality.types.timestamp as ts
 import airquality.types.postgis as pgis
 import airquality.types.apiresp.measresp as resp
 
+DEFAULT_CHANNEL_NAME = "NO CHANNEL NAME ALREADY SET"
+
 
 class MeasureBuilder(base.APIRespBuilder, abc.ABC):
 
     def __init__(self, timestamp_cls):
         self.timestamp_cls = timestamp_cls
-        self.channel_name: str = "NO CHANNEL NAME ALREADY SET"
+        self.channel_name: str = DEFAULT_CHANNEL_NAME
+
+    @abc.abstractmethod
+    def get_measures(self, item: Dict[str, Any]) -> List[resp.ParamNameValue]:
+        pass
 
     def with_channel_name(self, channel_name: str):
         self.channel_name = channel_name
@@ -37,9 +43,9 @@ class AtmotubeMeasureBuilder(MeasureBuilder):
         responses = []
         try:
             for item in parsed_resp['data']['items']:
-                timestamp = self.timestamp_cls(timest=item['time'])
-                measures = [resp.ParamNameValue(name=n, value=item.get(n)) for n in self.CHANNEL_FIELDS[self.channel_name]]
 
+                timestamp = self.timestamp_cls(timest=item['time'])
+                measures = self.get_measures(item=item)
                 geometry = pgis.NullGeometry()
                 if item.get('coords') is not None:
                     geometry = self.postgis_cls(lat=item.get('coords')['lat'], lng=item.get('coords')['lon'])
@@ -48,6 +54,13 @@ class AtmotubeMeasureBuilder(MeasureBuilder):
         except KeyError as ke:
             raise SystemExit(f"{AtmotubeMeasureBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses
+
+    def get_measures(self, item: Dict[str, Any]) -> List[resp.ParamNameValue]:
+        if self.channel_name not in self.CHANNEL_FIELDS:
+            raise SystemExit(f"{AtmotubeMeasureBuilder.__name__}: bad builder setup => missing 'channel_name' parameter")
+
+        channel_field_map = self.CHANNEL_FIELDS[self.channel_name]
+        return [resp.ParamNameValue(name=n, value=item.get(n)) for n in channel_field_map]
 
 
 ################################ THINGSPEAK API RESPONSE BUILDER ################################
@@ -72,16 +85,31 @@ class ThingspeakMeasureBuilder(MeasureBuilder):
         super(ThingspeakMeasureBuilder, self).__init__(timestamp_cls=timestamp_cls)
 
     def build(self, parsed_resp: Dict[str, Any]) -> List[resp.MeasureAPIResp]:
-        channel_field_map = self.CHANNEL_FIELDS[self.channel_name]
         responses = []
         try:
-            for feed in parsed_resp['feeds']:
-                timestamp = self.timestamp_cls(timest=feed['created_at'])
-                measures = []
-                for field in channel_field_map.keys():
-                    if field in feed.keys():
-                        measures.append(resp.ParamNameValue(name=channel_field_map[field], value=feed.get(field)))
+            for item in parsed_resp['feeds']:
+                timestamp = self.timestamp_cls(timest=item['created_at'])
+                measures = self.get_measures(item=item)
                 responses.append(resp.MeasureAPIResp(timestamp=timestamp, measures=measures))
         except KeyError as ke:
             raise SystemExit(f"{ThingspeakMeasureBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses
+
+    def get_measures(self, item: Dict[str, Any]) -> List[resp.ParamNameValue]:
+        if self.channel_name not in self.CHANNEL_FIELDS:
+            raise SystemExit(f"{ThingspeakMeasureBuilder.__name__}: bad builder setup => missing 'channel_name' parameter")
+
+        channel_field_map = self.CHANNEL_FIELDS[self.channel_name]
+        measures = []
+        for field in channel_field_map.keys():
+            if field in item.keys():
+                measures.append(resp.ParamNameValue(name=channel_field_map[field], value=item.get(field)))
+        return measures
+
+
+# CHANNEL_FIELDS = {
+#        "Primary data - Channel A": ["field1", "field2", "field3", "field6", "field7"],
+#        "Primary data - Channel B": ["field1", "field2", "field3", "field6"],
+#        "Secondary data - Channel A": ["field1", "field2", "field3", "field4", "field5", "field6"],
+#        "Secondary data - Channel B": ["field1", "field2", "field3", "field4", "field5", "field6"]
+#    }
