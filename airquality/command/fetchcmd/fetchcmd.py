@@ -60,9 +60,8 @@ class FetchCommand(base.Command):
                 # Set start and stop time range
                 self.time_url_decorator.with_start_ts(start=last_acquisition).with_stop_ts(ts.CurrentTimestamp())
 
-                # Update the decorated URL identifier and api key
-                self.time_url_decorator.url_to_decorate.with_identifier(channel.ch_id).with_api_key(channel.ch_key)
-                self.time_url_decorator.ended = False
+                # Update the decorated URL identifier and api key + reset the flag that tells whether it has finished or not
+                self.time_url_decorator.url_to_decorate.with_identifier(channel.ch_id).with_api_key(channel.ch_key).reset()
 
                 while self.time_url_decorator.has_next_date():
 

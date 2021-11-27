@@ -7,11 +7,12 @@
 ######################################################
 import abc
 import airquality.api.url.dynurl as dyn
+import airquality.api.url.baseurl as base
 import airquality.types.timestamp as ts
 
 
 ############################# TIME URL DECORATOR BASE CLASS ##############################
-class URLTimeDecorator(dyn.DynamicURLBuilder, abc.ABC):
+class URLTimeDecorator(base.BaseURLBuilder, abc.ABC):
 
     def __init__(self, to_decorate: dyn.DynamicURLBuilder, step_size_in_days: int = 1):
         super(URLTimeDecorator, self).__init__(address=to_decorate.address, options=to_decorate.options)
@@ -27,6 +28,10 @@ class URLTimeDecorator(dyn.DynamicURLBuilder, abc.ABC):
 
     def with_stop_ts(self, stop: ts.SQLTimestamp):
         self.stop_ts = stop
+        return self
+
+    def reset(self):
+        self.ended = False
         return self
 
     @abc.abstractmethod
