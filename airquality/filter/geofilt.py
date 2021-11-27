@@ -16,7 +16,6 @@ class GeoFilter(base.BaseFilter):
         super(GeoFilter, self).__init__(log_filename=log_filename)
         self.database_active_locations = database_active_locations
 
-    # ************************************ filter ************************************
     def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
         filtered_responses = []
         for response in resp2filter:
