@@ -10,9 +10,6 @@ import unittest
 import airquality.filter.basefilt as filt
 import types.timestamp as ts
 import types.postgis as geom
-import airquality.to_delete.config as adapt_const
-import database.dtype.config as time_conf
-import database.ext.config as geom_conf
 
 
 class TestFilter(unittest.TestCase):

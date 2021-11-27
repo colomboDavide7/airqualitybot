@@ -16,7 +16,6 @@ class NameFilter(base.BaseFilter):
         super(NameFilter, self).__init__(log_filename=log_filename)
         self.database_sensor_names = database_sensor_names
 
-    # ************************************ filter ************************************
     def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
         filtered_responses = []
         for response in resp2filter:
