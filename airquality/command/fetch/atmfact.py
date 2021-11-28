@@ -37,7 +37,7 @@ class AtmotubeFetchFactory(fact.CommandFactory):
     def create_command(self, sensor_type: str):
 
         ################################ api-side objects ################################
-        response_builder = resp.AtmotubeMeasureBuilder()
+        response_builder = resp.AtmotubeAPIRespBuilder()
 
         url_builder = self._get_url_builder()
         url_time_decorator = urldec.AtmotubeURLTimeDecorator(to_decorate=url_builder)

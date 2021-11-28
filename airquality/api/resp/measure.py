@@ -15,11 +15,11 @@ import airquality.types.apiresp.measresp as resp
 DEFAULT_CHANNEL_NAME = "NO CHANNEL NAME ALREADY SET"
 
 
-class MeasureBuilder(base.APIRespBuilder, abc.ABC):
+class MeasureAPIRespBuilder(base.APIRespBuilder, abc.ABC):
 
     def __init__(self, timestamp_cls):
         self.timestamp_cls = timestamp_cls
-        self.channel_name: str = DEFAULT_CHANNEL_NAME
+        self.channel_name = DEFAULT_CHANNEL_NAME
 
     @abc.abstractmethod
     def get_measures(self, item: Dict[str, Any]) -> List[resp.ParamNameValue]:
@@ -31,40 +31,45 @@ class MeasureBuilder(base.APIRespBuilder, abc.ABC):
 
 
 ################################ ATMOTUBE API RESPONSE BUILDER ################################
-class AtmotubeMeasureBuilder(MeasureBuilder):
+class AtmotubeAPIRespBuilder(MeasureAPIRespBuilder):
 
     CHANNEL_FIELDS = {"main": ["voc", "pm1", "pm25", "pm10", "t", "h", "p"]}
 
     def __init__(self, timestamp_cls=ts.AtmotubeTimestamp, postgis_cls=pgis.PostgisPoint):
-        super(AtmotubeMeasureBuilder, self).__init__(timestamp_cls=timestamp_cls)
+        super(AtmotubeAPIRespBuilder, self).__init__(timestamp_cls=timestamp_cls)
         self.postgis_cls = postgis_cls
 
     def build(self, parsed_resp: Dict[str, Any]) -> List[resp.MobileSensorAPIResp]:
         responses = []
         try:
             for item in parsed_resp['data']['items']:
+                self.exit_on_bad_item(item)
 
                 timestamp = self.timestamp_cls(timest=item['time'])
                 measures = self.get_measures(item=item)
                 geometry = pgis.NullGeometry()
                 if item.get('coords') is not None:
                     geometry = self.postgis_cls(lat=item.get('coords')['lat'], lng=item.get('coords')['lon'])
-
                 responses.append(resp.MobileSensorAPIResp(timestamp=timestamp, measures=measures, geometry=geometry))
+
         except KeyError as ke:
-            raise SystemExit(f"{AtmotubeMeasureBuilder.__name__}: bad API response => missing key={ke!s}")
+            raise SystemExit(f"{AtmotubeAPIRespBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses
 
     def get_measures(self, item: Dict[str, Any]) -> List[resp.ParamNameValue]:
         if self.channel_name not in self.CHANNEL_FIELDS:
-            raise SystemExit(f"{AtmotubeMeasureBuilder.__name__}: bad builder setup => missing 'channel_name' parameter")
+            raise SystemExit(f"{AtmotubeAPIRespBuilder.__name__}: bad builder setup => missing 'channel_name' parameter")
 
         channel_field_map = self.CHANNEL_FIELDS[self.channel_name]
         return [resp.ParamNameValue(name=n, value=item.get(n)) for n in channel_field_map]
 
+    def exit_on_bad_item(self, item: Dict[str, Any]) -> None:
+        if 'time' not in item:
+            raise SystemExit(f"{AtmotubeAPIRespBuilder.__name__}: bad response item => missing key='time'")
+
 
 ################################ THINGSPEAK API RESPONSE BUILDER ################################
-class ThingspeakMeasureBuilder(MeasureBuilder):
+class ThingspeakAPIRespBuilder(MeasureAPIRespBuilder):
 
     CHANNEL_FIELDS = {
         "Primary data - Channel A": {
@@ -82,22 +87,23 @@ class ThingspeakMeasureBuilder(MeasureBuilder):
     }
 
     def __init__(self, timestamp_cls=ts.ThingspeakTimestamp):
-        super(ThingspeakMeasureBuilder, self).__init__(timestamp_cls=timestamp_cls)
+        super(ThingspeakAPIRespBuilder, self).__init__(timestamp_cls=timestamp_cls)
 
     def build(self, parsed_resp: Dict[str, Any]) -> List[resp.MeasureAPIResp]:
         responses = []
         try:
             for item in parsed_resp['feeds']:
+                self.exit_on_bad_item(item)
                 timestamp = self.timestamp_cls(timest=item['created_at'])
                 measures = self.get_measures(item=item)
                 responses.append(resp.MeasureAPIResp(timestamp=timestamp, measures=measures))
         except KeyError as ke:
-            raise SystemExit(f"{ThingspeakMeasureBuilder.__name__}: bad API response => missing key={ke!s}")
+            raise SystemExit(f"{ThingspeakAPIRespBuilder.__name__}: bad API response => missing key={ke!s}")
         return responses
 
     def get_measures(self, item: Dict[str, Any]) -> List[resp.ParamNameValue]:
         if self.channel_name not in self.CHANNEL_FIELDS:
-            raise SystemExit(f"{ThingspeakMeasureBuilder.__name__}: bad builder setup => missing 'channel_name' parameter")
+            raise SystemExit(f"{ThingspeakAPIRespBuilder.__name__}: bad builder setup => missing 'channel_name' parameter")
 
         channel_field_map = self.CHANNEL_FIELDS[self.channel_name]
         measures = []
@@ -105,6 +111,10 @@ class ThingspeakMeasureBuilder(MeasureBuilder):
             if field in item.keys():
                 measures.append(resp.ParamNameValue(name=channel_field_map[field], value=item.get(field)))
         return measures
+
+    def exit_on_bad_item(self, item: Dict[str, Any]) -> None:
+        if 'created_at' not in item:
+            raise SystemExit(f"{ThingspeakAPIRespBuilder.__name__}: bad response item => missing key='created_at'")
 
 
 # CHANNEL_FIELDS = {

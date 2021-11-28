@@ -25,7 +25,7 @@ class FetchCommand(base.Command):
             self,
             tud: urldec.URLTimeDecorator,
             ub: url.DynamicURLBuilder,
-            arb: resp.MeasureBuilder,
+            arb: resp.MeasureAPIRespBuilder,
             fw: apiwrp.FetchWrapper,
             iw: ins.MeasureInsertWrapper,
             sw: sel.MeasureSelectWrapper,

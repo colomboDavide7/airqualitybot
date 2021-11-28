@@ -13,7 +13,7 @@ import airquality.logger.util.decorator as log_decorator
 
 import airquality.file.util.parser as fp
 
-import airquality.api.resp.info as resp
+import airquality.api.resp.info.purpleair as resp
 import airquality.api.url.purpurl as url
 import airquality.api.fetchwrp as apiwrp
 
@@ -45,7 +45,7 @@ class PurpleairInitFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def create_command(self, sensor_type: str):
 
-        response_builder = resp.PurpleairSensorInfoBuilder()
+        response_builder = resp.PurpleairAPIRespBuilder()
         url_builder = self._get_url_builder()
 
         fetch_wrapper = apiwrp.FetchWrapper(

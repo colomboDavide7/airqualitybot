@@ -14,7 +14,7 @@ import airquality.types.postgis as pgis
 class TestMeasureResponse(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.atm_resp_builder = resp.AtmotubeMeasureBuilder()
+        self.atm_resp_builder = resp.AtmotubeAPIRespBuilder()
 
     def test_successfully_build_atmotube_response(self):
         test_channel_name = 'main'

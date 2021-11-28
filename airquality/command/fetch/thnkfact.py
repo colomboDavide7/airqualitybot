@@ -35,7 +35,7 @@ class ThingspeakFetchFactory(fact.CommandFactory):
     def create_command(self, sensor_type: str):
 
         ################################ api-side objects ################################
-        response_builder = resp.ThingspeakMeasureBuilder()
+        response_builder = resp.ThingspeakAPIRespBuilder()
 
         url_builder = self._get_url_builder()
         url_time_decorator = urldec.ThingspeakURLTimeDecorator(to_decorate=url_builder)

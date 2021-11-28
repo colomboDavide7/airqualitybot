@@ -9,7 +9,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as purl
-import airquality.api.resp.info as resp
+import airquality.api.resp.info.purpleair as resp
 import airquality.filter.namefilt as nameflt
 import airquality.database.op.ins.info as ins
 import airquality.database.op.sel.info as sel
@@ -24,7 +24,7 @@ class InitCommand(basecmd.Command):
             fw: apiwrp.FetchWrapper,
             iw: ins.StationInfoInsertWrapper,
             sw: sel.SensorInfoSelectWrapper,
-            arb: resp.PurpleairSensorInfoBuilder,
+            arb: resp.PurpleairAPIRespBuilder,
             log_filename="log",
             rb_cls=rec.SensorInfoRecord
     ):

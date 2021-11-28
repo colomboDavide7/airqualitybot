@@ -12,7 +12,7 @@ import airquality.api.resp.measure as resp
 class TestThingspeakMeasureResponse(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.thnk_resp_builder = resp.ThingspeakMeasureBuilder()
+        self.thnk_resp_builder = resp.ThingspeakAPIRespBuilder()
 
     def test_exit_on_missing_channel_name(self):
         test_parsed_response = {
