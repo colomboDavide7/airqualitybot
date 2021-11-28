@@ -24,5 +24,13 @@ class CommandFactory(log.Loggable, abc.ABC):
         pass
 
     @abc.abstractmethod
+    def get_api_side_objects(self):
+        pass
+
+    @abc.abstractmethod
+    def get_database_side_objects(self, sensor_type: str):
+        pass
+
+    @abc.abstractmethod
     def _get_url_builder(self):
         pass

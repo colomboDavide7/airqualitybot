@@ -20,7 +20,7 @@ coverage report
 
 # Run test coverage at once
 
-
+coverage erase
 coverage run --source airquality -m unittest discover && coverage report --skip-covered
 
 

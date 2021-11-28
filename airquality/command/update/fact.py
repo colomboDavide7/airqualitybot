@@ -6,18 +6,14 @@
 #
 ######################################################
 import os
+import airquality.logger.util.decorator as log_decorator
 import airquality.command.basefact as fact
 import airquality.command.update.cmd as cmd
-
-import airquality.logger.util.decorator as log_decorator
-
 import airquality.file.util.parser as fp
 import airquality.file.structured.json as file
-
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as url
 import airquality.api.resp.info.purpleair as resp
-
 import airquality.database.op.ins.geo as ins
 import airquality.database.op.sel.info as sel
 import airquality.database.util.query as qry
@@ -41,9 +37,30 @@ class PurpleairUpdateFactory(fact.CommandFactory):
     def __init__(self, api_file: file.JSONFile, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
         super(PurpleairUpdateFactory, self).__init__(api_file=api_file, query_file=query_file, conn=conn, log_filename=log_filename)
 
+    ################################ create_command ################################
     @log_decorator.log_decorator()
     def create_command(self, sensor_type: str):
 
+        response_builder, url_builder, fetch_wrapper = self.get_api_side_objects()
+
+        insert_wrapper, select_wrapper = self.get_database_side_objects(sensor_type=sensor_type)
+
+        command = cmd.UpdateCommand(
+            ub=url_builder,
+            fw=fetch_wrapper,
+            iw=insert_wrapper,
+            sw=select_wrapper,
+            arb=response_builder,
+            log_filename=self.log_filename
+        )
+        command.set_file_logger(self.file_logger)
+        command.set_console_logger(self.console_logger)
+
+        return command
+
+    ################################ get_api_side_objects ################################
+    @log_decorator.log_decorator()
+    def get_api_side_objects(self):
         response_builder = resp.PurpleairAPIRespBuilder()
         url_builder = self._get_url_builder()
 
@@ -53,8 +70,11 @@ class PurpleairUpdateFactory(fact.CommandFactory):
         )
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
+        return response_builder, url_builder, fetch_wrapper
 
-        ################################ DATABASE-SIDE OBJECTS ################################
+    ################################ get_database_side_objects ################################
+    @log_decorator.log_decorator()
+    def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
 
         # InsertWrapper
@@ -68,16 +88,7 @@ class PurpleairUpdateFactory(fact.CommandFactory):
         select_wrapper = sel.SensorInfoSelectWrapper(
             conn=self.database_conn, builder=query_builder, sensor_type=sensor_type, log_filename=self.log_filename
         )
-
-        ################################ COMMAND OBJECT ################################
-        command = cmd.UpdateCommand(
-            ub=url_builder, fw=fetch_wrapper, iw=insert_wrapper, sw=select_wrapper, arb=response_builder,
-            log_filename=self.log_filename
-        )
-        command.set_file_logger(self.file_logger)
-        command.set_console_logger(self.console_logger)
-
-        return command
+        return insert_wrapper, select_wrapper
 
     ################################ get_url_builder ################################
     def _get_url_builder(self):
