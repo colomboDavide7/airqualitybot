@@ -26,6 +26,7 @@ class PurpleairAPIRespBuilder(base.InfoAPIRespBuilder):
         self.timestamp_cls = timestamp_cls
         self.postgis_cls = postgis_cls
 
+    ################################ build ################################
     def build(self, parsed_resp: Dict[str, Any]) -> List[rtype.SensorInfoResponse]:
         self.exit_on_bad_parsed_response(parsed_resp)
         responses = []
