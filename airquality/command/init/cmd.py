@@ -6,7 +6,7 @@
 #
 ######################################################
 import airquality.logger.util.decorator as log_decorator
-import airquality.command.cmd as basecmd
+import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as purl
 import airquality.api.resp.info as resp

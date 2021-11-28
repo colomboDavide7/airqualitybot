@@ -9,10 +9,8 @@ import os
 import sys
 from typing import List, Tuple
 import airquality.logger.util.log as log
-import airquality.command.fetch.fact as fetchfact
-import airquality.command.init.fact as initfact
-import airquality.command.update.fact as updtfact
 import airquality.file.util.loader as fl
+import airquality.command.getfact as cmdfact
 import airquality.database.conn.fact as dbfact
 import airquality.database.conn.shutdown as dbshutdown
 
@@ -32,7 +30,7 @@ def main():
         command_name, sensor_type = get_commandline_arguments(sys.argv[1:])
 
         # ----------- GET COMMAND FACTORY CLASS -----------
-        command_factory_cls = get_command_factory_cls(command_name=command_name, sensor_type=sensor_type)
+        command_factory_cls = cmdfact.get_command_factory_cls(command_name=command_name, sensor_type=sensor_type)
 
         log_filename = sensor_type
         logger_file_path = f"log/{command_name}/{log_filename}.log"
@@ -92,17 +90,6 @@ def get_commandline_arguments(args: List[str]) -> Tuple[str, str]:
         raise SystemExit(f"{function_name}(): bad type => VALID TYPES: [{'|'.join(tp for tp in valid_types)}]")
 
     return command_name, sensor_type
-
-
-################################ get_command_factory_cls ################################
-def get_command_factory_cls(command_name: str, sensor_type: str):
-
-    if command_name == 'init':
-        return initfact.get_init_factory_cls(sensor_type=sensor_type)
-    elif command_name == 'update':
-        return updtfact.get_update_factory_cls(sensor_type=sensor_type)
-    elif command_name == 'fetch':
-        return fetchfact.get_fetch_factory_cls(sensor_type=sensor_type)
 
 
 ################################ safe_shutdown ################################

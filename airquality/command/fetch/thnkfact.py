@@ -6,7 +6,7 @@
 #
 ######################################################
 import airquality.command.fetch.cmd as command
-import airquality.command.fact as fact
+import airquality.command.basefact as fact
 
 import airquality.logger.util.decorator as log_decorator
 

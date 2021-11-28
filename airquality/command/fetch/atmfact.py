@@ -7,7 +7,7 @@
 ######################################################
 import airquality.logger.util.decorator as log_decorator
 
-import airquality.command.fact as fact
+import airquality.command.basefact as fact
 import airquality.command.fetch.cmd as cmd
 
 import airquality.file.structured.json as file

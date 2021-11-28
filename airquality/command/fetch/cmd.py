@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.command.cmd as base
+import airquality.command.basecmd as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.resp.measure as resp
