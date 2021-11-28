@@ -7,13 +7,13 @@
 ######################################################
 import abc
 import airquality.database.op.baseop as base
-import airquality.database.util.conn as connection
+import airquality.database.conn.adapt as db
 import airquality.database.util.query as query
 
 
 class InsertWrapper(base.DatabaseWrapper, abc.ABC):
 
-    def __init__(self, conn: connection.DatabaseAdapter, builder: query.QueryBuilder, log_filename="log"):
+    def __init__(self, conn: db.DatabaseAdapter, builder: query.QueryBuilder, log_filename="log"):
         super(InsertWrapper, self).__init__(conn=conn, builder=builder, log_filename=log_filename)
         self.query_to_execute = ""
 

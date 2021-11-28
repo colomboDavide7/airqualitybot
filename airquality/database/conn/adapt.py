@@ -12,14 +12,6 @@ import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 
 
-def get_database_adapter(connection_string: str, adapter_type="psycopg2", log_filename="log"):
-
-    if adapter_type == 'psycopg2':
-        return Psycopg2DatabaseAdapter(connection_string=connection_string, log_filename=log_filename)
-    else:
-        raise SystemExit(f"'{get_database_adapter.__name__}():' bad adapter type '{adapter_type}'")
-
-
 ################################ DATABASE ADAPTER BASE CLASS ################################
 class DatabaseAdapter(log.Loggable):
 

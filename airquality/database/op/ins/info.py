@@ -9,7 +9,7 @@ from typing import List
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.op.ins.base as base
 import airquality.database.rec.info as rec
-import airquality.database.util.conn as db
+import airquality.database.conn.adapt as db
 import airquality.database.util.query as qry
 
 

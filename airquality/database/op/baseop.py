@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.database.util.conn as db
+import airquality.database.conn.adapt as db
 import airquality.database.util.query as query
 import airquality.logger.loggable as log
 

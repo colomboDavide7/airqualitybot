@@ -8,7 +8,7 @@
 import abc
 from typing import List
 import airquality.database.op.sel.base as base
-import airquality.database.util.conn as db
+import airquality.database.conn.adapt as db
 import airquality.database.util.query as qry
 import airquality.types.channel as chtype
 

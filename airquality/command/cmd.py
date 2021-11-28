@@ -13,13 +13,11 @@ import airquality.api.url.baseurl as url
 
 class Command(log.Loggable, abc.ABC):
 
-    ################################ __init__ ###############################
     def __init__(self, ub: url.BaseURLBuilder, fw: apiwrp.FetchWrapper, log_filename="log"):
         super(Command, self).__init__(log_filename=log_filename)
         self.url_builder = ub
         self.fetch_wrapper = fw
 
-    ################################ execute ###############################
     @abc.abstractmethod
     def execute(self):
         pass

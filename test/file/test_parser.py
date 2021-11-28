@@ -15,11 +15,11 @@ class TestFileParser(unittest.TestCase):
         self.json_parser = parser.JSONParser()
 
     def test_get_parser_class(self):
-        obj_cls = parser.get_text_parser('json')
+        obj_cls = parser.get_file_parser('json')
         self.assertEqual(obj_cls.__class__, parser.JSONParser)
 
         with self.assertRaises(SystemExit):
-            parser.get_text_parser('bad file extension')
+            parser.get_file_parser('bad file extension')
 
     def test_successfully_parse_json_file(self):
         test_raw = '{"hello": "world"}'

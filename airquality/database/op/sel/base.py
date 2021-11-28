@@ -8,7 +8,7 @@
 import abc
 from typing import List, Dict
 import airquality.database.op.baseop as baseop
-import airquality.database.util.conn as connection
+import airquality.database.conn.adapt as db
 import airquality.database.util.query as query
 import airquality.types.channel as chtype
 import airquality.types.timestamp as ts
@@ -24,7 +24,7 @@ class ParamNameID:
 ################################ SELECT WRAPPER ################################
 class SelectWrapper(baseop.DatabaseWrapper, abc.ABC):
 
-    def __init__(self, conn: connection.DatabaseAdapter, builder: query.QueryBuilder, sensor_type: str, log_filename="log"):
+    def __init__(self, conn: db.DatabaseAdapter, builder: query.QueryBuilder, sensor_type: str, log_filename="log"):
         super(SelectWrapper, self).__init__(conn=conn, builder=builder, log_filename=log_filename)
         self.sensor_type = sensor_type
 

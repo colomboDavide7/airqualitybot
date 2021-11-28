@@ -9,13 +9,13 @@ from typing import List
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.op.ins.base as base
 import airquality.database.rec.info as rec
-import airquality.database.util.conn as connection
+import airquality.database.conn.adapt as db
 import airquality.database.util.query as query
 
 
 class StationGeoInsertWrapper(base.InsertWrapper):
 
-    def __init__(self, conn: connection.DatabaseAdapter, builder: query.QueryBuilder, log_filename="log"):
+    def __init__(self, conn: db.DatabaseAdapter, builder: query.QueryBuilder, log_filename="log"):
         super(StationGeoInsertWrapper, self).__init__(conn=conn, builder=builder, log_filename=log_filename)
 
     @log_decorator.log_decorator()
