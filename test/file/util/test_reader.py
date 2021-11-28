@@ -20,7 +20,7 @@ class TestFileReader(unittest.TestCase):
             r.open_read_close_file("tests")
 
     def test_successfully_open_read_close_file(self):
-        r.open_read_close_file('test/file/test_orc.txt')
+        r.open_read_close_file('test/file/util/test_orc.txt')
 
 
 if __name__ == '__main__':
