@@ -23,6 +23,7 @@ class MeasureInsertWrapper(base.InsertWrapper, abc.ABC):
         super(MeasureInsertWrapper, self).__init__(
             conn=conn, builder=builder, record_builder=record_builder, log_filename=log_filename)
         self.record_builder = record_builder
+        self.sensor_id = None
         self.record_id = None
         self.channel_name = None
 
@@ -33,7 +34,7 @@ class MeasureInsertWrapper(base.InsertWrapper, abc.ABC):
     @log_decorator.log_decorator()
     def get_update_last_acquisition_timestamp_query(self, last_response: resp.MeasureAPIResp) -> str:
         return self.query_builder.build_update_last_channel_acquisition_query(
-            sensor_id=self.record_builder.sensor_id,
+            sensor_id=self.sensor_id,
             channel_name=self.channel_name,
             last_timestamp=last_response.timestamp.get_formatted_timestamp()
         )
@@ -53,12 +54,13 @@ class MeasureInsertWrapper(base.InsertWrapper, abc.ABC):
 
     @log_decorator.log_decorator()
     def with_measure_param_name2id(self, name2id: Dict[str, Any]):
-        self.record_builder.name2id = name2id
+        self.record_builder.with_measure_name2id(name2id)
         return self
 
     @log_decorator.log_decorator()
     def with_sensor_id(self, sensor_id: int):
-        self.record_builder.sensor_id = sensor_id
+        self.sensor_id = sensor_id
+        self.record_builder.with_sensor_id(sensor_id)
         return self
 
     @log_decorator.log_decorator()
