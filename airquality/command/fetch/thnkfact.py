@@ -46,8 +46,7 @@ class ThingspeakFetchFactory(fact.CommandFactory):
             sw=select_wrapper,
             fw=fetch_wrapper,
             flt=response_filter,
-            arb=response_builder,
-            rb_cls=rec.StationMeasureRecord
+            arb=response_builder
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
@@ -75,9 +74,10 @@ class ThingspeakFetchFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
+        record_builder = rec.StationRecordBuilder()
 
-        insert_wrapper = ins.StationMeasureInsertWrapper(
-            conn=self.database_conn, builder=query_builder, log_filename=self.log_filename
+        insert_wrapper = ins.StationInsertWrapper(
+            conn=self.database_conn, builder=query_builder, record_builder=record_builder, log_filename=self.log_filename
         )
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)

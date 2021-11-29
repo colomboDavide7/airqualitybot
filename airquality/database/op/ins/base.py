@@ -13,10 +13,10 @@ import airquality.database.util.query as query
 
 class InsertWrapper(base.DatabaseWrapper, abc.ABC):
 
-    def __init__(self, conn: db.DatabaseAdapter, builder: query.QueryBuilder, log_filename="log"):
+    def __init__(self, conn: db.DatabaseAdapter, builder: query.QueryBuilder, record_builder, log_filename="log"):
         super(InsertWrapper, self).__init__(conn=conn, builder=builder, log_filename=log_filename)
-        self.query_to_execute = ""
+        self.record_builder = record_builder
 
-    def insert(self) -> None:
-        self.database_conn.send(self.query_to_execute)
-        self.query_to_execute = ""
+    @abc.abstractmethod
+    def insert(self, api_responses) -> None:
+        pass

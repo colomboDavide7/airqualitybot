@@ -29,6 +29,17 @@ class TestStructuredFile(unittest.TestCase):
         self.assertEqual(actual.k1, "v1")
         self.assertEqual(actual.k2, "v2")
 
+    def test_attribute_error_when_getting_non_existing_attribute(self):
+        test_content = {
+            "some_object": ["a", "b", "c"],
+            "obj2": {"k1": "v1", "k2": "v2"}
+        }
+
+        test_path_to_object = ["obj2"]
+        actual = fact.get_structured_file(file_fmt="json", path_to_object=test_path_to_object, parsed_content=test_content)
+        with self.assertRaises(AttributeError):
+            actual.bad_attribute
+
     def test_exit_on_bad_object_name(self):
         test_content = {
             "some_object": ["a", "b", "c"],

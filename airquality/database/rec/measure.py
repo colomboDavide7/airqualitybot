@@ -6,49 +6,51 @@
 #
 ######################################################
 import abc
-from typing import Dict, Any
-import airquality.types.apiresp.measresp as resp
+import airquality.logger.loggable as log
+import airquality.types.timestamp as ts
+import airquality.types.postgis as pgis
 
 
-class MeasureRecord(abc.ABC):
+class MeasureRecordBuilder(log.Loggable, abc.ABC):
 
-    def __init__(self, record_id: int, sensor_id: int, name2id: Dict[str, Any], response: resp.MeasureAPIResp):
-        self.record_id = record_id
-        self.name2id = name2id
-        self.sensor_id = sensor_id
-        self.response = response
+    def __init__(self, log_filename="log"):
+        super(MeasureRecordBuilder, self).__init__(log_filename=log_filename)
+        self.name2id = None
+        self.sensor_id = None
 
     @abc.abstractmethod
-    def get_measure_values(self) -> str:
+    def get_measure_value(self, record_id: int, timestamp: ts.Timestamp, param_name: str, param_value: str) -> str:
         pass
 
 
 ################################ MOBILE MEASURE RECORD ################################
-class MobileMeasureRecord(MeasureRecord):
+class MobileRecordBuilder(MeasureRecordBuilder):
 
-    def __init__(self, record_id: int, sensor_id: int, response: resp.MobileSensorAPIResp, name2id: Dict[str, Any]):
-        super(MobileMeasureRecord, self).__init__(record_id=record_id, sensor_id=sensor_id, name2id=name2id, response=response)
-        self.response = response
+    def __init__(self, log_filename="log"):
+        super(MobileRecordBuilder, self).__init__(log_filename=log_filename)
+        self.geom: pgis.PostgisGeometry = pgis.NullGeometry()
 
-    def get_measure_values(self) -> str:
-        fmt_ts = self.response.timestamp.get_formatted_timestamp()
-        geom = self.response.geometry.geom_from_text()
-        return ','.join(f"({self.record_id}, {self.name2id[m.name]}, '{m.value}', '{fmt_ts}', {geom})"
-                        if m.value is not None else
-                        f"({self.record_id}, {self.name2id[m.name]}, NULL, '{fmt_ts}', {geom})"
-                        for m in self.response.measures)
+    def with_geometry(self, geom: pgis.PostgisGeometry):
+        self.geom = geom
+        return self
+
+    def get_measure_value(self, record_id: int, timestamp: ts.Timestamp, param_name: str, param_value: str) -> str:
+        geometry = self.geom.geom_from_text()
+        fmt_ts = timestamp.get_formatted_timestamp()
+        param_id = self.name2id[param_name]
+
+        return f"({record_id}, {param_id}, '{param_value}', '{fmt_ts}', {geometry})" if param_value is not None \
+            else f"({record_id}, {param_id}, NULL, '{fmt_ts}', {geometry})"
 
 
 ################################ STATION MEASURE RECORD ################################
-class StationMeasureRecord(MeasureRecord):
+class StationRecordBuilder(MeasureRecordBuilder):
 
-    def __init__(self, record_id: int, sensor_id: int, response: resp.MeasureAPIResp, name2id: Dict[str, Any]):
-        super(StationMeasureRecord, self).__init__(record_id=record_id, sensor_id=sensor_id, name2id=name2id, response=response)
-        self.response = response
+    def __init__(self, log_filename="log"):
+        super(StationRecordBuilder, self).__init__(log_filename=log_filename)
 
-    def get_measure_values(self) -> str:
-        fmt_ts = self.response.timestamp.get_formatted_timestamp()
-        return ','.join(f"({self.record_id}, {self.name2id[m.name]}, {self.sensor_id}, '{m.value}', '{fmt_ts}')"
-                        if m.value is not None else
-                        f"({self.record_id}, {self.name2id[m.name]}, {self.sensor_id}, NULL, '{fmt_ts}')"
-                        for m in self.response.measures)
+    def get_measure_value(self, record_id: int, timestamp: ts.Timestamp, param_name: str, param_value: str) -> str:
+        fmt_ts = timestamp.get_formatted_timestamp()
+        param_id = self.name2id[param_name]
+        return f"({record_id}, {param_id}, {self.sensor_id}, '{param_value}', '{fmt_ts}')" if param_value is not None \
+            else f"({record_id}, {param_id}, {self.sensor_id}, NULL, '{fmt_ts}')"

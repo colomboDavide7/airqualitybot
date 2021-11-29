@@ -13,7 +13,6 @@ import airquality.api.url.dynurl as url
 import airquality.api.url.timedecor as urldec
 import airquality.database.op.ins.measure as ins
 import airquality.database.op.sel.measure as sel
-import airquality.database.rec.measure as rec
 import airquality.filter.tsfilt as filt
 import airquality.types.timestamp as ts
 
@@ -30,13 +29,11 @@ class FetchCommand(base.Command):
             iw: ins.MeasureInsertWrapper,
             sw: sel.MeasureSelectWrapper,
             flt: filt.TimestampFilter,
-            rb_cls=rec.MeasureRecord,
             log_filename="log"
     ):
         super(FetchCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
         self.insert_wrapper = iw
         self.select_wrapper = sw
-        self.record_class = rb_cls
         self.time_url_decorator = tud
         self.time_filter = flt
         self.api_resp_builder = arb
@@ -101,21 +98,11 @@ class FetchCommand(base.Command):
                     # Measure param
                     name2id = self.select_wrapper.select_measure_param()
 
-                    records = []
-                    for api_resp in api_responses:
-                        records.append(
-                            self.record_class(record_id=max_record_id, sensor_id=dbresp.sensor_id, name2id=name2id, response=api_resp)
-                        )
-                        max_record_id += 1
-
                     # Insert measurements
-                    self.insert_wrapper.concat_measure_query(records=records)
+                    self.insert_wrapper\
+                        .with_sensor_id(dbresp.sensor_id)\
+                        .with_measure_param_name2id(name2id)\
+                        .with_start_insert_record_id(max_record_id)\
+                        .with_channel_name(channel.ch_name)
 
-                    current_last_acquisition = records[-1].response.timestamp.get_formatted_timestamp()
-                    self.insert_wrapper.concat_update_last_acquisition_timestamp_query(
-                        sensor_id=dbresp.sensor_id,
-                        channel_name=channel.ch_name,
-                        last_acquisition=current_last_acquisition
-                    )
-
-                    self.insert_wrapper.insert()
+                    self.insert_wrapper.insert(api_responses)

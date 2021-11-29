@@ -47,8 +47,7 @@ class AtmotubeFetchFactory(fact.CommandFactory):
             sw=select_wrapper,
             fw=fetch_wrapper,
             flt=response_filter,
-            arb=response_builder,
-            rb_cls=rec.MobileMeasureRecord
+            arb=response_builder
         )
         command.set_file_logger(self.file_logger)
         command.set_console_logger(self.console_logger)
@@ -74,9 +73,10 @@ class AtmotubeFetchFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
+        record_builder = rec.MobileRecordBuilder()
 
-        insert_wrapper = ins.MobileMeasureInsertWrapper(
-            conn=self.database_conn, builder=query_builder, log_filename=self.log_filename
+        insert_wrapper = ins.MobileInsertWrapper(
+            conn=self.database_conn, builder=query_builder, record_builder=record_builder, log_filename=self.log_filename
         )
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)
