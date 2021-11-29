@@ -19,7 +19,7 @@ class StationGeoInsertWrapper(base.InsertWrapper):
         super(StationGeoInsertWrapper, self).__init__(conn=conn, builder=builder, log_filename=log_filename)
 
     @log_decorator.log_decorator()
-    def concat_location_query(self, records: List[rec.SensorInfoRecord]) -> None:
+    def concat_location_query(self, records: List[rec.InfoRecordBuilder]) -> None:
 
         self.query_to_execute += self.query_builder.build_insert_sensor_location_query(
             geolocation_values=','.join(f"{r.get_geolocation_value()}" for r in records)
@@ -27,7 +27,7 @@ class StationGeoInsertWrapper(base.InsertWrapper):
         self.log_info(f"{StationGeoInsertWrapper.__name__}: inserted {len(records)}/{len(records)} new locations")
 
     @log_decorator.log_decorator()
-    def concat_update_valid_to_timestamp(self, records: List[rec.SensorInfoRecord]):
+    def concat_update_valid_to_timestamp(self, records: List[rec.InfoRecordBuilder]):
         for r in records:
             self.query_to_execute += self.query_builder.build_update_location_validity_query(
                 valid_to=r.response.geolocation.timestamp.get_formatted_timestamp(),

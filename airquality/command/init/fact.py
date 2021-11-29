@@ -18,6 +18,7 @@ import airquality.database.op.ins.info as ins
 import airquality.database.op.sel.info as sel
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as db
+import airquality.database.rec.info as rec
 import airquality.types.postgis as postgis
 
 
@@ -77,10 +78,11 @@ class PurpleairInitFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
+        record_builder = rec.InfoRecordBuilder()
 
         # Station Info Insert Wrapper
-        insert_wrapper = ins.StationInfoInsertWrapper(
-            conn=self.database_conn, builder=query_builder, log_filename=self.log_filename
+        insert_wrapper = ins.InfoInsertWrapper(
+            conn=self.database_conn, builder=query_builder, record_builder=record_builder, log_filename=self.log_filename
         )
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)

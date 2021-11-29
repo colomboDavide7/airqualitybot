@@ -13,7 +13,6 @@ import airquality.api.resp.info.purpleair as resp
 import airquality.filter.namefilt as nameflt
 import airquality.database.op.ins.info as ins
 import airquality.database.op.sel.info as sel
-import airquality.database.rec.info as rec
 
 
 class InitCommand(basecmd.Command):
@@ -22,16 +21,14 @@ class InitCommand(basecmd.Command):
             self,
             ub: purl.PurpleairURLBuilder,
             fw: apiwrp.FetchWrapper,
-            iw: ins.StationInfoInsertWrapper,
+            iw: ins.InfoInsertWrapper,
             sw: sel.SensorInfoSelectWrapper,
             arb: resp.PurpleairAPIRespBuilder,
-            log_filename="log",
-            rb_cls=rec.SensorInfoRecord
+            log_filename="log"
     ):
         super(InitCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
         self.insert_wrapper = iw
         self.select_wrapper = sw
-        self.record_builder_cls = rb_cls
         self.api_resp_builder = arb
 
     @log_decorator.log_decorator()
@@ -73,13 +70,5 @@ class InitCommand(basecmd.Command):
 
         ################################ DATABASE-SIDE ###############################
         max_sensor_id = self.select_wrapper.select_max_sensor_id()
-        self.log_info(f"{InitCommand.__name__}: new insertion starts at sensor_id={max_sensor_id}")
-
-        records = []
-        for response in api_responses:
-            records.append(self.record_builder_cls(sensor_id=max_sensor_id, info_resp=response))
-            max_sensor_id += 1
-
-        # Concatenate all the queries and then execute once all of them
-        self.insert_wrapper.concat_initialize_sensor_query(records=records)
-        self.insert_wrapper.insert()
+        self.insert_wrapper.with_start_insert_sensor_id(max_sensor_id)
+        self.insert_wrapper.insert(api_responses)

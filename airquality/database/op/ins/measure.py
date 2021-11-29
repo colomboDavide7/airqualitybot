@@ -38,26 +38,30 @@ class MeasureInsertWrapper(base.InsertWrapper, abc.ABC):
             last_timestamp=last_response.timestamp.get_formatted_timestamp()
         )
 
-    def log_report(self, start_rec_id: int, end_rec_id: int, api_responses: List[resp.MeasureAPIResp]):
+    def log_report(self, start_rec_id: int, api_responses: List[resp.MeasureAPIResp]):
         start_timestamp = api_responses[0].timestamp.get_formatted_timestamp()
         last_timestamp = api_responses[-1].timestamp.get_formatted_timestamp()
         n = len(api_responses)
         self.log_info(f"{self.__class__.__name__}: inserted {n}/{n} new measurements "
-                      f"within record_id [{start_rec_id} - {end_rec_id}] and "
+                      f"within record_id [{start_rec_id} - {start_rec_id+n}] and "
                       f"within timestamp [{start_timestamp} - {last_timestamp}]")
 
+    @log_decorator.log_decorator()
     def with_start_insert_record_id(self, record_id: int):
         self.record_id = record_id
         return self
 
+    @log_decorator.log_decorator()
     def with_measure_param_name2id(self, name2id: Dict[str, Any]):
         self.record_builder.name2id = name2id
         return self
 
+    @log_decorator.log_decorator()
     def with_sensor_id(self, sensor_id: int):
         self.record_builder.sensor_id = sensor_id
         return self
 
+    @log_decorator.log_decorator()
     def with_channel_name(self, channel_name: str):
         self.channel_name = channel_name
         return self
@@ -77,11 +81,10 @@ class MobileInsertWrapper(MeasureInsertWrapper):
     def insert(self, api_responses: List[resp.MobileSensorAPIResp]) -> None:
         start_record_id = self.record_id
         measure_values = self.get_measure_values(api_responses=api_responses)
-        end_record_id = self.record_id
         query = self.query_builder.build_insert_mobile_measure_query(measure_values)
         query += self.get_update_last_acquisition_timestamp_query(last_response=api_responses[-1])
         self.database_conn.send(query)
-        self.log_report(start_rec_id=start_record_id, end_rec_id=end_record_id, api_responses=api_responses)
+        self.log_report(start_rec_id=start_record_id, api_responses=api_responses)
 
     @log_decorator.log_decorator()
     def get_measure_values(self, api_responses: List[resp.MobileSensorAPIResp]) -> str:
@@ -111,11 +114,10 @@ class StationInsertWrapper(MeasureInsertWrapper):
     def insert(self, api_responses: List[resp.MeasureAPIResp]) -> None:
         start_record_id = self.record_id
         measure_values = self.get_measure_values(api_responses=api_responses)
-        end_record_id = self.record_id
         query = self.query_builder.build_insert_station_measure_query(measure_values)
         query += self.get_update_last_acquisition_timestamp_query(last_response=api_responses[-1])
         self.database_conn.send(query)
-        self.log_report(start_rec_id=start_record_id, end_rec_id=end_record_id, api_responses=api_responses)
+        self.log_report(start_rec_id=start_record_id, api_responses=api_responses)
 
     @log_decorator.log_decorator()
     def get_measure_values(self, api_responses: List[resp.MeasureAPIResp]) -> str:

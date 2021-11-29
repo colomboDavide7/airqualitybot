@@ -26,7 +26,7 @@ class UpdateCommand(basecmd.Command):
             sw: sel.SensorInfoSelectWrapper,
             arb: resp.PurpleairAPIRespBuilder,
             log_filename="log",
-            rb_cls=rec.SensorInfoRecord
+            rb_cls=rec.InfoRecordBuilder
     ):
         super(UpdateCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
         self.insert_wrapper = iw

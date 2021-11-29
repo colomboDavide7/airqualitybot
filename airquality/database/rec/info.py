@@ -5,25 +5,26 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.types.apiresp.inforesp as resp
+import airquality.logger.loggable as log
+import airquality.types.timestamp as ts
+import airquality.types.postgis as pgis
 
 
-class SensorInfoRecord:
+class InfoRecordBuilder(log.Loggable):
 
-    def __init__(self, info_resp: resp.SensorInfoResponse, sensor_id: int):
-        self.response = info_resp
+    def __init__(self, log_filename="log"):
+        super(InfoRecordBuilder, self).__init__(log_filename=log_filename)
+        self.sensor_id = None
+
+    def with_sensor_id(self, sensor_id: int):
         self.sensor_id = sensor_id
+        return self
 
-    def get_sensor_value(self) -> str:
-        return f"({self.sensor_id}, '{self.response.sensor_type}', '{self.response.sensor_name}')"
+    def get_sensor_value(self, sensor_name: str, sensor_type: str) -> str:
+        return f"({self.sensor_id}, '{sensor_type}', '{sensor_name}'),"
 
-    def get_channel_param_value(self) -> str:
-        return ','.join(
-            f"({self.sensor_id}, '{c.ch_key}', '{c.ch_id}', '{c.ch_name}', '{c.last_acquisition.get_formatted_timestamp()}')"
-            for c in self.response.channels
-        )
+    def get_channel_param_value(self, ident: str, key: str, name: str, timest: ts.Timestamp) -> str:
+        return f"({self.sensor_id}, '{key}', '{ident}', '{name}', '{timest.get_formatted_timestamp()}')"
 
-    def get_geolocation_value(self) -> str:
-        return f"({self.sensor_id}, " \
-               f"'{self.response.geolocation.timestamp.get_formatted_timestamp()}', " \
-               f"{self.response.geolocation.geometry.geom_from_text()})"
+    def get_geolocation_value(self, timest: ts.Timestamp, geometry: pgis.PostgisGeometry) -> str:
+        return f"({self.sensor_id}, '{timest.get_formatted_timestamp()}', {geometry.geom_from_text()}),"
