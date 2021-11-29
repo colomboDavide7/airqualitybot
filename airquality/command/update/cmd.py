@@ -24,12 +24,14 @@ class UpdateCommand(basecmd.Command):
             iw: ins.GeoInsertWrapper,
             sw: sel.SensorInfoSelectWrapper,
             arb: resp.PurpleairAPIRespBuilder,
+            rf: flt.GeoFilter,
             log_filename="log"
     ):
         super(UpdateCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.api_resp_builder = arb
+        self.response_filter = rf
 
     # ************************************ execute ************************************
     @log_decorator.log_decorator()
@@ -52,18 +54,8 @@ class UpdateCommand(basecmd.Command):
             self.log_warning(f"{UpdateCommand.__name__}: empty API response => no location updated")
             return
 
-        # Create the Database Locations Dict
-        database_active_locations = {}
-        for dbresp in db_responses:
-            database_active_locations[dbresp.sensor_name] = dbresp.geometry.as_text()
-
-        # Create GeoFilter
-        api_resp_filter = flt.GeoFilter(database_active_locations=database_active_locations, log_filename=self.log_filename)
-        api_resp_filter.set_file_logger(self.file_logger)
-        api_resp_filter.set_console_logger(self.console_logger)
-
-        # Filter sensor data
-        filtered_responses = api_resp_filter.filter(resp2filter=api_responses)
+        self.response_filter.with_database_active_locations({r.sensor_name: r.geometry.as_text() for r in db_responses})
+        filtered_responses = self.response_filter.filter(resp2filter=api_responses)
         if not filtered_responses:
             self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")
             return

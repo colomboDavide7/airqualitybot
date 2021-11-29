@@ -12,15 +12,18 @@ import airquality.types.apiresp.inforesp as resp
 
 class GeoFilter(base.BaseFilter):
 
-    def __init__(self, database_active_locations: Dict[str, Any], log_filename="log"):
+    def __init__(self, log_filename="log"):
         super(GeoFilter, self).__init__(log_filename=log_filename)
-        self.database_active_locations = database_active_locations
+        self._database_active_locations = None
+
+    def with_database_active_locations(self, active_locations: Dict[str, Any]):
+        self._database_active_locations = active_locations
 
     def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
         filtered_responses = []
         for response in resp2filter:
-            if response.sensor_name in self.database_active_locations:
-                if response.geolocation.geometry.as_text() != self.database_active_locations[response.sensor_name]:
+            if response.sensor_name in self._database_active_locations:
+                if response.geolocation.geometry.as_text() != self._database_active_locations[response.sensor_name]:
                     filtered_responses.append(response)
                     self.log_info(f"{GeoFilter.__name__}: add sensor '{response.sensor_name}' => new location")
                 else:

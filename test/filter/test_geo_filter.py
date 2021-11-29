@@ -28,14 +28,16 @@ class TestGeoFilter(unittest.TestCase):
     def test_empty_list_when_apply_filter(self):
         test_active_locations = {"n1": "POINT(9 45)"}
 
-        resp_filter = flt.GeoFilter(database_active_locations=test_active_locations)
+        resp_filter = flt.GeoFilter()
+        resp_filter.with_database_active_locations(test_active_locations)
         actual = resp_filter.filter(resp2filter=self.test_responses)
         self.assertEqual(len(actual), 0)
 
     def test_successfully_filter_responses(self):
         test_active_locations = {"n1": "POINT(10 44)"}
 
-        resp_filter = flt.GeoFilter(database_active_locations=test_active_locations)
+        resp_filter = flt.GeoFilter()
+        resp_filter.with_database_active_locations(test_active_locations)
         actual = resp_filter.filter(resp2filter=self.test_responses)
         self.assertEqual(len(actual), 1)
         self.assertEqual(actual[0].sensor_name, "n1")

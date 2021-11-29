@@ -12,14 +12,18 @@ import airquality.types.apiresp.inforesp as resp
 
 class NameFilter(base.BaseFilter):
 
-    def __init__(self, database_sensor_names: List[str], log_filename="log"):
+    def __init__(self, log_filename="log"):
         super(NameFilter, self).__init__(log_filename=log_filename)
-        self.database_sensor_names = database_sensor_names
+        self._database_sensor_names = None
+
+    def with_database_sensor_names(self, dbnames: List[str]):
+        self._database_sensor_names = dbnames
+        return self
 
     def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
         filtered_responses = []
         for response in resp2filter:
-            if response.sensor_name not in self.database_sensor_names:
+            if response.sensor_name not in self._database_sensor_names:
                 filtered_responses.append(response)
                 self.log_info(f"{NameFilter.__name__}: add sensor '{response.sensor_name}' => new sensor")
             else:

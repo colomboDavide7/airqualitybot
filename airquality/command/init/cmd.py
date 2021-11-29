@@ -24,12 +24,14 @@ class InitCommand(basecmd.Command):
             iw: ins.InfoInsertWrapper,
             sw: sel.SensorInfoSelectWrapper,
             arb: resp.PurpleairAPIRespBuilder,
+            flt: nameflt.NameFilter,
             log_filename="log"
     ):
         super(InitCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.api_resp_builder = arb
+        self.response_filter = flt
 
     @log_decorator.log_decorator()
     def execute(self):
@@ -50,19 +52,12 @@ class InitCommand(basecmd.Command):
 
         # If there are any existing sensor within the database
         if db_responses:
-            database_sensor_names = []
 
-            for dbresp in db_responses:
-                database_sensor_names.append(dbresp.sensor_name)
-
-            # Apply a filter for filtering out all the sensors that are already present into the database
-            api_resp_filter = nameflt.NameFilter(database_sensor_names=database_sensor_names, log_filename=self.log_filename)
-            api_resp_filter.set_file_logger(self.file_logger)
-            api_resp_filter.set_console_logger(self.console_logger)
-
-            filtered_responses = api_resp_filter.filter(resp2filter=api_responses)
+            self.response_filter.with_database_sensor_names(dbnames=[r.sensor_name for r in db_responses])
+            filtered_responses = self.response_filter.filter(resp2filter=api_responses)
             if not filtered_responses:
-                self.log_warning(f"{InitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
+                self.log_warning(
+                    f"{InitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
                 return
 
             # update the api responses with the filtered ones

@@ -19,6 +19,7 @@ import airquality.database.op.sel.info as sel
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as db
 import airquality.database.rec.info as rec
+import airquality.filter.geofilt as flt
 
 
 ################################ get_update_command_factory_cls ################################
@@ -45,6 +46,9 @@ class PurpleairUpdateFactory(fact.CommandFactory):
         response_builder, url_builder, fetch_wrapper = self.get_api_side_objects()
 
         insert_wrapper, select_wrapper = self.get_database_side_objects(sensor_type=sensor_type)
+        response_filter = flt.GeoFilter()
+        response_filter.set_file_logger(self.file_logger)
+        response_filter.set_console_logger(self.console_logger)
 
         command = cmd.UpdateCommand(
             ub=url_builder,
@@ -52,6 +56,7 @@ class PurpleairUpdateFactory(fact.CommandFactory):
             iw=insert_wrapper,
             sw=select_wrapper,
             arb=response_builder,
+            rf=response_filter,
             log_filename=self.log_filename
         )
         command.set_file_logger(self.file_logger)

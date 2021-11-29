@@ -20,6 +20,7 @@ import airquality.database.util.query as qry
 import airquality.database.conn.adapt as db
 import airquality.database.rec.info as rec
 import airquality.types.postgis as postgis
+import airquality.filter.namefilt as flt
 
 
 ################################ get_update_command_factory_cls ################################
@@ -47,12 +48,17 @@ class PurpleairInitFactory(fact.CommandFactory):
 
         insert_wrapper, select_wrapper = self.get_database_side_objects(sensor_type=sensor_type)
 
+        response_filter = flt.NameFilter()
+        response_filter.set_file_logger(self.file_logger)
+        response_filter.set_console_logger(self.console_logger)
+
         cmd = command.InitCommand(
             ub=url_builder,
             fw=fetch_wrapper,
             iw=insert_wrapper,
             sw=select_wrapper,
             arb=response_builder,
+            flt=response_filter,
             log_filename=self.log_filename
         )
         cmd.set_file_logger(self.file_logger)
