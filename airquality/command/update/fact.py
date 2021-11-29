@@ -18,6 +18,7 @@ import airquality.database.op.ins.geo as ins
 import airquality.database.op.sel.info as sel
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as db
+import airquality.database.rec.info as rec
 
 
 ################################ get_update_command_factory_cls ################################
@@ -77,9 +78,11 @@ class PurpleairUpdateFactory(fact.CommandFactory):
     def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
 
+        record_builder = rec.InfoRecordBuilder()
+
         # InsertWrapper
-        insert_wrapper = ins.StationGeoInsertWrapper(
-            conn=self.database_conn, builder=query_builder, log_filename=self.log_filename
+        insert_wrapper = ins.GeoInsertWrapper(
+            conn=self.database_conn, builder=query_builder, record_builder=record_builder, log_filename=self.log_filename
         )
         insert_wrapper.set_file_logger(self.file_logger)
         insert_wrapper.set_console_logger(self.console_logger)

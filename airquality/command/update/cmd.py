@@ -13,7 +13,6 @@ import airquality.api.resp.info.purpleair as resp
 import airquality.database.op.ins.geo as ins
 import airquality.database.op.sel.info as sel
 import airquality.filter.geofilt as flt
-import airquality.database.rec.info as rec
 
 
 class UpdateCommand(basecmd.Command):
@@ -22,16 +21,14 @@ class UpdateCommand(basecmd.Command):
             self,
             ub: purl.PurpleairURLBuilder,
             fw: apiwrp.FetchWrapper,
-            iw: ins.StationGeoInsertWrapper,
+            iw: ins.GeoInsertWrapper,
             sw: sel.SensorInfoSelectWrapper,
             arb: resp.PurpleairAPIRespBuilder,
-            log_filename="log",
-            rb_cls=rec.InfoRecordBuilder
+            log_filename="log"
     ):
         super(UpdateCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
         self.insert_wrapper = iw
         self.select_wrapper = sw
-        self.record_builder_cls = rb_cls
         self.api_resp_builder = arb
 
     # ************************************ execute ************************************
@@ -71,22 +68,7 @@ class UpdateCommand(basecmd.Command):
             self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")
             return
 
-        # Create sensor_name - sensor_id map
-        name_id_map = {}
-        for dbresp in db_responses:
-            name_id_map[dbresp.sensor_name] = dbresp.sensor_id
-
-        # Build database records
-        records = []
-        for api_resp in filtered_responses:
-            sensor_id = name_id_map[api_resp.sensor_name]
-            records.append(self.record_builder_cls(info_resp=api_resp, sensor_id=sensor_id))
-
-        # Concat update valid to timestamp for changed locations
-        self.insert_wrapper.concat_update_valid_to_timestamp(records=records)
-
-        # Concat insert new records for changed locations
-        self.insert_wrapper.concat_location_query(records=records)
-
-        # Execute all-in-one the queries (this is much safer)
-        self.insert_wrapper.insert()
+        # Insert new locations
+        sensor_name2id = {r.sensor_name: r.sensor_id for r in db_responses}
+        self.insert_wrapper.with_sensor_name2id(sensor_name2id)
+        self.insert_wrapper.insert(filtered_responses)
