@@ -52,7 +52,7 @@ class InfoInsertWrapper(base.InsertWrapper):
             sensor_values += self.record_builder.get_sensor_value(sensor_name=r.sensor_name, sensor_type=r.sensor_type)
 
             for c in r.channels:
-                api_param_values += self.record_builder.get_channel_param_value(
+                api_param_values += self.record_builder.get_api_param_values(
                         ident=c.ch_id, key=c.ch_key, name=c.ch_name, timest=c.last_acquisition
                     ) + ','
 
