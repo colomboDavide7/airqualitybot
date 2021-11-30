@@ -21,13 +21,17 @@ class NameFilter(base.BaseFilter):
         return self
 
     def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
-        filtered_responses = []
-        for response in resp2filter:
-            if response.sensor_name not in self._database_sensor_names:
-                filtered_responses.append(response)
-                self.log_info(f"{NameFilter.__name__}: add sensor '{response.sensor_name}' => new sensor")
+        all_responses = len(resp2filter)
+        count = 0
+        item_idx = 0
+        while count < all_responses:
+            if resp2filter[item_idx].sensor_name in self._database_sensor_names:
+                self.log_warning(f"{NameFilter.__name__}: skip sensor '{resp2filter[item_idx].sensor_name}' => already present")
+                del resp2filter[item_idx]
             else:
-                self.log_warning(f"{NameFilter.__name__}: skip sensor '{response.sensor_name}' => already present")
+                self.log_info(f"{NameFilter.__name__}: add sensor '{resp2filter[item_idx].sensor_name}' => new sensor")
+                item_idx += 1
+            count += 1
 
-        self.log_info(f"{NameFilter.__name__}: found {len(filtered_responses)}/{len(resp2filter)} new sensors")
-        return filtered_responses
+        self.log_info(f"{NameFilter.__name__}: found {len(resp2filter)}/{all_responses} new sensors")
+        return resp2filter

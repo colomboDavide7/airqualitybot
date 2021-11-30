@@ -37,24 +37,22 @@ class UpdateCommand(basecmd.Command):
     @log_decorator.log_decorator()
     def execute(self):
 
-        # Query database active locations
+        # Query database sensors
         db_responses = self.select_wrapper.select()
         if not db_responses:
             self.log_warning(f"{UpdateCommand.__name__}: empty database response => no location updated")
             return
 
-        # Build url for fetching data from API
-        url = self.url_builder.build()
-
         # Fetch API data
+        url = self.url_builder.build()
         parsed_response = self.fetch_wrapper.fetch(url=url)
-
         api_responses = self.api_resp_builder.build(parsed_resp=parsed_response)
         if not api_responses:
             self.log_warning(f"{UpdateCommand.__name__}: empty API response => no location updated")
             return
 
-        self.response_filter.with_database_active_locations({r.sensor_name: r.geometry.as_text() for r in db_responses})
+        # Filter locations
+        self.response_filter.with_database_locations({r.sensor_name: r.geometry.as_text() for r in db_responses})
         filtered_responses = self.response_filter.filter(resp2filter=api_responses)
         if not filtered_responses:
             self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")

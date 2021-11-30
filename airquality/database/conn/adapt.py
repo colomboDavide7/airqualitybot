@@ -49,7 +49,6 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
         except psycopg2.Error as err:
             raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad connection string => {err!s}")
 
-    @log_decorator.log_decorator()
     def send(self, query: str):
         if self._conn is None:
             raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => connection is close")

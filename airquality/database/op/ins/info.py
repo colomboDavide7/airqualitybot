@@ -24,7 +24,6 @@ class InfoInsertWrapper(base.InsertWrapper):
         self.record_builder = record_builder
         self.start_sensor_id = None
 
-    @log_decorator.log_decorator()
     def with_start_insert_sensor_id(self, sensor_id: int):
         self.start_sensor_id = sensor_id
         return self
@@ -65,6 +64,6 @@ class InfoInsertWrapper(base.InsertWrapper):
     def log_report(self, start_id: int, api_responses: List[resp.SensorInfoResponse]):
         n = len(api_responses)
         self.log_info(f"{InfoInsertWrapper.__name__}: inserted {n}/{n} new sensors within sensor_id range "
-                      f"[{start_id} - {start_id+n}]")
+                      f"[{start_id} - {start_id+n-1}]")
         for r in api_responses:
             self.log_info(f"{InfoInsertWrapper.__name__}: inserted {r.sensor_name}")

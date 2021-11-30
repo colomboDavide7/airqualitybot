@@ -43,27 +43,23 @@ class MeasureInsertWrapper(base.InsertWrapper, abc.ABC):
         start_timestamp = api_responses[0].timestamp.get_formatted_timestamp()
         last_timestamp = api_responses[-1].timestamp.get_formatted_timestamp()
         n = len(api_responses)
-        self.log_info(f"{self.__class__.__name__}: inserted {n}/{n} new measurements "
-                      f"within record_id [{start_rec_id} - {start_rec_id+n}] and "
-                      f"within timestamp [{start_timestamp} - {last_timestamp}]")
+        self.log_info(f"{self.__class__.__name__}: inserted {n}/{n} new measurements ")
+        self.log_info(f"{self.__class__.__name__}: record_id range [{start_rec_id} - {start_rec_id+n-1}]")
+        self.log_info(f"{self.__class__.__name__}: timestamp range [{start_timestamp} - {last_timestamp}]")
 
-    @log_decorator.log_decorator()
     def with_start_insert_record_id(self, record_id: int):
         self.record_id = record_id
         return self
 
-    @log_decorator.log_decorator()
     def with_measure_param_name2id(self, name2id: Dict[str, Any]):
         self.record_builder.with_measure_name2id(name2id)
         return self
 
-    @log_decorator.log_decorator()
     def with_sensor_id(self, sensor_id: int):
         self.sensor_id = sensor_id
         self.record_builder.with_sensor_id(sensor_id)
         return self
 
-    @log_decorator.log_decorator()
     def with_channel_name(self, channel_name: str):
         self.channel_name = channel_name
         return self
