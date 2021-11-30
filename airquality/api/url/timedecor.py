@@ -7,31 +7,38 @@
 ######################################################
 import abc
 import airquality.api.url.dynurl as dyn
-import airquality.api.url.baseurl as base
 import airquality.types.timestamp as ts
 
 
 ############################# TIME URL DECORATOR BASE CLASS ##############################
-class URLTimeDecorator(base.BaseURLBuilder, abc.ABC):
+class URLTimeDecorator(dyn.DynamicURLBuilder, abc.ABC):
 
     def __init__(self, to_decorate: dyn.DynamicURLBuilder, step_size_in_days: int = 1):
         super(URLTimeDecorator, self).__init__(address=to_decorate.address, options=to_decorate.options)
-        self.url_to_decorate = to_decorate
+        self._url_to_decorate = to_decorate
         self.step_size_in_days = step_size_in_days
-        self.start_ts: ts.SQLTimestamp = ts.NullTimestamp()
-        self.stop_ts: ts.SQLTimestamp = ts.NullTimestamp()
-        self.ended = False
+        self._start: ts.SQLTimestamp = ts.NullTimestamp()
+        self._stop: ts.SQLTimestamp = ts.NullTimestamp()
+        self._ended = False
 
-    def with_start_ts(self, start: ts.SQLTimestamp):
-        self.start_ts = start
+    def with_identifier(self, ident: str):
+        self._url_to_decorate.with_identifier(ident)
         return self
 
-    def with_stop_ts(self, stop: ts.SQLTimestamp):
-        self.stop_ts = stop
+    def with_api_key(self, api_key: str):
+        self._url_to_decorate.with_api_key(api_key)
         return self
 
-    def reset(self):
-        self.ended = False
+    def from_(self, start: ts.SQLTimestamp):
+        self._start = start
+        return self
+
+    def to_(self, stop: ts.SQLTimestamp):
+        self._stop = stop
+        return self
+
+    def can_start_again(self):
+        self._ended = False
         return self
 
     @abc.abstractmethod
@@ -39,7 +46,7 @@ class URLTimeDecorator(base.BaseURLBuilder, abc.ABC):
         pass
 
     def has_next_date(self):
-        return not self.ended
+        return not self._ended
 
 
 ############################# ATMOTUBE TIME URL DECORATOR ##############################
@@ -51,17 +58,17 @@ class AtmotubeURLTimeDecorator(URLTimeDecorator):
 
     def build(self) -> str:
         self.get_next_date()
-        basic_url = self.url_to_decorate.build()
+        basic_url = self._url_to_decorate.build()
         basic_url += f"&date={self.date}"
         return basic_url
 
     def get_next_date(self):
-        current_date = self.start_ts
-        if current_date.is_after(self.stop_ts) or current_date.is_same_day(self.stop_ts):
-            self.ended = True
-            current_date = self.stop_ts
+        current_date = self._start
+        if current_date.is_after(self._stop) or current_date.is_same_day(self._stop):
+            self._ended = True
+            current_date = self._stop
 
-        self.start_ts = self.start_ts.add_days(self.step_size_in_days)
+        self._start = self._start.add_days(self.step_size_in_days)
         self.date = current_date.get_formatted_timestamp().split(' ')[0]
 
 
@@ -70,22 +77,22 @@ class ThingspeakURLTimeDecorator(URLTimeDecorator):
 
     def __init__(self, to_decorate: dyn.ThingspeakURLBuilder, step_size_in_days: int = 7):
         super(ThingspeakURLTimeDecorator, self).__init__(to_decorate=to_decorate, step_size_in_days=step_size_in_days)
-        self.start: str = ""
-        self.end: str = ""
+        self.start_url_param: str = ""
+        self.end_url_param: str = ""
 
     def build(self) -> str:
         self.get_next_date()
-        basic_url = self.url_to_decorate.build()
-        basic_url += f"&start={self.start}&end={self.end}"
+        basic_url = self._url_to_decorate.build()
+        basic_url += f"&start={self.start_url_param}&end={self.end_url_param}"
         return basic_url
 
     def get_next_date(self):
-        current_start = self.start_ts
-        current_end = self.start_ts.add_days(7)
-        if current_end.is_after(self.stop_ts) or current_end.is_same_day(self.stop_ts):
-            self.ended = True
-            current_end = self.stop_ts
+        current_start = self._start
+        current_end = self._start.add_days(7)
+        if current_end.is_after(self._stop) or current_end.is_same_day(self._stop):
+            self._ended = True
+            current_end = self._stop
 
-        self.start_ts = self.start_ts.add_days(self.step_size_in_days)
-        self.start = current_start.get_formatted_timestamp().replace(" ", "%20")
-        self.end = current_end.get_formatted_timestamp().replace(" ", "%20")
+        self._start = self._start.add_days(self.step_size_in_days)
+        self.start_url_param = current_start.get_formatted_timestamp().replace(" ", "%20")
+        self.end_url_param = current_end.get_formatted_timestamp().replace(" ", "%20")

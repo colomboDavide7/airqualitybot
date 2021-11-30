@@ -21,10 +21,24 @@ class TimestampFilter(base.BaseFilter):
         self.filter_ts = filter_ts
 
     def filter(self, resp2filter: List[resp.MeasureAPIResp]) -> List[resp.MeasureAPIResp]:
-        filtered_responses = []
-        for response in resp2filter:
-            if response.timestamp.is_after(self.filter_ts):
-                filtered_responses.append(response)
+        all_responses = len(resp2filter)
 
-        self.log_info(f"{TimestampFilter.__name__}: found {len(filtered_responses)}/{len(resp2filter)} new measurements")
-        return filtered_responses
+        if not resp2filter[-1].timestamp.is_after(resp2filter[0].timestamp):
+            self.log_info(f"{TimestampFilter.__name__}: api responses are in descending order => reverse")
+            resp2filter.reverse()
+
+        if resp2filter[0].timestamp.is_after(self.filter_ts):
+            self.log_info(f"{TimestampFilter.__name__}: found {all_responses}/{all_responses} new measurements")
+            return resp2filter
+
+        count = 0
+        item_idx = 0
+        while count < all_responses:
+            count += 1
+            if not resp2filter[item_idx].timestamp.is_after(self.filter_ts):
+                del resp2filter[item_idx]
+            else:
+                item_idx += 1
+
+        self.log_info(f"{TimestampFilter.__name__}: found {len(resp2filter)}/{all_responses} new measurements")
+        return resp2filter

@@ -29,7 +29,7 @@ class TestTimeURLDecorator(unittest.TestCase):
         test_stop_ts = ts.SQLTimestamp(timest='2021-10-13 20:45:00')
 
         decorator = urldec.AtmotubeURLTimeDecorator(to_decorate=self.test_atm_url, step_size_in_days=1)
-        decorator.with_start_ts(start=test_start_ts).with_stop_ts(stop=test_stop_ts)
+        decorator.from_(start=test_start_ts).to_(stop=test_stop_ts)
 
         actual = decorator.build()
         expected = "some_address?api_key=some_key&mac=ident&opt1=1&opt2=val&date=2021-10-11"
@@ -51,7 +51,7 @@ class TestTimeURLDecorator(unittest.TestCase):
         test_stop_ts = ts.SQLTimestamp(timest='2021-10-11 20:45:00')
 
         decorator = urldec.AtmotubeURLTimeDecorator(to_decorate=self.test_atm_url, step_size_in_days=1)
-        decorator.with_start_ts(start=test_start_ts).with_stop_ts(stop=test_stop_ts)
+        decorator.from_(start=test_start_ts).to_(stop=test_stop_ts)
 
         actual = decorator.build()
         expected = "some_address?api_key=some_key&mac=ident&opt1=1&opt2=val&date=2021-10-11"
@@ -64,7 +64,7 @@ class TestTimeURLDecorator(unittest.TestCase):
         test_stop_ts = ts.SQLTimestamp(timest='2021-11-07 20:45:00')
 
         decorator = urldec.ThingspeakURLTimeDecorator(to_decorate=self.test_thnk_url, step_size_in_days=7)
-        decorator.with_start_ts(start=test_start_ts).with_stop_ts(stop=test_stop_ts)
+        decorator.from_(start=test_start_ts).to_(stop=test_stop_ts)
 
         actual = decorator.build()
         expected = "some_address/ident/feeds.some_fmt?api_key=some_key&opt1=1&opt2=val&start=2021-10-11%2008:45:00&end=2021-10-18%2008:45:00"
@@ -91,7 +91,7 @@ class TestTimeURLDecorator(unittest.TestCase):
         test_stop_ts = ts.SQLTimestamp(timest='2021-11-11 20:45:00')
 
         decorator = urldec.ThingspeakURLTimeDecorator(to_decorate=self.test_thnk_url, step_size_in_days=7)
-        decorator.with_start_ts(start=test_start_ts).with_stop_ts(stop=test_stop_ts)
+        decorator.from_(start=test_start_ts).to_(stop=test_stop_ts)
 
         actual = decorator.build()
         expected = "some_address/ident/feeds.some_fmt?api_key=some_key&opt1=1&opt2=val&start=2021-11-11%2008:45:00&end=2021-11-11%2020:45:00"

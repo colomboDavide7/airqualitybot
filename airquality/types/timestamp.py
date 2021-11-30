@@ -163,5 +163,5 @@ class NullTimestamp(SQLTimestamp):
 
 ################################ USEFUL CONVERSION METHOD ################################
 
-def from_database_timestamp_to_timestamp(database_timestamp: dt.datetime) -> SQLTimestamp:
-    return SQLTimestamp(timest=database_timestamp.strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
+def datetime2timestamp(datetime_: dt.datetime) -> SQLTimestamp:
+    return SQLTimestamp(timest=datetime_.strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)

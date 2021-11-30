@@ -90,7 +90,7 @@ class TestTimestampBuilder(unittest.TestCase):
 
     def test_conversion_from_database_timestamp_to_timestamp(self):
         test_database_timestamp = dt.datetime.strptime("2021-10-11 09:44:00", ts.SQL_TIMEST_FMT)
-        actual = ts.from_database_timestamp_to_timestamp(database_timestamp=test_database_timestamp)
+        actual = ts.datetime2timestamp(datetime_=test_database_timestamp)
         self.assertEqual(actual.get_formatted_timestamp(), "2021-10-11 09:44:00")
 
 
