@@ -36,25 +36,28 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
 
     def __init__(self, connection_string: str, log_filename="log"):
         super(Psycopg2DatabaseAdapter, self).__init__(log_filename=log_filename)
-        self.connection_string = connection_string
-        self.conn = None
+        self._connection_string = connection_string
+        self._conn = None
 
     @log_decorator.log_decorator()
     def open_conn(self):
+        if self._conn is not None:
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => connection is already open")
+
         try:
-            self.conn = psycopg2.connect(self.connection_string)
+            self._conn = psycopg2.connect(self._connection_string)
         except psycopg2.Error as err:
             raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad connection string => {err!s}")
 
     @log_decorator.log_decorator()
     def send(self, query: str):
-        if self.conn is None:
+        if self._conn is None:
             raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => connection is close")
         try:
             answer = ""
-            cursor = self.conn.cursor()
+            cursor = self._conn.cursor()
             cursor.execute(query)
-            self.conn.commit()
+            self._conn.commit()
             if query.startswith("SELECT"):
                 answer = cursor.fetchall()
         except psycopg2.Error as err:
@@ -63,7 +66,8 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
 
     @log_decorator.log_decorator()
     def close_conn(self):
-        try:
-            self.conn.close()
-        except psycopg2.InterfaceError as err:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => {err!s}")
+        if self._conn is None:
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => connection is close")
+
+        self._conn.close()
+        self._conn = None
