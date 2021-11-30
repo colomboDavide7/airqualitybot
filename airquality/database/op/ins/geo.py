@@ -55,7 +55,6 @@ class GeoInsertWrapper(base.InsertWrapper):
             )
         return update_query
 
-    @log_decorator.log_decorator()
     def log_report(self, api_responses: List[resp.SensorInfoResponse]):
         self.log_info(f"{GeoInsertWrapper.__name__}: updated {len(api_responses)}/{len(api_responses)} locations")
         for r in api_responses:

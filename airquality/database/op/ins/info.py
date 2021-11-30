@@ -62,7 +62,6 @@ class InfoInsertWrapper(base.InsertWrapper):
             self.start_sensor_id += 1
         return sensor_values.strip(','), api_param_values.strip(','), geolocation_values.strip(',')
 
-    @log_decorator.log_decorator()
     def log_report(self, start_id: int, api_responses: List[resp.SensorInfoResponse]):
         n = len(api_responses)
         self.log_info(f"{InfoInsertWrapper.__name__}: inserted {n}/{n} new sensors within sensor_id range "

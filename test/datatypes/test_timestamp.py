@@ -7,6 +7,7 @@
 #################################################
 import unittest
 import airquality.types.timestamp as ts
+import datetime as dt
 
 
 class TestTimestampBuilder(unittest.TestCase):
@@ -20,7 +21,7 @@ class TestTimestampBuilder(unittest.TestCase):
         self.unix_ts = ts.UnixTimestamp(timest=1531432748)
         self.null_ts = ts.NullTimestamp()
 
-    def test_successfully_add_days_to_atmotube_timestamp(self):
+    def test_add_days_to_atmotube_timestamp(self):
         new_timest = self.atmotube_ts1.add_days(days=1)
         actual_output = new_timest.ts
         expected_output = "2021-10-12 09:44:00"
@@ -30,7 +31,11 @@ class TestTimestampBuilder(unittest.TestCase):
         self.assertFalse(self.atmotube_ts2.is_after(self.atmotube_ts1))
         self.assertTrue(self.atmotube_ts1.is_after(self.atmotube_ts2))
 
-    def test_successfully_add_days_to_thingspeak_timestamp(self):
+    def test_is_same_day_atmotube_timestamp(self):
+        self.assertTrue(self.atmotube_ts1.is_same_day(self.atmotube_ts1))
+        self.assertFalse(self.atmotube_ts1.is_same_day(self.atmotube_ts2))
+
+    def test_add_days_to_thingspeak_timestamp(self):
         new_timest = self.thingspk_ts1.add_days(days=10)
         actual_output = new_timest.ts
         expected_output = "2021-09-14 17:35:44"
@@ -39,6 +44,10 @@ class TestTimestampBuilder(unittest.TestCase):
     def test_is_after_thingspeak_timestamp(self):
         self.assertFalse(self.thingspk_ts2.is_after(self.thingspk_ts1))
         self.assertTrue(self.thingspk_ts1.is_after(self.thingspk_ts2))
+
+    def test_is_same_day_thingspeak_timestamp(self):
+        self.assertTrue(self.thingspk_ts1.is_same_day(self.thingspk_ts1))
+        self.assertFalse(self.thingspk_ts2.is_same_day(self.thingspk_ts1))
 
     def test_is_after_with_different_timestamp(self):
         self.assertTrue(self.atmotube_ts1.is_after(self.thingspk_ts1))
@@ -54,19 +63,11 @@ class TestTimestampBuilder(unittest.TestCase):
         self.assertFalse(self.unix_ts.is_after(self.atmotube_ts1))
         self.assertTrue(self.atmotube_ts1.is_after(self.unix_ts))
 
-    def test_add_day_to_unix_timestamp(self):
+    def test_add_days_to_unix_timestamp(self):
         new_timest = self.unix_ts.add_days(days=10)
         actual_output = new_timest.ts
         expected_output = "2018-07-22 23:59:08"
         self.assertEqual(actual_output, expected_output)
-
-    def test_is_same_day_atmotube_timestamp(self):
-        self.assertTrue(self.atmotube_ts1.is_same_day(self.atmotube_ts1))
-        self.assertFalse(self.atmotube_ts1.is_same_day(self.atmotube_ts2))
-
-    def test_is_same_day_thingspeak_timestamp(self):
-        self.assertTrue(self.thingspk_ts1.is_same_day(self.thingspk_ts1))
-        self.assertFalse(self.thingspk_ts2.is_same_day(self.thingspk_ts1))
 
     def test_is_same_day_current_timestamp(self):
         self.assertFalse(self.current_ts.is_same_day(self.atmotube_ts1))
@@ -86,6 +87,11 @@ class TestTimestampBuilder(unittest.TestCase):
     def test_system_exit_when_add_days_to_null_timestamp(self):
         with self.assertRaises(SystemExit):
             self.null_ts.add_days(100)
+
+    def test_conversion_from_database_timestamp_to_timestamp(self):
+        test_database_timestamp = dt.datetime.strptime("2021-10-11 09:44:00", ts.SQL_TIMEST_FMT)
+        actual = ts.from_database_timestamp_to_timestamp(database_timestamp=test_database_timestamp)
+        self.assertEqual(actual.get_formatted_timestamp(), "2021-10-11 09:44:00")
 
 
 if __name__ == '__main__':

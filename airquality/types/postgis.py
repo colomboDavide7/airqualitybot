@@ -11,15 +11,7 @@ ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 POINT_GEOMETRY = "POINT({lng} {lat})"
 
 
-def get_postgis_class(sensor_type: str):
-
-    if sensor_type in ('purpleair', 'atmotube'):
-        return PostgisPoint
-    else:
-        return None
-
-
-################################ GEOMETRY BUILDER CLASS ################################
+################################ GEOMETRY CLASS ################################
 class PostgisGeometry(abc.ABC):
 
     def __init__(self, srid: int = 26918):
@@ -34,7 +26,7 @@ class PostgisGeometry(abc.ABC):
         pass
 
 
-################################ POINT BUILDER CLASS ################################
+################################ POINT CLASS ################################
 class PostgisPoint(PostgisGeometry):
 
     def __init__(self, lat: str, lng: str, srid: int = 26918):
