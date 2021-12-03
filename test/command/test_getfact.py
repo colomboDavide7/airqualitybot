@@ -7,8 +7,8 @@
 ######################################################
 import unittest
 import airquality.command.getfact as get
-import airquality.command.init.fact as initfact
-import airquality.command.update.fact as updtfact
+import airquality.command.init.purpfact as initfact
+import airquality.command.update.purpfact as updtfact
 import airquality.command.fetch.atmfact as atm
 import airquality.command.fetch.thnkfact as thnk
 

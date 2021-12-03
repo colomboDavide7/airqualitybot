@@ -6,8 +6,8 @@
 #
 ######################################################
 import airquality.command.fetch.fact as fetchfact
-import airquality.command.init.fact as initfact
-import airquality.command.update.fact as updtfact
+import airquality.command.init.purpfact as initfact
+import airquality.command.update.purpfact as updtfact
 
 
 def get_command_factory_cls(command_name: str, sensor_type: str):

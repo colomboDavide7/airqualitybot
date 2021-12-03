@@ -27,11 +27,13 @@ class InitCommand(basecmd.Command):
             flt: nameflt.NameFilter,
             log_filename="log"
     ):
-        super(InitCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
+        super(InitCommand, self).__init__(log_filename=log_filename)
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.api_resp_builder = arb
         self.response_filter = flt
+        self.url_builder = ub
+        self.fetch_wrapper = fw
 
     @log_decorator.log_decorator()
     def execute(self):

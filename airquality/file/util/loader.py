@@ -9,7 +9,7 @@ import os
 import dotenv
 import airquality.file.structured.fact as fact
 import airquality.file.structured.file as file
-import airquality.file.util.parser as parser
+import airquality.file.util.text_parser as parser
 import airquality.file.util.reader as read
 
 

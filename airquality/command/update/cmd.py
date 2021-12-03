@@ -27,11 +27,13 @@ class UpdateCommand(basecmd.Command):
             rf: flt.GeoFilter,
             log_filename="log"
     ):
-        super(UpdateCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
+        super(UpdateCommand, self).__init__(log_filename=log_filename)
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.api_resp_builder = arb
         self.response_filter = rf
+        self.url_builder = ub
+        self.fetch_wrapper = fw
 
     # ************************************ execute ************************************
     @log_decorator.log_decorator()

@@ -9,7 +9,7 @@ from typing import Dict, Any
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.request as apireq
-import airquality.file.util.parser as parse
+import airquality.file.util.text_parser as parse
 
 
 class FetchWrapper(log.Loggable):

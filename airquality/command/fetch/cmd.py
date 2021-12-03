@@ -31,12 +31,14 @@ class FetchCommand(base.Command):
             flt: filt.TimestampFilter,
             log_filename="log"
     ):
-        super(FetchCommand, self).__init__(ub=ub, fw=fw, log_filename=log_filename)
+        super(FetchCommand, self).__init__(log_filename=log_filename)
         self.insert_wrapper = iw
         self.select_wrapper = sw
         self.time_url_decorator = tud
         self.time_filter = flt
         self.api_resp_builder = arb
+        self.url_builder = ub
+        self.fetch_wrapper = fw
 
     ################################ execute ###############################
     @log_decorator.log_decorator()

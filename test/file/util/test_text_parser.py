@@ -6,10 +6,10 @@
 #
 #################################################
 import unittest
-import airquality.file.util.parser as parser
+import airquality.file.util.text_parser as parser
 
 
-class TestFileParser(unittest.TestCase):
+class TestTextParser(unittest.TestCase):
 
     def setUp(self) -> None:
         self.json_parser = parser.JSONParser()

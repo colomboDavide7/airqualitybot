@@ -10,7 +10,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.command.basefact as fact
 import airquality.command.fetch.cmd as cmd
 import airquality.file.structured.json as file
-import airquality.file.util.parser as fp
+import airquality.file.util.text_parser as fp
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.dynurl as url
 import airquality.api.url.timedecor as urldec
