@@ -6,18 +6,18 @@
 #
 ######################################################
 import abc
-from typing import Dict, Any
 
 
 class BaseURLBuilder(abc.ABC):
 
-    def __init__(self, address: str, options: Dict[str, Any]):
-        self.address = address
-        self.options = options
+    def __init__(self, url_template: str):
+        self.url_template = url_template
+        self.fmt = None
+
+    def with_api_response_fmt(self, fmt: str):
+        self.fmt = fmt
+        return self
 
     @abc.abstractmethod
     def build(self) -> str:
         pass
-
-    def _get_options_querystring(self) -> str:
-        return '&'.join(f"{k}={v}" for k, v in self.options.items())

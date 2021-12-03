@@ -14,17 +14,16 @@ import airquality.file.util.reader as read
 
 
 ################################ load_environment_file ################################
-def load_environment_file(file_path: str, sensor_type: str):
+def load_environment_file(path_to_file: str = ".env"):
+    mandated_properties = ["connection", "query_file", "directory_of_resources"]
+    dotenv.load_dotenv(dotenv_path=path_to_file)
 
-    dotenv.load_dotenv(dotenv_path=file_path)
+    for p in mandated_properties:
+        if p not in os.environ:
+            raise SystemExit(f"{load_environment_file.__name__}(): bad '.env' file structure => missing '{p}' property")
 
-    if 'DBCONN' not in os.environ:
-        raise SystemExit(f"'{load_environment_file.__name__}()': bad '.env' file structure => missing 'DBCONN'")
-
-    if sensor_type == 'purpleair':
-        if not os.environ.get('PURPLEAIR_KEY1'):
-            raise SystemExit(f"'{load_environment_file.__name__}()': bad '.env' file structure => "
-                             f"'{sensor_type}' sensor type require 'PURPLEAIR_KEY1'")
+    query_file_path = f"{os.environ['directory_of_resources']}/{os.environ['query_file']}"
+    return os.environ['connection'], query_file_path
 
 
 ################################ load_structured_file ################################

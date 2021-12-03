@@ -5,7 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import os
 import sys
 from typing import List, Tuple
 import airquality.logger.util.log as log
@@ -13,11 +12,6 @@ import airquality.file.util.loader as fl
 import airquality.command.getfact as cmdfact
 import airquality.database.conn.fact as dbfact
 import airquality.database.conn.shutdown as dbshutdown
-
-PROPERTIES_DIR = "properties"                           # name of the directory that contains all the project file
-ENV_FILE_PATH = f"{PROPERTIES_DIR}/.env"                # name of the environment file, that keeps sensitive data
-API_FILE_PATH = f"{PROPERTIES_DIR}/api.json"            # name of the API configuration file
-QUERY_FILE_PATH = f"{PROPERTIES_DIR}/query.json"        # name of the SQL query statements file
 
 
 # Create error logger and debugger
@@ -37,15 +31,14 @@ def main():
         logger_name = f"{sensor_type}_{command_name}_logger"
 
         # ----------- CREATE COMMAND's COMMON OBJECTS -----------
-        fl.load_environment_file(file_path=ENV_FILE_PATH, sensor_type=sensor_type)
-        api_file = fl.load_structured_file(file_path=API_FILE_PATH, path_to_object=[sensor_type], log_filename=log_filename)
-        query_file = fl.load_structured_file(file_path=QUERY_FILE_PATH, log_filename=log_filename)
-        database_conn = dbfact.get_database_adapter(connection_string=os.environ['DBCONN'], log_filename=log_filename)
+        connection, query_file_path = fl.load_environment_file()
+        query_file = fl.load_structured_file(file_path=query_file_path, log_filename=log_filename)
+        database_conn = dbfact.get_database_adapter(connection_string=connection, log_filename=log_filename)
         database_conn.open_conn()
 
         # ----------- COMMAND FACTORY -----------
         command_factory = command_factory_cls(
-            api_file=api_file, query_file=query_file, conn=database_conn, log_filename=log_filename
+            query_file=query_file, conn=database_conn, log_filename=log_filename
         )
 
         file_logger = log.get_file_logger(file_path=logger_file_path, logger_name=logger_name)

@@ -14,18 +14,23 @@ import airquality.file.structured.json as jf
 class TestFileLoader(unittest.TestCase):
 
     def tearDown(self) -> None:
-        if 'DBCONN' in os.environ:
-            os.environ.pop("DBCONN")
+        if 'connection' in os.environ:
+            os.environ.pop("connection")
+        if 'query_file' in os.environ:
+            os.environ.pop('query_file')
+        if 'directory_of_resources' in os.environ:
+            os.environ.pop('directory_of_resources')
 
-    def test_exit_on_missing_database_connection_string_property(self):
+    def test_exit_on_missing_mandated_environment_properties(self):
         test_environment_path = "test/file/util/.empty_env"
         with self.assertRaises(SystemExit):
-            fl.load_environment_file(file_path=test_environment_path, sensor_type="atmotube")
+            fl.load_environment_file(path_to_file=test_environment_path)
 
-    def test_exit_on_missing_secret_purpleair_api_key(self):
-        test_environment_path = "test/file/util/.missing_purpleair_env"
-        with self.assertRaises(SystemExit):
-            fl.load_environment_file(file_path=test_environment_path, sensor_type="purpleair")
+    def test_successfully_load_environment_file(self):
+        test_environment_path = "test/file/util/.test_env_ok"
+        connection, query_file_path = fl.load_environment_file(path_to_file=test_environment_path)
+        self.assertEqual(connection, "some_connection_string")
+        self.assertEqual(query_file_path, "some_directory_name/some_file_name")
 
     def test_successfully_get_json_file(self):
         actual = fl.load_structured_file(file_path="test/file/util/test_loader.json")

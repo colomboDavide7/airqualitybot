@@ -13,9 +13,8 @@ import airquality.file.structured.json as file
 
 class CommandFactory(log.Loggable, abc.ABC):
 
-    def __init__(self, api_file: file.JSONFile, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
+    def __init__(self, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
         super(CommandFactory, self).__init__(log_filename=log_filename)
-        self.api_file = api_file
         self.query_file = query_file
         self.database_conn = conn
 
@@ -29,8 +28,4 @@ class CommandFactory(log.Loggable, abc.ABC):
 
     @abc.abstractmethod
     def get_database_side_objects(self, sensor_type: str):
-        pass
-
-    @abc.abstractmethod
-    def _get_url_builder(self):
         pass

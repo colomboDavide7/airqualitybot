@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import os
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basefact as fact
 import airquality.command.fetch.cmd as cmd
@@ -25,8 +26,8 @@ import airquality.filter.tsfilt as flt
 ################################ ATMOTUBE FETCH COMMAND FACTORY ################################
 class AtmotubeFetchFactory(fact.CommandFactory):
 
-    def __init__(self, api_file: file.JSONFile, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
-        super(AtmotubeFetchFactory, self).__init__(api_file=api_file, query_file=query_file, conn=conn, log_filename=log_filename)
+    def __init__(self, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
+        super(AtmotubeFetchFactory, self).__init__(query_file=query_file, conn=conn, log_filename=log_filename)
 
     ################################ create_command ################################
     @log_decorator.log_decorator()
@@ -58,11 +59,12 @@ class AtmotubeFetchFactory(fact.CommandFactory):
     def get_api_side_objects(self):
         response_builder = resp.AtmotubeAPIRespBuilder()
 
-        url_builder = self._get_url_builder()
+        fmt = os.environ['atmotube_response_fmt']
+        url_builder = url.AtmotubeURLBuilder(url_template=os.environ['atmotube_url'])
+        url_builder.with_api_response_fmt(fmt)
         url_time_decorator = urldec.AtmotubeURLTimeDecorator(to_decorate=url_builder)
 
-        file_fmt = self.api_file.options.get('format')
-        response_parser = fp.get_file_parser(file_fmt=file_fmt, log_filename=self.log_filename)
+        response_parser = fp.get_file_parser(file_fmt=fmt, log_filename=self.log_filename)
 
         fetch_wrapper = apiwrp.FetchWrapper(resp_parser=response_parser, log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)
@@ -85,11 +87,3 @@ class AtmotubeFetchFactory(fact.CommandFactory):
             conn=self.database_conn, builder=query_builder, sensor_type=sensor_type, log_filename=self.log_filename
         )
         return insert_wrapper, select_wrapper
-
-    ################################ get_url_builder ################################
-    @log_decorator.log_decorator()
-    def _get_url_builder(self):
-        return url.AtmotubeURLBuilder(
-            address=self.api_file.address,
-            options=self.api_file.options
-        )

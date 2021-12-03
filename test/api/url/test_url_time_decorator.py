@@ -14,14 +14,13 @@ import airquality.types.timestamp as ts
 class TestTimeURLDecorator(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.address = 'some_address'
-        self.options = {'opt1': 1, 'opt2': "val"}
+        self.test_atm_url_template = "some_address?api_key={api_key}&mac={mac}&order=asc&format={fmt}"
+        self.test_atm_url = url.AtmotubeURLBuilder(self.test_atm_url_template)
+        self.test_atm_url.with_identifier('ident').with_api_key('some_key').with_api_response_fmt("fmt")
 
-        self.test_atm_url = url.AtmotubeURLBuilder(address=self.address, options=self.options)
-        self.test_atm_url.with_identifier('ident').with_api_key('some_key')
-
-        self.test_thnk_url = url.ThingspeakURLBuilder(address=self.address, options=self.options, fmt='some_fmt')
-        self.test_thnk_url.with_identifier('ident').with_api_key('some_key')
+        self.test_thnk_url_template = "some_address/{channel_id}/feeds.{fmt}?api_key={api_key}"
+        self.test_thnk_url = url.ThingspeakURLBuilder(self.test_thnk_url_template)
+        self.test_thnk_url.with_identifier('ident').with_api_key('some_key').with_api_response_fmt("fmt")
 
     ################################ ATMOTUBE URL TIME DECORATOR ###############################
     def test_successfully_decorate_atmotube_url_with_multiple_days_time_window(self):
@@ -32,17 +31,17 @@ class TestTimeURLDecorator(unittest.TestCase):
         decorator.from_(start=test_start_ts).to_(stop=test_stop_ts)
 
         actual = decorator.build()
-        expected = "some_address?api_key=some_key&mac=ident&opt1=1&opt2=val&date=2021-10-11"
+        expected = "some_address?api_key=some_key&mac=ident&order=asc&format=fmt&date=2021-10-11"
         self.assertEqual(actual, expected)
         self.assertTrue(decorator.has_next_date())
 
         actual = decorator.build()
-        expected = "some_address?api_key=some_key&mac=ident&opt1=1&opt2=val&date=2021-10-12"
+        expected = "some_address?api_key=some_key&mac=ident&order=asc&format=fmt&date=2021-10-12"
         self.assertEqual(actual, expected)
         self.assertTrue(decorator.has_next_date())
 
         actual = decorator.build()
-        expected = "some_address?api_key=some_key&mac=ident&opt1=1&opt2=val&date=2021-10-13"
+        expected = "some_address?api_key=some_key&mac=ident&order=asc&format=fmt&date=2021-10-13"
         self.assertEqual(actual, expected)
         self.assertFalse(decorator.has_next_date())
 
@@ -54,7 +53,7 @@ class TestTimeURLDecorator(unittest.TestCase):
         decorator.from_(start=test_start_ts).to_(stop=test_stop_ts)
 
         actual = decorator.build()
-        expected = "some_address?api_key=some_key&mac=ident&opt1=1&opt2=val&date=2021-10-11"
+        expected = "some_address?api_key=some_key&mac=ident&order=asc&format=fmt&date=2021-10-11"
         self.assertEqual(actual, expected)
         self.assertFalse(decorator.has_next_date())
 
@@ -67,22 +66,22 @@ class TestTimeURLDecorator(unittest.TestCase):
         decorator.from_(start=test_start_ts).to_(stop=test_stop_ts)
 
         actual = decorator.build()
-        expected = "some_address/ident/feeds.some_fmt?api_key=some_key&opt1=1&opt2=val&start=2021-10-11%2008:45:00&end=2021-10-18%2008:45:00"
+        expected = "some_address/ident/feeds.fmt?api_key=some_key&start=2021-10-11%2008:45:00&end=2021-10-18%2008:45:00"
         self.assertEqual(actual, expected)
         self.assertTrue(decorator.has_next_date())
 
         actual = decorator.build()
-        expected = "some_address/ident/feeds.some_fmt?api_key=some_key&opt1=1&opt2=val&start=2021-10-18%2008:45:00&end=2021-10-25%2008:45:00"
+        expected = "some_address/ident/feeds.fmt?api_key=some_key&start=2021-10-18%2008:45:00&end=2021-10-25%2008:45:00"
         self.assertEqual(actual, expected)
         self.assertTrue(decorator.has_next_date())
 
         actual = decorator.build()
-        expected = "some_address/ident/feeds.some_fmt?api_key=some_key&opt1=1&opt2=val&start=2021-10-25%2008:45:00&end=2021-11-01%2008:45:00"
+        expected = "some_address/ident/feeds.fmt?api_key=some_key&start=2021-10-25%2008:45:00&end=2021-11-01%2008:45:00"
         self.assertEqual(actual, expected)
         self.assertTrue(decorator.has_next_date())
 
         actual = decorator.build()
-        expected = "some_address/ident/feeds.some_fmt?api_key=some_key&opt1=1&opt2=val&start=2021-11-01%2008:45:00&end=2021-11-07%2020:45:00"
+        expected = "some_address/ident/feeds.fmt?api_key=some_key&start=2021-11-01%2008:45:00&end=2021-11-07%2020:45:00"
         self.assertEqual(actual, expected)
         self.assertFalse(decorator.has_next_date())
 
@@ -94,7 +93,7 @@ class TestTimeURLDecorator(unittest.TestCase):
         decorator.from_(start=test_start_ts).to_(stop=test_stop_ts)
 
         actual = decorator.build()
-        expected = "some_address/ident/feeds.some_fmt?api_key=some_key&opt1=1&opt2=val&start=2021-11-11%2008:45:00&end=2021-11-11%2020:45:00"
+        expected = "some_address/ident/feeds.fmt?api_key=some_key&start=2021-11-11%2008:45:00&end=2021-11-11%2020:45:00"
         self.assertEqual(actual, expected)
         self.assertFalse(decorator.has_next_date())
 

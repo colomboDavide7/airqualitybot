@@ -14,7 +14,7 @@ import airquality.types.timestamp as ts
 class URLTimeDecorator(dyn.DynamicURLBuilder, abc.ABC):
 
     def __init__(self, to_decorate: dyn.DynamicURLBuilder, step_size_in_days: int = 1):
-        super(URLTimeDecorator, self).__init__(address=to_decorate.address, options=to_decorate.options)
+        super(URLTimeDecorator, self).__init__(url_template=to_decorate.url_template)
         self._url_to_decorate = to_decorate
         self.step_size_in_days = step_size_in_days
         self._start: ts.SQLTimestamp = ts.NullTimestamp()

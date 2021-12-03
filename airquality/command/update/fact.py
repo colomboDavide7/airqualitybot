@@ -36,8 +36,8 @@ def get_update_factory_cls(sensor_type: str) -> fact.CommandFactory.__class__:
 ################################ PURPLEAIR UPDATE COMMAND FACTORY ################################
 class PurpleairUpdateFactory(fact.CommandFactory):
 
-    def __init__(self, api_file: file.JSONFile, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
-        super(PurpleairUpdateFactory, self).__init__(api_file=api_file, query_file=query_file, conn=conn, log_filename=log_filename)
+    def __init__(self, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
+        super(PurpleairUpdateFactory, self).__init__(query_file=query_file, conn=conn, log_filename=log_filename)
 
     ################################ create_command ################################
     @log_decorator.log_decorator()
@@ -68,7 +68,7 @@ class PurpleairUpdateFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def get_api_side_objects(self):
         response_builder = resp.PurpleairAPIRespBuilder()
-        url_builder = self._get_url_builder()
+        url_builder = url.PurpleairURLBuilder(url_template=os.environ['purpleair_url'])
 
         fetch_wrapper = apiwrp.FetchWrapper(
             resp_parser=fp.JSONParser(log_filename=self.log_filename),
@@ -97,13 +97,3 @@ class PurpleairUpdateFactory(fact.CommandFactory):
             conn=self.database_conn, builder=query_builder, sensor_type=sensor_type, log_filename=self.log_filename
         )
         return insert_wrapper, select_wrapper
-
-    ################################ get_url_builder ################################
-    def _get_url_builder(self):
-        return url.PurpleairURLBuilder(
-            address=self.api_file.address,
-            fields=self.api_file.fields,
-            key=os.environ['PURPLEAIR_KEY1'],
-            bounding_box=self.api_file.bounding_box,
-            options=self.api_file.options
-        )
