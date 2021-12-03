@@ -8,18 +8,28 @@
 #
 #################################################
 import os
+from typing import List
 
 
 def open_read_close_file(path: str) -> str:
-
-    err_msg = f"'{open_read_close_file.__name__}()': bad path => "
-    if not os.path.exists(path):
-        raise SystemExit(f"{err_msg} resource at: '{path}' does not exists")
-    elif not os.path.isfile(path):
-        raise SystemExit(f"{err_msg} resource at: '{path}' is not a file")
-
-    # Open the file, read the text and close the file.
+    exit_if_path_does_not_exists_or_is_not_file(path=path, caller_name=open_read_close_file.__name__)
     with open(path, "r") as f:
         text = f.read()
     f.close()
     return text
+
+
+def open_readlines_close_file(path: str) -> List[str]:
+    exit_if_path_does_not_exists_or_is_not_file(path=path, caller_name=open_readlines_close_file.__name__)
+    with open(path, "r") as f:
+        lines = f.readlines()
+    f.close()
+    return lines
+
+
+def exit_if_path_does_not_exists_or_is_not_file(path: str, caller_name: str):
+    err_msg = f"{caller_name}(): bad path => "
+    if not os.path.exists(path):
+        raise SystemExit(f"{err_msg} resource at: '{path}' does not exists")
+    elif not os.path.isfile(path):
+        raise SystemExit(f"{err_msg} resource at: '{path}' is not a file")
