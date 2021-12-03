@@ -64,7 +64,7 @@ class AtmotubeFetchFactory(fact.CommandFactory):
         url_builder.with_api_response_fmt(fmt)
         url_time_decorator = urldec.AtmotubeURLTimeDecorator(to_decorate=url_builder)
 
-        response_parser = fp.get_file_parser(file_fmt=fmt, log_filename=self.log_filename)
+        response_parser = fp.get_text_parser(file_fmt=fmt, log_filename=self.log_filename)
 
         fetch_wrapper = apiwrp.FetchWrapper(resp_parser=response_parser, log_filename=self.log_filename)
         fetch_wrapper.set_file_logger(self.file_logger)

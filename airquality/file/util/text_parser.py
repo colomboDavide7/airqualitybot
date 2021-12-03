@@ -12,25 +12,25 @@ import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 
 
-def get_file_parser(file_fmt: str, log_filename="log"):
+def get_text_parser(file_fmt: str, log_filename="log"):
 
     if file_fmt == 'json':
         return JSONParser(log_filename=log_filename)
     else:
-        raise SystemExit(f"'{get_file_parser.__name__}()': bad file format='{file_fmt}' => supported format are: [ JSON ]")
+        raise SystemExit(f"'{get_text_parser.__name__}()': bad file format='{file_fmt}' => supported format are: [ JSON ]")
 
 
-class FileParser(log.Loggable):
+class TextParser(log.Loggable):
 
     def __init__(self, log_filename="log"):
-        super(FileParser, self).__init__(log_filename=log_filename)
+        super(TextParser, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
     def parse(self, text: str) -> Dict[str, Any]:
         pass
 
 
-class JSONParser(FileParser):
+class JSONParser(TextParser):
 
     def __init__(self, log_filename="log"):
         super(JSONParser, self).__init__(log_filename=log_filename)

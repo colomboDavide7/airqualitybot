@@ -31,7 +31,7 @@ def load_structured_file(file_path: str, path_to_object=(), log_filename="log") 
 
     file_fmt = file_path.split('.')[-1]
     raw_content = read.open_read_close_file(file_path)
-    file_parser = parser.get_file_parser(file_fmt=file_fmt, log_filename=log_filename)
+    file_parser = parser.get_text_parser(file_fmt=file_fmt, log_filename=log_filename)
     parsed_content = file_parser.parse(raw_content)
 
     return fact.get_structured_file(

@@ -8,6 +8,7 @@
 import abc
 from typing import List
 import airquality.logger.loggable as log
+import airquality.logger.util.decorator as log_decorator
 
 
 def get_line_parser(separator: str, log_filename="log"):
@@ -35,5 +36,6 @@ class TSVLineParser(LineParser):
     def __init__(self, separator: str, log_filename="log"):
         super(TSVLineParser, self).__init__(separator=separator, log_filename=log_filename)
 
+    @log_decorator.log_decorator()
     def parse_lines(self, lines: List[str]) -> List[List[str]]:
         return [line.strip('\n').split(self.separator) for line in lines]
