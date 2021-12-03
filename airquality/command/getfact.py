@@ -6,7 +6,7 @@
 #
 ######################################################
 import airquality.command.fetch.fact as fetchfact
-import airquality.command.init.purpfact as initfact
+import airquality.command.init.fact as initfact
 import airquality.command.update.purpfact as updtfact
 
 

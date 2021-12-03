@@ -39,6 +39,9 @@ class QueryBuilder:
     def select_sensor_id_from_type(self, type_: str):
         return self.query_file.s12.format(type=type_)
 
+    def select_place_names_from_country_code(self, country_code: str):
+        return self.query_file.s13.format(cc=country_code)
+
     ################################ INIT COMMAND QUERY ################################
     def build_initialize_sensor_query(self, sensor_values: str, api_param_values: str, geolocation_values: str):
         query = f"{self.query_file.i3} {sensor_values};"

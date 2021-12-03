@@ -23,17 +23,6 @@ import airquality.types.postgis as postgis
 import airquality.filter.namefilt as flt
 
 
-################################ get_update_command_factory_cls ################################
-def get_init_factory_cls(sensor_type: str) -> fact.CommandFactory.__class__:
-    function_name = get_init_factory_cls.__name__
-    valid_types = ["purpleair"]
-
-    if sensor_type == 'purpleair':
-        return PurpleairInitFactory
-    else:
-        raise SystemExit(f"{function_name}: bad type => VALID TYPES: [{'|'.join(t for t in valid_types)}]")
-
-
 ################################ PURPLEAIR INIT COMMAND FACTORY ################################
 class PurpleairInitFactory(fact.CommandFactory):
 

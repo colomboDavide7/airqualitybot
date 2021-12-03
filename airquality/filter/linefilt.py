@@ -30,10 +30,10 @@ class LineFilter(flt.BaseFilter):
         item_idx = 0
         while count < all_responses:
             if resp2filter[item_idx].place_name in self.database_place_names:
-                self.log_warning(f"{LineFilter.__name__}: skip sensor '{resp2filter[item_idx].place_name}' => already present")
+                # self.log_warning(f"{LineFilter.__name__}: skip sensor '{resp2filter[item_idx].place_name}' => already present")
                 del resp2filter[item_idx]
             else:
-                self.log_info(f"{LineFilter.__name__}: add place '{resp2filter[item_idx].place_name}' => new place")
+                # self.log_info(f"{LineFilter.__name__}: add place '{resp2filter[item_idx].place_name}' => new place")
                 item_idx += 1
             count += 1
 
