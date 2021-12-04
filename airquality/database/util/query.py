@@ -49,6 +49,9 @@ class QueryBuilder:
         query += f"{self.query_file.i5} {geolocation_values};"
         return query
 
+    def build_initialize_geographical_areas(self, geographical_area_values: str):
+        return f"{self.query_file.i6} {geographical_area_values};"
+
     ################################ UPDATE COMMAND QUERIES ################################
     def build_insert_sensor_location_query(self, geolocation_values: str) -> str:
         return f"{self.query_file.i5} {geolocation_values};"

@@ -13,6 +13,7 @@ import airquality.file.util.reader as rdr
 import airquality.file.line.geobuilder as gl
 import airquality.filter.linefilt as flt
 import airquality.database.op.sel.geoarea as geosel
+import airquality.database.op.ins.geoarea as geoins
 
 
 class ServiceInitCommand(cmd.Command):
@@ -24,6 +25,7 @@ class ServiceInitCommand(cmd.Command):
             lb: gl.GeonamesLineBuilder,
             lf: flt.LineFilter,
             gsw: geosel.GeographicSelectWrapper,
+            giw: geoins.GeographicalAreaInsertWrapper,
             log_filename="geonames"
     ):
         super(ServiceInitCommand, self).__init__(log_filename=log_filename)
@@ -32,6 +34,7 @@ class ServiceInitCommand(cmd.Command):
         self.line_builder = lb
         self.line_filter = lf
         self.select_wrapper = gsw
+        self.insert_wrapper = giw
 
     @log_decorator.log_decorator()
     def execute(self):
@@ -57,3 +60,5 @@ class ServiceInitCommand(cmd.Command):
             if not filtered_lines:
                 self.log_warning(f"{ServiceInitCommand.__name__}: empty filtered lines => skip to the next country")
                 continue
+
+            self.insert_wrapper.insert(geolines)

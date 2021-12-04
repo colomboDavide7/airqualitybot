@@ -11,7 +11,10 @@ class GeonamesLine:
 
     def __init__(self, postal_code: str, place_name: str, country_code: str, province: str, state: str):
         self.postal_code = postal_code
-        self.place_name = place_name
+        self.place_name = place_name.replace("'", " ")
         self.country_code = country_code
-        self.province = province
-        self.state = state
+        self.province = province.replace("'", " ")
+        self.state = state.replace("'", " ")
+
+    def line2sql(self) -> str:
+        return f"('{self.postal_code}', '{self.country_code}', '{self.place_name}', '{self.province}', '{self.state}')"

@@ -16,6 +16,7 @@ import airquality.database.op.sel.geoarea as geosel
 import airquality.database.conn.adapt as db
 import airquality.database.util.query as qry
 import airquality.file.structured.json as file
+import airquality.database.op.ins.geoarea as ins
 
 
 class InitServiceCommandFactory(fact.CommandFactory):
@@ -32,7 +33,7 @@ class InitServiceCommandFactory(fact.CommandFactory):
         line_filter.set_file_logger(self.file_logger)
         line_filter.set_console_logger(self.console_logger)
 
-        select_wrapper = self.get_database_side_objects(sensor_type)
+        select_wrapper, insert_wrapper = self.get_database_side_objects(sensor_type)
 
         command = cmd.ServiceInitCommand(
             p2g=path_to_geonames_directory,
@@ -40,6 +41,7 @@ class InitServiceCommandFactory(fact.CommandFactory):
             lb=line_builder,
             lf=line_filter,
             gsw=select_wrapper,
+            giw=insert_wrapper,
             log_filename=self.log_filename
         )
         command.set_console_logger(self.console_logger)
@@ -58,4 +60,10 @@ class InitServiceCommandFactory(fact.CommandFactory):
             conn=self.database_conn, query_builder=query_builder, log_filename=self.log_filename
         )
 
-        return select_wrapper
+        insert_wrapper = ins.GeographicalAreaInsertWrapper(
+            conn=self.database_conn, query_builder=query_builder, log_filename=self.log_filename
+        )
+        insert_wrapper.set_file_logger(self.file_logger)
+        insert_wrapper.set_console_logger(self.console_logger)
+
+        return select_wrapper, insert_wrapper
