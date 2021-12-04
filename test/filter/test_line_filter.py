@@ -16,7 +16,10 @@ class TestLineFilter(unittest.TestCase):
         self.line_filter = flt.LineFilter()
         self.test_responses = [
             linetype.GeonamesLine(place_name="pn1", postal_code="", country_code="", state="", province=""),
+            linetype.GeonamesLine(place_name="pn1", postal_code="", country_code="", state="", province=""),
             linetype.GeonamesLine(place_name="pn2", postal_code="", country_code="", state="", province=""),
+            linetype.GeonamesLine(place_name="pn3", postal_code="", country_code="", state="", province=""),
+            linetype.GeonamesLine(place_name="pn1", postal_code="", country_code="", state="", province=""),
             linetype.GeonamesLine(place_name="pn3", postal_code="", country_code="", state="", province="")
         ]
 

@@ -26,6 +26,22 @@ class LineFilter(flt.BaseFilter):
             raise SystemExit(f"{LineFilter.__name__}: bad setup => missing required dependencies 'database_place_names'")
 
         all_responses = len(resp2filter)
+
+        count = 0
+        item_idx = 0
+        place_names_with_more_than_one_occurrences = []
+        while count < all_responses:
+            if resp2filter[item_idx].place_name in place_names_with_more_than_one_occurrences:
+                del resp2filter[item_idx]
+            else:
+                place_names_with_more_than_one_occurrences.append(resp2filter[item_idx].place_name)
+                item_idx += 1
+            count += 1
+        self.log_info(f"{LineFilter.__name__}: found {len(resp2filter)}/{all_responses} unique places")
+        all_responses = len(resp2filter)
+        if place_names_with_more_than_one_occurrences:
+            del place_names_with_more_than_one_occurrences
+
         count = 0
         item_idx = 0
         while count < all_responses:
