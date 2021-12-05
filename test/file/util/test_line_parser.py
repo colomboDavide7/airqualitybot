@@ -22,8 +22,15 @@ class TestLineParser(unittest.TestCase):
         test_parser = parser.TSVLineParser(separator="\t")
         test_lines = ["t1\tt2\tt3\n", "t4\tt5\tt6\n"]
         actual = test_parser.parse_lines(test_lines)
-        expected = [["t1", "t2", "t3"], ["t4", "t5", "t6"]]
-        self.assertEqual(actual, expected)
+        first_item = next(actual)
+        self.assertEqual(first_item[0], "t1")
+        self.assertEqual(first_item[1], "t2")
+        self.assertEqual(first_item[2], "t3")
+
+        second_item = next(actual)
+        self.assertEqual(second_item[0], "t4")
+        self.assertEqual(second_item[1], "t5")
+        self.assertEqual(second_item[2], "t6")
 
 
 if __name__ == '__main__':

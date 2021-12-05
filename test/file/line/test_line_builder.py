@@ -15,11 +15,12 @@ class TestGeonamesLineBuilder(unittest.TestCase):
         test_parsed_lines = [["cc", "pc", "pn", "st", "st_code", "pr", "pr_code"]]
         geonames_builder = builder.GeonamesLineBuilder()
         actual = geonames_builder.build_lines(test_parsed_lines)
-        self.assertEqual(actual[0].postal_code, "pc")
-        self.assertEqual(actual[0].country_code, "cc")
-        self.assertEqual(actual[0].place_name, "pn")
-        self.assertEqual(actual[0].state, "st")
-        self.assertEqual(actual[0].province, "pr")
+        item = next(actual)
+        self.assertEqual(item.postal_code, "pc")
+        self.assertEqual(item.country_code, "cc")
+        self.assertEqual(item.place_name, "pn")
+        self.assertEqual(item.state, "st")
+        self.assertEqual(item.province, "pr")
 
 
 if __name__ == '__main__':
