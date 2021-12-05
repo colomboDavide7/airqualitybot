@@ -55,4 +55,3 @@ class ServiceInitCommand(cmd.Command):
             filtered_lines = self.line_filter.filter(geolines)
 
             self.insert_wrapper.insert(filtered_lines)
-g
