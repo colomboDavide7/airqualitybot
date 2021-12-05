@@ -6,7 +6,7 @@
 #
 ######################################################
 import abc
-from typing import List
+from typing import List, Generator
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 
@@ -27,7 +27,7 @@ class LineParser(log.Loggable, abc.ABC):
         self.separator = separator
 
     @abc.abstractmethod
-    def parse_lines(self, lines: List[str]) -> List[List[str]]:
+    def parse_lines(self, lines: List[str]) -> Generator[List[str], None, None]:
         pass
 
 
@@ -37,5 +37,5 @@ class TSVLineParser(LineParser):
         super(TSVLineParser, self).__init__(separator=separator, log_filename=log_filename)
 
     @log_decorator.log_decorator()
-    def parse_lines(self, lines: List[str]) -> List[List[str]]:
-        return [line.strip('\n').split(self.separator) for line in lines]
+    def parse_lines(self, lines: List[str]) -> Generator[List[str],  None, None]:
+        return (line.strip('\n').split(self.separator) for line in lines)

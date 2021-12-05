@@ -55,10 +55,14 @@ class ServiceInitCommand(cmd.Command):
             self.select_wrapper.with_country_code(country_code)
             database_place_names = self.select_wrapper.select()
 
-            self.line_filter.with_database_place_names(database_place_names)
-            filtered_lines = self.line_filter.filter(geolines)
-            if not filtered_lines:
-                self.log_warning(f"{ServiceInitCommand.__name__}: empty filtered lines => skip to the next country")
-                continue
+            filtered_lines = (geoline for geoline in uniques(geolines) if geoline.place_name not in database_place_names)
 
-            self.insert_wrapper.insert(geolines)
+            self.insert_wrapper.insert(filtered_lines)
+
+
+def uniques(geolines):
+    places_with_more_than_one_occurrence = set()
+    for geoline in geolines:
+        if geoline.place_name not in places_with_more_than_one_occurrence:
+            yield geoline
+            places_with_more_than_one_occurrence.add(geoline.place_name)

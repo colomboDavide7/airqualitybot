@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import List
+from typing import Generator
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.op.baseop as base
 import airquality.database.conn.adapt as adapt
@@ -19,10 +19,11 @@ class GeographicalAreaInsertWrapper(base.DatabaseWrapper):
         super(GeographicalAreaInsertWrapper, self).__init__(conn=conn, builder=query_builder, log_filename=log_filename)
 
     @log_decorator.log_decorator()
-    def insert(self, geolines: List[gntypes.GeonamesLine]) -> None:
+    def insert(self, geolines: Generator[gntypes.GeonamesLine,  None, None]) -> None:
 
         geographical_area_values = ','.join(line.line2sql() for line in geolines)
+        if not geographical_area_values:
+            return
+
         exec_query = self.query_builder.build_initialize_geographical_areas(geographical_area_values)
         self.database_conn.send(exec_query)
-        n = len(geolines)
-        self.log_info(f"{GeographicalAreaInsertWrapper.__name__}: inserted {n}/{n} new places")

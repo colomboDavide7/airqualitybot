@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import List
+from typing import List, Generator
 import airquality.logger.util.decorator as log_decorator
 import airquality.filter.basefilt as flt
 import airquality.types.geonames as linetype
@@ -21,7 +21,7 @@ class LineFilter(flt.BaseFilter):
         self.database_place_names = place_names
 
     @log_decorator.log_decorator()
-    def filter(self, resp2filter: List[linetype.GeonamesLine]) -> List[linetype.GeonamesLine]:
+    def filter(self, resp2filter: Generator[linetype.GeonamesLine,  None, None]) -> Generator[linetype.GeonamesLine,  None, None]:
         if self.database_place_names is None:
             raise SystemExit(f"{LineFilter.__name__}: bad setup => missing required dependencies 'database_place_names'")
 
@@ -46,10 +46,8 @@ class LineFilter(flt.BaseFilter):
         item_idx = 0
         while count < all_responses:
             if resp2filter[item_idx].place_name in self.database_place_names:
-                # self.log_warning(f"{LineFilter.__name__}: skip sensor '{resp2filter[item_idx].place_name}' => already present")
                 del resp2filter[item_idx]
             else:
-                # self.log_info(f"{LineFilter.__name__}: add place '{resp2filter[item_idx].place_name}' => new place")
                 item_idx += 1
             count += 1
 
