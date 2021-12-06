@@ -14,11 +14,9 @@ import airquality.file.structured.json as file
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as url
 import airquality.api.resp.info.purpleair as resp
-import airquality.database.op.ins.geo as ins
-import airquality.database.op.sel.info as sel
+import airquality.database.repo.geo_repo as dbrepo
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as db
-import airquality.database.rec.info as rec
 import airquality.filter.geofilt as flt
 
 
@@ -45,16 +43,15 @@ class PurpleairUpdateFactory(fact.CommandFactory):
 
         response_builder, url_builder, fetch_wrapper = self.get_api_side_objects()
 
-        insert_wrapper, select_wrapper = self.get_database_side_objects(sensor_type=sensor_type)
-        response_filter = flt.GeoFilter()
+        repo = self.get_database_side_objects(sensor_type=sensor_type)
+        response_filter = flt.GeoFilter(repo=repo)
         response_filter.set_file_logger(self.file_logger)
         response_filter.set_console_logger(self.console_logger)
 
         command = cmd.UpdateCommand(
             ub=url_builder,
             fw=fetch_wrapper,
-            iw=insert_wrapper,
-            sw=select_wrapper,
+            repo=repo,
             arb=response_builder,
             rf=response_filter,
             log_filename=self.log_filename
@@ -82,18 +79,5 @@ class PurpleairUpdateFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
-
-        record_builder = rec.InfoRecordBuilder()
-
-        # InsertWrapper
-        insert_wrapper = ins.GeoInsertWrapper(
-            conn=self.database_conn, builder=query_builder, record_builder=record_builder, log_filename=self.log_filename
-        )
-        insert_wrapper.set_file_logger(self.file_logger)
-        insert_wrapper.set_console_logger(self.console_logger)
-
-        # SelectWrapper
-        select_wrapper = sel.SensorInfoSelectWrapper(
-            conn=self.database_conn, builder=query_builder, sensor_type=sensor_type, log_filename=self.log_filename
-        )
-        return insert_wrapper, select_wrapper
+        repo = dbrepo.SensorGeoRepository(db_adapter=self.database_conn, query_builder=query_builder, sensor_type=sensor_type)
+        return repo
