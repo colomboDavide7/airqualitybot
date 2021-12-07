@@ -9,10 +9,8 @@ import airquality.command.basecmd as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.resp.measure.measure as resp
-import airquality.api.url.private as url
-import airquality.api.url.timeiter as urldec
-import airquality.database.op.ins.measure as ins
-import airquality.database.op.sel.measure as sel
+import airquality.api.url.timeiter as url
+import airquality.database.repo.measure as dbrepo
 import airquality.filter.tsfilt as filt
 import airquality.types.timestamp as ts
 
@@ -22,46 +20,40 @@ class FetchCommand(base.Command):
     ################################ __init__ ###############################
     def __init__(
             self,
-            tud: urldec.TimeIterableURL,
-            ub: url.PrivateURL,
+            time_iterable_url: url.TimeIterableURL,
             arb: resp.MeasureAPIRespBuilder,
             fw: apiwrp.FetchWrapper,
-            iw: ins.MeasureInsertWrapper,
-            sw: sel.MeasureSelectWrapper,
+            repo: dbrepo.SensorMeasureRepoABC,
             flt: filt.TimestampFilter,
             log_filename="log"
     ):
         super(FetchCommand, self).__init__(log_filename=log_filename)
-        self.insert_wrapper = iw
-        self.select_wrapper = sw
-        self.time_url_decorator = tud
+        self.repo = repo
+        self.time_iterable_url = time_iterable_url
         self.time_filter = flt
         self.api_resp_builder = arb
-        self.url_builder = ub
         self.fetch_wrapper = fw
 
     ################################ execute ###############################
     @log_decorator.log_decorator()
     def execute(self):
 
-        db_responses = self.select_wrapper.select()
-        if not db_responses:
+        db_lookup = self.repo.lookup()
+        if not db_lookup:
             self.log_warning(f"{FetchCommand.__name__}: no sensor found inside the database => no measure inserted")
             return
 
-        for dbresp in db_responses:
-            for channel in dbresp.api_param:
+        for single_lookup in db_lookup:
+            for ch in single_lookup.channels:
 
-                last_acquisition = channel.last_acquisition
+                last_acquisition = ch.last_acquisition
                 self.time_filter.set_filter_ts(last_acquisition)
 
-                self.time_url_decorator.can_start_again().from_(last_acquisition).to_(ts.CurrentTimestamp())
-                self.time_url_decorator.with_identifier(channel.ch_id).with_api_key(channel.ch_key)
+                self.time_iterable_url.from_(last_acquisition).to_(ts.CurrentTimestamp()).with_identifier(ch.ch_id).with_api_key(ch.ch_key)
 
-                while self.time_url_decorator.has_next_date():
-                    next_url = self.time_url_decorator.build()
-                    parsed_response = self.fetch_wrapper.fetch(next_url)
-                    api_responses = self.api_resp_builder.with_channel_name(channel.ch_name).build(parsed_response)
+                for url_item in self.time_iterable_url.build():
+                    parsed_response = self.fetch_wrapper.fetch(url_item)
+                    api_responses = self.api_resp_builder.with_channel_name(ch.ch_name).build(parsed_response)
                     if not api_responses:
                         self.log_warning(f"{FetchCommand.__name__}: empty API response => skip to next date")
                         continue
@@ -71,14 +63,4 @@ class FetchCommand(base.Command):
                         self.log_warning(f"{FetchCommand.__name__}: no new measurements => skip to next date")
                         continue
 
-                    # Database insertion
-                    max_record_id = self.select_wrapper.select_max_record_id()
-                    name2id = self.select_wrapper.select_measure_param()
-
-                    self.insert_wrapper\
-                        .with_sensor_id(dbresp.sensor_id)\
-                        .with_measure_param_name2id(name2id)\
-                        .with_start_insert_record_id(max_record_id)\
-                        .with_channel_name(channel.ch_name)
-
-                    self.insert_wrapper.insert(filtered_responses)
+                    self.repo.push_to(sensor_id=single_lookup.sensor_id, channel_name=ch.ch_name).push(filtered_responses)

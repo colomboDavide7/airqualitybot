@@ -43,7 +43,7 @@ class SQLTimestamp(Timestamp):
         my_dt = dt.datetime.strptime(self.ts, self.fmt)
         return my_dt.strftime(SQL_TIMEST_FMT)
 
-    def add_days(self, days: int):
+    def add_days(self, days: int) -> Timestamp:
         my_dt = dt.datetime.strptime(self.ts, self.fmt)
         my_dt = my_dt + dt.timedelta(days=days)
         return SQLTimestamp(my_dt.strftime(SQL_TIMEST_FMT), SQL_TIMEST_FMT)
@@ -76,7 +76,7 @@ class AtmotubeTimestamp(SQLTimestamp):
     def get_formatted_timestamp(self) -> str:
         return super(AtmotubeTimestamp, self).get_formatted_timestamp()
 
-    def add_days(self, days: int = 1):
+    def add_days(self, days: int = 1) -> SQLTimestamp:
         super().add_days(days)
 
     def is_after(self, other) -> bool:
@@ -95,7 +95,7 @@ class ThingspeakTimestamp(SQLTimestamp):
     def get_formatted_timestamp(self) -> str:
         return super(ThingspeakTimestamp, self).get_formatted_timestamp()
 
-    def add_days(self, days: int = 7):
+    def add_days(self, days: int = 7) -> SQLTimestamp:
         super().add_days(days)
 
     def is_after(self, other) -> bool:
@@ -114,7 +114,7 @@ class CurrentTimestamp(SQLTimestamp):
     def get_formatted_timestamp(self) -> str:
         return super(CurrentTimestamp, self).get_formatted_timestamp()
 
-    def add_days(self, days: int):
+    def add_days(self, days: int) -> SQLTimestamp:
         return super().add_days(days)
 
     def is_after(self, other):
@@ -134,7 +134,7 @@ class UnixTimestamp(SQLTimestamp):
     def get_formatted_timestamp(self) -> str:
         return super(UnixTimestamp, self).get_formatted_timestamp()
 
-    def add_days(self, days: int):
+    def add_days(self, days: int) -> SQLTimestamp:
         return super().add_days(days)
 
     def is_after(self, other) -> bool:

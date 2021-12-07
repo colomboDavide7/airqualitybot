@@ -13,13 +13,10 @@ import airquality.command.basefact as fact
 import airquality.file.util.text_parser as fp
 import airquality.file.structured.json as file
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.url.private as dynurl
 import airquality.api.url.timeiter as urldec
 import airquality.api.resp.measure.thingspeak as resp
-import airquality.database.op.ins.measure as ins
-import airquality.database.op.sel.measure as sel
+import airquality.database.repo.measure as dbrepo
 import airquality.database.util.query as qry
-import airquality.database.rec.measure as rec
 import airquality.database.conn.adapt as db
 import airquality.filter.tsfilt as flt
 
@@ -33,22 +30,20 @@ class ThingspeakFetchFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def create_command(self, sensor_type: str):
 
-        response_builder, url_builder, url_time_decorator, fetch_wrapper = self.get_api_side_objects()
+        response_builder, url_time_decorator, fetch_wrapper = self.get_api_side_objects()
 
-        insert_wrapper, select_wrapper = self.get_database_side_objects(sensor_type=sensor_type)
+        repo = self.get_database_side_objects(sensor_type=sensor_type)
 
         response_filter = flt.TimestampFilter(log_filename=self.log_filename)
         response_filter.set_file_logger(self.file_logger)
         response_filter.set_console_logger(self.console_logger)
 
         cmd = command.FetchCommand(
-            tud=url_time_decorator,
-            ub=url_builder,
-            iw=insert_wrapper,
-            sw=select_wrapper,
+            time_iterable_url=url_time_decorator,
             fw=fetch_wrapper,
             flt=response_filter,
-            arb=response_builder
+            arb=response_builder,
+            repo=repo
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
@@ -61,9 +56,8 @@ class ThingspeakFetchFactory(fact.CommandFactory):
         response_builder = resp.ThingspeakAPIRespBuilder()
 
         fmt = os.environ['thingspeak_response_fmt']
-        url_builder = dynurl.ThingspeakURLBuilder(url_template=os.environ['thingspeak_url'])
-        url_builder.with_api_response_fmt(fmt)
-        url_time_decorator = urldec.ThingspeakURLTimeDecorator(to_decorate=url_builder)
+        url_time_decorator = urldec.ThingspeakTimeIterableURL(url_template=os.environ['thingspeak_url'])
+        url_time_decorator.with_url_time_param_template().with_api_response_fmt(fmt)
 
         response_parser = fp.get_text_parser(file_fmt=fmt, log_filename=self.log_filename)
 
@@ -71,21 +65,10 @@ class ThingspeakFetchFactory(fact.CommandFactory):
         fetch_wrapper.set_file_logger(self.file_logger)
         fetch_wrapper.set_console_logger(self.console_logger)
 
-        return response_builder, url_builder, url_time_decorator, fetch_wrapper
+        return response_builder, url_time_decorator, fetch_wrapper
 
     ################################ get_database_side_objects ################################
     @log_decorator.log_decorator()
     def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
-        record_builder = rec.StationRecordBuilder()
-
-        insert_wrapper = ins.StationInsertWrapper(
-            conn=self.database_conn, builder=query_builder, record_builder=record_builder, log_filename=self.log_filename
-        )
-        insert_wrapper.set_file_logger(self.file_logger)
-        insert_wrapper.set_console_logger(self.console_logger)
-
-        select_wrapper = sel.StationMeasureSelectWrapper(
-            conn=self.database_conn, builder=query_builder, sensor_type=sensor_type, log_filename=self.log_filename
-        )
-        return insert_wrapper, select_wrapper
+        return dbrepo.StationMeasureRepo(db_adapter=self.database_conn, query_builder=query_builder, sensor_type=sensor_type)
