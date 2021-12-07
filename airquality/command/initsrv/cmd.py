@@ -21,6 +21,7 @@ class ServiceInitCommand(cmd.Command):
     def __init__(
             self,
             p2g: str,
+            path2filter: str,
             lp: parser.LineParser,
             lb: gl.GeonamesLineBuilder,
             lf: flt.LineFilter,
@@ -31,6 +32,7 @@ class ServiceInitCommand(cmd.Command):
         super(ServiceInitCommand, self).__init__(log_filename=log_filename)
         self.line_parser = lp
         self.path2geonames = p2g
+        self.path2filter = path2filter
         self.line_builder = lb
         self.line_filter = lf
         self.select_wrapper = gsw
@@ -39,8 +41,9 @@ class ServiceInitCommand(cmd.Command):
     @log_decorator.log_decorator()
     def execute(self):
 
-        country_files = [f for f in os.listdir(path=self.path2geonames) if
-                         os.path.isfile(os.path.join(self.path2geonames, f))]
+        country_files = [f for f in os.listdir(path=self.path2geonames) if os.path.isfile(os.path.join(self.path2geonames, f))
+                         and not f.startswith('.')]
+        filter_files = [f for f in os.listdir(path=self.path2filter) if os.path.isfile(os.path.join(self.path2filter, f))]
 
         for f in country_files:
             lines = rdr.open_readlines_close_file(path=f"{self.path2geonames}/{f}")
@@ -50,6 +53,13 @@ class ServiceInitCommand(cmd.Command):
             country_code = f.split('.')[0]
             self.select_wrapper.with_country_code(country_code)
             database_place_names = self.select_wrapper.select()
+
+            for ff in filter_files:
+                if country_code in ff:
+                    lines = rdr.open_readlines_close_file(path=f"{self.path2filter}/{f}")
+                    parsed_lines = self.line_parser.parse_lines(lines)
+                    postalcode2keep = [p[0] for p in parsed_lines]
+                    self.line_filter.with_postal_code2keep(postalcode2keep)
 
             self.line_filter.with_database_place_names(database_place_names)
             filtered_lines = self.line_filter.filter(geolines)

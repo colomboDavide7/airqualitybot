@@ -27,6 +27,8 @@ class InitServiceCommandFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def create_command(self, sensor_type: str):
         path_to_geonames_directory = f"{os.environ['directory_of_resources']}/{sensor_type}"
+        path2filter = f"{os.environ['directory_of_resources']}/{sensor_type}/filter"
+
         line_parser, line_builder = self.get_api_side_objects()
 
         line_filter = flt.LineFilter(log_filename=self.log_filename)
@@ -37,6 +39,7 @@ class InitServiceCommandFactory(fact.CommandFactory):
 
         command = cmd.ServiceInitCommand(
             p2g=path_to_geonames_directory,
+            path2filter=path2filter,
             lp=line_parser,
             lb=line_builder,
             lf=line_filter,
