@@ -14,7 +14,7 @@ import airquality.types.postgis as pgistype
 import airquality.types.apiresp.inforesp as resp
 
 
-class SensorGeoRepository(baserepo.DatabaseRepo):
+class SensorGeoRepository(baserepo.DatabaseRepoABC):
 
     def __init__(self, db_adapter: adapt.DatabaseAdapter, query_builder: qry.QueryBuilder, sensor_type: str, postgis_cls=pgistype.PostgisPoint):
         super(SensorGeoRepository, self).__init__(db_adapter=db_adapter, query_builder=query_builder)

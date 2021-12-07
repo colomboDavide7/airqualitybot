@@ -11,7 +11,7 @@ import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as purl
 import airquality.api.resp.info.purpleair as resp
 import airquality.filter.namefilt as nameflt
-import airquality.database.repo.info_repo as dbrepo
+import airquality.database.repo.info as dbrepo
 
 
 class InitCommand(basecmd.Command):

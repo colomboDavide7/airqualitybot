@@ -9,7 +9,7 @@ import itertools
 from typing import List
 import airquality.filter.basefilt as base
 import airquality.types.apiresp.inforesp as resp
-import airquality.database.repo.info_repo as dbrepo
+import airquality.database.repo.info as dbrepo
 
 
 class NameFilter(base.BaseFilter):

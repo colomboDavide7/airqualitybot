@@ -9,7 +9,7 @@ from typing import Dict, Any, List
 import itertools
 import airquality.filter.basefilt as base
 import airquality.types.apiresp.inforesp as resp
-import airquality.database.repo.geo_repo as dbrepo
+import airquality.database.repo.geo as dbrepo
 
 
 class GeoFilter(base.BaseFilter):

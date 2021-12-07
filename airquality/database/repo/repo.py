@@ -10,7 +10,7 @@ import airquality.database.conn.adapt as adapt
 import airquality.database.util.query as qry
 
 
-class DatabaseRepo(abc.ABC):
+class DatabaseRepoABC(abc.ABC):
 
     def __init__(self, db_adapter: adapt.DatabaseAdapter, query_builder: qry.QueryBuilder):
         self.db_adapter = db_adapter

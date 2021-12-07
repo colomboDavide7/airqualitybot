@@ -7,7 +7,7 @@
 ######################################################
 import unittest
 from unittest.mock import Mock
-import airquality.database.repo.info_repo as dbrepo
+import airquality.database.repo.info as dbrepo
 import airquality.types.apiresp.inforesp as resptype
 
 

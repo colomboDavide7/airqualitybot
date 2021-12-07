@@ -14,7 +14,7 @@ import airquality.file.structured.json as file
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.purpurl as url
 import airquality.api.resp.info.purpleair as resp
-import airquality.database.repo.geo_repo as dbrepo
+import airquality.database.repo.geo as dbrepo
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as db
 import airquality.filter.geofilt as flt

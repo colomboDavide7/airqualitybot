@@ -7,7 +7,7 @@
 ######################################################
 import unittest
 from unittest.mock import Mock
-import airquality.database.repo.geo_repo as dbrepo
+import airquality.database.repo.geo as dbrepo
 
 
 class TestSensorGeoRepo(unittest.TestCase):

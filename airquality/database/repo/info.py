@@ -14,7 +14,7 @@ import airquality.database.util.query as qry
 import airquality.types.apiresp.inforesp as resp
 
 
-class SensorInfoRepository(baserepo.DatabaseRepo):
+class SensorInfoRepository(baserepo.DatabaseRepoABC):
 
     def __init__(self, db_adapter: adapt.DatabaseAdapter, query_builder: qry.QueryBuilder, sensor_type: str):
         super(SensorInfoRepository, self).__init__(db_adapter=db_adapter, query_builder=query_builder)
