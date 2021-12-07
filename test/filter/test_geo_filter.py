@@ -29,18 +29,14 @@ class TestGeoFilter(unittest.TestCase):
 
     def test_empty_list_when_active_locations_are_the_same(self):
         mocked_repo = Mock()
-        mocked_repo.lookup.return_value = [lookuptype.SensorGeoLookup(
-            sensor_name="n1", geometry=pgis.PostgisPoint(lat="45", lng="9")
-        )]
+        mocked_repo.lookup_locations.return_value = {"n1": pgis.PostgisPoint(lat="45", lng="9").as_text()}
         resp_filter = flt.GeoFilter(repo=mocked_repo)
         actual = resp_filter.filter(resp2filter=self.test_responses)
         self.assertEqual(len(actual), 0)
 
     def test_successfully_filter_responses(self):
         mocked_repo = Mock()
-        mocked_repo.lookup.return_value = [lookuptype.SensorGeoLookup(
-            sensor_name="n1", geometry=pgis.PostgisPoint(lat="44", lng="10")
-        )]
+        mocked_repo.lookup_locations.return_value = {"n1": pgis.PostgisPoint(lat="44", lng="10").as_text()}
         resp_filter = flt.GeoFilter(repo=mocked_repo)
         actual = resp_filter.filter(resp2filter=self.test_responses)
         self.assertEqual(len(actual), 1)
@@ -48,7 +44,7 @@ class TestGeoFilter(unittest.TestCase):
 
     def test_empty_list_when_no_active_locations_is_fetched(self):
         mocked_repo = Mock()
-        mocked_repo.lookup.return_value = []
+        mocked_repo.lookup_locations.return_value = {}
         resp_filter = flt.GeoFilter(repo=mocked_repo)
         actual = resp_filter.filter(resp2filter=self.test_responses)
         self.assertEqual(len(actual), 0)

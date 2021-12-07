@@ -9,7 +9,6 @@ import unittest
 from unittest.mock import Mock
 import airquality.filter.namefilt as flt
 import airquality.types.apiresp.inforesp as resp
-import airquality.types.lookup.lookup as lookuptype
 
 
 class TestNameFilter(unittest.TestCase):
@@ -23,7 +22,7 @@ class TestNameFilter(unittest.TestCase):
 
     def test_successfully_filter_names(self):
         mocked_repo = Mock()
-        mocked_repo.lookup.return_value = [lookuptype.SensorInfoLookup(sensor_name="n2")]
+        mocked_repo.lookup_names.return_value = ["n2"]
         resp_filter = flt.NameFilter(repo=mocked_repo)
         actual = resp_filter.filter(resp2filter=self.test_responses)
         self.assertEqual(len(actual), 2)
@@ -32,11 +31,7 @@ class TestNameFilter(unittest.TestCase):
 
     def test_empty_filtered_list(self):
         mocked_repo = Mock()
-        mocked_repo.lookup.return_value = [
-            lookuptype.SensorInfoLookup(sensor_name="n1"),
-            lookuptype.SensorInfoLookup(sensor_name="n2"),
-            lookuptype.SensorInfoLookup(sensor_name="n3")
-        ]
+        mocked_repo.lookup_names.return_value = ["n1", "n2", "n3"]
         resp_filter = flt.NameFilter(repo=mocked_repo)
         actual = resp_filter.filter(resp2filter=self.test_responses)
         self.assertEqual(len(actual), 0)
