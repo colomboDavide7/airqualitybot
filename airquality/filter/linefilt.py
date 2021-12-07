@@ -9,7 +9,7 @@ from typing import List, Generator
 import airquality.logger.util.decorator as log_decorator
 import airquality.filter.basefilt as flt
 import airquality.database.repo.geoarea as dbrepo
-import airquality.types.geonames as linetype
+import airquality.types.line.line as linetype
 
 
 class LineFilter(flt.BaseFilter):

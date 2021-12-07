@@ -16,6 +16,7 @@ import airquality.database.conn.adapt as db
 import airquality.database.repo.geoarea as dbrepo
 import airquality.database.util.query as qry
 import airquality.file.structured.json as file
+import airquality.file.repo.geoarea as filerepo
 
 
 class InitServiceCommandFactory(fact.CommandFactory):
@@ -28,17 +29,19 @@ class InitServiceCommandFactory(fact.CommandFactory):
         path_to_geonames_directory = f"{os.environ['directory_of_resources']}/{sensor_type}"
         path2filter = f"{os.environ['directory_of_resources']}/{sensor_type}/filter"
 
-        line_parser, line_builder = self.get_api_side_objects()
-        repo = self.get_database_side_objects(sensor_type)
+        file_repo = filerepo.GeoAreaRepo(path_to_geonames_directory)
 
-        line_filter = flt.LineFilter(repo=repo, log_filename=self.log_filename)
+        line_parser, line_builder = self.get_api_side_objects()
+        db_repo = self.get_database_side_objects(sensor_type)
+
+        line_filter = flt.LineFilter(repo=db_repo, log_filename=self.log_filename)
         line_filter.set_file_logger(self.file_logger)
         line_filter.set_console_logger(self.console_logger)
 
         command = cmd.ServiceInitCommand(
-            p2g=path_to_geonames_directory,
             path2filter=path2filter,
-            repo=repo,
+            file_repo=file_repo,
+            db_repo=db_repo,
             lp=line_parser,
             lb=line_builder,
             lf=line_filter,

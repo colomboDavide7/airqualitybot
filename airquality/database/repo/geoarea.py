@@ -11,7 +11,7 @@ import airquality.database.conn.adapt as adapt
 import airquality.database.util.query as qry
 import airquality.types.lookup.lookup as lookuptype
 import airquality.types.postgis as pgistype
-import airquality.types.geonames as geonametype
+import airquality.types.line.line as geonametype
 
 
 class GeoAreaRepo(baserepo.DatabaseRepoABC):

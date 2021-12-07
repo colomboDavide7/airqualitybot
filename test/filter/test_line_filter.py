@@ -8,7 +8,7 @@
 import unittest
 from unittest.mock import Mock
 import airquality.filter.linefilt as flt
-import airquality.types.geonames as linetype
+import types.line.line as linetype
 
 
 class TestLineFilter(unittest.TestCase):

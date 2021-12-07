@@ -5,10 +5,15 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import abc
 import airquality.types.postgis as pgistype
 
 
-class GeonamesLine:
+class LineABC(abc.ABC):
+    pass
+
+
+class GeonamesLine(LineABC):
 
     def __init__(self, postal_code: str, place_name: str, country_code: str, province: str, state: str, geom: pgistype.PostgisPoint):
         self.postal_code = postal_code

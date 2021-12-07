@@ -8,7 +8,7 @@
 import abc
 from typing import List, Generator
 import airquality.logger.loggable as log
-import airquality.types.geonames as gntypes
+import airquality.types.line.line as gntypes
 import airquality.types.postgis as pgistype
 
 

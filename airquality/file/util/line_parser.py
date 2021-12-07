@@ -27,7 +27,7 @@ class LineParser(log.Loggable, abc.ABC):
         self.separator = separator
 
     @abc.abstractmethod
-    def parse_lines(self, lines: List[str]) -> Generator[List[str], None, None]:
+    def parse_lines(self, lines: Generator[str, None, None]) -> Generator[List[str], None, None]:
         pass
 
 
@@ -37,6 +37,6 @@ class TSVLineParser(LineParser):
         super(TSVLineParser, self).__init__(separator=separator, log_filename=log_filename)
 
     @log_decorator.log_decorator()
-    def parse_lines(self, lines: List[str]) -> Generator[List[str],  None, None]:
+    def parse_lines(self, lines: Generator[str, None, None]) -> Generator[List[str],  None, None]:
         for line in lines:
             yield line.strip('\n').split(self.separator)
