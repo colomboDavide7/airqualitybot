@@ -25,12 +25,14 @@ class LineFilter(flt.BaseFilter):
         if self.database_place_names is None:
             raise SystemExit(f"{LineFilter.__name__}: bad setup => missing required dependencies 'database_place_names'")
 
-        return (geoline for geoline in self.uniques(resp2filter) if geoline.place_name not in self.database_place_names)
+        for line in self.uniques(resp2filter):
+            if line.place_name not in self.database_place_names:
+                yield line
 
     @log_decorator.log_decorator()
     def uniques(self, resp2filter: Generator[linetype.GeonamesLine, None, None]) -> Generator[linetype.GeonamesLine, None, None]:
         places_with_more_than_one_occurrence = set()
         for response in resp2filter:
-            if response not in places_with_more_than_one_occurrence:
+            if response.place_name not in places_with_more_than_one_occurrence:
                 yield response
                 places_with_more_than_one_occurrence.add(response.place_name)

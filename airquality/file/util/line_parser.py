@@ -38,4 +38,5 @@ class TSVLineParser(LineParser):
 
     @log_decorator.log_decorator()
     def parse_lines(self, lines: List[str]) -> Generator[List[str],  None, None]:
-        return (line.strip('\n').split(self.separator) for line in lines)
+        for line in lines:
+            yield line.strip('\n').split(self.separator)

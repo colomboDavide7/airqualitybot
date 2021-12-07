@@ -11,10 +11,15 @@ import airquality.file.line.geobuilder as builder
 
 class TestGeonamesLineBuilder(unittest.TestCase):
 
+    def generate_lines(self):
+        test_parsed_lines = [["cc", "pc", "pn", "st", "st_code", "pr", "pr_code", "", "", "45", "9"]]
+        for line in test_parsed_lines:
+            yield line
+
     def test_successfully_build_geonames_line(self):
-        test_parsed_lines = [["cc", "pc", "pn", "st", "st_code", "pr", "pr_code"]]
+
         geonames_builder = builder.GeonamesLineBuilder()
-        actual = geonames_builder.build_lines(test_parsed_lines)
+        actual = geonames_builder.build_lines(self.generate_lines())
         item = next(actual)
         self.assertEqual(item.postal_code, "pc")
         self.assertEqual(item.country_code, "cc")
