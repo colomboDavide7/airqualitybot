@@ -101,11 +101,27 @@ class StationMeasureRepo(SensorMeasureRepoABC):
     def lookup(self) -> List[lookuptype.SensorMeasureLookup]:
         query2exec = self.query_builder.select_sensor_id_from_type(self.sensor_type)
         db_lookup = self.db_adapter.send(query2exec)
+        unfolded = [item[0] for item in db_lookup]
         return [lookuptype.SensorMeasureLookup(sensor_id=sensor_id, channels=self.apiparam_lookup(sensor_id))
-                for sensor_id in db_lookup]
+                for sensor_id in unfolded]
 
-    def push(self, responses) -> None:
-        pass
+    def push(self, responses: List[resptype.MeasureAPIResp]) -> None:
+        code2id = self.measureparam_lookup()
+        start_record_id = self.max_record_id_lookup()
+        record_id_iter = itertools.count(start_record_id)
+
+        measure_values = ""
+        for response in responses:
+            record_id = next(record_id_iter)
+            measure_values += response.measure2sql(record_id=record_id, sensor_id=self.sensor_id2push, code2id=code2id)
+
+        measure_query = self.query_builder.build_insert_station_measure_query(measure_values.strip(','))
+        update_query = self.query_builder.build_update_last_channel_acquisition_query(
+            sensor_id=self.sensor_id2push, channel_name=self.channel_name2push,
+            last_timestamp=responses[-1].timestamp.get_formatted_timestamp()
+        )
+        query2exec = measure_query + update_query
+        self.db_adapter.send(query2exec)
 
     def max_record_id_lookup(self) -> int:
         query2exec = self.query_builder.select_max_station_record_id()

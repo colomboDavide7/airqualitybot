@@ -23,6 +23,11 @@ class MeasureAPIResp:
         self.timestamp = timestamp
         self.measures = measures
 
+    def measure2sql(self, record_id: int, sensor_id: int, code2id: Dict[str, int]) -> str:
+        fmt_ts = self.timestamp.get_formatted_timestamp()
+        return ','.join(f"({record_id}, {code2id[m.name]}, {sensor_id}, '{m.value}', '{fmt_ts}')" if m.value is not None else
+                        f"({record_id}, {code2id[m.name]}, {sensor_id}, NULL, '{fmt_ts}')" for m in self.measures) + ','
+
 
 ################################ MOBILE SENSOR API RESPONSE ################################
 class MobileSensorAPIResp(MeasureAPIResp):
@@ -31,7 +36,7 @@ class MobileSensorAPIResp(MeasureAPIResp):
         super(MobileSensorAPIResp, self).__init__(timestamp=timestamp, measures=measures)
         self.geometry = geometry
 
-    def measure2sql(self, record_id: int, code2id: Dict[str, int]) -> str:
+    def measure2sql(self, record_id: int, code2id: Dict[str, int], sensor_id=None) -> str:
         fmt_ts = self.timestamp.get_formatted_timestamp()
         geom = self.geometry.geom_from_text()
         return ','.join(f"({record_id}, {code2id[m.name]}, '{m.value}', '{fmt_ts}', {geom})" if m.value is not None else
