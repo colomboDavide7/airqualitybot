@@ -9,10 +9,10 @@ import abc
 import airquality.api.url.baseurl as base
 
 
-class DynamicURLBuilder(base.BaseURLBuilder, abc.ABC):
+class PrivateURL(base.BaseURLBuilder, abc.ABC):
 
     def __init__(self, url_template: str):
-        super(DynamicURLBuilder, self).__init__(url_template=url_template)
+        super(PrivateURL, self).__init__(url_template=url_template)
         self.api_key = None
         self.identifier = None
 
@@ -26,7 +26,7 @@ class DynamicURLBuilder(base.BaseURLBuilder, abc.ABC):
 
 
 ############################# ATMOTUBE URL BUILDER ##############################
-class AtmotubeURLBuilder(DynamicURLBuilder):
+class AtmotubeURLBuilder(PrivateURL):
 
     def __init__(self, url_template: str):
         super(AtmotubeURLBuilder, self).__init__(url_template=url_template)
@@ -36,7 +36,7 @@ class AtmotubeURLBuilder(DynamicURLBuilder):
 
 
 ############################# THINGSPEAK URL BUILDER ##############################
-class ThingspeakURLBuilder(DynamicURLBuilder):
+class ThingspeakURLBuilder(PrivateURL):
 
     def __init__(self, url_template: str):
         super(ThingspeakURLBuilder, self).__init__(url_template=url_template)

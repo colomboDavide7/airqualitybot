@@ -6,15 +6,15 @@
 #
 ######################################################
 import abc
-import airquality.api.url.dynurl as dyn
+import airquality.api.url.private as dyn
 import airquality.types.timestamp as ts
 
 
 ############################# TIME URL DECORATOR BASE CLASS ##############################
-class URLTimeDecorator(dyn.DynamicURLBuilder, abc.ABC):
+class TimeIterableURL(dyn.PrivateURL, abc.ABC):
 
-    def __init__(self, to_decorate: dyn.DynamicURLBuilder, step_size_in_days: int = 1):
-        super(URLTimeDecorator, self).__init__(url_template=to_decorate.url_template)
+    def __init__(self, to_decorate: dyn.PrivateURL, step_size_in_days: int = 1):
+        super(TimeIterableURL, self).__init__(url_template=to_decorate.url_template)
         self._url_to_decorate = to_decorate
         self.step_size_in_days = step_size_in_days
         self._start: ts.SQLTimestamp = ts.NullTimestamp()
@@ -50,7 +50,7 @@ class URLTimeDecorator(dyn.DynamicURLBuilder, abc.ABC):
 
 
 ############################# ATMOTUBE TIME URL DECORATOR ##############################
-class AtmotubeURLTimeDecorator(URLTimeDecorator):
+class AtmotubeURLTimeDecorator(TimeIterableURL):
 
     def __init__(self, to_decorate: dyn.AtmotubeURLBuilder, step_size_in_days: int = 1):
         super(AtmotubeURLTimeDecorator, self).__init__(to_decorate=to_decorate, step_size_in_days=step_size_in_days)
@@ -73,7 +73,7 @@ class AtmotubeURLTimeDecorator(URLTimeDecorator):
 
 
 ############################# THINGSPEAK TIME URL DECORATOR ##############################
-class ThingspeakURLTimeDecorator(URLTimeDecorator):
+class ThingspeakURLTimeDecorator(TimeIterableURL):
 
     def __init__(self, to_decorate: dyn.ThingspeakURLBuilder, step_size_in_days: int = 7):
         super(ThingspeakURLTimeDecorator, self).__init__(to_decorate=to_decorate, step_size_in_days=step_size_in_days)

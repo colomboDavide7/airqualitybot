@@ -9,8 +9,8 @@ import airquality.command.basecmd as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.resp.measure.measure as resp
-import airquality.api.url.dynurl as url
-import airquality.api.url.timedecor as urldec
+import airquality.api.url.private as url
+import airquality.api.url.timeiter as urldec
 import airquality.database.op.ins.measure as ins
 import airquality.database.op.sel.measure as sel
 import airquality.filter.tsfilt as filt
@@ -22,8 +22,8 @@ class FetchCommand(base.Command):
     ################################ __init__ ###############################
     def __init__(
             self,
-            tud: urldec.URLTimeDecorator,
-            ub: url.DynamicURLBuilder,
+            tud: urldec.TimeIterableURL,
+            ub: url.PrivateURL,
             arb: resp.MeasureAPIRespBuilder,
             fw: apiwrp.FetchWrapper,
             iw: ins.MeasureInsertWrapper,

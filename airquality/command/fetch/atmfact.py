@@ -12,8 +12,8 @@ import airquality.command.fetch.cmd as cmd
 import airquality.file.structured.json as file
 import airquality.file.util.text_parser as fp
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.url.dynurl as url
-import airquality.api.url.timedecor as urldec
+import airquality.api.url.private as url
+import airquality.api.url.timeiter as urldec
 import airquality.api.resp.measure.atmotube as resp
 import airquality.database.op.ins.measure as ins
 import airquality.database.op.sel.measure as sel

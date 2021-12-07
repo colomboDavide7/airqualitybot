@@ -6,8 +6,8 @@
 #
 ######################################################
 import unittest
-import airquality.api.url.timedecor as urldec
-import airquality.api.url.dynurl as url
+import airquality.api.url.timeiter as urldec
+import airquality.api.url.private as url
 import airquality.types.timestamp as ts
 
 

@@ -12,7 +12,7 @@ import airquality.command.update.cmd as cmd
 import airquality.file.util.text_parser as fp
 import airquality.file.structured.json as file
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.url.purpurl as url
+import airquality.api.url.public as url
 import airquality.api.resp.info.purpleair as resp
 import airquality.database.repo.geo as dbrepo
 import airquality.database.util.query as qry

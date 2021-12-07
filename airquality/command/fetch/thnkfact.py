@@ -13,8 +13,8 @@ import airquality.command.basefact as fact
 import airquality.file.util.text_parser as fp
 import airquality.file.structured.json as file
 import airquality.api.fetchwrp as apiwrp
-import airquality.api.url.dynurl as dynurl
-import airquality.api.url.timedecor as urldec
+import airquality.api.url.private as dynurl
+import airquality.api.url.timeiter as urldec
 import airquality.api.resp.measure.thingspeak as resp
 import airquality.database.op.ins.measure as ins
 import airquality.database.op.sel.measure as sel
