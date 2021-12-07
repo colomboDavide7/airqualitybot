@@ -22,7 +22,7 @@ class GeoFilter(base.BaseFilter):
     def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
 
         all_responses = len(resp2filter)
-        database_locations = self.get_database_location()
+        database_locations = self._repo.lookup_locations()
 
         # Filter out inactive sensors
         resp2filter = self.filter_inactive_locations(responses=resp2filter, database_locations=database_locations)
@@ -72,7 +72,3 @@ class GeoFilter(base.BaseFilter):
             else:
                 item_idx = next(item_iter)
         return responses
-
-    ################################ get_database_locations() ################################
-    def get_database_location(self) -> Dict[str, Any]:
-        return {single_lookup.sensor_name: single_lookup.geometry.as_text() for single_lookup in self._repo.lookup()}

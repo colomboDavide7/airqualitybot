@@ -32,6 +32,9 @@ class SensorGeoRepository(baserepo.DatabaseRepoABC):
         db_lookup = self.db_adapter.send(query2exec)
         return self.postgis_cls(lat=db_lookup[0][1], lng=db_lookup[0][0])
 
+    def lookup_locations(self) -> Dict[str, str]:
+        return {single_lookup.sensor_name: single_lookup.geometry.as_text() for single_lookup in self.lookup()}
+
     def push(self, responses: List[resp.SensorInfoResponse]) -> None:
         name2id = self.get_sensor_name2id()
 

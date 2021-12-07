@@ -42,3 +42,17 @@ class SensorMeasureLookup(DatabaseLookupABC):
     def __init__(self, sensor_id: int, channels: List[chtype.Channel]):
         self.sensor_id = sensor_id
         self.channels = channels
+
+
+################################ SENSOR MEASURE LOOKUP ###############################
+class GeoAreaLookup(DatabaseLookupABC):
+
+    def __init__(
+            self, postal_code: str, place_name: str, country_code: str, state: str, province: str, geom: pgistype.PostgisGeometry
+    ):
+        self.postal_code = postal_code
+        self.place_name = place_name
+        self.country_code = country_code
+        self.state = state
+        self.province = province
+        self.geom = geom

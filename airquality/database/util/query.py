@@ -39,7 +39,7 @@ class QueryBuilder:
     def select_sensor_id_from_type(self, type_: str):
         return self.query_file.s12.format(type=type_)
 
-    def select_place_names_from_country_code(self, country_code: str):
+    def select_geo_area_from_country_code(self, country_code: str):
         return self.query_file.s13.format(cc=country_code)
 
     ################################ INIT COMMAND QUERY ################################

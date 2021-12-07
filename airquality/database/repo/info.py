@@ -25,6 +25,9 @@ class SensorInfoRepository(baserepo.DatabaseRepoABC):
         db_lookup = self.db_adapter.send(query2exec)
         return [lookuptype.SensorInfoLookup(sensor_name=sensor_name) for sensor_id, sensor_name in db_lookup]
 
+    def lookup_names(self) -> List[str]:
+        return [r.sensor_name for r in self.lookup()]
+
     def push(self, responses: List[resp.SensorInfoResponse]) -> None:
 
         sensor_values = ""

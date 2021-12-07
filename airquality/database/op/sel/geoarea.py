@@ -20,6 +20,6 @@ class GeographicSelectWrapper(base.DatabaseWrapper):
         self.country_code = country_code
 
     def select(self):
-        exec_query = self.query_builder.select_place_names_from_country_code(self.country_code)
+        exec_query = self.query_builder.select_geo_area_from_country_code(self.country_code)
         answer = self.database_conn.send(exec_query)
         return [t[0] for t in answer]

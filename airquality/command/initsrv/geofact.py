@@ -12,11 +12,10 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.file.util.line_parser as parser
 import airquality.file.line.geobuilder as gl
 import airquality.filter.linefilt as flt
-import airquality.database.op.sel.geoarea as geosel
 import airquality.database.conn.adapt as db
+import airquality.database.repo.geoarea as dbrepo
 import airquality.database.util.query as qry
 import airquality.file.structured.json as file
-import airquality.database.op.ins.geoarea as ins
 
 
 class InitServiceCommandFactory(fact.CommandFactory):
@@ -30,21 +29,19 @@ class InitServiceCommandFactory(fact.CommandFactory):
         path2filter = f"{os.environ['directory_of_resources']}/{sensor_type}/filter"
 
         line_parser, line_builder = self.get_api_side_objects()
+        repo = self.get_database_side_objects(sensor_type)
 
-        line_filter = flt.LineFilter(log_filename=self.log_filename)
+        line_filter = flt.LineFilter(repo=repo, log_filename=self.log_filename)
         line_filter.set_file_logger(self.file_logger)
         line_filter.set_console_logger(self.console_logger)
-
-        select_wrapper, insert_wrapper = self.get_database_side_objects(sensor_type)
 
         command = cmd.ServiceInitCommand(
             p2g=path_to_geonames_directory,
             path2filter=path2filter,
+            repo=repo,
             lp=line_parser,
             lb=line_builder,
             lf=line_filter,
-            gsw=select_wrapper,
-            giw=insert_wrapper,
             log_filename=self.log_filename
         )
         command.set_console_logger(self.console_logger)
@@ -58,15 +55,4 @@ class InitServiceCommandFactory(fact.CommandFactory):
 
     def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(self.query_file)
-
-        select_wrapper = geosel.GeographicSelectWrapper(
-            conn=self.database_conn, query_builder=query_builder, log_filename=self.log_filename
-        )
-
-        insert_wrapper = ins.GeographicalAreaInsertWrapper(
-            conn=self.database_conn, query_builder=query_builder, log_filename=self.log_filename
-        )
-        insert_wrapper.set_file_logger(self.file_logger)
-        insert_wrapper.set_console_logger(self.console_logger)
-
-        return select_wrapper, insert_wrapper
+        return dbrepo.GeoAreaRepo(db_adapter=self.database_conn, query_builder=query_builder)

@@ -19,7 +19,7 @@ class NameFilter(base.BaseFilter):
         self._repo = repo
 
     def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
-        database_sensor_names = self.get_database_sensor_names()
+        database_sensor_names = self._repo.lookup_names()
 
         all_responses = len(resp2filter)
         response_iter = itertools.count(0)
@@ -35,6 +35,3 @@ class NameFilter(base.BaseFilter):
 
         self.log_info(f"{NameFilter.__name__}: found {len(resp2filter)}/{all_responses} new sensors")
         return resp2filter
-
-    def get_database_sensor_names(self):
-        return [r.sensor_name for r in self._repo.lookup()]
