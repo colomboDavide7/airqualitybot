@@ -26,8 +26,8 @@ class TestFileReader(unittest.TestCase):
 
     def test_successfully_open_readlines_close_file(self):
         actual = r.open_readlines_close_file('test/file/util/test_orc.txt')
-        expected = ["this is a simple test file.\n", "this is line 2."]
-        self.assertEqual(actual, expected)
+        self.assertEqual(next(actual), "this is a simple test file.\n")
+        self.assertEqual(next(actual), "this is line 2.")
 
 
 if __name__ == '__main__':

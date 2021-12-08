@@ -10,8 +10,8 @@ import airquality.command.basecmd as basecmd
 import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.public as purl
 import airquality.api.resp.info.purpleair as resp
-import airquality.database.repo.geo as dbrepo
-import airquality.filter.geofilt as flt
+import airquality.database.repo.geolocation as dbrepo
+import airquality.filter.geolocation as flt
 
 
 class UpdateCommand(basecmd.Command):

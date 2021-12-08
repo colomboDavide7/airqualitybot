@@ -6,12 +6,12 @@
 #
 ######################################################
 from typing import List
-import airquality.filter.basefilt as base
+import airquality.filter.filter as base
 import airquality.types.timestamp as ts
 import airquality.types.apiresp.measresp as resp
 
 
-class TimestampFilter(base.BaseFilter):
+class TimestampFilter(base.FilterABC):
 
     def __init__(self, log_filename="log"):
         super(TimestampFilter, self).__init__(log_filename=log_filename)

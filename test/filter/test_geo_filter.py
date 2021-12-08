@@ -7,7 +7,7 @@
 ######################################################
 import unittest
 from unittest.mock import Mock
-import airquality.filter.geofilt as flt
+import airquality.filter.geolocation as flt
 import airquality.types.apiresp.inforesp as resp
 import airquality.types.geolocation as geotype
 import airquality.types.postgis as pgis

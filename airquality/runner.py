@@ -47,7 +47,8 @@ def main():
 
         # ----------- GET COMMAND OBJECT -----------
         cmd_obj = command_factory.create_command(sensor_type=sensor_type)
-        cmd_obj.execute()
+        for command in cmd_obj:
+            command.execute()
 
         # ----------- SAFE SHUTDOWN -----------
         safe_shutdown()

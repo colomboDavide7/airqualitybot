@@ -7,12 +7,12 @@
 ######################################################
 from typing import Dict, Any, List
 import itertools
-import airquality.filter.basefilt as base
+import airquality.filter.filter as base
 import airquality.types.apiresp.inforesp as resp
-import airquality.database.repo.geo as dbrepo
+import airquality.database.repo.geolocation as dbrepo
 
 
-class GeoFilter(base.BaseFilter):
+class GeoFilter(base.FilterABC):
 
     def __init__(self, repo: dbrepo.SensorGeoRepository, log_filename="log"):
         super(GeoFilter, self).__init__(log_filename=log_filename)

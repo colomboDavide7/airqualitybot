@@ -14,12 +14,12 @@ import airquality.types.postgis as pgistype
 import airquality.types.line.line as geonametype
 
 
-class GeoAreaRepo(baserepo.DatabaseRepoABC):
+class GeonamesRepo(baserepo.DatabaseRepoABC):
 
     def __init__(
             self, db_adapter: adapt.DatabaseAdapter, query_builder: qry.QueryBuilder, postgis_cls=pgistype.PostgisPoint
     ):
-        super(GeoAreaRepo, self).__init__(db_adapter=db_adapter, query_builder=query_builder)
+        super(GeonamesRepo, self).__init__(db_adapter=db_adapter, query_builder=query_builder)
         self.country_code = None
         self.postgis_cls = postgis_cls
 

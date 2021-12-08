@@ -25,3 +25,9 @@ class GeonamesLine(LineABC):
 
     def line2sql(self) -> str:
         return f"('{self.postal_code}', '{self.country_code}', '{self.place_name}', '{self.province}', '{self.state}', {self.geom.geom_from_text()})"
+
+
+class PostalcodeLine(LineABC):
+
+    def __init__(self, postal_code: str):
+        self.postal_code = postal_code

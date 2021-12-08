@@ -7,12 +7,12 @@
 ######################################################
 import itertools
 from typing import List
-import airquality.filter.basefilt as base
+import airquality.filter.filter as base
 import airquality.types.apiresp.inforesp as resp
 import airquality.database.repo.info as dbrepo
 
 
-class NameFilter(base.BaseFilter):
+class NameFilter(base.FilterABC):
 
     def __init__(self, repo: dbrepo.SensorInfoRepository, log_filename="log"):
         super(NameFilter, self).__init__(log_filename=log_filename)
