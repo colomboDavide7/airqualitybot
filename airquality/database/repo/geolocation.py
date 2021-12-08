@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import List, Dict
+from typing import List, Dict, Generator
 import airquality.database.repo.repo as baserepo
 import airquality.types.lookup.lookup as lookuptype
 import airquality.database.conn.adapt as adapt
@@ -35,17 +35,22 @@ class SensorGeoRepository(baserepo.DatabaseRepoABC):
     def lookup_locations(self) -> Dict[str, str]:
         return {single_lookup.sensor_name: single_lookup.geometry.as_text() for single_lookup in self.lookup()}
 
-    def push(self, responses: List[resp.SensorInfoResponse]) -> None:
+    def push(self, responses: Generator[resp.SensorInfoResponse, None, None]) -> None:
         name2id = self.get_sensor_name2id()
 
-        update_query = ''.join(
-            self.query_builder.build_update_location_validity_query(
-                valid_to=r.geolocation.timestamp.get_formatted_timestamp(),
-                sensor_id=name2id[r.sensor_name]
-            ) for r in responses)
+        update_query = ""
+        geolocation_values = ""
+        for r in responses:
+            update_query += self.query_builder.build_update_location_validity_query(
+                    valid_to=r.geolocation.timestamp.get_formatted_timestamp(),
+                    sensor_id=name2id[r.sensor_name]
+                )
+            geolocation_values += r.geo2sql(name2id[r.sensor_name])
 
-        geolocation_values = "".join(r.geo2sql(name2id[r.sensor_name]) for r in responses).strip(',')
-        geolocation_query = self.query_builder.build_insert_sensor_location_query(geolocation_values=geolocation_values)
+        if not geolocation_values or not update_query:
+            return
+
+        geolocation_query = self.query_builder.build_insert_sensor_location_query(geolocation_values=geolocation_values.strip(','))
         query2exec = update_query + geolocation_query
         self.db_adapter.send(query2exec)
 

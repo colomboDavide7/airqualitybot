@@ -6,12 +6,11 @@
 #
 ######################################################
 import unittest
-from unittest.mock import Mock
+from typing import Generator
 import airquality.filter.geolocation as flt
 import airquality.types.apiresp.inforesp as resp
 import airquality.types.geolocation as geotype
 import airquality.types.postgis as pgis
-import airquality.types.lookup.lookup as lookuptype
 
 
 class TestGeoFilter(unittest.TestCase):
@@ -27,27 +26,30 @@ class TestGeoFilter(unittest.TestCase):
             resp.SensorInfoResponse(sensor_name="n3", sensor_type="t1", channels=[], geolocation=geolocation3)
         ]
 
+    def generate_responses(self) -> Generator[resp.SensorInfoResponse, None, None]:
+        for response in self.test_responses:
+            yield response
+
     def test_empty_list_when_active_locations_are_the_same(self):
-        mocked_repo = Mock()
-        mocked_repo.lookup_locations.return_value = {"n1": pgis.PostgisPoint(lat="45", lng="9").as_text()}
-        resp_filter = flt.GeoFilter(repo=mocked_repo)
-        actual = resp_filter.filter(resp2filter=self.test_responses)
-        self.assertEqual(len(actual), 0)
+        resp_filter = flt.GeoFilter()
+        resp_filter.with_database_locations({"n1": pgis.PostgisPoint(lat="45", lng="9").as_text()})
+        actual = resp_filter.filter(self.generate_responses())
+        with self.assertRaises(StopIteration):
+            next(actual)
 
     def test_successfully_filter_responses(self):
-        mocked_repo = Mock()
-        mocked_repo.lookup_locations.return_value = {"n1": pgis.PostgisPoint(lat="44", lng="10").as_text()}
-        resp_filter = flt.GeoFilter(repo=mocked_repo)
-        actual = resp_filter.filter(resp2filter=self.test_responses)
-        self.assertEqual(len(actual), 1)
-        self.assertEqual(actual[0].sensor_name, "n1")
+        resp_filter = flt.GeoFilter()
+        resp_filter.with_database_locations({"n1": pgis.PostgisPoint(lat="44", lng="10").as_text()})
+        actual = resp_filter.filter(self.generate_responses())
+        self.assertEqual(next(actual).sensor_name, "n1")
+        with self.assertRaises(StopIteration):
+            next(actual)
 
     def test_empty_list_when_no_active_locations_is_fetched(self):
-        mocked_repo = Mock()
-        mocked_repo.lookup_locations.return_value = {}
-        resp_filter = flt.GeoFilter(repo=mocked_repo)
-        actual = resp_filter.filter(resp2filter=self.test_responses)
-        self.assertEqual(len(actual), 0)
+        resp_filter = flt.GeoFilter()
+        actual = resp_filter.filter(self.generate_responses())
+        with self.assertRaises(StopIteration):
+            next(actual)
 
 
 if __name__ == '__main__':
