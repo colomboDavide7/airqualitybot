@@ -13,11 +13,11 @@ import airquality.file.util.text_parser as fp
 import airquality.file.structured.json as file
 import airquality.api.resp.info.purpleair as resp
 import airquality.api.url.public as url
-import airquality.api.fetchwrp as apiwrp
 import airquality.database.repo.info as dbrepo
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as db
 import airquality.filter.namefilt as flt
+import airquality.source.api as apisource
 
 
 ################################ PURPLEAIR INIT COMMAND FACTORY ################################
@@ -30,40 +30,32 @@ class PurpleairInitFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def create_command(self, sensor_type: str):
 
-        response_builder, url_builder, fetch_wrapper = self.get_api_side_objects()
+        data_source = self.get_api_side_objects()
+        db_repo = self.get_database_side_objects(sensor_type=sensor_type)
 
-        repo = self.get_database_side_objects(sensor_type=sensor_type)
-
-        response_filter = flt.NameFilter(repo=repo)
+        response_filter = flt.NameFilter()
+        response_filter.with_database_sensor_names(db_repo.lookup_names())
         response_filter.set_file_logger(self.file_logger)
         response_filter.set_console_logger(self.console_logger)
 
         cmd = command.InitCommand(
-            ub=url_builder,
-            fw=fetch_wrapper,
-            repo=repo,
-            arb=response_builder,
-            flt=response_filter,
+            data_source=data_source,
+            db_repo=db_repo,
+            response_filter=response_filter,
             log_filename=self.log_filename
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
 
-        return cmd
+        return [cmd]
 
     ################################ get_api_side_objects ################################
     @log_decorator.log_decorator()
     def get_api_side_objects(self):
         response_builder = resp.PurpleairAPIRespBuilder()
         url_builder = url.PurpleairURLBuilder(url_template=os.environ['purpleair_url'])
-
-        fetch_wrapper = apiwrp.FetchWrapper(
-            resp_parser=fp.JSONParser(log_filename=self.log_filename),
-            log_filename=self.log_filename
-        )
-        fetch_wrapper.set_file_logger(self.file_logger)
-        fetch_wrapper.set_console_logger(self.console_logger)
-        return response_builder, url_builder, fetch_wrapper
+        response_parser = fp.JSONParser(log_filename=self.log_filename)
+        return apisource.PurpleairAPISource(url=url_builder, parser=response_parser, builder=response_builder)
 
     ################################ get_database_side_objects ################################
     @log_decorator.log_decorator()

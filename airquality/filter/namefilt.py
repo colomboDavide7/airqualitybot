@@ -5,33 +5,23 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import itertools
-from typing import List
+from typing import List, Generator
 import airquality.filter.filter as base
 import airquality.types.apiresp.inforesp as resp
-import airquality.database.repo.info as dbrepo
 
 
 class NameFilter(base.FilterABC):
 
-    def __init__(self, repo: dbrepo.SensorInfoRepository, log_filename="log"):
+    def __init__(self, log_filename="log"):
         super(NameFilter, self).__init__(log_filename=log_filename)
-        self._repo = repo
+        self.database_sensor_names = []
 
-    def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> List[resp.SensorInfoResponse]:
-        database_sensor_names = self._repo.lookup_names()
+    def with_database_sensor_names(self, names: List[str]):
+        self.database_sensor_names = names
+        return self
 
-        all_responses = len(resp2filter)
-        response_iter = itertools.count(0)
-        item_iter = itertools.count(0)
-        item_idx = next(item_iter)
-        while next(response_iter) < all_responses:
-            if resp2filter[item_idx].sensor_name in database_sensor_names:
-                self.log_warning(f"{NameFilter.__name__}: skip sensor '{resp2filter[item_idx].sensor_name}' => already present")
-                del resp2filter[item_idx]
-            else:
-                self.log_info(f"{NameFilter.__name__}: add sensor '{resp2filter[item_idx].sensor_name}' => new sensor")
-                item_idx = next(item_iter)
-
-        self.log_info(f"{NameFilter.__name__}: found {len(resp2filter)}/{all_responses} new sensors")
-        return resp2filter
+    def filter(self, resp2filter: List[resp.SensorInfoResponse]) -> Generator[resp.SensorInfoResponse, None, None]:
+        for response in resp2filter:
+            if response.sensor_name not in self.database_sensor_names:
+                self.log_info(f"{self.__class__.__name__}: found new sensor '{response.sensor_name}'")
+                yield response

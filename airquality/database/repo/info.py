@@ -6,7 +6,7 @@
 #
 ######################################################
 import itertools
-from typing import List
+from typing import List, Generator
 import airquality.database.repo.repo as baserepo
 import airquality.types.lookup.lookup as lookuptype
 import airquality.database.conn.adapt as adapt
@@ -28,7 +28,7 @@ class SensorInfoRepository(baserepo.DatabaseRepoABC):
     def lookup_names(self) -> List[str]:
         return [r.sensor_name for r in self.lookup()]
 
-    def push(self, responses: List[resp.SensorInfoResponse]) -> None:
+    def push(self, responses: Generator[resp.SensorInfoResponse, None, None]) -> None:
 
         sensor_values = ""
         apiparam_values = ""
@@ -41,6 +41,9 @@ class SensorInfoRepository(baserepo.DatabaseRepoABC):
             sensor_values += response.sensor2sql(sensor_id)
             apiparam_values += response.apiparam2sql(sensor_id)
             geolocation_values += response.geo2sql(sensor_id)
+
+        if not sensor_values or not apiparam_values or not geolocation_values:
+            return
 
         query2exec = self.query_builder.build_initialize_sensor_query(
             sensor_values=sensor_values.strip(','),

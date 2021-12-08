@@ -7,37 +7,28 @@
 ######################################################
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
-import airquality.api.fetchwrp as apiwrp
-import airquality.api.url.public as purl
-import airquality.api.resp.info.purpleair as resp
 import airquality.filter.namefilt as nameflt
 import airquality.database.repo.info as dbrepo
+import airquality.source.api as apisource
 
 
 class InitCommand(basecmd.Command):
 
     def __init__(
             self,
-            ub: purl.PurpleairURLBuilder,
-            fw: apiwrp.FetchWrapper,
-            repo: dbrepo.SensorInfoRepository,
-            arb: resp.PurpleairAPIRespBuilder,
-            flt: nameflt.NameFilter,
+            data_source: apisource.APISourceABC,
+            db_repo: dbrepo.SensorInfoRepository,
+            response_filter: nameflt.NameFilter,
             log_filename="log"
     ):
         super(InitCommand, self).__init__(log_filename=log_filename)
-        self.repo = repo
-        self.api_resp_builder = arb
-        self.response_filter = flt
-        self.url_builder = ub
-        self.fetch_wrapper = fw
+        self.data_source = data_source
+        self.db_repo = db_repo
+        self.response_filter = response_filter
 
     @log_decorator.log_decorator()
     def execute(self):
-
-        url = self.url_builder.build()
-        parsed_response = self.fetch_wrapper.fetch(url=url)
-        api_responses = self.api_resp_builder.build(parsed_resp=parsed_response)
+        api_responses = self.data_source.get()
         if not api_responses:
             self.log_warning(f"{InitCommand.__name__}: empty API sensor data => no sensor inserted")
             return
@@ -48,4 +39,4 @@ class InitCommand(basecmd.Command):
                 f"{InitCommand.__name__}: all sensors are already present into the database => no sensor inserted")
             return
 
-        self.repo.push(filtered_responses)
+        self.db_repo.push(filtered_responses)
