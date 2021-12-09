@@ -22,8 +22,8 @@ class SensorInfoResponse:
         return f"({sensor_id}, '{self.sensor_type}', '{self.sensor_name}'),"
 
     def apiparam2sql(self, sensor_id: int) -> str:
-        return ','.join(f"({sensor_id}, '{c.ch_key}', '{c.ch_id}', '{c.ch_name}', '{c.last_acquisition.get_formatted_timestamp()}')"
+        return ','.join(f"({sensor_id}, '{c.ch_key}', '{c.ch_id}', '{c.ch_name}', '{c.last_acquisition.ts}')"
                         for c in self.channels) + ','
 
     def geo2sql(self, sensor_id: int) -> str:
-        return f"({sensor_id}, '{self.geolocation.timestamp.get_formatted_timestamp()}', {self.geolocation.geometry.geom_from_text()}),"
+        return f"({sensor_id}, '{self.geolocation.timestamp.ts}', {self.geolocation.geometry.geom_from_text()}),"

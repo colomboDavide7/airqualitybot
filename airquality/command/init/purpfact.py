@@ -30,8 +30,7 @@ class PurpleairInitFactory(cmdfact.CommandFactory):
     ################################ get_commands_to_execute() ################################
     @log_decorator.log_decorator()
     def get_commands_to_execute(self, command_type: str) -> List[command.InitCommand]:
-        url_template = os.environ['purpleair_url']
-        api_source = self.craft_api_source(url_template)
+        api_source = self.craft_api_source(url_template=os.environ['purpleair_url'])
         db_repo = self.craft_database_repo(command_type)
         response_filter = self.craft_response_filter(db_repo.database_sensor_names)
         cmd = command.InitCommand(

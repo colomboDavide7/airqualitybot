@@ -28,15 +28,6 @@ class UpdateCommand(basecmd.Command):
 
     @log_decorator.log_decorator()
     def execute(self):
-
         api_responses = self.api_source.get()
-        if not api_responses:
-            self.log_warning(f"{UpdateCommand.__name__}: empty API response => no location updated")
-            return
-
         filtered_responses = self.response_filter.filter(api_responses)
-        if not filtered_responses:
-            self.log_warning(f"{UpdateCommand.__name__}: all sensor locations are the same => no location updated")
-            return
-
         self.db_repo.push(filtered_responses)

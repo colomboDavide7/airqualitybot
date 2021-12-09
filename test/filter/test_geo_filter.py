@@ -33,23 +33,20 @@ class TestGeoFilter(unittest.TestCase):
     def test_empty_list_when_active_locations_are_the_same(self):
         resp_filter = flt.GeoFilter()
         resp_filter.with_database_locations({"n1": pgis.PostgisPoint(lat="45", lng="9").as_text()})
-        actual = resp_filter.filter(self.generate_responses())
-        with self.assertRaises(StopIteration):
-            next(actual)
+        actual = resp_filter.filter(self.test_responses)
+        self.assertEqual(len(actual), 0)
 
     def test_successfully_filter_responses(self):
         resp_filter = flt.GeoFilter()
         resp_filter.with_database_locations({"n1": pgis.PostgisPoint(lat="44", lng="10").as_text()})
-        actual = resp_filter.filter(self.generate_responses())
-        self.assertEqual(next(actual).sensor_name, "n1")
-        with self.assertRaises(StopIteration):
-            next(actual)
+        actual = resp_filter.filter(self.test_responses)
+        self.assertEqual(len(actual), 1)
+        self.assertEqual(actual[0].sensor_name, "n1")
 
     def test_empty_list_when_no_active_locations_is_fetched(self):
         resp_filter = flt.GeoFilter()
-        actual = resp_filter.filter(self.generate_responses())
-        with self.assertRaises(StopIteration):
-            next(actual)
+        actual = resp_filter.filter(self.test_responses)
+        self.assertEqual(len(actual), 0)
 
 
 if __name__ == '__main__':
