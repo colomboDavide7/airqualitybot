@@ -16,7 +16,7 @@ import airquality.file.util.text_parser as textparser
 # ------------------------------- ThingspeakAPISource ------------------------------- #
 class ThingspeakAPISource(apisrcabc.APISourceABC):
 
-    def __init__(self, url: privateurl.PrivateURL, parser: textparser.TextParser, builder: resptype.ThingspeakAPIRespBuilder):
+    def __init__(self, url: privateurl.PrivateURLBuilderABC, parser: textparser.TextParser, builder: resptype.ThingspeakAPIRespBuilder):
         self.url = url
         self.parser = parser
         self.builder = builder

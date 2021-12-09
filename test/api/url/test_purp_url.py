@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import source.api.url.public as url
+import source.api.url.purpleair as url
 
 
 class TestBaseURL(unittest.TestCase):

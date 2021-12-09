@@ -5,13 +5,15 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import source.api.url.baseurl as base
+import airquality.source.api.url.abc as base
 
 
-class PurpleairURLBuilder(base.BaseURLBuilder):
+# ------------------------------- PurpleairURLBuilder ------------------------------- #
+class PurpleairURLBuilder(base.URLBuilderABC):
 
     def __init__(self, url_template: str):
         super(PurpleairURLBuilder, self).__init__(url_template=url_template)
 
+    ################################ build() ################################
     def build(self) -> str:
         return self.url_template

@@ -8,7 +8,7 @@
 from typing import List
 import airquality.source.api.abc as apisrcabc
 import airquality.source.api.req.api_req as apireq
-import airquality.source.api.url.public as purpurl
+import airquality.source.api.url.purpleair as purpurl
 import airquality.source.api.resp.purpleair as resptype
 import airquality.file.util.text_parser as textparser
 

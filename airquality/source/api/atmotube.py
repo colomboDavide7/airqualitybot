@@ -16,7 +16,7 @@ import airquality.file.util.text_parser as textparser
 # ------------------------------- AtmotubeAPISource ------------------------------- #
 class AtmotubeAPISource(apisrcabc.APISourceABC):
 
-    def __init__(self, url: privateurl.PrivateURL, parser: textparser.TextParser, builder: resptype.AtmotubeAPIRespBuilder):
+    def __init__(self, url: privateurl.PrivateURLBuilderABC, parser: textparser.TextParser, builder: resptype.AtmotubeAPIRespBuilder):
         self.url = url
         self.parser = parser
         self.builder = builder
