@@ -86,7 +86,7 @@ class MobileMeasureRepo(SensorMeasureRepoABC):
         update_query = self.query_builder.build_update_last_channel_acquisition_query(
             sensor_id=self.sensor_id2push,
             channel_name=self.channel_name2push,
-            last_timestamp=responses[-1].timestamp.get_formatted_timestamp()
+            last_timestamp=responses[-1].timestamp.ts
         )
         query2exec = measure_query + update_query
         self.db_adapter.send(query2exec)
@@ -124,7 +124,7 @@ class StationMeasureRepo(SensorMeasureRepoABC):
         measure_query = self.query_builder.build_insert_station_measure_query(measure_values.strip(','))
         update_query = self.query_builder.build_update_last_channel_acquisition_query(
             sensor_id=self.sensor_id2push, channel_name=self.channel_name2push,
-            last_timestamp=responses[-1].timestamp.get_formatted_timestamp()
+            last_timestamp=responses[-1].timestamp.ts
         )
         query2exec = measure_query + update_query
         self.db_adapter.send(query2exec)

@@ -21,6 +21,7 @@ class TimestampFilter(base.FilterABC):
     def set_filter_ts(self, filter_ts: ts.SQLTimestamp):
         self.filter_ts = filter_ts
 
+    ################################ filter() ################################
     def filter(self, resp2filter: List[resp.MeasureAPIResp]) -> List[resp.MeasureAPIResp]:
 
         if not resp2filter:
@@ -30,18 +31,19 @@ class TimestampFilter(base.FilterABC):
         all_responses = len(resp2filter)
         first_timestamp = resp2filter[0].timestamp
         last_timestamp = resp2filter[-1].timestamp
+
         if first_timestamp.is_after(last_timestamp):
             resp2filter.reverse()
-
         if first_timestamp.is_after(self.filter_ts):
             self.log_info(f"{self.__class__.__name__} found {all_responses}/{all_responses} new measurements between"
-                          f"[{first_timestamp.get_formatted_timestamp()} - {last_timestamp.get_formatted_timestamp()}]")
+                          f"[{first_timestamp.ts} - {last_timestamp.ts}]")
             return resp2filter
-
         resp2filter = self.filter_out_old_measurements(resp2filter)
+
         self.log_info(f"{self.__class__.__name__} found {len(resp2filter)}/{all_responses} new measurements")
         return resp2filter
 
+    ################################ filter_out_old_measurements() ################################
     def filter_out_old_measurements(self, responses: List[resp.MeasureAPIResp]) -> List[resp.MeasureAPIResp]:
         all_responses = len(responses)
         count_iter = itertools.count(0)

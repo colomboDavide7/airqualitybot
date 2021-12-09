@@ -26,8 +26,8 @@ class TestTimestampFilter(unittest.TestCase):
         self.response_filter.set_filter_ts(test_filter_timestamp)
         actual = self.response_filter.filter(self.test_responses)
         self.assertEqual(len(actual), 2)
-        self.assertEqual(actual[0].timestamp.get_formatted_timestamp(), "2021-10-11 08:46:00")
-        self.assertEqual(actual[1].timestamp.get_formatted_timestamp(), "2021-10-11 08:48:00")
+        self.assertEqual(actual[0].timestamp.ts, "2021-10-11 08:46:00")
+        self.assertEqual(actual[1].timestamp.ts, "2021-10-11 08:48:00")
 
     def test_empty_list_when_all_measures_are_before_filter_timestamp(self):
         test_filter_timestamp = ts.SQLTimestamp(timest="2021-10-11 08:50:00")

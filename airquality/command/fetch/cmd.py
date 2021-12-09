@@ -14,7 +14,6 @@ import airquality.source.api as apisource
 
 class FetchCommand(base.Command):
 
-    ################################ __init__ ###############################
     def __init__(
             self,
             api_source: apisource.APISourceABC,

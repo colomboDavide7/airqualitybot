@@ -42,7 +42,7 @@ class SensorGeoRepository(baserepo.DatabaseRepoABC):
         geolocation_values = ""
         for r in responses:
             update_query += self.query_builder.build_update_location_validity_query(
-                    valid_to=r.geolocation.timestamp.get_formatted_timestamp(),
+                    valid_to=r.geolocation.timestamp.ts,
                     sensor_id=name2id[r.sensor_name]
                 )
             geolocation_values += r.geo2sql(name2id[r.sensor_name])

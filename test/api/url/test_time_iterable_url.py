@@ -7,7 +7,7 @@
 ######################################################
 import unittest
 import airquality.api.url.timeiter as urldec
-import airquality.types.timestamp as ts
+import airquality.types.timestamp as tstype
 
 
 class TestTimeIterableURL(unittest.TestCase):
@@ -23,8 +23,8 @@ class TestTimeIterableURL(unittest.TestCase):
 
     ################################ ATMOTUBE URL TIME DECORATOR ###############################
     def test_successfully_decorate_atmotube_url_with_multiple_days_time_window(self):
-        test_start_ts = ts.SQLTimestamp(timest='2021-10-11 08:45:00')
-        test_stop_ts = ts.SQLTimestamp(timest='2021-10-13 20:45:00')
+        test_start_ts = tstype.SQLTimestamp(timest='2021-10-11 08:45:00')
+        test_stop_ts = tstype.SQLTimestamp(timest='2021-10-13 20:45:00')
 
         self.atm_iterable_url.with_url_time_param_template().from_(start=test_start_ts).to_(stop=test_stop_ts)
 
@@ -46,8 +46,8 @@ class TestTimeIterableURL(unittest.TestCase):
             next(generator)
 
     def test_successfully_decorate_atmotube_url_with_single_day_time_window(self):
-        test_start_ts = ts.SQLTimestamp(timest='2021-10-11 08:45:00')
-        test_stop_ts = ts.SQLTimestamp(timest='2021-10-11 20:45:00')
+        test_start_ts = tstype.SQLTimestamp(timest='2021-10-11 08:45:00')
+        test_stop_ts = tstype.SQLTimestamp(timest='2021-10-11 20:45:00')
 
         self.atm_iterable_url.with_url_time_param_template().from_(start=test_start_ts).to_(stop=test_stop_ts)
         generator = self.atm_iterable_url.build()
@@ -61,8 +61,8 @@ class TestTimeIterableURL(unittest.TestCase):
 
     ################################ THINGSPEAK URL TIME DECORATOR ###############################
     def test_successfully_decorate_thingspeak_url_with_multiple_days_time_window(self):
-        test_start_ts = ts.SQLTimestamp(timest='2021-10-11 08:45:00')
-        test_stop_ts = ts.SQLTimestamp(timest='2021-11-07 20:45:00')
+        test_start_ts = tstype.SQLTimestamp(timest='2021-10-11 08:45:00')
+        test_stop_ts = tstype.SQLTimestamp(timest='2021-11-07 20:45:00')
 
         self.thnk_iterable_url.with_url_time_param_template().from_(start=test_start_ts).to_(stop=test_stop_ts)
 
@@ -87,8 +87,8 @@ class TestTimeIterableURL(unittest.TestCase):
             next(generator)
 
     def test_successfully_decorate_thingspeak_url_with_single_day_time_window(self):
-        test_start_ts = ts.SQLTimestamp(timest='2021-11-11 08:45:00')
-        test_stop_ts = ts.SQLTimestamp(timest='2021-11-11 20:45:00')
+        test_start_ts = tstype.SQLTimestamp(timest='2021-11-11 08:45:00')
+        test_stop_ts = tstype.SQLTimestamp(timest='2021-11-11 20:45:00')
 
         self.thnk_iterable_url.with_url_time_param_template().from_(start=test_start_ts).to_(stop=test_stop_ts)
         generator = self.thnk_iterable_url.build()

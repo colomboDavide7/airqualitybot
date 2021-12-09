@@ -17,8 +17,8 @@ class TimeIterableURL(dyn.PrivateURL, abc.ABC):
     def __init__(self, url_template: str, step_size_in_days: int = 1):
         super(TimeIterableURL, self).__init__(url_template=url_template)
         self.step_size_in_days = step_size_in_days
-        self._start: ts.SQLTimestamp = ts.NullTimestamp()
-        self._stop: ts.SQLTimestamp = ts.NullTimestamp()
+        self._start = ts.NullTimestamp()
+        self._stop = ts.NullTimestamp()
 
     @abc.abstractmethod
     def build(self) -> Generator[str, None, None]:
@@ -55,7 +55,7 @@ class AtmotubeTimeIterableURL(TimeIterableURL):
     def build(self) -> Generator[str, None, None]:
 
         while self._stop.is_after(self._start):
-            date_url_param = self._start.get_formatted_timestamp().split(' ')[0]
+            date_url_param = self._start.ts.split(' ')[0]
             yield self.url_template.format(api_key=self.api_key, mac=self.ident, fmt=self.fmt, date=date_url_param)
             self._start = self._start.add_days(self.step_size_in_days)
 
@@ -75,11 +75,11 @@ class ThingspeakTimeIterableURL(TimeIterableURL):
     def build(self) -> Generator[str, None, None]:
 
         while self._stop.is_after(self._start):
-            start_param = self._start.get_formatted_timestamp().replace(" ", "%20")
+            start_param = self._start.ts.replace(" ", "%20")
             tmp_end = self._start.add_days(self.step_size_in_days)
             if tmp_end.is_after(self._stop):
                 tmp_end = self._stop
-            end_param = tmp_end.get_formatted_timestamp().replace(" ", "%20")
+            end_param = tmp_end.ts.replace(" ", "%20")
             yield self.url_template.format(channel_id=self.ident, api_key=self.api_key, fmt=self.fmt, start=start_param, end=end_param)
             self._start = self._start.add_days(self.step_size_in_days)
 

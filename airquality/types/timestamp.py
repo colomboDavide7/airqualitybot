@@ -17,8 +17,13 @@ SQL_TIMEST_FMT = "%Y-%m-%d %H:%M:%S"
 class Timestamp(abc.ABC):
 
     def __init__(self, timest: str, fmt: str = SQL_TIMEST_FMT):
-        self.ts = timest
+        self._ts = timest
         self.fmt = fmt
+
+    @property
+    def ts(self) -> str:
+        my_dt = dt.datetime.strptime(self._ts, self.fmt)
+        return my_dt.strftime(SQL_TIMEST_FMT)
 
     @abc.abstractmethod
     def add_days(self, days: int):
@@ -28,10 +33,6 @@ class Timestamp(abc.ABC):
     def is_after(self, other) -> bool:
         pass
 
-    @abc.abstractmethod
-    def get_formatted_timestamp(self) -> str:
-        pass
-
 
 ################################ SQL TIMESTAMP CLASS ################################
 class SQLTimestamp(Timestamp):
@@ -39,12 +40,8 @@ class SQLTimestamp(Timestamp):
     def __init__(self, timest: str, fmt: str = SQL_TIMEST_FMT):
         super(SQLTimestamp, self).__init__(timest=timest, fmt=fmt)
 
-    def get_formatted_timestamp(self) -> str:
-        my_dt = dt.datetime.strptime(self.ts, self.fmt)
-        return my_dt.strftime(SQL_TIMEST_FMT)
-
     def add_days(self, days: int) -> Timestamp:
-        my_dt = dt.datetime.strptime(self.ts, self.fmt)
+        my_dt = dt.datetime.strptime(self._ts, self.fmt)
         my_dt = my_dt + dt.timedelta(days=days)
         return SQLTimestamp(my_dt.strftime(SQL_TIMEST_FMT), SQL_TIMEST_FMT)
 
@@ -53,8 +50,8 @@ class SQLTimestamp(Timestamp):
             raise SystemExit(
                 f"{SQLTimestamp.__name__}: bad type => cannot compare with object of type='{other.__class__.__name__}'")
 
-        self_dt = dt.datetime.strptime(self.ts, self.fmt)
-        other_dt = dt.datetime.strptime(other.ts, other.fmt)
+        self_dt = dt.datetime.strptime(self._ts, self.fmt)
+        other_dt = dt.datetime.strptime(other._ts, other.fmt)
         return (self_dt - other_dt).total_seconds() > 0
 
     def is_same_day(self, other) -> bool:
@@ -62,8 +59,8 @@ class SQLTimestamp(Timestamp):
             raise SystemExit(f"{SQLTimestamp.__name__}: bad type => cannot compare with object of "
                              f"type='{other.__class__.__name__}'")
 
-        self_dt = dt.datetime.strptime(self.ts, self.fmt).date()
-        other_dt = dt.datetime.strptime(other.ts, other.fmt).date()
+        self_dt = dt.datetime.strptime(self._ts, self.fmt).date()
+        other_dt = dt.datetime.strptime(other._ts, other.fmt).date()
         return self_dt.__eq__(other_dt)
 
 
@@ -73,11 +70,8 @@ class AtmotubeTimestamp(SQLTimestamp):
     def __init__(self, timest: str, fmt: str = ATMOTUBE_FMT):
         super(AtmotubeTimestamp, self).__init__(timest=dt.datetime.strptime(timest, fmt).strftime(SQL_TIMEST_FMT))
 
-    def get_formatted_timestamp(self) -> str:
-        return super(AtmotubeTimestamp, self).get_formatted_timestamp()
-
-    def add_days(self, days: int = 1) -> SQLTimestamp:
-        super().add_days(days)
+    def add_days(self, days: int = 1) -> Timestamp:
+        return super().add_days(days)
 
     def is_after(self, other) -> bool:
         return super().is_after(other)
@@ -92,11 +86,8 @@ class ThingspeakTimestamp(SQLTimestamp):
     def __init__(self, timest: str, fmt: str = THINGSPK_FMT):
         super(ThingspeakTimestamp, self).__init__(timest=dt.datetime.strptime(timest, fmt).strftime(SQL_TIMEST_FMT))
 
-    def get_formatted_timestamp(self) -> str:
-        return super(ThingspeakTimestamp, self).get_formatted_timestamp()
-
-    def add_days(self, days: int = 7) -> SQLTimestamp:
-        super().add_days(days)
+    def add_days(self, days: int = 7) -> Timestamp:
+        return super().add_days(days)
 
     def is_after(self, other) -> bool:
         return super().is_after(other)
@@ -111,10 +102,7 @@ class CurrentTimestamp(SQLTimestamp):
     def __init__(self):
         super(CurrentTimestamp, self).__init__(timest=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
 
-    def get_formatted_timestamp(self) -> str:
-        return super(CurrentTimestamp, self).get_formatted_timestamp()
-
-    def add_days(self, days: int) -> SQLTimestamp:
+    def add_days(self, days: int) -> Timestamp:
         return super().add_days(days)
 
     def is_after(self, other):
@@ -128,13 +116,9 @@ class CurrentTimestamp(SQLTimestamp):
 class UnixTimestamp(SQLTimestamp):
 
     def __init__(self, timest: int, fmt: str = SQL_TIMEST_FMT):
-        super(UnixTimestamp, self).__init__(timest=dt.datetime.fromtimestamp(timest).strftime(SQL_TIMEST_FMT),
-                                            fmt=fmt)
+        super(UnixTimestamp, self).__init__(timest=dt.datetime.fromtimestamp(timest).strftime(SQL_TIMEST_FMT), fmt=fmt)
 
-    def get_formatted_timestamp(self) -> str:
-        return super(UnixTimestamp, self).get_formatted_timestamp()
-
-    def add_days(self, days: int) -> SQLTimestamp:
+    def add_days(self, days: int) -> Timestamp:
         return super().add_days(days)
 
     def is_after(self, other) -> bool:
@@ -149,16 +133,17 @@ class NullTimestamp(SQLTimestamp):
 
     def __init__(self, timest="NULL"):
         super(NullTimestamp, self).__init__(timest=dt.datetime.now().strftime(SQL_TIMEST_FMT), fmt=SQL_TIMEST_FMT)
-        self.ts = timest
+        self._ts = timest
+
+    @property
+    def ts(self) -> str:
+        return self._ts
 
     def is_after(self, other) -> bool:
         raise SystemExit(f"{NullTimestamp.__name__}: not implemented")
 
     def add_days(self, days: int):
         raise SystemExit(f"{NullTimestamp.__name__}: not implemented")
-
-    def get_formatted_timestamp(self) -> str:
-        return self.ts
 
 
 ################################ USEFUL CONVERSION METHOD ################################
