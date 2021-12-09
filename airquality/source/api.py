@@ -29,7 +29,7 @@ class PurpleairAPISource(APISourceABC):
         self.parser = parser
         self.builder = builder
 
-    def get(self) -> Generator[infotype.SensorInfoResponse, None, None]:
+    def get(self) -> List[infotype.SensorInfoResponse]:
         url2fetch = self.url.build()
         raw_response = apireq.fetch_from_url(url2fetch)
         parsed_response = self.parser.parse(raw_response)

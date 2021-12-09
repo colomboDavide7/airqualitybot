@@ -23,17 +23,15 @@ class TestNameFilter(unittest.TestCase):
         resp_filter = flt.NameFilter()
         resp_filter.with_database_sensor_names(["n2"])
         actual = resp_filter.filter(resp2filter=self.test_responses)
-        self.assertEqual(next(actual).sensor_name, "n1")
-        self.assertEqual(next(actual).sensor_name, "n3")
-        with self.assertRaises(StopIteration):
-            next(actual)
+        self.assertEqual(len(actual), 2)
+        self.assertEqual(actual[0].sensor_name, "n1")
+        self.assertEqual(actual[1].sensor_name, "n3")
 
     def test_empty_filtered_list(self):
         resp_filter = flt.NameFilter()
         resp_filter.with_database_sensor_names(["n1", "n2", "n3"])
         actual = resp_filter.filter(resp2filter=self.test_responses)
-        with self.assertRaises(StopIteration):
-            next(actual)
+        self.assertEqual(len(actual), 0)
 
 
 if __name__ == '__main__':

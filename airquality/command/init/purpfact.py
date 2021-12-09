@@ -9,57 +9,58 @@ import os
 from typing import List
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.init.cmd as command
-import airquality.command.basefact as fact
-import airquality.file.util.text_parser as fp
-import airquality.file.structured.json as file
-import airquality.api.resp.info.purpleair as resp
-import airquality.api.url.public as url
+import airquality.command.basefact as cmdfact
+import airquality.file.util.text_parser as textparser
+import airquality.file.structured.json as jsonfile
+import airquality.api.resp.info.purpleair as purprespbuilder
+import airquality.api.url.public as publicurl
 import airquality.database.repo.info as dbrepo
 import airquality.database.util.query as qry
-import airquality.database.conn.adapt as db
-import airquality.filter.namefilt as flt
+import airquality.database.conn.adapt as dbadapt
+import airquality.filter.namefilt as namefilter
 import airquality.source.api as apisource
 
 
 ################################ PURPLEAIR INIT COMMAND FACTORY ################################
-class PurpleairInitFactory(fact.CommandFactory):
+class PurpleairInitFactory(cmdfact.CommandFactory):
 
-    def __init__(self, query_file: file.JSONFile, db_adapt: db.DatabaseAdapter, log_filename="log"):
+    def __init__(self, query_file: jsonfile.JSONFile, db_adapt: dbadapt.DatabaseAdapter, log_filename="log"):
         super(PurpleairInitFactory, self).__init__(query_file=query_file, db_adapt=db_adapt, log_filename=log_filename)
 
-    ################################ create_command ################################
+    ################################ get_commands_to_execute() ################################
     @log_decorator.log_decorator()
     def get_commands_to_execute(self, command_type: str) -> List[command.InitCommand]:
-
-        data_source = self.get_api_side_objects()
-        db_repo = self.get_database_side_objects(sensor_type=command_type)
-
-        response_filter = flt.NameFilter()
-        response_filter.with_database_sensor_names(db_repo.lookup_names())
-        response_filter.set_file_logger(self.file_logger)
-        response_filter.set_console_logger(self.console_logger)
-
+        url_template = os.environ['purpleair_url']
+        api_source = self.craft_api_source(url_template)
+        db_repo = self.craft_database_repo(command_type)
+        response_filter = self.craft_response_filter(db_repo.database_sensor_names)
         cmd = command.InitCommand(
-            data_source=data_source,
-            db_repo=db_repo,
-            response_filter=response_filter,
-            log_filename=self.log_filename
+            api_source=api_source, db_repo=db_repo, response_filter=response_filter, log_filename=self.log_filename
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)
 
         return [cmd]
 
-    ################################ get_api_side_objects ################################
+    ################################ craft_api_source() ################################
     @log_decorator.log_decorator()
-    def get_api_side_objects(self):
-        response_builder = resp.PurpleairAPIRespBuilder()
-        url_builder = url.PurpleairURLBuilder(url_template=os.environ['purpleair_url'])
-        response_parser = fp.JSONParser(log_filename=self.log_filename)
+    def craft_api_source(self, url_template: str) -> apisource.PurpleairAPISource:
+        response_builder = purprespbuilder.PurpleairAPIRespBuilder()
+        url_builder = publicurl.PurpleairURLBuilder(url_template)
+        response_parser = textparser.JSONParser(log_filename=self.log_filename)
         return apisource.PurpleairAPISource(url=url_builder, parser=response_parser, builder=response_builder)
 
-    ################################ get_database_side_objects ################################
+    ################################ craft_response_filter() ################################
     @log_decorator.log_decorator()
-    def get_database_side_objects(self, sensor_type: str):
+    def craft_response_filter(self, database_sensor_names: List[str]) -> namefilter.NameFilter:
+        response_filter = namefilter.NameFilter()
+        response_filter.with_database_sensor_names(database_sensor_names)
+        response_filter.set_file_logger(self.file_logger)
+        response_filter.set_console_logger(self.console_logger)
+        return response_filter
+
+    ################################ craft_database_repo() ################################
+    @log_decorator.log_decorator()
+    def craft_database_repo(self, command_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
-        return dbrepo.SensorInfoRepository(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=sensor_type)
+        return dbrepo.SensorInfoRepository(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=command_type)

@@ -30,11 +30,11 @@ class TestSensorInfoRepo(unittest.TestCase):
 
     def test_successfully_get_max_sensor_id(self):
         self.mocked_db_adapter.send.return_value = [(None, )]
-        actual = self.repo.get_max_sensor_id()
+        actual = self.repo.max_sensor_id
         self.assertEqual(actual, 1)
 
         self.mocked_db_adapter.send.return_value = [(99, )]
-        actual = self.repo.get_max_sensor_id()
+        actual = self.repo.max_sensor_id
         self.assertEqual(actual, 100)
 
     # def test_successfully_push_sensor_responses(self):
