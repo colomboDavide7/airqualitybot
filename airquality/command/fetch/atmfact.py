@@ -26,15 +26,15 @@ import airquality.types.channel as chtype
 ################################ ATMOTUBE FETCH COMMAND FACTORY ################################
 class AtmotubeFetchFactory(cmdfact.CommandFactory):
 
-    def __init__(self, query_file: jsonfile.JSONFile, conn: dbadapt.DatabaseAdapter, log_filename="log"):
-        super(AtmotubeFetchFactory, self).__init__(query_file=query_file, conn=conn, log_filename=log_filename)
+    def __init__(self, query_file: jsonfile.JSONFile, db_adapt: dbadapt.DatabaseAdapter, log_filename="log"):
+        super(AtmotubeFetchFactory, self).__init__(query_file=query_file, db_adapt=db_adapt, log_filename=log_filename)
 
     ################################ create_command ################################
     @log_decorator.log_decorator()
-    def create_command(self, sensor_type: str) -> List[cmd.FetchCommand]:
+    def get_commands_to_execute(self, command_type: str) -> List[cmd.FetchCommand]:
 
         query_builder = qry.QueryBuilder(query_file=self.query_file)
-        lookup_repo = dbrepo.MobileMeasureRepo(db_adapter=self.database_conn, query_builder=query_builder, sensor_type=sensor_type)
+        lookup_repo = dbrepo.MobileMeasureRepo(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=command_type)
 
         fmt = os.environ['atmotube_response_fmt']
         url_template = os.environ['atmotube_url']
@@ -49,7 +49,7 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
                 api_source = self.craft_api_source(
                     url_template=url_template, channel=channel, resp_fmt=fmt, response_parser=response_parser)
                 push_repo = self.craft_database_repo(
-                    sensor_type=sensor_type, query_builder=query_builder, sensor_id=lookup.sensor_id, ch_name=channel.ch_name)
+                    sensor_type=command_type, query_builder=query_builder, sensor_id=lookup.sensor_id, ch_name=channel.ch_name)
                 commands_to_execute.append(
                     self.craft_command(api_source=api_source, response_filter=response_filter, db_repo=push_repo))
         n = len(commands_to_execute)
@@ -94,6 +94,6 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
     def craft_database_repo(
             self, sensor_type: str, query_builder: qry.QueryBuilder, sensor_id: int, ch_name: str
     ) -> dbrepo.MobileMeasureRepo:
-        db_repo = dbrepo.MobileMeasureRepo(db_adapter=self.database_conn, query_builder=query_builder, sensor_type=sensor_type)
+        db_repo = dbrepo.MobileMeasureRepo(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=sensor_type)
         db_repo.push_to(sensor_id=sensor_id, channel_name=ch_name)
         return db_repo

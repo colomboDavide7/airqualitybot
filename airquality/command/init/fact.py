@@ -6,16 +6,16 @@
 #
 ######################################################
 import airquality.command.init.purpfact as purpfact
-import airquality.command.initsrv.geofact as geofact
+import airquality.command.initsrv.geonamesfact as geofact
 
 
-def get_init_factory_cls(sensor_type: str):
+def get_init_factory_cls(command_type: str):
     function_name = get_init_factory_cls.__name__
     valid_types = ["purpleair", "geonames"]
 
-    if sensor_type == 'purpleair':
+    if command_type == 'purpleair':
         return purpfact.PurpleairInitFactory
-    elif sensor_type == "geonames":
-        return geofact.InitServiceCommandFactory
+    elif command_type == "geonames":
+        return geofact.GeonamesInitCommandFactory
     else:
         raise SystemExit(f"{function_name}: bad type => VALID TYPES: [{'|'.join(t for t in valid_types)}]")

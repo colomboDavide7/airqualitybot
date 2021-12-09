@@ -24,15 +24,15 @@ import airquality.source.api as apisource
 ################################ PURPLEAIR INIT COMMAND FACTORY ################################
 class PurpleairInitFactory(fact.CommandFactory):
 
-    def __init__(self, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
-        super(PurpleairInitFactory, self).__init__(query_file=query_file, conn=conn, log_filename=log_filename)
+    def __init__(self, query_file: file.JSONFile, db_adapt: db.DatabaseAdapter, log_filename="log"):
+        super(PurpleairInitFactory, self).__init__(query_file=query_file, db_adapt=db_adapt, log_filename=log_filename)
 
     ################################ create_command ################################
     @log_decorator.log_decorator()
-    def create_command(self, sensor_type: str) -> List[command.InitCommand]:
+    def get_commands_to_execute(self, command_type: str) -> List[command.InitCommand]:
 
         data_source = self.get_api_side_objects()
-        db_repo = self.get_database_side_objects(sensor_type=sensor_type)
+        db_repo = self.get_database_side_objects(sensor_type=command_type)
 
         response_filter = flt.NameFilter()
         response_filter.with_database_sensor_names(db_repo.lookup_names())
@@ -62,4 +62,4 @@ class PurpleairInitFactory(fact.CommandFactory):
     @log_decorator.log_decorator()
     def get_database_side_objects(self, sensor_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
-        return dbrepo.SensorInfoRepository(db_adapter=self.database_conn, query_builder=query_builder, sensor_type=sensor_type)
+        return dbrepo.SensorInfoRepository(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=sensor_type)

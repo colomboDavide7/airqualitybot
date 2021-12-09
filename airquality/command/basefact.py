@@ -9,17 +9,17 @@ import abc
 from typing import List
 import airquality.logger.loggable as log
 import airquality.command.basecmd as basecmd
-import airquality.database.conn.adapt as db
-import airquality.file.structured.json as file
+import airquality.database.conn.adapt as dbadapt
+import airquality.file.structured.json as jsonfile
 
 
 class CommandFactory(log.Loggable, abc.ABC):
 
-    def __init__(self, query_file: file.JSONFile, conn: db.DatabaseAdapter, log_filename="log"):
+    def __init__(self, query_file: jsonfile.JSONFile, db_adapt: dbadapt.DatabaseAdapter, log_filename="log"):
         super(CommandFactory, self).__init__(log_filename=log_filename)
         self.query_file = query_file
-        self.database_conn = conn
+        self.db_adapt = db_adapt
 
     @abc.abstractmethod
-    def create_command(self, sensor_type: str) -> List[basecmd.Command]:
+    def get_commands_to_execute(self, command_type: str) -> List[basecmd.Command]:
         pass
