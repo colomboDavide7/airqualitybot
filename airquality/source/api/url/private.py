@@ -6,7 +6,7 @@
 #
 ######################################################
 import abc
-import airquality.api.url.baseurl as base
+import source.api.url.baseurl as base
 
 
 class PrivateURL(base.BaseURLBuilder, abc.ABC):

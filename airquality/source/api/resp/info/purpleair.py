@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import List, Dict, Any
-import airquality.api.resp.info.info as base
+import source.api.resp.info.info as base
 import airquality.types.apiresp.inforesp as rtype
 import airquality.types.timestamp as ts
 import airquality.types.postgis as pgis

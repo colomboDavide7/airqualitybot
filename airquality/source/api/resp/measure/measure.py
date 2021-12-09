@@ -7,7 +7,7 @@
 ######################################################
 import abc
 from typing import Dict, Any, List
-import airquality.api.resp.base as base
+import source.api.resp.base as base
 import airquality.types.apiresp.measresp as resp
 
 

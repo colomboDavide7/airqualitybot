@@ -7,7 +7,7 @@
 ######################################################
 import abc
 from typing import List, Dict, Any
-import airquality.api.resp.base as base
+import source.api.resp.base as base
 import airquality.types.geolocation as geotype
 import airquality.types.channel as chtype
 

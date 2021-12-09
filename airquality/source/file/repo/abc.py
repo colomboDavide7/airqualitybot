@@ -9,10 +9,8 @@ import abc
 from typing import Generator
 
 
+# ------------------------------- FileRepoABC ------------------------------- #
 class FileRepoABC(abc.ABC):
-
-    def __init__(self, path2directory: str):
-        self.path2directory = path2directory
 
     @abc.abstractmethod
     def get_files(self) -> Generator[str, None, None]:

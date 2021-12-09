@@ -7,7 +7,7 @@
 ######################################################
 import abc
 from typing import Generator
-import airquality.api.url.private as dyn
+import source.api.url.private as dyn
 import airquality.types.timestamp as tstype
 
 

@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.file.line.builder as builder
+import source.file.line.geonames as builder
 
 
 class TestGeonamesLineBuilder(unittest.TestCase):

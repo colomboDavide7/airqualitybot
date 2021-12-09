@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.api.resp.measure.thingspeak as resp
+import source.api.resp.measure.thingspeak as resp
 
 
 class TestThingspeakMeasureResponse(unittest.TestCase):

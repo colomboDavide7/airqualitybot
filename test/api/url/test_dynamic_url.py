@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.api.url.private as url
+import source.api.url.private as url
 
 
 class TestDynamicURL(unittest.TestCase):

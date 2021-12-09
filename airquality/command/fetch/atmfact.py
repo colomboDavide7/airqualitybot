@@ -13,8 +13,8 @@ import airquality.command.fetch.cmd as cmd
 import airquality.file.structured.json as jsonfile
 import airquality.file.util.text_parser as textparser
 import airquality.source.api as apisource
-import airquality.api.url.timeiter as iterurl
-import airquality.api.resp.measure.atmotube as apirespbuild
+import source.api.url.timeiter as iterurl
+import source.api.resp.measure.atmotube as apirespbuild
 import airquality.database.repo.measure as dbrepo
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.util.query as qry

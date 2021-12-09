@@ -12,8 +12,8 @@ import airquality.command.fetch.cmd as cmd
 import airquality.command.basefact as cmdfact
 import airquality.file.util.text_parser as textparser
 import airquality.file.structured.json as jsonfile
-import airquality.api.url.timeiter as iterurl
-import airquality.api.resp.measure.thingspeak as apiresp
+import source.api.url.timeiter as iterurl
+import source.api.resp.measure.thingspeak as apiresp
 import airquality.database.repo.measure as dbrepo
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as dbadapt

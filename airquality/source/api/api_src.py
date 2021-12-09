@@ -7,9 +7,9 @@
 ######################################################
 import abc
 from typing import Generator, List
-import airquality.source.source as basesource
+import airquality.source.abc as basesource
 import airquality.file.util.text_parser as textparser
-import airquality.api.request as apireq
+import source.api.req.api_req as apireq
 
 
 class APISourceABC(basesource.SourceABC, abc.ABC):
@@ -17,8 +17,8 @@ class APISourceABC(basesource.SourceABC, abc.ABC):
 
 
 ################################ PURPLEAIR API SOURCE ###############################
-import airquality.api.url.public as purpurl
-import airquality.api.resp.info.purpleair as purpbuilder
+import source.api.url.public as purpurl
+import source.api.resp.info.purpleair as purpbuilder
 import airquality.types.apiresp.inforesp as infotype
 
 
@@ -37,8 +37,8 @@ class PurpleairAPISource(APISourceABC):
 
 
 ################################ ATMOTUBE API SOURCE ###############################
-import airquality.api.url.private as privateurl
-import airquality.api.resp.measure.atmotube as atmbuilder
+import source.api.url.private as privateurl
+import source.api.resp.measure.atmotube as atmbuilder
 import airquality.types.apiresp.measresp as measuretype
 
 
@@ -58,7 +58,7 @@ class AtmotubeAPISource(APISourceABC):
 
 
 ################################ THINGSPEAK API SOURCE ###############################
-import airquality.api.resp.measure.thingspeak as thnkbuilder
+import source.api.resp.measure.thingspeak as thnkbuilder
 
 
 class ThingspeakAPISource(APISourceABC):

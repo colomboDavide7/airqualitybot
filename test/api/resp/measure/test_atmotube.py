@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.api.resp.measure.atmotube as resp
+import source.api.resp.measure.atmotube as resp
 
 
 class TestMeasureResponse(unittest.TestCase):

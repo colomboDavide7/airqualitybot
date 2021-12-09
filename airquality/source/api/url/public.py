@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.api.url.baseurl as base
+import source.api.url.baseurl as base
 
 
 class PurpleairURLBuilder(base.BaseURLBuilder):

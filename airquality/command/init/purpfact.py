@@ -12,8 +12,8 @@ import airquality.command.init.cmd as command
 import airquality.command.basefact as cmdfact
 import airquality.file.util.text_parser as textparser
 import airquality.file.structured.json as jsonfile
-import airquality.api.resp.info.purpleair as purprespbuilder
-import airquality.api.url.public as publicurl
+import source.api.resp.info.purpleair as purprespbuilder
+import source.api.url.public as publicurl
 import airquality.database.repo.info as dbrepo
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as dbadapt

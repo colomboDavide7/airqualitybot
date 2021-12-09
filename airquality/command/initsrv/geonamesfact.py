@@ -11,13 +11,13 @@ import airquality.command.initsrv.cmd as cmd
 import airquality.command.basefact as cmdfact
 import airquality.logger.util.decorator as log_decorator
 import airquality.file.util.line_parser as lineparser
-import airquality.file.line.builder as linebuilder
+import source.file.line.geonames as linebuilder
 import airquality.filter.geonames as filefilter
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.repo.geonames as dbrepo
 import airquality.database.util.query as qry
 import airquality.file.structured.json as jsonfile
-import airquality.file.repo.geonames as filerepo
+import source.file.repo.imp as filerepo
 import airquality.source.file as filesource
 import airquality.types.file.type as filetype
 
@@ -78,7 +78,7 @@ class GeonamesInitCommandFactory(cmdfact.CommandFactory):
     ################################ craft_poscode_source() ################################
     @log_decorator.log_decorator()
     def craft_poscode_source(self, path2directory: str, line_parser: lineparser.LineParser) -> filesource.PostalcodeFileSource:
-        poscode_repo = filerepo.GeonamesFileRepo(path2directory)
+        poscode_repo = filerepo.FileRepo(path2directory)
         poscode_builder = linebuilder.PostalcodeLineBuilder()
         poscode_source = filesource.PostalcodeFileSource(repo=poscode_repo, parser=line_parser, builder=poscode_builder)
         return poscode_source
@@ -86,7 +86,7 @@ class GeonamesInitCommandFactory(cmdfact.CommandFactory):
     ################################ craft_geonames_source() ################################
     @log_decorator.log_decorator()
     def craft_geonames_source(self, path2directory: str, line_parser: lineparser.LineParser) -> filesource.GeonamesFileSource:
-        geonames_repo = filerepo.GeonamesFileRepo(path2directory)
+        geonames_repo = filerepo.FileRepo(path2directory)
         geonames_builder = linebuilder.GeonamesLineBuilder(log_filename=self.log_filename)
         geonames_source = filesource.GeonamesFileSource(repo=geonames_repo, parser=line_parser, builder=geonames_builder)
         return geonames_source
