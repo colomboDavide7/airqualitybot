@@ -13,7 +13,7 @@ import airquality.command.update.cmd as cmd
 import airquality.file.util.text_parser as textparser
 import airquality.file.structured.json as jsonfile
 import source.api.url.public as publicurl
-import source.api.resp.info.purpleair as purprespbuilder
+import source.api.resp.purpleair as purprespbuilder
 import airquality.database.repo.geolocation as dbrepo
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as dbadapt

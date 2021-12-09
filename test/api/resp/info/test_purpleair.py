@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import source.api.resp.info.purpleair as resp
+import source.api.resp.purpleair as resp
 
 
 class TestInfoResponse(unittest.TestCase):
