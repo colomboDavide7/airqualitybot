@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import itertools
 from typing import List
 import airquality.filter.filter as base
 import airquality.types.timestamp as ts
@@ -17,28 +18,38 @@ class TimestampFilter(base.FilterABC):
         super(TimestampFilter, self).__init__(log_filename=log_filename)
         self.filter_ts = ts.NullTimestamp()
 
-    def set_filter_ts(self, filter_ts=ts.SQLTimestamp):
+    def set_filter_ts(self, filter_ts: ts.SQLTimestamp):
         self.filter_ts = filter_ts
 
     def filter(self, resp2filter: List[resp.MeasureAPIResp]) -> List[resp.MeasureAPIResp]:
-        all_responses = len(resp2filter)
 
-        if not resp2filter[-1].timestamp.is_after(resp2filter[0].timestamp):
-            self.log_info(f"{TimestampFilter.__name__}: api responses are in descending order => reverse")
-            resp2filter.reverse()
-
-        if resp2filter[0].timestamp.is_after(self.filter_ts):
-            self.log_info(f"{TimestampFilter.__name__}: found {all_responses}/{all_responses} new measurements")
+        if not resp2filter:
+            self.log_warning(f"{self.__class__.__name__} cannot apply filter to empty list => skip")
             return resp2filter
 
-        count = 0
-        item_idx = 0
-        while count < all_responses:
-            count += 1
-            if not resp2filter[item_idx].timestamp.is_after(self.filter_ts):
-                del resp2filter[item_idx]
-            else:
-                item_idx += 1
+        all_responses = len(resp2filter)
+        first_timestamp = resp2filter[0].timestamp
+        last_timestamp = resp2filter[-1].timestamp
+        if first_timestamp.is_after(last_timestamp):
+            resp2filter.reverse()
 
-        self.log_info(f"{TimestampFilter.__name__}: found {len(resp2filter)}/{all_responses} new measurements")
+        if first_timestamp.is_after(self.filter_ts):
+            self.log_info(f"{self.__class__.__name__} found {all_responses}/{all_responses} new measurements between"
+                          f"[{first_timestamp.get_formatted_timestamp()} - {last_timestamp.get_formatted_timestamp()}]")
+            return resp2filter
+
+        resp2filter = self.filter_out_old_measurements(resp2filter)
+        self.log_info(f"{self.__class__.__name__} found {len(resp2filter)}/{all_responses} new measurements")
         return resp2filter
+
+    def filter_out_old_measurements(self, responses: List[resp.MeasureAPIResp]) -> List[resp.MeasureAPIResp]:
+        all_responses = len(responses)
+        count_iter = itertools.count(0)
+        item_iter = itertools.count(0)
+        item_idx = next(item_iter)
+        while next(count_iter) < all_responses:
+            if not responses[item_idx].timestamp.is_after(self.filter_ts):
+                del responses[item_idx]
+            else:
+                item_idx = next(item_iter)
+        return responses

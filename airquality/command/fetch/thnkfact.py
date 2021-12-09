@@ -41,9 +41,9 @@ class ThingspeakFetchFactory(fact.CommandFactory):
         cmd = command.FetchCommand(
             time_iterable_url=url_time_decorator,
             fw=fetch_wrapper,
-            flt=response_filter,
+            response_filter=response_filter,
             arb=response_builder,
-            repo=repo
+            db_repo=repo
         )
         cmd.set_file_logger(self.file_logger)
         cmd.set_console_logger(self.console_logger)

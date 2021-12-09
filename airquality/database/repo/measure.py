@@ -69,6 +69,10 @@ class MobileMeasureRepo(SensorMeasureRepoABC):
                 for sensor_id in unfolded]
 
     def push(self, responses: List[resptype.MobileSensorAPIResp]) -> None:
+        if not responses:
+            # self.log_info(f"{self.__class__.__name__} no new measurements to insert => continue")
+            return
+
         code2id = self.measureparam_lookup()
         start_record_id = self.max_record_id_lookup()
         record_id_iter = itertools.count(start_record_id)
@@ -80,7 +84,9 @@ class MobileMeasureRepo(SensorMeasureRepoABC):
 
         measure_query = self.query_builder.build_insert_mobile_measure_query(measure_values.strip(','))
         update_query = self.query_builder.build_update_last_channel_acquisition_query(
-            sensor_id=self.sensor_id2push, channel_name=self.channel_name2push, last_timestamp=responses[-1].timestamp.get_formatted_timestamp()
+            sensor_id=self.sensor_id2push,
+            channel_name=self.channel_name2push,
+            last_timestamp=responses[-1].timestamp.get_formatted_timestamp()
         )
         query2exec = measure_query + update_query
         self.db_adapter.send(query2exec)

@@ -22,7 +22,7 @@ class TestTimestampFilter(unittest.TestCase):
         self.response_filter = flt.TimestampFilter()
 
     def test_successfully_filter_measures_before_filter_timestamp(self):
-        test_filter_timestamp = ts.SQLTimestamp(timest="2021-10-11 08:45:00")
+        test_filter_timestamp = ts.SQLTimestamp(timest="2021-10-11 08:45:59")
         self.response_filter.set_filter_ts(test_filter_timestamp)
         actual = self.response_filter.filter(self.test_responses)
         self.assertEqual(len(actual), 2)

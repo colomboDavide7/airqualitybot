@@ -11,13 +11,14 @@ import airquality.command.basefact as fact
 import airquality.command.fetch.cmd as cmd
 import airquality.file.structured.json as file
 import airquality.file.util.text_parser as fp
-import airquality.api.fetchwrp as apiwrp
 import airquality.api.url.timeiter as urldec
 import airquality.api.resp.measure.atmotube as resp
 import airquality.database.repo.measure as dbrepo
 import airquality.database.conn.adapt as db
 import airquality.database.util.query as qry
 import airquality.filter.tsfilt as flt
+import airquality.types.timestamp as tstype
+import airquality.source.api as apisource
 
 
 ################################ ATMOTUBE FETCH COMMAND FACTORY ################################
@@ -29,41 +30,51 @@ class AtmotubeFetchFactory(fact.CommandFactory):
     ################################ create_command ################################
     @log_decorator.log_decorator()
     def create_command(self, sensor_type: str):
+        commands_to_execute = []
+        db_repo = self.get_database_side_objects(sensor_type=sensor_type)
 
-        response_builder, url_time_decorator, fetch_wrapper = self.get_api_side_objects()
+        fmt = os.environ['atmotube_response_fmt']
+        url_template = os.environ['atmotube_url']
+        response_parser = fp.get_text_parser(file_fmt=fmt, log_filename=self.log_filename)
 
-        repo = self.get_database_side_objects(sensor_type=sensor_type)
+        db_lookup = db_repo.lookup()
+        for lookup in db_lookup:
+            for channel in lookup.channels:
 
-        response_filter = flt.TimestampFilter(log_filename=self.log_filename)
-        response_filter.set_file_logger(self.file_logger)
-        response_filter.set_console_logger(self.console_logger)
+                # Create a fresh new time iterable URL
+                time_iterable_url = urldec.AtmotubeTimeIterableURL(url_template)
+                time_iterable_url.with_url_time_param_template().with_api_response_fmt(fmt)
+                time_iterable_url.with_api_key(channel.ch_key).with_identifier(channel.ch_id)
+                time_iterable_url.from_(channel.last_acquisition).to_(tstype.CurrentTimestamp())
 
-        command = cmd.FetchCommand(
-            time_iterable_url=url_time_decorator,
-            fw=fetch_wrapper,
-            flt=response_filter,
-            arb=response_builder,
-            repo=repo
-        )
-        command.set_file_logger(self.file_logger)
-        command.set_console_logger(self.console_logger)
-        return command
+                response_builder = resp.AtmotubeAPIRespBuilder().with_channel_name(channel.ch_name)
+
+                api_source = apisource.AtmotubeAPISource(url=time_iterable_url, parser=response_parser, builder=response_builder)
+
+                # Create a fresh new Time filter for filtering
+                response_filter = flt.TimestampFilter(log_filename=self.log_filename)
+                response_filter.set_filter_ts(channel.last_acquisition)
+                response_filter.set_file_logger(self.file_logger)
+                response_filter.set_console_logger(self.console_logger)
+
+                # Create a fresh new repository for pushing
+                push_repo = self.get_database_side_objects(sensor_type)
+                push_repo.push_to(sensor_id=lookup.sensor_id, channel_name=channel.ch_name)
+
+                command = cmd.FetchCommand(
+                    api_source=api_source,
+                    response_filter=response_filter,
+                    db_repo=push_repo
+                )
+                command.set_file_logger(self.file_logger)
+                command.set_console_logger(self.console_logger)
+                commands_to_execute.append(command)
+        return commands_to_execute
 
     ################################ get_api_side_objects ################################
     @log_decorator.log_decorator()
     def get_api_side_objects(self):
-        response_builder = resp.AtmotubeAPIRespBuilder()
-
-        fmt = os.environ['atmotube_response_fmt']
-        url_time_decorator = urldec.AtmotubeTimeIterableURL(url_template=os.environ['atmotube_url'])
-        url_time_decorator.with_url_time_param_template().with_api_response_fmt(fmt)
-
-        response_parser = fp.get_text_parser(file_fmt=fmt, log_filename=self.log_filename)
-
-        fetch_wrapper = apiwrp.FetchWrapper(resp_parser=response_parser, log_filename=self.log_filename)
-        fetch_wrapper.set_file_logger(self.file_logger)
-        fetch_wrapper.set_console_logger(self.console_logger)
-        return response_builder, url_time_decorator, fetch_wrapper
+        pass
 
     ################################ get_database_side_objects ################################
     @log_decorator.log_decorator()

@@ -20,6 +20,10 @@ class TimeIterableURL(dyn.PrivateURL, abc.ABC):
         self._start: ts.SQLTimestamp = ts.NullTimestamp()
         self._stop: ts.SQLTimestamp = ts.NullTimestamp()
 
+    @abc.abstractmethod
+    def build(self) -> Generator[str, None, None]:
+        pass
+
     def with_identifier(self, ident: str):
         self.ident = ident
         return self
