@@ -29,7 +29,7 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
     def __init__(self, query_file: jsonfile.JSONFile, db_adapt: dbadapt.DatabaseAdapter, log_filename="log"):
         super(AtmotubeFetchFactory, self).__init__(query_file=query_file, db_adapt=db_adapt, log_filename=log_filename)
 
-    ################################ create_command ################################
+    ################################ get_commands_to_execute() ################################
     @log_decorator.log_decorator()
     def get_commands_to_execute(self, command_type: str) -> List[cmd.FetchCommand]:
 
@@ -45,13 +45,15 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
         commands_to_execute = []
         for lookup in db_lookup:
             for channel in lookup.channels:
-                response_filter = self.craft_response_filter(channel.last_acquisition)
+                response_filter = self.craft_response_filter(filter_timestamp=channel.last_acquisition)
                 api_source = self.craft_api_source(
-                    url_template=url_template, channel=channel, resp_fmt=fmt, response_parser=response_parser)
+                    url_template=url_template, channel=channel, resp_fmt=fmt, response_parser=response_parser
+                )
                 push_repo = self.craft_database_repo(
-                    sensor_type=command_type, query_builder=query_builder, sensor_id=lookup.sensor_id, ch_name=channel.ch_name)
-                commands_to_execute.append(
-                    self.craft_command(api_source=api_source, response_filter=response_filter, db_repo=push_repo))
+                    command_type=command_type, query_builder=query_builder, sensor_id=lookup.sensor_id, ch_name=channel.ch_name
+                )
+                command = self.craft_command(api_source=api_source, response_filter=response_filter, db_repo=push_repo)
+                commands_to_execute.append(command)
         n = len(commands_to_execute)
         self.log_info(f"{self.__class__.__name__} create {n}/{n} new commands to execute")
         return commands_to_execute
@@ -61,7 +63,9 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
     def craft_command(
             self, api_source: apisource.AtmotubeAPISource, response_filter: timefilter.TimestampFilter, db_repo: dbrepo.MobileMeasureRepo
     ) -> cmd.FetchCommand:
-        command = cmd.FetchCommand(api_source=api_source, response_filter=response_filter, db_repo=db_repo)
+        command = cmd.FetchCommand(
+            api_source=api_source, response_filter=response_filter, db_repo=db_repo, log_filename=self.log_filename
+        )
         command.set_file_logger(self.file_logger)
         command.set_console_logger(self.console_logger)
         return command
@@ -92,8 +96,8 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
     ################################ craft_database_repo() ################################
     @log_decorator.log_decorator()
     def craft_database_repo(
-            self, sensor_type: str, query_builder: qry.QueryBuilder, sensor_id: int, ch_name: str
+            self, command_type: str, query_builder: qry.QueryBuilder, sensor_id: int, ch_name: str
     ) -> dbrepo.MobileMeasureRepo:
-        db_repo = dbrepo.MobileMeasureRepo(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=sensor_type)
+        db_repo = dbrepo.MobileMeasureRepo(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=command_type)
         db_repo.push_to(sensor_id=sensor_id, channel_name=ch_name)
         return db_repo

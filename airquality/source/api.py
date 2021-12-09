@@ -55,3 +55,22 @@ class AtmotubeAPISource(APISourceABC):
             raw_responses = apireq.fetch_from_url(url2fetch)
             parsed_responses = self.parser.parse(raw_responses)
             yield self.builder.build(parsed_responses)
+
+
+################################ THINGSPEAK API SOURCE ###############################
+import airquality.api.resp.measure.thingspeak as thnkbuilder
+
+
+class ThingspeakAPISource(APISourceABC):
+
+    def __init__(self, url: privateurl.PrivateURL, parser: textparser.TextParser, builder: thnkbuilder.ThingspeakAPIRespBuilder):
+        self.url = url
+        self.parser = parser
+        self.builder = builder
+
+    def get(self) -> Generator[List[measuretype.MeasureAPIResp], None, None]:
+        url_generator = self.url.build()
+        for url2fetch in url_generator:
+            raw_responses = apireq.fetch_from_url(url2fetch)
+            parsed_responses = self.parser.parse(raw_responses)
+            yield self.builder.build(parsed_responses)

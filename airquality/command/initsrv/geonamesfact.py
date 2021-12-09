@@ -51,7 +51,8 @@ class GeonamesInitCommandFactory(cmdfact.CommandFactory):
         commands_to_execute = []
         for file in files:
             file_filter = self.craft_file_filter(file=file, db_repo=db_repo, poscode_source=poscode_source)
-            commands_to_execute.append(self.craft_command(file=file, file_filter=file_filter, db_repo=db_repo))
+            command = self.craft_command(file=file, file_filter=file_filter, db_repo=db_repo)
+            commands_to_execute.append(command)
 
         n = len(commands_to_execute)
         self.log_info(f"{self.__class__.__name__} create {n}/{n} commands to execute")
