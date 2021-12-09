@@ -22,12 +22,12 @@ class InitCommand(basecmd.Command):
             log_filename="log"
     ):
         super(InitCommand, self).__init__(log_filename=log_filename)
-        self.data_source = api_source
+        self.api_source = api_source
         self.db_repo = db_repo
         self.response_filter = response_filter
 
     @log_decorator.log_decorator()
     def execute(self):
-        api_responses = self.data_source.get()
+        api_responses = self.api_source.get()
         filtered_responses = self.response_filter.filter(api_responses)
         self.db_repo.push(filtered_responses)

@@ -26,15 +26,13 @@ class PurpleairAPIRespBuilder(base.InfoAPIRespBuilder):
         self.timestamp_cls = timestamp_cls
         self.postgis_cls = postgis_cls
 
-    ################################ build ################################
+    ################################ build() ################################
     def build(self, parsed_resp: Dict[str, Any]) -> List[rtype.SensorInfoResponse]:
         self.exit_on_bad_parsed_response(parsed_resp)
         responses = []
         for data in parsed_resp['data']:
-            # Extract the item
             item = dict(zip(parsed_resp['fields'], data))
             self.exit_on_bad_item(item)
-
             sensor_name = self.get_sensor_name(item)
             channels = self.get_channels(item)
             geolocation = self.get_geolocation(item)
@@ -43,11 +41,11 @@ class PurpleairAPIRespBuilder(base.InfoAPIRespBuilder):
             )
         return responses
 
-    ################################ get_sensor_name ################################
+    ################################ get_sensor_name() ################################
     def get_sensor_name(self, item: Dict[str, Any]) -> str:
         return f"{item['name']} ({item['sensor_index']})".replace("'", "")
 
-    ################################ get_channels ################################
+    ################################ get_channels() ################################
     def get_channels(self, item: Dict[str, Any]) -> List[chtype.Channel]:
         timestamp = self.timestamp_cls(timest=item['date_created'])
         channels = []
@@ -56,7 +54,7 @@ class PurpleairAPIRespBuilder(base.InfoAPIRespBuilder):
             channels.append(ch)
         return channels
 
-    ################################ get_geolocation ################################
+    ################################ get_geolocation() ################################
     def get_geolocation(self, item: Dict[str, Any]) -> geotype.Geolocation:
         return geotype.Geolocation(
             timestamp=ts.CurrentTimestamp(), geometry=self.postgis_cls(lat=item['latitude'], lng=item['longitude'])

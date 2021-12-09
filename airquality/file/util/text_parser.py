@@ -39,5 +39,5 @@ class JSONParser(TextParser):
     def parse(self, text: str) -> Dict[str, Any]:
         try:
             return json.loads(text)
-        except json.decoder.JSONDecodeError as je:
-            raise SystemExit(f"{JSONParser.__name__}: bad json schema => {je!s}")
+        except json.decoder.JSONDecodeError as jerr:
+            raise SystemExit(f"{JSONParser.__name__}: bad json schema => {jerr!s}")
