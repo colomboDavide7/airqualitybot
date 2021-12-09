@@ -55,7 +55,7 @@ class AtmotubeTimeIterableURL(TimeIterableURL):
     def build(self) -> Generator[str, None, None]:
 
         while self._stop.is_after(self._start):
-            date_url_param = self._start.ts.split(' ')[0]
+            date_url_param = self._start.tstype.split(' ')[0]
             yield self.url_template.format(api_key=self.api_key, mac=self.ident, fmt=self.fmt, date=date_url_param)
             self._start = self._start.add_days(self.step_size_in_days)
 
@@ -75,7 +75,7 @@ class ThingspeakTimeIterableURL(TimeIterableURL):
     def build(self) -> Generator[str, None, None]:
 
         while self._stop.is_after(self._start):
-            start_param = self._start.ts.replace(" ", "%20")
+            start_param = self._start.tstype.replace(" ", "%20")
             tmp_end = self._start.add_days(self.step_size_in_days)
             if tmp_end.is_after(self._stop):
                 tmp_end = self._stop
