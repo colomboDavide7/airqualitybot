@@ -6,6 +6,7 @@
 #
 ######################################################
 import os
+from typing import List
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.init.cmd as command
 import airquality.command.basefact as fact
@@ -28,7 +29,7 @@ class PurpleairInitFactory(fact.CommandFactory):
 
     ################################ create_command ################################
     @log_decorator.log_decorator()
-    def create_command(self, sensor_type: str):
+    def create_command(self, sensor_type: str) -> List[command.InitCommand]:
 
         data_source = self.get_api_side_objects()
         db_repo = self.get_database_side_objects(sensor_type=sensor_type)

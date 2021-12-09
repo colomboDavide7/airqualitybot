@@ -5,10 +5,11 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+from typing import Generator
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as cmd
 import airquality.filter.filter as flt
-import airquality.database.repo.geonames as dbrepo
+import airquality.database.repo.repo as dbrepo
 import airquality.types.line.line as linetype
 
 
@@ -16,9 +17,9 @@ class ServiceInitCommand(cmd.Command):
 
     def __init__(
             self,
-            file_lines: linetype.LineABC,
+            file_lines: Generator[linetype.LineABC, None, None],
             file_filter: flt.FilterABC,
-            db_repo: dbrepo.GeonamesRepo,
+            db_repo: dbrepo.DatabaseRepoABC,
             log_filename="geonames"
     ):
         super(ServiceInitCommand, self).__init__(log_filename=log_filename)

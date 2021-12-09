@@ -6,6 +6,7 @@
 #
 ######################################################
 import os
+from typing import List
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basefact as cmdfact
 import airquality.command.fetch.cmd as cmd
@@ -30,7 +31,7 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
 
     ################################ create_command ################################
     @log_decorator.log_decorator()
-    def create_command(self, sensor_type: str):
+    def create_command(self, sensor_type: str) -> List[cmd.FetchCommand]:
 
         query_builder = qry.QueryBuilder(query_file=self.query_file)
         lookup_repo = dbrepo.MobileMeasureRepo(db_adapter=self.database_conn, query_builder=query_builder, sensor_type=sensor_type)

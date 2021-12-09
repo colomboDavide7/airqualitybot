@@ -46,8 +46,8 @@ def main():
         command_factory.set_console_logger(logger=console_logger)
 
         # ----------- GET COMMAND OBJECT -----------
-        cmd_obj = command_factory.create_command(sensor_type=sensor_type)
-        for command in cmd_obj:
+        commands2execute = command_factory.create_command(sensor_type=sensor_type)
+        for command in commands2execute:
             command.execute()
 
         # ----------- SAFE SHUTDOWN -----------
