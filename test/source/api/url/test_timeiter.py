@@ -6,8 +6,8 @@
 #
 ######################################################
 import unittest
-import airquality.source.api.url.private as privateurl
-import airquality.source.api.url.timeiter as urltype
+import api as privateurl
+import api as urltype
 import airquality.types.timestamp as tstype
 
 

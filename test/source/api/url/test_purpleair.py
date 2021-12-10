@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.source.api.url.purpleair as urltype
+import api as urltype
 
 
 class TestBaseURL(unittest.TestCase):

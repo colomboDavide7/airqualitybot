@@ -9,7 +9,7 @@ import airquality.command.basecmd as base
 import airquality.logger.util.decorator as log_decorator
 import airquality.database.repo.measure as dbrepo
 import airquality.filter.tsfilt as filt
-import airquality.source.api as apisource
+import api as apisource
 
 
 class FetchCommand(base.Command):

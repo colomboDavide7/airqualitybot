@@ -9,7 +9,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
 import airquality.filter.namefilt as nameflt
 import airquality.database.repo.info as dbrepo
-import airquality.source.api as apisource
+import api as apisource
 
 
 class InitCommand(basecmd.Command):

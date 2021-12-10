@@ -9,7 +9,7 @@ import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as basecmd
 import airquality.database.repo.geolocation as dbrepo
 import airquality.filter.geolocation as geofilter
-import airquality.source.api as apisource
+import api as apisource
 
 
 class UpdateCommand(basecmd.Command):

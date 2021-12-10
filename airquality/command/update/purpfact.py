@@ -12,13 +12,13 @@ import airquality.command.basefact as cmdfact
 import airquality.command.update.cmd as cmd
 import airquality.file.util.text_parser as textparser
 import airquality.file.structured.json as jsonfile
-import source.api.url.purpleair as publicurl
-import source.api.resp.purpleair as purprespbuilder
+import api as publicurl
+import api as purprespbuilder
 import airquality.database.repo.geolocation as dbrepo
 import airquality.database.util.query as qry
 import airquality.database.conn.adapt as dbadapt
 import airquality.filter.geolocation as geolocfilter
-import airquality.source.api as apisource
+import api as apisource
 
 
 ################################ get_update_command_factory_cls ################################

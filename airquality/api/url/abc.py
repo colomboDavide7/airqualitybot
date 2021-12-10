@@ -6,14 +6,12 @@
 #
 ######################################################
 import abc
+from typing import Tuple
 
 
 # ------------------------------- URLBuilderABC ------------------------------- #
 class URLBuilderABC(abc.ABC):
 
-    def __init__(self, url_template: str):
-        self.url_template = url_template
-
     @abc.abstractmethod
-    def build(self) -> str:
+    def build(self) -> Tuple[str]:
         pass

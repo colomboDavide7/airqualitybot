@@ -5,15 +5,16 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.source.api.url.abc as base
+from typing import Tuple
+import airquality.api.url.abc as base
 
 
 # ------------------------------- PurpleairURLBuilder ------------------------------- #
 class PurpleairURLBuilder(base.URLBuilderABC):
 
-    def __init__(self, url_template: str):
-        super(PurpleairURLBuilder, self).__init__(url_template=url_template)
+    def __init__(self, url: str):
+        self.url = url
 
     ################################ build() ################################
-    def build(self) -> str:
-        return self.url_template
+    def build(self) -> Tuple[str]:
+        return tuple(self.url)

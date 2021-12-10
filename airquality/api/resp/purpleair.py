@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import List, Dict, Any
-import airquality.source.api.resp.abc as respabc
+import airquality.api.resp.abc as respabc
 
 CHANNEL_PARAM = [{'name': 'Primary data - Channel A', 'key': 'primary_key_a', 'id': 'primary_id_a'},
                  {'name': 'Primary data - Channel B', 'key': 'primary_key_b', 'id': 'primary_id_b'},

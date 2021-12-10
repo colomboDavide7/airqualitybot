@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.source.api.resp.purpleair as resptype
+import api.resp.purpleair as resptype
 
 
 class TestInfoResponse(unittest.TestCase):

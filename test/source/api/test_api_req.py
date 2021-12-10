@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.source.api.api_req as apirequest
+import api as apirequest
 
 
 class TestAPIRequest(unittest.TestCase):

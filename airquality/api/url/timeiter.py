@@ -6,9 +6,9 @@
 #
 ######################################################
 import abc
-from typing import Generator
-import airquality.source.api.url.abc as urlabc
-import airquality.source.api.url.private as privateurl
+from typing import Tuple
+import airquality.api.url.abc as urlabc
+import airquality.api.url.private as privateurl
 import airquality.types.timestamp as tstype
 
 
@@ -16,14 +16,22 @@ import airquality.types.timestamp as tstype
 class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, abc.ABC):
 
     def __init__(self, url: privateurl.PrivateURLBuilderABC, start_ts: tstype.Timestamp, stop_ts: tstype.Timestamp, step_size_in_days: int = 1):
-        super(TimeIterableURLBuilderABC, self).__init__(url_template=url.url_template)
-        self.url = url
+        self.url_obj = url
         self._start_ts = start_ts
         self._stop_ts = stop_ts
         self.step_size_in_days = step_size_in_days
 
+    ################################ build() ################################
+    def build(self) -> Tuple[str]:
+        all_urls = []
+        while self._stop_ts.is_after(self._start_ts):
+            url_str = self.format_url()
+            all_urls.append(url_str)
+            self._start_ts = self._start_ts.add_days(self.step_size_in_days)
+        return tuple(all_urls)
+
     @abc.abstractmethod
-    def build(self) -> Generator[str, None, None]:
+    def format_url(self) -> str:
         pass
 
 
@@ -32,14 +40,14 @@ class AtmotubeTimeIterableURL(TimeIterableURLBuilderABC):
 
     def __init__(self, url: privateurl.AtmotubeURLBuilder, start_ts: tstype.Timestamp, stop_ts: tstype.Timestamp, step_size_in_days: int = 1):
         super(AtmotubeTimeIterableURL, self).__init__(url=url, start_ts=start_ts, stop_ts=stop_ts, step_size_in_days=step_size_in_days)
-        self.url.url_template += "&date={date}"
 
-    ################################ build() ################################
-    def build(self) -> Generator[str, None, None]:
-        while self._stop_ts.is_after(self._start_ts):
-            date_url_param = self._start_ts.ts.split(' ')[0]
-            yield self.url.url_template.format(api_key=self.url.api_key, mac=self.url.ident, fmt=self.url.fmt, date=date_url_param)
-            self._start_ts = self._start_ts.add_days(self.step_size_in_days)
+    ################################ format_url() ################################
+    def format_url(self) -> str:
+        date = self._start_ts.ts.split(' ')[0]
+        ch_key = self.url_obj.api_key
+        mac = self.url_obj.ident
+        resp_fmt = self.url_obj.fmt
+        return self.url_obj.url.format(api_key=ch_key, mac=mac, fmt=resp_fmt, date=date)
 
 
 # ------------------------------- ThingspeakTimeIterableURL ------------------------------- #
@@ -47,18 +55,18 @@ class ThingspeakTimeIterableURL(TimeIterableURLBuilderABC):
 
     def __init__(self, url: privateurl.ThingspeakURLBuilder, start_ts: tstype.Timestamp, stop_ts: tstype.Timestamp, step_size_in_days: int = 7):
         super(ThingspeakTimeIterableURL, self).__init__(url=url, start_ts=start_ts, stop_ts=stop_ts, step_size_in_days=step_size_in_days)
-        self.url.url_template += "&start={start}&end={end}"
 
-    ################################ build() ################################
-    def build(self) -> Generator[str, None, None]:
-        while self._stop_ts.is_after(self._start_ts):
-            start_param = self._start_ts.ts.replace(" ", "%20")
-            end_param = self.get_end_timestamp().ts.replace(" ", "%20")
-            yield self.url.url_template.format(channel_id=self.url.ident, api_key=self.url.api_key, fmt=self.url.fmt, start=start_param, end=end_param)
-            self._start_ts = self._start_ts.add_days(self.step_size_in_days)
+    ################################ format_url() ################################
+    def format_url(self) -> str:
+        _from = self._start_ts.ts.replace(" ", "%20")
+        _to = self.get_end_timestamp().ts.replace(" ", "%20")
+        ch_id = self.url_obj.ident
+        ch_key = self.url_obj.api_key
+        resp_fmt = self.url_obj.fmt
+        return self.url_obj.url.format(channel_id=ch_id, api_key=ch_key, fmt=resp_fmt, start=_from, end=_to)
 
     ################################ get_end_timestamp() ################################
-    def get_end_timestamp(self):
+    def get_end_timestamp(self) -> tstype.Timestamp:
         tmp_end = self._start_ts.add_days(self.step_size_in_days)
         if tmp_end.is_after(self._stop_ts):
             tmp_end = self._stop_ts

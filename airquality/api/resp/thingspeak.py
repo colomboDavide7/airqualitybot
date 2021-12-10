@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import Dict, Any, List
-import airquality.source.api.resp.abc as respabc
+import airquality.api.resp.abc as respabc
 
 
 # ------------------------------- ThingspeakAPIRespType ------------------------------- #
