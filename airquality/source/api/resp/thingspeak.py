@@ -48,6 +48,9 @@ class ThingspeakAPIRespBuilder(respabc.APIRespBuilderABC):
 
     ################################ build ################################
     def build(self, parsed_resp: Dict[str, Any]) -> List[ThingspeakAPIRespType]:
-        feeds = parsed_resp['feeds']
-        measure_param = self.CHANNEL_FIELDS[self.channel_name]
-        return [ThingspeakAPIRespType(item=feed, measure_param=measure_param) for feed in feeds]
+        try:
+            feeds = parsed_resp['feeds']
+            measure_param = self.CHANNEL_FIELDS[self.channel_name]
+            return [ThingspeakAPIRespType(item=feed, measure_param=measure_param) for feed in feeds]
+        except KeyError as kerr:
+            raise SystemExit(f"{self.__class__.__name__} catches {kerr.__class__.__name__} => {kerr!s}")
