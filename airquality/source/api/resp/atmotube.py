@@ -8,14 +8,12 @@
 from typing import Dict, Any, List
 import airquality.source.api.resp.abc as respabc
 
-CHANNEL_FIELDS = {"main": ["voc", "pm1", "pm25", "pm10", "t", "h", "p"]}
-
 
 # ------------------------------- AtmotubeAPIRespType ------------------------------- #
 class AtmotubeAPIRespType(respabc.APIRespTypeABC):
 
-    def __init__(self, item: Dict[str, Any], channel_name: str):
-        self.channel_name = channel_name
+    def __init__(self, item: Dict[str, Any], measure_param: List[str]):
+        self.measure_param = measure_param
         self.item = item
 
     @property
@@ -29,12 +27,13 @@ class AtmotubeAPIRespType(respabc.APIRespTypeABC):
 
     @property
     def measures(self) -> List[respabc.NameValue]:
-        channel_field_map = CHANNEL_FIELDS[self.channel_name]
-        return [respabc.NameValue(name=param, value=self.item.get(param)) for param in channel_field_map]
+        return [respabc.NameValue(name=param, value=self.item.get(param)) for param in self.measure_param]
 
 
 # ------------------------------- AtmotubeAPIRespBuilder ------------------------------- #
 class AtmotubeAPIRespBuilder(respabc.APIRespBuilderABC):
+
+    CHANNEL_FIELDS = {"main": ["voc", "pm1", "pm25", "pm10", "t", "h", "p"]}
 
     def __init__(self, channel_name: str):
         self.channel_name = channel_name
@@ -44,6 +43,7 @@ class AtmotubeAPIRespBuilder(respabc.APIRespBuilderABC):
         try:
             data = parsed_resp['data']
             items = data['items']
-            return [AtmotubeAPIRespType(item=item, channel_name=self.channel_name) for item in items]
+            measure_param = self.CHANNEL_FIELDS[self.channel_name]
+            return [AtmotubeAPIRespType(item=item, measure_param=measure_param) for item in items]
         except KeyError as kerr:
             raise SystemExit(f"{self.__class__.__name__} catches {kerr.__class__.__name__} => {kerr!s}")
