@@ -11,13 +11,13 @@ import airquality.command.initsrv.cmd as cmd
 import airquality.command.basefact as cmdfact
 import airquality.logger.util.decorator as log_decorator
 import airquality.file.util.line_parser as lineparser
-import source.file.line.geonames as linebuilder
+import file.line.geonames as linebuilder
 import airquality.filter.geonames as filefilter
 import airquality.database.conn.adapt as dbadapt
-import airquality.database.repo.geonames as dbrepo
+import airquality.database.repo.geoarea as dbrepo
 import airquality.database.util.query as qry
 import airquality.file.structured.json as jsonfile
-import source.file.repo.imp as filerepo
+import file.repo.imp as filerepo
 import airquality.source.file as filesource
 import airquality.types.file.type as filetype
 
@@ -61,7 +61,7 @@ class GeonamesInitCommandFactory(cmdfact.CommandFactory):
     ################################ craft_command() ################################
     @log_decorator.log_decorator()
     def craft_command(
-            self, file: filetype.GeonamesFileType, db_repo: dbrepo.GeonamesRepo, file_filter: filefilter.GeonamesFilter
+            self, file: filetype.GeonamesFileType, db_repo: dbrepo.GeoareaRepo, file_filter: filefilter.GeonamesFilter
     ) -> cmd.ServiceInitCommand:
 
         file_lines = file.lines
@@ -107,7 +107,7 @@ class GeonamesInitCommandFactory(cmdfact.CommandFactory):
 
     ################################ craft_database_repo() ################################
     @log_decorator.log_decorator()
-    def craft_database_repo(self) -> dbrepo.GeonamesRepo:
+    def craft_database_repo(self) -> dbrepo.GeoareaRepo:
         query_builder = qry.QueryBuilder(self.query_file)
-        db_repo = dbrepo.GeonamesRepo(db_adapter=self.db_adapt, query_builder=query_builder)
+        db_repo = dbrepo.GeoareaRepo(db_adapter=self.db_adapt, query_builder=query_builder)
         return db_repo

@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import Generator, List
-import airquality.source.file.line.abc as lineabc
+import airquality.file.line.abc as lineabc
 
 
 # ------------------------------- PostalcodeLineType ------------------------------- #
@@ -19,10 +19,7 @@ class PostalcodeLineType(lineabc.LineTypeABC):
 # ------------------------------- PostalcodeLineBuilder ------------------------------- #
 class PostalcodeLineBuilder(lineabc.LineBuilderABC):
 
-    def __init__(self, log_filename="log"):
-        super(PostalcodeLineBuilder, self).__init__(log_filename=log_filename)
-
     ################################ build_lines() ################################
-    def build_lines(self, parsed_lines: Generator[List[str],  None, None]) -> Generator[PostalcodeLineType, None, None]:
+    def build(self, parsed_lines: Generator[List[str], None, None]) -> Generator[PostalcodeLineType, None, None]:
         for line in parsed_lines:
             yield PostalcodeLineType(postal_code=line[0])

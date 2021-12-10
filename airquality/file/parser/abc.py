@@ -1,17 +1,15 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 07/12/21 20:16
+# Date: 10/12/21 16:27
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
 import abc
-from typing import Generator
 
 
-# ------------------------------- FileRepoABC ------------------------------- #
-class FileRepoABC(abc.ABC):
+class FileParserABC(abc.ABC):
 
     @abc.abstractmethod
-    def get_files(self) -> Generator[str, None, None]:
+    def parse(self, text: str):
         pass

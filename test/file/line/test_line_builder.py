@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import source.file.line.geonames as builder
+import file.line.geonames as builder
 
 
 class TestGeonamesLineBuilder(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestGeonamesLineBuilder(unittest.TestCase):
     def test_successfully_build_geonames_line(self):
 
         geonames_builder = builder.GeonamesLineBuilder()
-        actual = geonames_builder.build_lines(self.generate_lines())
+        actual = geonames_builder.build(self.generate_lines())
         item = next(actual)
         self.assertEqual(item.postal_code, "pc")
         self.assertEqual(item.country_code, "cc")

@@ -6,8 +6,10 @@
 #
 ######################################################
 import abc
+from collections import namedtuple
 from typing import Generator, List
-import airquality.logger.loggable as log
+
+Geolocation = namedtuple('Geolocation', ['latitude', 'longitude'])
 
 
 # ------------------------------- LineTypeABC ------------------------------- #
@@ -16,11 +18,8 @@ class LineTypeABC(abc.ABC):
 
 
 # ------------------------------- LineBuilderABC ------------------------------- #
-class LineBuilderABC(log.Loggable, abc.ABC):
-
-    def __init__(self, log_filename="log"):
-        super(LineBuilderABC, self).__init__(log_filename=log_filename)
+class LineBuilderABC(abc.ABC):
 
     @abc.abstractmethod
-    def build_lines(self, parsed_lines: Generator[List[str], None, None]) -> Generator[LineTypeABC, None, None]:
+    def build(self, parsed_lines: Generator[List[str], None, None]) -> Generator[LineTypeABC, None, None]:
         pass

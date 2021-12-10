@@ -45,7 +45,7 @@ class SensorMeasureLookup(DatabaseLookupABC):
 
 
 ################################ SENSOR MEASURE LOOKUP ###############################
-class GeoAreaLookup(DatabaseLookupABC):
+class GeoareaLookup(DatabaseLookupABC):
 
     def __init__(
             self, postal_code: str, place_name: str, country_code: str, state: str, province: str, geom: pgistype.PostgisGeometry

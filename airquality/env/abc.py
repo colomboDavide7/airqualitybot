@@ -17,11 +17,7 @@ class EnvironmentABC(abc.ABC):
         self.error_logger = error_logger
 
     @abc.abstractmethod
-    def get_from_source(self):
-        pass
-
-    @abc.abstractmethod
-    def push_to_target(self):
+    def run(self):
         pass
 
     @abc.abstractmethod

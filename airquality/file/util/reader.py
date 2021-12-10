@@ -15,7 +15,6 @@ def open_read_close_file(path: str) -> str:
     exit_if_path_does_not_exists_or_is_not_file(path=path, caller_name=open_read_close_file.__name__)
     with open(path, "r") as f:
         text = f.read()
-    f.close()
     return text
 
 
