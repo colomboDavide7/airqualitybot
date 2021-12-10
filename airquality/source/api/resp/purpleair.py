@@ -21,9 +21,12 @@ class PurpleairAPIRespType(respabc.APIRespTypeABC):
         self.item = item
 
     @property
-    def info(self) -> respabc.SensorInfo:
-        return respabc.SensorInfo(name=f"{self.item['name']} ({self.item['sensor_index']})",
-                                  type="Purpleair/Thingspeak")
+    def sensor_index(self) -> str:
+        return self.item['sensor_index']
+
+    @property
+    def name(self) -> str:
+        return self.item['name']
 
     @property
     def date_created(self) -> int:

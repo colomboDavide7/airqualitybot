@@ -11,7 +11,6 @@ from typing import Dict, Any, List
 
 ChannelParam = namedtuple('ChannelParam', ['key', 'ident', 'name'])
 SensorGeolocation = namedtuple('SensorGeolocation', ['latitude', 'longitude'])
-SensorInfo = namedtuple('SensorInfo', ['name', 'type'])
 NameValue = namedtuple('NameValue', ['name', 'value'])
 
 

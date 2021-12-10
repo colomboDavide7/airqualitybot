@@ -24,10 +24,10 @@ class Loggable(abc.ABC):
 
     def log_info(self, msg_to_log: str):
         if self.file_logger:
-            self.file_logger.info(msg_to_log)
+            self.file_logger.name(msg_to_log)
 
         if self.console_logger:
-            self.console_logger.info(msg_to_log)
+            self.console_logger.name(msg_to_log)
 
     def log_warning(self, msg_to_log: str):
         if self.file_logger:
