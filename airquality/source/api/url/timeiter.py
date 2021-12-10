@@ -26,16 +26,13 @@ class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, abc.ABC):
     def build(self) -> Generator[str, None, None]:
         pass
 
-    @abc.abstractmethod
-    def with_url_time_param_template(self):
-        pass
-
 
 # ------------------------------- AtmotubeTimeIterableURL ------------------------------- #
 class AtmotubeTimeIterableURL(TimeIterableURLBuilderABC):
 
     def __init__(self, url: privateurl.AtmotubeURLBuilder, start_ts: tstype.Timestamp, stop_ts: tstype.Timestamp, step_size_in_days: int = 1):
         super(AtmotubeTimeIterableURL, self).__init__(url=url, start_ts=start_ts, stop_ts=stop_ts, step_size_in_days=step_size_in_days)
+        self.url.url_template += "&date={date}"
 
     ################################ build() ################################
     def build(self) -> Generator[str, None, None]:
@@ -44,17 +41,13 @@ class AtmotubeTimeIterableURL(TimeIterableURLBuilderABC):
             yield self.url_template.format(api_key=self.url.api_key, mac=self.url.ident, fmt=self.url.fmt, date=date_url_param)
             self._start_ts = self._start_ts.add_days(self.step_size_in_days)
 
-    ################################ with_url_time_param_template() ################################
-    def with_url_time_param_template(self):
-        self.url_template += "&date={date}"
-        return self
-
 
 # ------------------------------- ThingspeakTimeIterableURL ------------------------------- #
 class ThingspeakTimeIterableURL(TimeIterableURLBuilderABC):
 
     def __init__(self, url: privateurl.AtmotubeURLBuilder, start_ts: tstype.Timestamp, stop_ts: tstype.Timestamp, step_size_in_days: int = 7):
         super(ThingspeakTimeIterableURL, self).__init__(url=url, start_ts=start_ts, stop_ts=stop_ts, step_size_in_days=step_size_in_days)
+        self.url.url_template += "&start={start}&end={end}"
 
     ################################ build() ################################
     def build(self) -> Generator[str, None, None]:
@@ -70,8 +63,3 @@ class ThingspeakTimeIterableURL(TimeIterableURLBuilderABC):
         if tmp_end.is_after(self._stop_ts):
             tmp_end = self._stop_ts
         return tmp_end
-
-    ################################ with_url_time_param_template() ################################
-    def with_url_time_param_template(self):
-        self.url_template += "&start={start}&end={end}"
-        return self
