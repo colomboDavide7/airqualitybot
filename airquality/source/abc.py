@@ -6,9 +6,13 @@
 #
 ######################################################
 import abc
+import airquality.logger.loggable as log
 
 
-class SourceABC(abc.ABC):
+class SourceABC(log.Loggable, abc.ABC):
+
+    def __init__(self, log_filename="log"):
+        super(SourceABC, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
     def get(self):
