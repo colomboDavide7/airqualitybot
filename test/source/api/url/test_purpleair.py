@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import source.api.url.purpleair as url
+import airquality.source.api.url.purpleair as urltype
 
 
 class TestBaseURL(unittest.TestCase):
@@ -15,7 +15,7 @@ class TestBaseURL(unittest.TestCase):
         self.test_url_template = "some_address?api_key=some_key&fields=f1,f2&opt1=1&opt2=abc"
 
     def test_successfully_build_purpleair_url(self):
-        builder = url.PurpleairURLBuilder(url_template=self.test_url_template)
+        builder = urltype.PurpleairURLBuilder(url_template=self.test_url_template)
         expected = self.test_url_template
         actual = builder.build()
         self.assertEqual(actual, expected)
