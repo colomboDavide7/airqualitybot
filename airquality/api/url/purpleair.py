@@ -6,15 +6,15 @@
 #
 ######################################################
 from typing import Tuple
-import airquality.api.url.abc as base
+import airquality.api.url.abc as urlabc
 
 
 # ------------------------------- PurpleairURLBuilder ------------------------------- #
-class PurpleairURLBuilder(base.URLBuilderABC):
+class PurpleairURLBuilder(urlabc.URLBuilderABC):
 
     def __init__(self, url: str):
-        self.url = url
+        self._url = url
 
     ################################ build() ################################
     def build(self) -> Tuple[str]:
-        return tuple(self.url)
+        return tuple(self._url)

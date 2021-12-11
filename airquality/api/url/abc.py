@@ -15,3 +15,7 @@ class URLBuilderABC(abc.ABC):
     @abc.abstractmethod
     def build(self) -> Tuple[str]:
         pass
+
+    @abc.abstractmethod
+    def format_url(self) -> str:
+        pass

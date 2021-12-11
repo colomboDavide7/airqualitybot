@@ -11,7 +11,7 @@ from urllib.error import URLError
 import airquality.api.url.abc as urlabc
 
 
-class APIRepoABC(object):
+class APIRepo(object):
 
     def __init__(self, url_builder: urlabc.URLBuilderABC):
         self.url_builder = url_builder
