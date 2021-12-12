@@ -13,6 +13,7 @@ import airquality.api.resp.abc as builder
 import airquality.filter.abc as flt
 import airquality.database.record.abc as recabc
 import airquality.database.repo.abc as dbrepo
+import airquality.database.conn.adapt as db
 
 
 class APIEnv(envabc.EnvironmentABC):
@@ -67,7 +68,4 @@ class APIEnv(envabc.EnvironmentABC):
 
     def shutdown(self):
         log.logging.shutdown()
-
-        # TODO: shutdown database connection
-
-        # TODO: shutdown file connections (if any)
+        db.shutdown()

@@ -8,6 +8,7 @@
 #################################################
 import abc
 import psycopg2
+from typing import List
 import airquality.logger.loggable as log
 import airquality.logger.util.decorator as log_decorator
 
@@ -31,11 +32,22 @@ class DatabaseAdapter(log.Loggable):
         pass
 
 
+################################ shutdown() ################################
+ACTIVE_ADAPTERS: List[DatabaseAdapter] = []
+
+
+def shutdown():
+    for adapter in ACTIVE_ADAPTERS:
+        adapter.close_conn()
+    ACTIVE_ADAPTERS.clear()
+
+
 ################################ PSYCOPG2 DATABASE ADAPTER ###############################
 class Psycopg2DatabaseAdapter(DatabaseAdapter):
 
     def __init__(self, connection_string: str, log_filename="log"):
         super(Psycopg2DatabaseAdapter, self).__init__(log_filename=log_filename)
+        ACTIVE_ADAPTERS.append(self)
         self._connection_string = connection_string
         self._conn = None
 
