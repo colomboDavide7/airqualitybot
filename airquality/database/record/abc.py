@@ -1,14 +1,19 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 10/12/21 17:49
+# Date: 11/12/21 20:19
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.env.geonames.env as envtype
+import abc
 
 
-class GeonamesEnvFactory:
+class RecordTypeABC(abc.ABC):
+    pass
 
-    def __init__(self):
+
+class RecordBuilderABC(abc.ABC):
+
+    @abc.abstractmethod
+    def build(self, data):
         pass

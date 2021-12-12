@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import List, Generator
-import airquality.database.repo.repo as baserepo
+import airquality.database.repo.abc as baserepo
 import airquality.database.conn.adapt as adapt
 import airquality.database.util.query as qry
 import airquality.types.lookup.lookup as lookuptype

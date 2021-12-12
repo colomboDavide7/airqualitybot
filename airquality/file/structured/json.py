@@ -5,14 +5,19 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import List, Dict, Any
+import json
+from typing import List
 import airquality.file.structured.file as file
 
 
 class JSONFile(file.StructuredFile):
 
-    def __init__(self, parsed_content: Dict[str, Any], path_to_object: List[str] = (), log_filename="log"):
+    def __init__(self, path_to_file: str, path_to_object: List[str] = (), log_filename="log"):
         super(JSONFile, self).__init__(log_filename=log_filename)
+        with open(path_to_file, "r") as f:
+            raw = f.read()
+
+        parsed_content = json.loads(raw)
         self.content = parsed_content
         if path_to_object:
             first_object = path_to_object.pop()

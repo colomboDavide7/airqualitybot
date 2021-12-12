@@ -17,4 +17,7 @@ class PurpleairURLBuilder(urlabc.URLBuilderABC):
 
     ################################ build() ################################
     def build(self) -> Tuple[str]:
-        return tuple(self._url)
+        return tuple([self._url])
+
+    def format_url(self) -> str:
+        pass

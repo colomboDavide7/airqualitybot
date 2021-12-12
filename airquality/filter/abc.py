@@ -6,7 +6,9 @@
 #
 ######################################################
 import abc
+from typing import List
 import airquality.logger.loggable as log
+import airquality.api.resp.abc as resptype
 
 
 class FilterABC(log.Loggable, abc.ABC):
@@ -15,5 +17,5 @@ class FilterABC(log.Loggable, abc.ABC):
         super(FilterABC, self).__init__(log_filename=log_filename)
 
     @abc.abstractmethod
-    def filter(self, resp2filter):
+    def filter(self, all_resp: List[resptype.APIRespTypeABC]) -> List[resptype.APIRespTypeABC]:
         pass

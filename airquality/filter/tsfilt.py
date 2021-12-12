@@ -7,7 +7,7 @@
 ######################################################
 import itertools
 from typing import List
-import airquality.filter.filter as basefilter
+import airquality.filter.abc as basefilter
 import airquality.types.timestamp as tstype
 import airquality.types.apiresp.measresp as resptype
 
@@ -22,29 +22,29 @@ class TimestampFilter(basefilter.FilterABC):
         self.filter_ts = filter_ts
 
     ################################ filter() ################################
-    def filter(self, resp2filter: List[resptype.MeasureAPIResp]) -> List[resptype.MeasureAPIResp]:
+    def filter(self, all_resp: List[resptype.MeasureAPIResp]) -> List[resptype.MeasureAPIResp]:
 
-        if not resp2filter:
+        if not all_resp:
             self.log_warning(f"{self.__class__.__name__} found empty responses => return")
-            return resp2filter
+            return all_resp
 
-        tot = len(resp2filter)
-        first_timestamp = resp2filter[0].timestamp
-        last_timestamp = resp2filter[-1].timestamp
+        tot = len(all_resp)
+        first_timestamp = all_resp[0].timestamp
+        last_timestamp = all_resp[-1].timestamp
         time_range_msg = f"[{first_timestamp.ts} - {last_timestamp.ts}]"
 
         if first_timestamp.is_after(last_timestamp):
-            resp2filter.reverse()
+            all_resp.reverse()
             self.log_info(f"{self.__class__.__name__} found responses in descending order => reverse")
 
         if first_timestamp.is_after(self.filter_ts):
             self.log_info(f"{self.__class__.__name__} found {tot}/{tot} new measurements between {time_range_msg}")
-            return resp2filter
+            return all_resp
 
-        resp2filter = self.filter_out_old_measurements(resp2filter)
-        self.log_info(f"{self.__class__.__name__} found {len(resp2filter)}/{tot} new measurements between {time_range_msg}")
+        all_resp = self.filter_out_old_measurements(all_resp)
+        self.log_info(f"{self.__class__.__name__} found {len(all_resp)}/{tot} new measurements between {time_range_msg}")
 
-        return resp2filter
+        return all_resp
 
     ################################ filter_out_old_measurements() ################################
     def filter_out_old_measurements(self, responses: List[resptype.MeasureAPIResp]) -> List[resptype.MeasureAPIResp]:

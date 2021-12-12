@@ -7,28 +7,24 @@
 ######################################################
 import itertools
 from typing import Dict, Any, List
-import airquality.filter.filter as base
-import airquality.types.apiresp.inforesp as resptype
+import airquality.filter.abc as filterabc
+import airquality.api.resp.abc as resptype
 
 
-class GeoFilter(base.FilterABC):
+class GeoFilter(filterabc.FilterABC):
 
-    def __init__(self, log_filename="log"):
+    def __init__(self, locations: Dict[str, Any], log_filename="log"):
         super(GeoFilter, self).__init__(log_filename=log_filename)
-        self._database_locations = {}
-
-    def with_database_locations(self, locations: Dict[str, Any]):
         self._database_locations = locations
-        return self
 
     ################################ filter() ################################
-    def filter(self, resp2filter: List[resptype.SensorInfoResponse]) -> List[resptype.SensorInfoResponse]:
-        if not resp2filter:
+    def filter(self, all_resp: List[resptype.InfoAPIRespType]) -> List[resptype.InfoAPIRespType]:
+        if not all_resp:
             self.log_warning(f"{self.__class__.__name__} found empty responses => return")
-            return resp2filter
+            return all_resp
 
-        tot = len(resp2filter)
-        active_locations = self.filter_inactive_locations(resp2filter)
+        tot = len(all_resp)
+        active_locations = self.filter_inactive_locations(all_resp)
         self.log_info(f"{self.__class__.__name__} found {len(active_locations)}/{tot} active location")
 
         tot = len(active_locations)
@@ -38,7 +34,7 @@ class GeoFilter(base.FilterABC):
         return new_locations
 
     ################################ filter_inactive_locations() ################################
-    def filter_inactive_locations(self, responses: List[resptype.SensorInfoResponse]) -> List[resptype.SensorInfoResponse]:
+    def filter_inactive_locations(self, responses: List[resptype.InfoAPIRespType]) -> List[resptype.InfoAPIRespType]:
         tot = len(responses)
         count_iter = itertools.count(0)
         item_iter = itertools.count(0)
@@ -54,17 +50,18 @@ class GeoFilter(base.FilterABC):
         return responses
 
     ################################ filter_same_locations() ################################
-    def filter_same_locations(self, responses: List[resptype.SensorInfoResponse]) -> List[resptype.SensorInfoResponse]:
+    def filter_same_locations(self, responses: List[resptype.InfoAPIRespType]) -> List[resptype.InfoAPIRespType]:
         tot = len(responses)
         count_iter = itertools.count(0)
         item_iter = itertools.count(0)
         item_idx = next(item_iter)
         while next(count_iter) < tot:
             item = responses[item_idx]
-            if item.geolocation.geometry.as_text() == self._database_locations[item.sensor_name]:
-                self.log_warning(f"{self.__class__.__name__}: skip sensor {item.sensor_name}")
+            name = item.sensor_name()
+            if item.geolocation().as_text() == self._database_locations[name]:
+                self.log_warning(f"{self.__class__.__name__}: skip sensor {name}")
                 del responses[item_idx]
             else:
-                self.log_info(f"{self.__class__.__name__}: found new location for {item.sensor_name}")
+                self.log_info(f"{self.__class__.__name__}: found new location for {name}")
                 item_idx = next(item_iter)
         return responses

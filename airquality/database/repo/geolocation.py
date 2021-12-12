@@ -6,12 +6,12 @@
 #
 ######################################################
 from typing import List, Dict, Tuple
-import airquality.database.repo.repo as baserepo
+import airquality.database.repo.abc as baserepo
 import airquality.types.lookup.lookup as lookuptype
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.util.query as qry
 import airquality.types.postgis as pgistype
-import airquality.types.apiresp.inforesp as resptype
+import airquality.api.resp.abc as resptype
 
 
 class SensorGeoRepository(baserepo.DatabaseRepoABC):
@@ -44,7 +44,7 @@ class SensorGeoRepository(baserepo.DatabaseRepoABC):
         return self.postgis_cls(lat=db_lookup[0][1], lng=db_lookup[0][0])
 
     ################################ push() ################################
-    def push(self, responses: List[resptype.SensorInfoResponse]) -> None:
+    def push(self, responses: List[resptype.InfoAPIRespType]) -> None:
         if not responses:
             return
 
@@ -54,7 +54,7 @@ class SensorGeoRepository(baserepo.DatabaseRepoABC):
         self.db_adapter.send(query2exec)
 
     ################################ responses2sql() ################################
-    def responses2sql(self, responses: List[resptype.SensorInfoResponse]) -> Tuple[str, str]:
+    def responses2sql(self, responses: List[resptype.InfoAPIRespType]) -> Tuple[str, str]:
         update_query = ""
         geolocation_values = ""
         for r in responses:

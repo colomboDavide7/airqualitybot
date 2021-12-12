@@ -7,11 +7,11 @@
 ######################################################
 import itertools
 from typing import List, Tuple
-import airquality.database.repo.repo as baserepo
+import airquality.database.repo.abc as baserepo
 import airquality.types.lookup.lookup as lookuptype
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.util.query as qry
-import airquality.types.apiresp.inforesp as resptype
+import airquality.database.record.info as rectype
 
 
 class SensorInfoRepository(baserepo.DatabaseRepoABC):
@@ -38,10 +38,7 @@ class SensorInfoRepository(baserepo.DatabaseRepoABC):
         return [lookuptype.SensorInfoLookup(sensor_name=sensor_name) for sensor_id, sensor_name in db_lookup]
 
     ################################ push() ###############################
-    def push(self, responses: List[resptype.SensorInfoResponse]) -> None:
-        if not responses:
-            return
-
+    def push(self, responses: List[rectype.InfoRecordType]) -> None:
         sensor_values, apiparam_values, geolocation_values = self.responses2sql(responses)
         query2exec = self.query_builder.build_initialize_sensor_query(
             sensor_values=sensor_values, api_param_values=apiparam_values, geolocation_values=geolocation_values
@@ -49,7 +46,7 @@ class SensorInfoRepository(baserepo.DatabaseRepoABC):
         self.db_adapter.send(query2exec)
 
     ################################ responses2sql() ###############################
-    def responses2sql(self, responses: List[resptype.SensorInfoResponse]) -> Tuple[str, str, str]:
+    def responses2sql(self, responses: List[rectype.InfoRecordType]) -> Tuple[str, str, str]:
         sensor_values = ""
         apiparam_values = ""
         geolocation_values = ""
@@ -57,8 +54,8 @@ class SensorInfoRepository(baserepo.DatabaseRepoABC):
         sensor_id_iter = itertools.count(self.max_sensor_id)
         for response in responses:
             sensor_id = next(sensor_id_iter)
-            sensor_values += response.sensor2sql(sensor_id)
-            apiparam_values += response.apiparam2sql(sensor_id)
-            geolocation_values += response.geo2sql(sensor_id)
+            sensor_values += response.sensor_record(sensor_id)
+            apiparam_values += response.apiparam_record(sensor_id)
+            geolocation_values += response.geolocation_record(sensor_id)
 
         return sensor_values.strip(','), apiparam_values.strip(','), geolocation_values.strip(',')

@@ -32,18 +32,18 @@ class TestTimestampFilter(unittest.TestCase):
     def test_empty_list_when_all_measures_are_before_filter_timestamp(self):
         test_filter_timestamp = ts.SQLTimestamp(timest="2021-10-11 08:50:00")
         self.response_filter.set_filter_ts(test_filter_timestamp)
-        actual = self.response_filter.filter(resp2filter=self.test_responses)
+        actual = self.response_filter.filter(all_resp=self.test_responses)
         self.assertEqual(len(actual), 0)
 
     def test_system_exit_when_filter_timestamp_is_null_timestamp(self):
         resp_filter = flt.TimestampFilter()
         with self.assertRaises(SystemExit):
-            resp_filter.filter(resp2filter=self.test_responses)
+            resp_filter.filter(all_resp=self.test_responses)
 
     def test_do_not_filter_responses_when_are_all_after_timestamp(self):
         test_filter_timestamp = ts.SQLTimestamp(timest="2021-10-11 08:43:00")
         self.response_filter.set_filter_ts(test_filter_timestamp)
-        actual = self.response_filter.filter(resp2filter=self.test_responses)
+        actual = self.response_filter.filter(all_resp=self.test_responses)
         self.assertEqual(actual, self.test_responses)
 
     def test_reverse_responses_when_measurements_are_in_descending_order(self):
@@ -54,7 +54,7 @@ class TestTimestampFilter(unittest.TestCase):
         ]
         test_filter_timestamp = ts.SQLTimestamp(timest="2021-10-11 08:48:00")
         self.response_filter.set_filter_ts(test_filter_timestamp)
-        actual = self.response_filter.filter(resp2filter=test_responses)
+        actual = self.response_filter.filter(all_resp=test_responses)
         self.assertEqual(len(actual), 0)
 
 

@@ -11,11 +11,11 @@ import airquality.logger.util.log as log
 import airquality.file.repo.abc as filerepo
 import airquality.file.line.abc as filebuilder
 import airquality.file.parser.abc as fileparser
-import airquality.database.repo.repo as dbrepo
+import airquality.database.repo.abc as dbrepo
 import airquality.filter.geonames as filefilter
 
 
-class GeonamesEnv(envabc.EnvironmentABC):
+class ServiceEnv(envabc.EnvironmentABC):
 
     def __init__(
             self,
@@ -28,7 +28,7 @@ class GeonamesEnv(envabc.EnvironmentABC):
             file_filter: filefilter.GeonamesFilter,
             db_repo: dbrepo.DatabaseRepoABC
     ):
-        super(GeonamesEnv, self).__init__(file_logger=file_logger, console_logger=console_logger, error_logger=error_logger)
+        super(ServiceEnv, self).__init__(file_logger=file_logger, console_logger=console_logger, error_logger=error_logger)
         self.file_repo = file_repo
         self.file_parser = file_parser
         self.file_builder = file_builder

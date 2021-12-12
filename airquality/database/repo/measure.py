@@ -8,7 +8,7 @@
 import abc
 import itertools
 from typing import List, Dict
-import airquality.database.repo.repo as baserepo
+import airquality.database.repo.abc as baserepo
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.util.query as qry
 import airquality.types.channel as chtype

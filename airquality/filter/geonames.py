@@ -7,7 +7,7 @@
 ######################################################
 from typing import Generator, List
 import airquality.logger.util.decorator as log_decorator
-import airquality.filter.filter as datafilter
+import airquality.filter.abc as datafilter
 import airquality.types.line.line as linetype
 
 
@@ -27,8 +27,8 @@ class GeonamesFilter(datafilter.FilterABC):
         return self
 
     @log_decorator.log_decorator()
-    def filter(self, resp2filter: Generator[linetype.GeonamesLine,  None, None]) -> Generator[linetype.GeonamesLine,  None, None]:
-        new_places = self.new_places(resp2filter)
+    def filter(self, all_resp: Generator[linetype.GeonamesLine, None, None]) -> Generator[linetype.GeonamesLine, None, None]:
+        new_places = self.new_places(all_resp)
         if self._postalcode2keep:
             return self.patient_postalcodes(new_places)
         return new_places

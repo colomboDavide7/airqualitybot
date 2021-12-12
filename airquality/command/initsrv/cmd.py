@@ -8,8 +8,8 @@
 from typing import Generator
 import airquality.logger.util.decorator as log_decorator
 import airquality.command.basecmd as cmd
-import airquality.filter.filter as flt
-import airquality.database.repo.repo as dbrepo
+import airquality.filter.abc as flt
+import airquality.database.repo.abc as dbrepo
 import airquality.types.line.line as linetype
 
 
@@ -20,7 +20,7 @@ class ServiceInitCommand(cmd.Command):
             file_lines: Generator[linetype.LineABC, None, None],
             file_filter: flt.FilterABC,
             db_repo: dbrepo.DatabaseRepoABC,
-            log_filename="geonames"
+            log_filename="service"
     ):
         super(ServiceInitCommand, self).__init__(log_filename=log_filename)
         self.file_lines = file_lines
