@@ -32,6 +32,8 @@ class PurpleairEnvFactory(factabc.APIEnvFact):
         resp_builder = builder.PurpleairAPIRespBuilder()
         db_repo = self.craft_database()
         resp_filter = self.craft_response_filter(db_repo=db_repo)
+        resp_filter.set_file_logger(self.file_logger)
+        resp_filter.set_console_logger(self.console_logger)
         rec_builder = rectype.InfoRecordBuilder()
 
         return envtype.APIEnv(

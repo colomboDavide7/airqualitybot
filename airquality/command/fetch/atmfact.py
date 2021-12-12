@@ -66,8 +66,8 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
         command = cmd.FetchCommand(
             api_source=api_source, response_filter=response_filter, db_repo=db_repo, log_filename=self.log_filename
         )
-        command.set_file_logger(self.file_logger)
-        command.set_console_logger(self.console_logger)
+        command.set_file_logger(self._file_logger)
+        command.set_console_logger(self._console_logger)
         return command
 
     ################################ craft_api_source() ################################
@@ -89,8 +89,8 @@ class AtmotubeFetchFactory(cmdfact.CommandFactory):
     def craft_response_filter(self, filter_timestamp: tstype.SQLTimestamp) -> timefilter.TimestampFilter:
         response_filter = timefilter.TimestampFilter(log_filename=self.log_filename)
         response_filter.set_filter_ts(filter_timestamp)
-        response_filter.set_file_logger(self.file_logger)
-        response_filter.set_console_logger(self.console_logger)
+        response_filter.set_file_logger(self._file_logger)
+        response_filter.set_console_logger(self._console_logger)
         return response_filter
 
     ################################ craft_database_repo() ################################

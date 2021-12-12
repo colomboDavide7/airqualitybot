@@ -17,7 +17,7 @@ CHANNEL_PARAM = [{'name': 'Primary data - Channel A', 'key': 'primary_key_a', 'i
 
 
 # ------------------------------- PurpleairAPIRespType ------------------------------- #
-class PurpleairAPIRespType(respabc.InfoAPIRespType):
+class PurpleairAPIRespType(respabc.InfoAPIRespTypeABC):
 
     def __init__(self, item: Dict[str, Any], timestamp_cls=tstype.UnixTimestamp, postgis_cls=pgistype.PostgisPoint):
         self.item = item
@@ -56,8 +56,6 @@ class PurpleairAPIRespType(respabc.InfoAPIRespType):
         except KeyError as kerr:
             raise SystemExit(f"{self.__class__.__name__} in {self.channels.__name__} catches {kerr.__class__.__name__} exception => {kerr!r}")
 
-    # TODO: create a SQL adapter that takes (this object + sensor_id) and defines the methods for converting responses into SQL
-
 
 # ------------------------------- PurpleairAPIRespBuilder ------------------------------- #
 class PurpleairAPIRespBuilder(respabc.APIRespBuilderABC):
@@ -73,4 +71,4 @@ class PurpleairAPIRespBuilder(respabc.APIRespBuilderABC):
             data = parsed_resp['data']
             return [PurpleairAPIRespType(item=dict(zip(fields, d)), timestamp_cls=self.timestamp_cls, postgis_cls=self.postgis_cls) for d in data]
         except KeyError as kerr:
-            raise SystemExit(f"{self.__class__.__name__} catches {kerr.__class__.__name__} => {kerr!s}")
+            raise SystemExit(f"{self.__class__.__name__} catches {kerr.__class__.__name__} => {kerr!r}")

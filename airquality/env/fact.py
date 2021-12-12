@@ -57,9 +57,7 @@ class EnvFactory(abc.ABC):
     @property
     def db_adapter(self) -> dbadapt.DatabaseAdapter:
         connection_string = os.environ['connection']
-        db_adapter = dbadapt.Psycopg2DatabaseAdapter(connection_string=connection_string)
-        db_adapter.open_conn()
-        return db_adapter
+        return dbadapt.Psycopg2DatabaseAdapter(connection_string=connection_string)
 
     @property
     def query_builder(self) -> qry.QueryBuilder:

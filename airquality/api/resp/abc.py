@@ -19,7 +19,8 @@ class APIRespTypeABC(abc.ABC):
     pass
 
 
-class InfoAPIRespType(APIRespTypeABC, abc.ABC):
+# ------------------------------- InfoAPIRespTypeABC ------------------------------- #
+class InfoAPIRespTypeABC(APIRespTypeABC, abc.ABC):
 
     @abc.abstractmethod
     def date_created(self) -> tstype.Timestamp:
@@ -42,6 +43,7 @@ class InfoAPIRespType(APIRespTypeABC, abc.ABC):
         pass
 
 
+# ------------------------------- APIRespBuilderABC ------------------------------- #
 class APIRespBuilderABC(abc.ABC):
 
     @abc.abstractmethod

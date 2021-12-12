@@ -49,8 +49,8 @@ class PurpleairUpdateFactory(cmdfact.CommandFactory):
         command = cmd.UpdateCommand(
             api_source=api_source, db_repo=db_repo, response_filter=response_filter, log_filename=self.log_filename
         )
-        command.set_file_logger(self.file_logger)
-        command.set_console_logger(self.console_logger)
+        command.set_file_logger(self._file_logger)
+        command.set_console_logger(self._console_logger)
 
         return [command]
 
@@ -67,8 +67,8 @@ class PurpleairUpdateFactory(cmdfact.CommandFactory):
     def craft_response_filter(self, database_locations: Dict[str, str]) -> geolocfilter.GeoFilter:
         response_filter = geolocfilter.GeoFilter()
         response_filter.with_database_locations(database_locations)
-        response_filter.set_file_logger(self.file_logger)
-        response_filter.set_console_logger(self.console_logger)
+        response_filter.set_file_logger(self._file_logger)
+        response_filter.set_console_logger(self._console_logger)
         return response_filter
 
     ################################ craft_database_repo() ################################

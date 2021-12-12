@@ -11,33 +11,28 @@ import airquality.logger.util.log as log
 
 class Loggable(abc.ABC):
 
-    def __init__(self, log_filename="log"):
-        self.log_filename = log_filename
-        self.file_logger = None
-        self.console_logger = None
+    def __init__(self):
+        self._file_logger = None
+        self._console_logger = None
 
+    ################################ set_file_logger() ###############################
     def set_file_logger(self, logger: log.logging.Logger):
-        self.file_logger = logger
+        self._file_logger = logger
 
+    ################################ set_console_logger() ###############################
     def set_console_logger(self, logger: log.logging.Logger):
-        self.console_logger = logger
+        self._console_logger = logger
 
+    ################################ log_info() ###############################
     def log_info(self, msg_to_log: str):
-        if self.file_logger:
-            self.file_logger.info(msg_to_log)
+        if self._file_logger:
+            self._file_logger.info(msg_to_log)
+        if self._console_logger:
+            self._console_logger.info(msg_to_log)
 
-        if self.console_logger:
-            self.console_logger.info(msg_to_log)
-
+    ################################ log_warning() ###############################
     def log_warning(self, msg_to_log: str):
-        if self.file_logger:
-            self.file_logger.warning(msg_to_log)
-
-        if self.console_logger:
-            self.console_logger.warning(msg_to_log)
-
-    def log_exception(self, msg_to_log: str):
-        if self.file_logger:
-            self.file_logger.exception(msg_to_log)
-        if self.console_logger:
-            self.console_logger.exception(msg_to_log)
+        if self._file_logger:
+            self._file_logger.warning(msg_to_log)
+        if self._console_logger:
+            self._console_logger.warning(msg_to_log)

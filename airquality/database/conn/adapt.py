@@ -10,18 +10,10 @@ import abc
 import psycopg2
 from typing import List
 import airquality.logger.loggable as log
-import airquality.logger.util.decorator as log_decorator
 
 
 ################################ DATABASE ADAPTER BASE CLASS ################################
 class DatabaseAdapter(log.Loggable):
-
-    def __init__(self, log_filename="log"):
-        super(DatabaseAdapter, self).__init__(log_filename=log_filename)
-
-    @abc.abstractmethod
-    def open_conn(self):
-        pass
 
     @abc.abstractmethod
     def close_conn(self):
@@ -45,25 +37,15 @@ def shutdown():
 ################################ PSYCOPG2 DATABASE ADAPTER ###############################
 class Psycopg2DatabaseAdapter(DatabaseAdapter):
 
-    def __init__(self, connection_string: str, log_filename="log"):
-        super(Psycopg2DatabaseAdapter, self).__init__(log_filename=log_filename)
-        ACTIVE_ADAPTERS.append(self)
-        self._connection_string = connection_string
-        self._conn = None
-
-    @log_decorator.log_decorator()
-    def open_conn(self):
-        if self._conn is not None:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => connection is already open")
-
+    def __init__(self, connection_string: str):
+        super(Psycopg2DatabaseAdapter, self).__init__()
         try:
-            self._conn = psycopg2.connect(self._connection_string)
+            self._conn = psycopg2.connect(connection_string)
+            ACTIVE_ADAPTERS.append(self)
         except psycopg2.Error as err:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad connection string => {err!s}")
+            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad connection string => {err!r}")
 
     def send(self, query: str):
-        if self._conn is None:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => connection is close")
         try:
             answer = ""
             cursor = self._conn.cursor()
@@ -72,13 +54,9 @@ class Psycopg2DatabaseAdapter(DatabaseAdapter):
             if query.startswith("SELECT"):
                 answer = cursor.fetchall()
         except psycopg2.Error as err:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad query => {err!s}")
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} in {self.send.__name__} => {err!r}")
         return answer
 
-    @log_decorator.log_decorator()
     def close_conn(self):
-        if self._conn is None:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad operation => connection is close")
-
         self._conn.close()
         self._conn = None

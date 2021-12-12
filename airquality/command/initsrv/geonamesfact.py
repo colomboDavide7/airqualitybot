@@ -71,8 +71,8 @@ class GeonamesInitCommandFactory(cmdfact.CommandFactory):
         command = cmd.ServiceInitCommand(
             file_lines=file_lines, db_repo=db_repo, file_filter=file_filter, log_filename=self.log_filename
         )
-        command.set_console_logger(self.console_logger)
-        command.set_file_logger(self.file_logger)
+        command.set_console_logger(self._console_logger)
+        command.set_file_logger(self._file_logger)
         return command
 
     ################################ craft_poscode_source() ################################
@@ -101,8 +101,8 @@ class GeonamesInitCommandFactory(cmdfact.CommandFactory):
         if self.only_patient_poscodes:
             poscode_file = poscode_source.retrieve(file.filename)
             file_filter.with_postalcodes(poscode_file.postal_codes)
-        file_filter.set_file_logger(self.file_logger)
-        file_filter.set_console_logger(self.console_logger)
+        file_filter.set_file_logger(self._file_logger)
+        file_filter.set_console_logger(self._console_logger)
         return file_filter
 
     ################################ craft_database_repo() ################################

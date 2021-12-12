@@ -36,8 +36,8 @@ class PurpleairInitFactory(cmdfact.CommandFactory):
         cmd = command.InitCommand(
             api_source=api_source, db_repo=db_repo, response_filter=response_filter, log_filename=self.log_filename
         )
-        cmd.set_file_logger(self.file_logger)
-        cmd.set_console_logger(self.console_logger)
+        cmd.set_file_logger(self._file_logger)
+        cmd.set_console_logger(self._console_logger)
 
         return [cmd]
 
@@ -54,8 +54,8 @@ class PurpleairInitFactory(cmdfact.CommandFactory):
     def craft_response_filter(self, database_sensor_names: List[str]) -> namefilter.NameFilter:
         response_filter = namefilter.NameFilter()
         response_filter.with_database_sensor_names(database_sensor_names)
-        response_filter.set_file_logger(self.file_logger)
-        response_filter.set_console_logger(self.console_logger)
+        response_filter.set_file_logger(self._file_logger)
+        response_filter.set_console_logger(self._console_logger)
         return response_filter
 
     ################################ craft_database_repo() ################################

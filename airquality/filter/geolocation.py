@@ -18,7 +18,7 @@ class GeoFilter(filterabc.FilterABC):
         self._database_locations = locations
 
     ################################ filter() ################################
-    def filter(self, all_resp: List[resptype.InfoAPIRespType]) -> List[resptype.InfoAPIRespType]:
+    def filter(self, all_resp: List[resptype.InfoAPIRespTypeABC]) -> List[resptype.InfoAPIRespTypeABC]:
         if not all_resp:
             self.log_warning(f"{self.__class__.__name__} found empty responses => return")
             return all_resp
@@ -34,7 +34,7 @@ class GeoFilter(filterabc.FilterABC):
         return new_locations
 
     ################################ filter_inactive_locations() ################################
-    def filter_inactive_locations(self, responses: List[resptype.InfoAPIRespType]) -> List[resptype.InfoAPIRespType]:
+    def filter_inactive_locations(self, responses: List[resptype.InfoAPIRespTypeABC]) -> List[resptype.InfoAPIRespTypeABC]:
         tot = len(responses)
         count_iter = itertools.count(0)
         item_iter = itertools.count(0)
@@ -50,7 +50,7 @@ class GeoFilter(filterabc.FilterABC):
         return responses
 
     ################################ filter_same_locations() ################################
-    def filter_same_locations(self, responses: List[resptype.InfoAPIRespType]) -> List[resptype.InfoAPIRespType]:
+    def filter_same_locations(self, responses: List[resptype.InfoAPIRespTypeABC]) -> List[resptype.InfoAPIRespTypeABC]:
         tot = len(responses)
         count_iter = itertools.count(0)
         item_iter = itertools.count(0)

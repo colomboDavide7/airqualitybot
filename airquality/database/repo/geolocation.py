@@ -44,7 +44,7 @@ class SensorGeoRepository(baserepo.DatabaseRepoABC):
         return self.postgis_cls(lat=db_lookup[0][1], lng=db_lookup[0][0])
 
     ################################ push() ################################
-    def push(self, responses: List[resptype.InfoAPIRespType]) -> None:
+    def push(self, responses: List[resptype.InfoAPIRespTypeABC]) -> None:
         if not responses:
             return
 
@@ -54,7 +54,7 @@ class SensorGeoRepository(baserepo.DatabaseRepoABC):
         self.db_adapter.send(query2exec)
 
     ################################ responses2sql() ################################
-    def responses2sql(self, responses: List[resptype.InfoAPIRespType]) -> Tuple[str, str]:
+    def responses2sql(self, responses: List[resptype.InfoAPIRespTypeABC]) -> Tuple[str, str]:
         update_query = ""
         geolocation_values = ""
         for r in responses:

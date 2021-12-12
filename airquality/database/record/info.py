@@ -13,7 +13,7 @@ import airquality.types.timestamp as tstype
 
 class InfoRecordType(recabc.RecordTypeABC):
 
-    def __init__(self, response: resptype.InfoAPIRespType):
+    def __init__(self, response: resptype.InfoAPIRespTypeABC):
         self.response = response
 
     def sensor_record(self, sensor_id: int) -> str:
@@ -31,5 +31,5 @@ class InfoRecordType(recabc.RecordTypeABC):
 
 class InfoRecordBuilder(recabc.RecordBuilderABC):
 
-    def build(self, data: List[resptype.InfoAPIRespType]) -> List[InfoRecordType]:
+    def build(self, data: List[resptype.InfoAPIRespTypeABC]) -> List[InfoRecordType]:
         return [InfoRecordType(response=r) for r in data]
