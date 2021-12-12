@@ -6,7 +6,7 @@
 #               'properties/query.json' file.
 #
 #################################################
-import airquality.file.structured.json as struct
+import airquality.file.json as struct
 
 
 class QueryBuilder:

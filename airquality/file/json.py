@@ -7,10 +7,10 @@
 ######################################################
 import json
 from typing import List
-import airquality.file.structured.file as file
 
 
-class JSONFile(file.StructuredFile):
+# ------------------------------- JSONFile ------------------------------- #
+class JSONFile(object):
 
     def __init__(self, path_to_file: str, path_to_object: List[str] = ()):
         raw = self._read_file(path_to_file)
@@ -19,6 +19,7 @@ class JSONFile(file.StructuredFile):
         if path_to_object:
             self._recursive_search(path_to_object)
 
+    ################################ _read_file() ################################
     def _read_file(self, path_to_file):
         try:
             with open(path_to_file, "r") as f:
@@ -26,6 +27,7 @@ class JSONFile(file.StructuredFile):
         except FileNotFoundError as err:
             raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} in {self._read_file.__name__} => {err!r}")
 
+    ################################ _recursive_search() ################################
     def _recursive_search(self, path_to_object: List[str]):
         try:
             for obj_name in path_to_object:
@@ -33,8 +35,9 @@ class JSONFile(file.StructuredFile):
         except KeyError as err:
             raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} in {self._recursive_search.__name__} => {err!r}")
 
+    ################################ __getattr__() ################################
     def __getattr__(self, item):
-        if item in self.content:
+        try:
             return self.content[item]
-        else:
-            raise AttributeError(f"{JSONFile.__name__}: bad 'api.json' file structure => missing item='{item}'")
+        except KeyError as err:
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} in {self.__getattr__.__name__} => {err!r}")

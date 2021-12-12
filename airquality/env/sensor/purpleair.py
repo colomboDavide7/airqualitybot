@@ -13,10 +13,11 @@ import airquality.file.parser.json_parser as parser
 import airquality.api.resp.purpleair as builder
 import airquality.filter.namefilt as nameflt
 import airquality.filter.geolocation as geoflt
-import airquality.database.exe.info as rectype
+import airquality.database.exe.info as infoexe
+import airquality.database.exe.geolocation as geoexe
 import airquality.database.repo.info as inforepo
 import airquality.database.repo.geolocation as georepo
-import airquality.command.init as cmdtype
+import airquality.command.sensor as cmdtype
 
 
 class PurpleairEnvFactory(factabc.APIEnvFact):
@@ -39,8 +40,8 @@ class PurpleairEnvFactory(factabc.APIEnvFact):
         resp_filter.set_file_logger(self.file_logger)
         resp_filter.set_console_logger(self.console_logger)
 
-        query_executor = rectype.InfoQueryExecutor(db_repo=db_repo)
-        command = cmdtype.InitCommand(
+        query_executor = self.craft_query_executor(db_repo=db_repo)
+        command = cmdtype.SensorCommand(
             api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, query_exec=query_executor
         )
         command.set_file_logger(file_logger)
@@ -58,7 +59,7 @@ class PurpleairEnvFactory(factabc.APIEnvFact):
         if self.command_name == 'init':
             return inforepo.SensorInfoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
         elif self.command_name == 'update':
-            return georepo.SensorGeoRepository(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
+            return georepo.SensorGeoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
         else:
             raise SystemExit(f"{self.__class__.__name__} in {self.craft_database.__name__}: invalid command "
                              f"'{self.command_name}' for PurpleAir sensors")
@@ -73,4 +74,14 @@ class PurpleairEnvFactory(factabc.APIEnvFact):
             return geoflt.GeoFilter(active_locations)
         else:
             raise SystemExit(f"{self.__class__.__name__} in {self.craft_response_filter.__name__}: invalid command "
+                             f"'{self.command_name}' for PurpleAir sensors")
+
+    ################################ craft_query_executor() ################################
+    def craft_query_executor(self, db_repo):
+        if self.command_name == 'init':
+            return infoexe.InfoQueryExecutor(db_repo=db_repo)
+        elif self.command_name == 'update':
+            return geoexe.GeolocationQueryExecutor(db_repo=db_repo)
+        else:
+            raise SystemExit(f"{self.__class__.__name__} in {self.craft_query_executor.__name__}: invalid command "
                              f"'{self.command_name}' for PurpleAir sensors")

@@ -16,7 +16,7 @@ import airquality.filter.geonames as filefilter
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.repo.geoarea as dbrepo
 import airquality.database.util.query as qry
-import airquality.file.structured.json as jsonfile
+import file.json as jsonfile
 import file.repo.imp as filerepo
 import airquality.source.file as filesource
 import airquality.types.file.type as filetype

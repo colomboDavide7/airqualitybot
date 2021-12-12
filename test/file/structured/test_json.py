@@ -7,7 +7,7 @@
 ######################################################
 import unittest
 import airquality.file.structured.fact as fact
-import airquality.file.structured.json as jf
+import file.json as jf
 
 
 class TestStructuredFile(unittest.TestCase):

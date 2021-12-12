@@ -22,7 +22,7 @@ class TestSensorGeoRepo(unittest.TestCase):
         ]
         self.mocked_query_builder = Mock()
         self.mocked_query_builder.select_sensor_id_name_from_type.return_value = "some query for selecting ids and names"
-        self.repo = dbrepo.SensorGeoRepository(
+        self.repo = dbrepo.SensorGeoRepo(
             db_adapter=self.mocked_db_adapter, query_builder=self.mocked_query_builder, sensor_type="purpleair"
         )
 

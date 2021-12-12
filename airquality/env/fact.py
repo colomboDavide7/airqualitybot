@@ -12,7 +12,7 @@ import airquality.env.abc as envtype
 import airquality.logger.util.log as log
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.util.query as qry
-import airquality.file.structured.json as jsonfile
+import airquality.file.json as jsonfile
 
 
 class EnvFactory(abc.ABC):

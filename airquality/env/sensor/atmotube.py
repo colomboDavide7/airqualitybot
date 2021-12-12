@@ -15,7 +15,7 @@ import airquality.api.resp.atmotube as builder
 import airquality.filter.tsfilt as filtertype
 import airquality.database.repo.measure as dbrepo
 import airquality.database.exe.measure as exetype
-import airquality.command.fetch as cmdtype
+import airquality.command.sensor as cmdtype
 import airquality.types.timestamp as tstype
 
 
@@ -52,8 +52,8 @@ class AtmotubeEnvFact(factabc.APIEnvFact):
                     sensor_id=lookup.sensor_id, channel_name=channel.ch_name, db_repo=db_repo
                 )
 
-                command = cmdtype.FetchCommand(
-                        api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, query_executor=query_executor,
+                command = cmdtype.SensorCommand(
+                        api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, query_exec=query_executor,
                     )
                 command.set_file_logger(file_logger)
                 command.set_console_logger(console_logger)

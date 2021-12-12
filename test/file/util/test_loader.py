@@ -8,7 +8,7 @@
 import os
 import unittest
 import airquality.file.util.loader as fl
-import airquality.file.structured.json as jf
+import file.json as jf
 
 
 class TestFileLoader(unittest.TestCase):

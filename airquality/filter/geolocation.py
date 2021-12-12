@@ -13,8 +13,8 @@ import airquality.api.resp.abc as resptype
 
 class GeoFilter(filterabc.FilterABC):
 
-    def __init__(self, locations: Dict[str, Any], log_filename="log"):
-        super(GeoFilter, self).__init__(log_filename=log_filename)
+    def __init__(self, locations: Dict[str, Any]):
+        super(GeoFilter, self).__init__()
         self._database_locations = locations
 
     ################################ filter() ################################
@@ -41,11 +41,11 @@ class GeoFilter(filterabc.FilterABC):
         item_idx = next(item_iter)
         while next(count_iter) < tot:
             item = responses[item_idx]
-            if item.sensor_name not in self._database_locations:
-                self.log_warning(f"{self.__class__.__name__}: skip unknown sensor {item.sensor_name}")
+            if item.sensor_name() not in self._database_locations:
+                self.log_warning(f"{self.__class__.__name__}: skip unknown sensor {item.sensor_name()}")
                 del responses[item_idx]
             else:
-                self.log_info(f"{self.__class__.__name__}: found known sensor {item.sensor_name}")
+                self.log_info(f"{self.__class__.__name__}: found known sensor {item.sensor_name()}")
                 item_idx = next(item_iter)
         return responses
 
