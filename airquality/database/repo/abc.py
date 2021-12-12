@@ -20,6 +20,5 @@ class DatabaseRepoABC(abc.ABC):
     def lookup(self):
         pass
 
-    @abc.abstractmethod
-    def push(self, responses) -> None:
-        pass
+    def push(self, query2exec: str) -> None:
+        self.db_adapter.send(query2exec)

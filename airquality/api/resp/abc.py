@@ -43,6 +43,22 @@ class InfoAPIRespTypeABC(APIRespTypeABC, abc.ABC):
         pass
 
 
+# ------------------------------- MeasureAPIRespTypeABC ------------------------------- #
+class MeasureAPIRespTypeABC(APIRespTypeABC, abc.ABC):
+
+    @abc.abstractmethod
+    def measures(self) -> List[NameValue]:
+        pass
+
+    @abc.abstractmethod
+    def measured_at(self) -> tstype.Timestamp:
+        pass
+
+    @abc.abstractmethod
+    def located_at(self) -> pgistype.PostgisGeometry:
+        pass
+
+
 # ------------------------------- APIRespBuilderABC ------------------------------- #
 class APIRespBuilderABC(abc.ABC):
 

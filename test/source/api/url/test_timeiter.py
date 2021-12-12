@@ -25,7 +25,7 @@ class TestTimeIterableURL(unittest.TestCase):
         start = tstype.SQLTimestamp(timest='2021-10-11 08:45:00')
         stop = tstype.SQLTimestamp(timest='2021-10-13 20:45:00')
         iterable_url = urltype.AtmotubeTimeIterableURL(url=self.atmotube_url, step_size_in_days=1, start_ts=start, stop_ts=stop)
-        generator = iterable_url.build()
+        generator = iterable_url.execute()
 
         actual = next(generator)
         expected = "some_address?api_key=some_key&mac=ident&order=asc&format=fmt&date=2021-10-11"
@@ -46,7 +46,7 @@ class TestTimeIterableURL(unittest.TestCase):
         start = tstype.SQLTimestamp(timest='2021-10-11 08:45:00')
         stop = tstype.SQLTimestamp(timest='2021-10-11 20:45:00')
         iterable_url = urltype.AtmotubeTimeIterableURL(url=self.atmotube_url, step_size_in_days=1, start_ts=start, stop_ts=stop)
-        generator = iterable_url.build()
+        generator = iterable_url.execute()
 
         actual = next(generator)
         expected = "some_address?api_key=some_key&mac=ident&order=asc&format=fmt&date=2021-10-11"
@@ -60,7 +60,7 @@ class TestTimeIterableURL(unittest.TestCase):
         start = tstype.SQLTimestamp(timest='2021-10-11 08:45:00')
         stop = tstype.SQLTimestamp(timest='2021-11-07 20:45:00')
         iterable_url = urltype.ThingspeakTimeIterableURL(url=self.thingspeak_url, step_size_in_days=7, start_ts=start, stop_ts=stop)
-        generator = iterable_url.build()
+        generator = iterable_url.execute()
 
         actual = next(generator)
         expected = "some_address/ident/feeds.fmt?api_key=some_key&start=2021-10-11%2008:45:00&end=2021-10-18%2008:45:00"
@@ -85,7 +85,7 @@ class TestTimeIterableURL(unittest.TestCase):
         start = tstype.SQLTimestamp(timest='2021-11-11 08:45:00')
         stop = tstype.SQLTimestamp(timest='2021-11-11 20:45:00')
         iterable_url = urltype.ThingspeakTimeIterableURL(url=self.thingspeak_url, step_size_in_days=7, start_ts=start, stop_ts=stop)
-        generator = iterable_url.build()
+        generator = iterable_url.execute()
 
         actual = next(generator)
         expected = "some_address/ident/feeds.fmt?api_key=some_key&start=2021-11-11%2008:45:00&end=2021-11-11%2020:45:00"

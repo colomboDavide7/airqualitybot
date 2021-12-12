@@ -17,7 +17,7 @@ class TestBaseURL(unittest.TestCase):
     def test_successfully_build_purpleair_url(self):
         builder = urltype.PurpleairURLBuilder(url_template=self.test_url_template)
         expected = self.test_url_template
-        actual = builder.build()
+        actual = builder.execute()
         self.assertEqual(actual, expected)
 
 

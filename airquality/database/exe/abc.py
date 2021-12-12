@@ -1,16 +1,15 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 21/11/21 12:03
+# Date: 11/12/21 20:19
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
 import abc
-import airquality.logger.loggable as log
 
 
-class Command(log.Loggable, abc.ABC):
+class QueryExecutorABC(abc.ABC):
 
     @abc.abstractmethod
-    def execute(self):
+    def execute(self, data) -> None:
         pass

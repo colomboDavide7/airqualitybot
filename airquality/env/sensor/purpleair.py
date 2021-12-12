@@ -13,9 +13,10 @@ import airquality.file.parser.json_parser as parser
 import airquality.api.resp.purpleair as builder
 import airquality.filter.namefilt as nameflt
 import airquality.filter.geolocation as geoflt
-import airquality.database.record.info as rectype
+import airquality.database.exe.info as rectype
 import airquality.database.repo.info as inforepo
 import airquality.database.repo.geolocation as georepo
+import airquality.command.init as cmdtype
 
 
 class PurpleairEnvFactory(factabc.APIEnvFact):
@@ -25,33 +26,37 @@ class PurpleairEnvFactory(factabc.APIEnvFact):
 
     ################################ craft_env() ################################
     def craft_env(self) -> envtype.APIEnv:
+        file_logger = self.file_logger
+        console_logger = self.console_logger
 
         url_builder = urltype.PurpleairURLBuilder(url=self.url)
         api_repo = apirepo.APIRepo(url_builder=url_builder)
         resp_parser = parser.JSONParser()
         resp_builder = builder.PurpleairAPIRespBuilder()
+
         db_repo = self.craft_database()
         resp_filter = self.craft_response_filter(db_repo=db_repo)
         resp_filter.set_file_logger(self.file_logger)
         resp_filter.set_console_logger(self.console_logger)
-        rec_builder = rectype.InfoRecordBuilder()
+
+        query_executor = rectype.InfoQueryExecutor(db_repo=db_repo)
+        command = cmdtype.InitCommand(
+            api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, query_exec=query_executor
+        )
+        command.set_file_logger(file_logger)
+        command.set_console_logger(console_logger)
 
         return envtype.APIEnv(
             file_logger=self.file_logger,
             console_logger=self.console_logger,
             error_logger=self.error_logger,
-            api_repo=api_repo,
-            resp_parser=resp_parser,
-            resp_builder=resp_builder,
-            resp_filter=resp_filter,
-            rec_builder=rec_builder,
-            db_repo=db_repo
+            commands=[command]
         )
 
     ################################ craft_database() ################################
     def craft_database(self):
         if self.command_name == 'init':
-            return inforepo.SensorInfoRepository(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
+            return inforepo.SensorInfoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
         elif self.command_name == 'update':
             return georepo.SensorGeoRepository(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
         else:

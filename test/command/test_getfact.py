@@ -7,10 +7,10 @@
 ######################################################
 import unittest
 import airquality.command.getfact as get
-import airquality.command.init.purpfact as initfact
+import init.purpfact as initfact
 import airquality.command.update.purpfact as updtfact
-import airquality.command.fetch.atmfact as atm
-import airquality.command.fetch.thnkfact as thnk
+import fetch.atmfact as atm
+import fetch as thnk
 
 
 class TestCommandFactory(unittest.TestCase):

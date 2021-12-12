@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.command.init.purpfact as purpfact
+import init.purpfact as purpfact
 import airquality.command.initsrv.geonamesfact as geofact
 
 

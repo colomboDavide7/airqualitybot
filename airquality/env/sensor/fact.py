@@ -19,3 +19,7 @@ class APIEnvFact(factabc.EnvFactory, abc.ABC):
     @property
     def url(self) -> str:
         return os.environ[f'{self.command_type}_url']
+
+    @property
+    def fmt(self) -> str:
+        return os.environ[f'{self.command_type}_response_fmt']

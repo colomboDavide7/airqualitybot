@@ -8,7 +8,7 @@
 import os
 from typing import List
 import airquality.logger.util.decorator as log_decorator
-import airquality.command.init.cmd as command
+import init as command
 import airquality.command.basefact as cmdfact
 import airquality.file.util.text_parser as textparser
 import airquality.file.structured.json as jsonfile
@@ -62,4 +62,4 @@ class PurpleairInitFactory(cmdfact.CommandFactory):
     @log_decorator.log_decorator()
     def craft_database_repo(self, command_type: str):
         query_builder = qry.QueryBuilder(query_file=self.query_file)
-        return dbrepo.SensorInfoRepository(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=command_type)
+        return dbrepo.SensorInfoRepo(db_adapter=self.db_adapt, query_builder=query_builder, sensor_type=command_type)

@@ -36,7 +36,7 @@ class PurpleairAPIRespType(respabc.InfoAPIRespTypeABC):
 
     def sensor_name(self) -> str:
         try:
-            name = self.item['name']
+            name = self.item['name'].replace("'", "")
             sensor_index = self.item['sensor_index']
             return f"{name} ({sensor_index})"
         except KeyError as kerr:

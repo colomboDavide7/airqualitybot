@@ -7,13 +7,13 @@
 ######################################################
 from typing import Generator
 import airquality.logger.util.decorator as log_decorator
-import airquality.command.basecmd as cmd
+import airquality.command.abc as cmd
 import airquality.filter.abc as flt
 import airquality.database.repo.abc as dbrepo
 import airquality.types.line.line as linetype
 
 
-class ServiceInitCommand(cmd.Command):
+class ServiceInitCommand(cmd.CommandABC):
 
     def __init__(
             self,

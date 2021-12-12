@@ -6,13 +6,13 @@
 #
 ######################################################
 import airquality.logger.util.decorator as log_decorator
-import airquality.command.basecmd as basecmd
+import airquality.command.abc as basecmd
 import airquality.database.repo.geolocation as dbrepo
 import airquality.filter.geolocation as geofilter
 import api as apisource
 
 
-class UpdateCommand(basecmd.Command):
+class UpdateCommand(basecmd.CommandABC):
 
     def __init__(
             self,

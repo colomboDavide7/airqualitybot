@@ -10,12 +10,14 @@ from typing import Tuple
 import airquality.api.url.abc as urlabc
 import airquality.api.url.private as privateurl
 import airquality.types.timestamp as tstype
+import airquality.logger.loggable as log
 
 
 # ------------------------------- TimeIterableURLBuilderABC ------------------------------- #
-class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, abc.ABC):
+class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, log.Loggable, abc.ABC):
 
     def __init__(self, from_: tstype.Timestamp, to_: tstype.Timestamp, step_size_in_days: int = 1):
+        super(TimeIterableURLBuilderABC, self).__init__()
         self._from = from_
         self._to = to_
         self.step_size_in_days = step_size_in_days
@@ -27,6 +29,7 @@ class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, abc.ABC):
             url_str = self.format_url()
             all_urls.append(url_str)
             self._from = self._from.add_days(self.step_size_in_days)
+        self.log_info(f"{self.__class__.__name__} built {len(all_urls)} urls")
         return tuple(all_urls)
 
 
