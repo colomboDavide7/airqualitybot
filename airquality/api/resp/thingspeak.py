@@ -7,22 +7,31 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.api.resp.abc as respabc
+import airquality.types.timestamp as tstype
 
 
 # ------------------------------- ThingspeakAPIRespType ------------------------------- #
-class ThingspeakAPIRespType(respabc.APIRespTypeABC):
+class ThingspeakAPIRespType(respabc.MeasureAPIRespTypeABC):
 
-    def __init__(self, item: Dict[str, Any], measure_param: Dict[str, str]):
+    def __init__(self, item: Dict[str, Any], measure_param: Dict[str, str], timestamp_cls=tstype.ThingspeakTimestamp):
         self.item = item
         self.measure_param = measure_param
+        self.timestamp_cls = timestamp_cls
 
-    @property
-    def created_at(self) -> str:
-        return self.item['created_at']
+    def measured_at(self) -> tstype.Timestamp:
+        try:
+            return self.timestamp_cls(timest=self.item['created_at'])
+        except KeyError as err:
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} exception in {self.measured_at.__name__} => {err!r}")
 
-    @property
     def measures(self) -> List[respabc.NameValue]:
-        return [respabc.NameValue(name=self.measure_param[param], value=self.item.get(param)) for param in self.measure_param]
+        try:
+            return [respabc.NameValue(name=self.measure_param[param], value=self.item.get(param)) for param in self.measure_param]
+        except KeyError as err:
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} exception in {self.measures.__name__} => {err!r}")
+
+    def located_at(self):
+        raise SystemExit(f"{self.__class__.__name__} in {self.located_at.__name__}: => this method is not allowed for this class...")
 
 
 # ------------------------------- ThingspeakAPIRespBuilder ------------------------------- #
@@ -43,14 +52,15 @@ class ThingspeakAPIRespBuilder(respabc.APIRespBuilderABC):
         }
     }
 
-    def __init__(self, channel_name: str):
+    def __init__(self, channel_name: str, timestamp_cls=tstype.ThingspeakTimestamp):
         self.channel_name = channel_name
+        self.timestamp_cls = timestamp_cls
 
     ################################ build ################################
     def build(self, parsed_resp: Dict[str, Any]) -> List[ThingspeakAPIRespType]:
         try:
             feeds = parsed_resp['feeds']
             measure_param = self.CHANNEL_FIELDS[self.channel_name]
-            return [ThingspeakAPIRespType(item=feed, measure_param=measure_param) for feed in feeds]
+            return [ThingspeakAPIRespType(item=feed, measure_param=measure_param, timestamp_cls=self.timestamp_cls) for feed in feeds]
         except KeyError as kerr:
             raise SystemExit(f"{self.__class__.__name__} catches {kerr.__class__.__name__} => {kerr!s}")
