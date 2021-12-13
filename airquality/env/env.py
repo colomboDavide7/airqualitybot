@@ -8,7 +8,7 @@
 import sys
 from typing import List
 import airquality.env.abc as envabc
-import airquality.logger.util.fact as log
+import airquality.logger.fact as log
 import airquality.command.abc as cmdtype
 
 

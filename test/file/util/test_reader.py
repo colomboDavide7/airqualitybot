@@ -20,12 +20,12 @@ class TestFileReader(unittest.TestCase):
             r.exit_if_path_does_not_exists_or_is_not_file(path="tests", caller_name="some_function")
 
     def test_successfully_open_read_close_file(self):
-        actual = r.open_read_close_file('test/file/util/test_orc.txt')
+        actual = r.open_read_close_file('test/file/deprecated/test_orc.txt')
         expected = "this is a simple test file.\nthis is line 2."
         self.assertEqual(actual, expected)
 
     def test_successfully_open_readlines_close_file(self):
-        actual = r.open_readlines_close_file('test/file/util/test_orc.txt')
+        actual = r.open_readlines_close_file('test/file/deprecated/test_orc.txt')
         self.assertEqual(next(actual), "this is a simple test file.\n")
         self.assertEqual(next(actual), "this is line 2.")
 

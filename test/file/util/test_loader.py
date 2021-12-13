@@ -22,18 +22,18 @@ class TestFileLoader(unittest.TestCase):
             os.environ.pop('directory_of_resources')
 
     def test_exit_on_missing_mandated_environment_properties(self):
-        test_environment_path = "test/file/util/.empty_env"
+        test_environment_path = "test/file/deprecated/.empty_env"
         with self.assertRaises(SystemExit):
             fl.load_environment_file(path_to_file=test_environment_path)
 
     def test_successfully_load_environment_file(self):
-        test_environment_path = "test/file/util/.test_env_ok"
+        test_environment_path = "test/file/deprecated/.test_env_ok"
         connection, query_file_path = fl.load_environment_file(path_to_file=test_environment_path)
         self.assertEqual(connection, "some_connection_string")
         self.assertEqual(query_file_path, "some_directory_name/some_file_name")
 
     def test_successfully_get_json_file(self):
-        actual = fl.load_structured_file(file_path="test/file/util/test_loader.json")
+        actual = fl.load_structured_file(file_path="test/file/deprecated/test_loader.json")
         self.assertEqual(actual.__class__, jf.JSONFile)
 
 

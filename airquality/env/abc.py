@@ -6,7 +6,7 @@
 #
 ######################################################
 import abc
-import airquality.logger.util.fact as log
+import airquality.logger.fact as log
 import airquality.database.conn.adapt as db
 
 

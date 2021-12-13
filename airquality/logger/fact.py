@@ -6,7 +6,7 @@
 #
 ######################################################
 import logging
-import airquality.logger.util.fmt as log_fmt
+import airquality.logger.fmt as log_fmt
 
 
 ################################ get_console_logger() ################################

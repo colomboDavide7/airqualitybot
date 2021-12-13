@@ -6,9 +6,10 @@
 #
 ######################################################
 import abc
-import airquality.logger.util.fact as log
+import airquality.logger.fact as log
 
 
+# ------------------------------- LoggableABC ------------------------------- #
 class LoggableABC(abc.ABC):
 
     def __init__(self):

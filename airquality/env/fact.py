@@ -9,7 +9,7 @@ import os
 import abc
 import dotenv
 import airquality.env.abc as envtype
-import airquality.logger.util.fact as log
+import airquality.logger.fact as log
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.util.query as qry
 import airquality.file.json as jsonfile
