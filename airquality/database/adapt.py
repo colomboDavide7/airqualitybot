@@ -13,50 +13,50 @@ import airquality.logger.loggable as log
 
 
 ################################ DATABASE ADAPTER BASE CLASS ################################
-class DatabaseAdapter(log.LoggableABC):
+class DBAdaptABC(log.LoggableABC):
 
     @abc.abstractmethod
-    def close_conn(self):
+    def close(self):
         pass
 
     @abc.abstractmethod
-    def send(self, query: str):
+    def execute(self, query: str):
         pass
 
 
 ################################ shutdown() ################################
-ACTIVE_ADAPTERS: List[DatabaseAdapter] = []
+ACTIVE_ADAPTERS: List[DBAdaptABC] = []
 
 
 def shutdown():
     for adapter in ACTIVE_ADAPTERS:
-        adapter.close_conn()
+        adapter.close()
     ACTIVE_ADAPTERS.clear()
 
 
-################################ PSYCOPG2 DATABASE ADAPTER ###############################
-class Psycopg2DatabaseAdapter(DatabaseAdapter):
+# ------------------------------- Psycopg2DatabaseAdapter ------------------------------- #
+class Psycopg2DBAdapt(DBAdaptABC):
 
     def __init__(self, connection_string: str):
-        super(Psycopg2DatabaseAdapter, self).__init__()
+        super(Psycopg2DBAdapt, self).__init__()
         try:
             self._conn = psycopg2.connect(connection_string)
             ACTIVE_ADAPTERS.append(self)
         except psycopg2.Error as err:
-            raise SystemExit(f"{Psycopg2DatabaseAdapter.__name__}: bad connection string => {err!r}")
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} exception in {self.__init__.__name__} => {err!r}")
 
-    def send(self, query: str):
+    ################################ execute() ################################
+    def execute(self, query: str):
         try:
-            answer = ""
-            cursor = self._conn.cursor()
-            cursor.execute(query)
-            self._conn.commit()
-            if query.startswith("SELECT"):
-                answer = cursor.fetchall()
+            with self._conn.cursor() as cursor:
+                cursor.execute(query)
+                self._conn.commit()
+                if query.startswith("SELECT"):
+                    return cursor.fetchall()
         except psycopg2.Error as err:
-            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} in {self.send.__name__} => {err!r}")
-        return answer
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} exception in {self.execute.__name__} => {err!r}")
 
-    def close_conn(self):
+    ################################ close() ################################
+    def close(self):
         self._conn.close()
         self._conn = None

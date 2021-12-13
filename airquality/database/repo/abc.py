@@ -6,13 +6,13 @@
 #
 ######################################################
 import abc
-import airquality.database.conn.adapt as adapt
+import airquality.database.adapt as adapt
 import airquality.file.json as filetype
 
 
 class DatabaseRepoABC(abc.ABC):
 
-    def __init__(self, db_adapter: adapt.DatabaseAdapter, sql_queries: filetype.JSONFile):
+    def __init__(self, db_adapter: adapt.DBAdaptABC, sql_queries: filetype.JSONFile):
         self.db_adapter = db_adapter
         self.sql_queries = sql_queries
 
@@ -22,4 +22,4 @@ class DatabaseRepoABC(abc.ABC):
 
     ################################ push() ###############################
     def push(self, query2exec: str) -> None:
-        self.db_adapter.send(query2exec)
+        self.db_adapter.execute(query2exec)

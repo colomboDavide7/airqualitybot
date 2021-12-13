@@ -7,7 +7,7 @@
 ######################################################
 from typing import Generator
 import airquality.database.repo.abc as repoabc
-import airquality.database.conn.adapt as adapt
+import airquality.database.adapt as adapt
 import airquality.file.json as filetype
 import airquality.types.postgis as pgistype
 
@@ -30,7 +30,7 @@ class GeoareaLookupType(object):
 class GeoareaRepo(repoabc.DatabaseRepoABC):
 
     def __init__(
-            self, db_adapter: adapt.DatabaseAdapter, sql_queries: filetype.JSONFile, country_code: str, postgis_cls=pgistype.PostgisPoint
+            self, db_adapter: adapt.DBAdaptABC, sql_queries: filetype.JSONFile, country_code: str, postgis_cls=pgistype.PostgisPoint
     ):
         super(GeoareaRepo, self).__init__(db_adapter=db_adapter, sql_queries=sql_queries)
         self.country_code = country_code
@@ -48,7 +48,7 @@ class GeoareaRepo(repoabc.DatabaseRepoABC):
     ################################ lookup() ################################
     def lookup(self) -> Generator[GeoareaLookupType, None, None]:
         query2exec = self.sql_queries.s13.format(cc=self.country_code)
-        db_lookup = self.db_adapter.send(query2exec)
+        db_lookup = self.db_adapter.execute(query2exec)
         for pos, name, country, state, prov, lng, lat in db_lookup:
             yield GeoareaLookupType(
                     postal_code=pos, place_name=name, country_code=country, state=state, province=prov, geom=self.postgis_cls(lat=lat, lng=lng)

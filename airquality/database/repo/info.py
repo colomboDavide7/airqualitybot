@@ -7,7 +7,7 @@
 ######################################################
 from typing import List
 import airquality.database.repo.abc as baserepo
-import airquality.database.conn.adapt as dbadapt
+import airquality.database.adapt as dbadapt
 import airquality.file.json as filetype
 
 
@@ -21,7 +21,7 @@ class InfoLookupType(object):
 # ------------------------------- SensorInfoRepository ------------------------------- #
 class SensorInfoRepo(baserepo.DatabaseRepoABC):
 
-    def __init__(self, db_adapter: dbadapt.DatabaseAdapter, sql_queries: filetype.JSONFile, sensor_type: str):
+    def __init__(self, db_adapter: dbadapt.DBAdaptABC, sql_queries: filetype.JSONFile, sensor_type: str):
         super(SensorInfoRepo, self).__init__(db_adapter=db_adapter, sql_queries=sql_queries)
         self._sensor_type = sensor_type
 
@@ -32,7 +32,7 @@ class SensorInfoRepo(baserepo.DatabaseRepoABC):
     @property
     def max_sensor_id(self) -> int:
         query2exec = self.sql_queries.s1
-        db_lookup = self.db_adapter.send(query2exec)
+        db_lookup = self.db_adapter.execute(query2exec)
         max_id = db_lookup[0][0]
         return 1 if max_id is None else (max_id + 1)
 
@@ -51,5 +51,5 @@ class SensorInfoRepo(baserepo.DatabaseRepoABC):
     ################################ lookup() ###############################
     def lookup(self) -> List[InfoLookupType]:
         query2exec = self.sql_queries.s3.format(personality=self._sensor_type)
-        db_lookup = self.db_adapter.send(query2exec)
+        db_lookup = self.db_adapter.execute(query2exec)
         return [InfoLookupType(sensor_name=sensor_name) for sensor_id, sensor_name in db_lookup]

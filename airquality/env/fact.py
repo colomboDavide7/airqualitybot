@@ -10,7 +10,7 @@ import abc
 import dotenv
 import airquality.env.abc as envtype
 import airquality.logger.fact as log
-import airquality.database.conn.adapt as dbadapt
+import airquality.database.adapt as dbadapt
 import airquality.file.json as jsonfile
 
 
@@ -55,9 +55,9 @@ class EnvFactABC(abc.ABC):
         return log.get_console_logger(use_color=True, level=log.logging.DEBUG)
 
     @property
-    def db_adapter(self) -> dbadapt.DatabaseAdapter:
+    def db_adapter(self) -> dbadapt.DBAdaptABC:
         connection_string = os.environ['connection']
-        return dbadapt.Psycopg2DatabaseAdapter(connection_string=connection_string)
+        return dbadapt.Psycopg2DBAdapt(connection_string=connection_string)
 
     @property
     def sql_queries(self) -> jsonfile.JSONFile:
