@@ -19,7 +19,7 @@ class PostalcodeLineType(lineabc.LineTypeABC):
 # ------------------------------- PostalcodeLineBuilder ------------------------------- #
 class PostalcodeLineBuilder(lineabc.LineBuilderABC):
 
-    ################################ build_lines() ################################
+    ################################ build() ################################
     def build(self, parsed_lines: Generator[List[str], None, None]) -> Generator[PostalcodeLineType, None, None]:
         for line in parsed_lines:
             yield PostalcodeLineType(postal_code=line[0])

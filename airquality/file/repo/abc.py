@@ -7,10 +7,11 @@
 ######################################################
 import abc
 from typing import Tuple
+import airquality.logger.loggable as log
 
 
 # ------------------------------- FileRepoABC ------------------------------- #
-class FileRepoABC(abc.ABC):
+class FileRepoABC(log.Loggable, abc.ABC):
 
     @abc.abstractmethod
     def read_all(self) -> Tuple[str]:

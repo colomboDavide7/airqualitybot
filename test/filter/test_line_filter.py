@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import airquality.filter.geonames as flt
+import airquality.filter.geoarea as flt
 import airquality.types.line.line as linetype
 
 
@@ -24,7 +24,7 @@ class TestLineFilter(unittest.TestCase):
             yield line
 
     def test_filter_lines_without_constraints(self):
-        line_filter = flt.GeonamesFilter()
+        line_filter = flt.GeoareaFilter()
         actual = line_filter.filter(self.generate_lines())
         self.assertEqual(next(actual).place_name, "pn1")
         self.assertEqual(next(actual).place_name, "pn2")
@@ -33,20 +33,20 @@ class TestLineFilter(unittest.TestCase):
             next(actual)
 
     def test_successfully_filter_out_places_already_present_into_database(self):
-        line_filter = flt.GeonamesFilter()
+        line_filter = flt.GeoareaFilter()
         line_filter.with_database_place_names(["pn1", "pn2"])
         actual = line_filter.filter(self.generate_lines())
         self.assertEqual(next(actual).place_name, "pn3")
 
     def test_empty_lines_when_there_is_no_new_place(self):
-        line_filter = flt.GeonamesFilter()
+        line_filter = flt.GeoareaFilter()
         line_filter.with_database_place_names(["pn1", "pn2", "pn3"])
         actual = line_filter.filter(self.generate_lines())
         with self.assertRaises(StopIteration):
             next(actual)
 
     def test_successfully_keep_only_patient_postal_codes(self):
-        line_filter = flt.GeonamesFilter()
+        line_filter = flt.GeoareaFilter()
         line_filter.with_postalcodes(["27100"])
         actual = line_filter.filter(self.generate_lines())
         self.assertEqual(next(actual).postal_code, "27100")
@@ -54,7 +54,7 @@ class TestLineFilter(unittest.TestCase):
             next(actual)
 
     def test_successfully_keep_new_places_at_patient_poscodes(self):
-        line_filter = flt.GeonamesFilter()
+        line_filter = flt.GeoareaFilter()
         line_filter.with_postalcodes(["27100", "98010"])
         line_filter.with_database_place_names(["pn1"])
         actual = line_filter.filter(self.generate_lines())
@@ -65,7 +65,7 @@ class TestLineFilter(unittest.TestCase):
             next(actual)
 
     def test_empty_list_for_combination_of_new_places_and_patient_poscodes(self):
-        line_filter = flt.GeonamesFilter()
+        line_filter = flt.GeoareaFilter()
         line_filter.with_postalcodes(["27100", "98010"])
         line_filter.with_database_place_names(["pn1", "pn2"])
         actual = line_filter.filter(self.generate_lines())

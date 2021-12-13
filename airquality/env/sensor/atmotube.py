@@ -22,6 +22,9 @@ import airquality.types.timestamp as tstype
 # ------------------------------- AtmotubeEnvFact ------------------------------- #
 class AtmotubeEnvFact(factabc.APIEnvFact):
 
+    def __init__(self, path_to_env: str, command_name: str, command_type: str):
+        super(AtmotubeEnvFact, self).__init__(path_to_env=path_to_env, command_name=command_name, command_type=command_type)
+
     ################################ craft_env() ################################
     def craft_env(self) -> envtype.APIEnv:
         url = self.url

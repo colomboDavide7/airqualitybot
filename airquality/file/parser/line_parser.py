@@ -13,6 +13,7 @@ class TSVLineParser(parserabc.FileParserABC):
 
     def parse(self, text: str) -> Generator[List[str], None, None]:
         lines = text.split('\n')
-        print(f"found #{len(lines)} lines")
+        self.log_info(f"{self.__class__.__name__} found #{len(lines)} lines")
         for line in lines:
-            yield line.split('\t')
+            if line:
+                yield line.split('\t')

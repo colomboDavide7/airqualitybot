@@ -18,7 +18,7 @@ class TestGeonamesLineBuilder(unittest.TestCase):
 
     def test_successfully_build_geonames_line(self):
 
-        geonames_builder = builder.GeonamesLineBuilder()
+        geonames_builder = builder.GeoareaLineBuilder()
         actual = geonames_builder.build(self.generate_lines())
         item = next(actual)
         self.assertEqual(item.postal_code, "pc")

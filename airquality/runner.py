@@ -37,7 +37,7 @@ def get_commandline_arguments(args: List[str]) -> Tuple[str, str]:
     if command_name not in valid_commands:
         raise SystemExit(f"{function_name}: bad command => VALID COMMANDS: [{'|'.join(c for c in valid_commands)}]")
 
-    valid_types = ["atmotube", "purpleair", "thingspeak", "service"]
+    valid_types = ["atmotube", "purpleair", "thingspeak", "geonames"]
     if sensor_type not in valid_types:
         raise SystemExit(f"{function_name}(): bad type => VALID TYPES: [{'|'.join(tp for tp in valid_types)}]")
 

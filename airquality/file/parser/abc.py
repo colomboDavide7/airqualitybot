@@ -6,9 +6,10 @@
 #
 ######################################################
 import abc
+import airquality.logger.loggable as log
 
 
-class FileParserABC(abc.ABC):
+class FileParserABC(log.Loggable, abc.ABC):
 
     @abc.abstractmethod
     def parse(self, text: str):

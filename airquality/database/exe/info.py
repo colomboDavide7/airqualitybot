@@ -18,7 +18,7 @@ class InfoQueryExecutor(recabc.QueryExecutorABC):
     def __init__(self, db_repo: dbrepo.SensorInfoRepo):
         self._db_repo = db_repo
 
-    ################################ build() ###############################
+    ################################ execute() ###############################
     def execute(self, data: List[resptype.InfoAPIRespTypeABC]) -> None:
         sensor_values = self._db_repo.sensor_query
         apiparam_values = self._db_repo.apiparam_query
@@ -26,11 +26,11 @@ class InfoQueryExecutor(recabc.QueryExecutorABC):
 
         start_index = self._db_repo.max_sensor_id
         sensor_id_iter = itertools.count(start_index)
-        for d in data:
+        for resp in data:
             sensor_id = next(sensor_id_iter)
-            sensor_values += self._sensor2sql(sensor_id=sensor_id, response=d)
-            apiparam_values += self._apiparam2sql(sensor_id=sensor_id, response=d)
-            geolocation_values += self._geo2sql(sensor_id=sensor_id, response=d)
+            sensor_values += self._sensor2sql(sensor_id=sensor_id, response=resp)
+            apiparam_values += self._apiparam2sql(sensor_id=sensor_id, response=resp)
+            geolocation_values += self._geo2sql(sensor_id=sensor_id, response=resp)
 
         query2exec = f"{sensor_values.strip(',')}; {apiparam_values.strip(',')}; {geolocation_values.strip(',')};"
         self._db_repo.push(query2exec)
