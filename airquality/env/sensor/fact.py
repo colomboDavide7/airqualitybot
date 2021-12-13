@@ -5,21 +5,21 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import abc
 import os
-
+import abc
 import airquality.env.fact as factabc
 
 
-class APIEnvFact(factabc.EnvFactory, abc.ABC):
+# ------------------------------- APIEnvFactABC ------------------------------- #
+class APIEnvFactABC(factabc.EnvFactABC, abc.ABC):
 
-    def __init__(self, path_to_env: str, command_name: str, command_type: str):
-        super(APIEnvFact, self).__init__(path_to_env=path_to_env, command_type=command_type, command_name=command_name)
+    def __init__(self, path_to_env: str, command: str, target: str):
+        super(APIEnvFactABC, self).__init__(path_to_env=path_to_env, target=target, command=command)
 
     @property
     def url(self) -> str:
-        return os.environ[f'{self.command_type}_url']
+        return os.environ[f'{self.target}_url']
 
     @property
     def fmt(self) -> str:
-        return os.environ[f'{self.command_type}_response_fmt']
+        return os.environ[f'{self.target}_response_fmt']

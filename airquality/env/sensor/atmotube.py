@@ -6,7 +6,7 @@
 #
 ######################################################
 import airquality.env.sensor.fact as factabc
-import airquality.env.sensor.env as envtype
+import airquality.env.env as envtype
 import airquality.api.url.timeiter as urltype
 import airquality.api.url.private as prvturl
 import airquality.api.api_repo as apirepo
@@ -20,18 +20,18 @@ import airquality.types.timestamp as tstype
 
 
 # ------------------------------- AtmotubeEnvFact ------------------------------- #
-class AtmotubeEnvFact(factabc.APIEnvFact):
+class AtmotubeEnvFact(factabc.APIEnvFactABC):
 
-    def __init__(self, path_to_env: str, command_name: str, command_type: str):
-        super(AtmotubeEnvFact, self).__init__(path_to_env=path_to_env, command_name=command_name, command_type=command_type)
+    def __init__(self, path_to_env: str, command: str, target: str):
+        super(AtmotubeEnvFact, self).__init__(path_to_env=path_to_env, command=command, target=target)
 
     ################################ craft_env() ################################
-    def craft_env(self) -> envtype.APIEnv:
+    def craft_env(self) -> envtype.Environment:
         url = self.url
         fmt = self.fmt
         resp_parser = parser.JSONParser()
 
-        db_repo = dbrepo.SensorMeasureRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
+        db_repo = dbrepo.SensorMeasureRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.target)
         file_logger = self.file_logger
         console_logger = self.console_logger
 
@@ -63,7 +63,7 @@ class AtmotubeEnvFact(factabc.APIEnvFact):
 
                 commands.append(command)
 
-        return envtype.APIEnv(
+        return envtype.Environment(
             file_logger=self.file_logger,
             console_logger=self.console_logger,
             error_logger=self.error_logger,

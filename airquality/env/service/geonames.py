@@ -7,7 +7,7 @@
 ######################################################
 from typing import List
 import airquality.env.fact as factabc
-import airquality.env.service.env as envtype
+import airquality.env.env as envtype
 import airquality.file.repo.imp as filerepo
 import airquality.file.parser.line_parser as parser
 import airquality.file.line.geonames as builder
@@ -19,17 +19,17 @@ import airquality.command.service as cmdtype
 
 
 # ------------------------------- GeonamesEnvFact ------------------------------- #
-class GeonamesEnvFact(factabc.EnvFactory):
+class GeonamesEnvFact(factabc.EnvFactABC):
 
-    def __init__(self, path_to_env: str, command_name: str, command_type: str):
-        super(GeonamesEnvFact, self).__init__(path_to_env=path_to_env, command_name=command_name, command_type=command_type)
+    def __init__(self, path_to_env: str, command: str, target: str):
+        super(GeonamesEnvFact, self).__init__(path_to_env=path_to_env, command=command, target=target)
 
     ################################ craft_env() ################################
-    def craft_env(self) -> envtype.ServiceEnv:
+    def craft_env(self) -> envtype.Environment:
         file_logger = self.file_logger
         console_logger = self.console_logger
 
-        path_to_src_repo = f"{self.prop_dir}/{self.command_type}"
+        path_to_src_repo = f"{self.prop_dir}/{self.target}"
         src_repo = filerepo.FileRepo(path2directory=path_to_src_repo)
         src_repo.set_file_logger(file_logger)
         src_repo.set_console_logger(console_logger)
@@ -51,7 +51,7 @@ class GeonamesEnvFact(factabc.EnvFactory):
             )
             commands.append(command)
 
-        return envtype.ServiceEnv(
+        return envtype.Environment(
             file_logger=file_logger,
             console_logger=console_logger,
             error_logger=self.error_logger,
@@ -75,7 +75,7 @@ class GeonamesEnvFact(factabc.EnvFactory):
     ################################ get_postalcodes() ################################
     def get_postalcodes(self, filename: str, keep=False) -> List[str]:
         if keep:
-            path_to_filter_repo = f"{self.prop_dir}/{self.command_type}/filter"
+            path_to_filter_repo = f"{self.prop_dir}/{self.target}/filter"
             file_parser = parser.TSVLineParser()
             file_parser.set_file_logger(self.file_logger)
             file_parser.set_console_logger(self.console_logger)

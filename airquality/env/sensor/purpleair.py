@@ -6,7 +6,7 @@
 #
 ######################################################
 import airquality.env.sensor.fact as factabc
-import airquality.env.sensor.env as envtype
+import airquality.env.env as envtype
 import airquality.api.api_repo as apirepo
 import airquality.api.url.purpleair as urltype
 import airquality.file.parser.json_parser as parser
@@ -20,13 +20,14 @@ import airquality.database.repo.geolocation as georepo
 import airquality.command.sensor as cmdtype
 
 
-class PurpleairEnvFactory(factabc.APIEnvFact):
+# ------------------------------- PurpleairEnvFact ------------------------------- #
+class PurpleairEnvFact(factabc.APIEnvFactABC):
 
-    def __init__(self, path_to_env: str, command_name: str, command_type: str):
-        super(PurpleairEnvFactory, self).__init__(path_to_env=path_to_env, command_name=command_name, command_type=command_type)
+    def __init__(self, path_to_env: str, command: str, target: str):
+        super(PurpleairEnvFact, self).__init__(path_to_env=path_to_env, command=command, target=target)
 
     ################################ craft_env() ################################
-    def craft_env(self) -> envtype.APIEnv:
+    def craft_env(self) -> envtype.Environment:
         file_logger = self.file_logger
         console_logger = self.console_logger
 
@@ -47,7 +48,7 @@ class PurpleairEnvFactory(factabc.APIEnvFact):
         command.set_file_logger(file_logger)
         command.set_console_logger(console_logger)
 
-        return envtype.APIEnv(
+        return envtype.Environment(
             file_logger=self.file_logger,
             console_logger=self.console_logger,
             error_logger=self.error_logger,
@@ -56,32 +57,32 @@ class PurpleairEnvFactory(factabc.APIEnvFact):
 
     ################################ craft_database() ################################
     def craft_database(self):
-        if self.command_name == 'init':
-            return inforepo.SensorInfoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
-        elif self.command_name == 'update':
-            return georepo.SensorGeoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.command_type)
+        if self.command == 'init':
+            return inforepo.SensorInfoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.target)
+        elif self.command == 'update':
+            return georepo.SensorGeoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.target)
         else:
             raise SystemExit(f"{self.__class__.__name__} in {self.craft_database.__name__}: invalid command "
-                             f"'{self.command_name}' for PurpleAir sensors")
+                             f"'{self.command}' for PurpleAir sensors")
 
     ################################ craft_response_filter() ################################
     def craft_response_filter(self, db_repo):
-        if self.command_name == 'init':
+        if self.command == 'init':
             sensor_names = db_repo.database_sensor_names
             return nameflt.NameFilter(sensor_names)
-        elif self.command_name == 'update':
+        elif self.command == 'update':
             active_locations = db_repo.database_locations
             return geoflt.GeoFilter(active_locations)
         else:
             raise SystemExit(f"{self.__class__.__name__} in {self.craft_response_filter.__name__}: invalid command "
-                             f"'{self.command_name}' for PurpleAir sensors")
+                             f"'{self.command}' for PurpleAir sensors")
 
     ################################ craft_query_executor() ################################
     def craft_query_executor(self, db_repo):
-        if self.command_name == 'init':
+        if self.command == 'init':
             return infoexe.InfoQueryExecutor(db_repo=db_repo)
-        elif self.command_name == 'update':
+        elif self.command == 'update':
             return geoexe.GeolocationQueryExecutor(db_repo=db_repo)
         else:
             raise SystemExit(f"{self.__class__.__name__} in {self.craft_query_executor.__name__}: invalid command "
-                             f"'{self.command_name}' for PurpleAir sensors")
+                             f"'{self.command}' for PurpleAir sensors")

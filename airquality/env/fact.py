@@ -15,12 +15,13 @@ import airquality.database.util.query as qry
 import airquality.file.json as jsonfile
 
 
-class EnvFactory(abc.ABC):
+# ------------------------------- EnvFactABC ------------------------------- #
+class EnvFactABC(abc.ABC):
 
-    def __init__(self, path_to_env: str, command_name: str, command_type: str):
+    def __init__(self, path_to_env: str, command: str, target: str):
         dotenv.load_dotenv(dotenv_path=path_to_env)
-        self.command_name = command_name
-        self.command_type = command_type
+        self.command = command
+        self.target = target
 
     @abc.abstractmethod
     def craft_env(self) -> envtype.EnvironmentABC:
@@ -40,8 +41,8 @@ class EnvFactory(abc.ABC):
 
     @property
     def file_logger(self) -> log.logging.Logger:
-        fullpath = f"{self.log_dir}/{self.command_name}/{self.command_type}.log"
-        fullname = f"{self.command_type}_{self.command_name}_logger"
+        fullpath = f"{self.log_dir}/{self.command}/{self.target}.log"
+        fullname = f"{self.target}_{self.command}_logger"
         return log.get_file_logger(file_path=fullpath, logger_name=fullname)
 
     @property

@@ -1,19 +1,19 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 11/12/21 17:24
+# Date: 13/12/21 15:30
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import sys
 from typing import List
 import airquality.env.abc as envabc
 import airquality.logger.util.log as log
-import airquality.database.conn.adapt as db
 import airquality.command.abc as cmdtype
 
 
-# ------------------------------- APIEnv ------------------------------- #
-class APIEnv(envabc.EnvironmentABC):
+# ------------------------------- Environment ------------------------------- #
+class Environment(envabc.EnvironmentABC):
 
     def __init__(
             self,
@@ -22,7 +22,7 @@ class APIEnv(envabc.EnvironmentABC):
             error_logger: log.logging.Logger,
             commands: List[cmdtype.CommandABC]
     ):
-        super(APIEnv, self).__init__(file_logger=file_logger, console_logger=console_logger, error_logger=error_logger)
+        super(Environment, self).__init__(file_logger=file_logger, console_logger=console_logger, error_logger=error_logger)
         self.commands = commands
 
     ################################ run() ################################
@@ -33,10 +33,6 @@ class APIEnv(envabc.EnvironmentABC):
         except SystemExit as err:
             self.error_logger.exception(str(err))
             self.console_logger.exception(str(err))
+            sys.exit(1)
         finally:
-            self.shutdown()
-
-    ################################ shutdown() ################################
-    def shutdown(self):
-        log.logging.shutdown()
-        db.shutdown()
+            super().shutdown()

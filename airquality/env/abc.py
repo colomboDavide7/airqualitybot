@@ -7,8 +7,10 @@
 ######################################################
 import abc
 import airquality.logger.util.log as log
+import airquality.database.conn.adapt as db
 
 
+# ------------------------------- EnvironmentABC ------------------------------- #
 class EnvironmentABC(abc.ABC):
 
     def __init__(self, file_logger: log.logging.Logger, console_logger: log.logging.Logger, error_logger: log.logging.Logger):
@@ -20,6 +22,7 @@ class EnvironmentABC(abc.ABC):
     def run(self):
         pass
 
-    @abc.abstractmethod
+    ################################ shutdown() ################################
     def shutdown(self):
-        pass
+        log.logging.shutdown()
+        db.shutdown()

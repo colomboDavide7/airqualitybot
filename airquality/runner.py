@@ -13,32 +13,58 @@ import airquality.env.getfact as dispatcher
 ################################ main() ################################
 def main():
 
-    command_name, command_type = get_commandline_arguments(sys.argv[1:])
-    env_fact = dispatcher.get_env_fact(path_to_env='.env', command_name=command_name, command_type=command_type)
+    command, target = get_commandline_arguments(sys.argv[1:])
+    env_fact = dispatcher.get_env_fact(path_to_env='.env', command=command, target=target)
     env = env_fact.craft_env()
     env.run()
 
 
 ################################ get_commandline_arguments() ################################
 def get_commandline_arguments(args: List[str]) -> Tuple[str, str]:
+    program_usage_msg = read_program_usage_message()
+    validate_arguments(args=args, program_usage_msg=program_usage_msg)
+    command, target = args
+    validate_command(command=command, program_usage_msg=program_usage_msg)
+    validate_target(target=target, program_usage_msg=program_usage_msg)
 
-    function_name = get_commandline_arguments.__name__
-    program_usage = "USAGE: python(version) -m airquality command_name sensor_type"
+    return command, target
 
+
+################################ validate_arguments() ################################
+def validate_arguments(args: List[str], program_usage_msg: str) -> None:
     if not args:
-        raise SystemExit(f"{function_name}(): bad usage => missing required arguments. {program_usage}")
+        print(f"{validate_arguments.__name__}(): bad usage => missing required arguments.")
+        print(program_usage_msg)
+        sys.exit(1)
     if len(args) != 2:
-        raise SystemExit(f"{function_name}(): bad usage => wrong number of argument. {program_usage}")
+        print(f"{validate_arguments.__name__}(): bad usage => wrong number of arguments.")
+        print(program_usage_msg)
+        sys.exit(1)
 
-    command_name = args[0]
-    sensor_type = args[1]
 
+################################ validate_command() ################################
+def validate_command(command: str, program_usage_msg: str) -> None:
     valid_commands = ["init", "update", "fetch"]
-    if command_name not in valid_commands:
-        raise SystemExit(f"{function_name}: bad command => VALID COMMANDS: [{'|'.join(c for c in valid_commands)}]")
+    if command not in valid_commands:
+        print(f"{validate_command.__name__}: bad command => VALID COMMANDS: [{'|'.join(c for c in valid_commands)}]")
+        print(program_usage_msg)
+        sys.exit(1)
 
-    valid_types = ["atmotube", "purpleair", "thingspeak", "geonames"]
-    if sensor_type not in valid_types:
-        raise SystemExit(f"{function_name}(): bad type => VALID TYPES: [{'|'.join(tp for tp in valid_types)}]")
 
-    return command_name, sensor_type
+################################ validate_target() ################################
+def validate_target(target: str, program_usage_msg: str) -> None:
+    valid_targets = ["atmotube", "purpleair", "thingspeak", "geonames"]
+    if target not in valid_targets:
+        print(f"{validate_target.__name__}(): bad target => VALID TARGETS: [{'|'.join(tp for tp in valid_targets)}]")
+        print(program_usage_msg)
+        sys.exit(1)
+
+
+################################ read_program_usage() ################################
+def read_program_usage_message() -> str:
+    fullpath = "README.md"
+    try:
+        with open(fullpath, "r") as fd:
+            return fd.read()
+    except FileNotFoundError:
+        return "python(version) -m airquality command target"
