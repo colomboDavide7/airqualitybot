@@ -9,7 +9,7 @@ import abc
 import airquality.logger.loggable as log
 
 
-class CommandABC(log.Loggable, abc.ABC):
+class CommandABC(log.LoggableABC, abc.ABC):
 
     @abc.abstractmethod
     def execute(self):

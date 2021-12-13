@@ -10,7 +10,7 @@ import inspect
 import os
 import sys
 
-import airquality.logger.util.log as make
+import airquality.logger.util.fact as make
 
 FORMATTED_ARGUMENTS_MAX_LEN = 50
 

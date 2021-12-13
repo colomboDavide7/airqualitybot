@@ -11,7 +11,7 @@ import airquality.logger.loggable as log
 
 
 # ------------------------------- FileRepoABC ------------------------------- #
-class FileRepoABC(log.Loggable, abc.ABC):
+class FileRepoABC(log.LoggableABC, abc.ABC):
 
     @abc.abstractmethod
     def read_all(self) -> Tuple[str]:

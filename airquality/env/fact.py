@@ -9,7 +9,7 @@ import os
 import abc
 import dotenv
 import airquality.env.abc as envtype
-import airquality.logger.util.log as log
+import airquality.logger.util.fact as log
 import airquality.database.conn.adapt as dbadapt
 import airquality.database.util.query as qry
 import airquality.file.json as jsonfile
@@ -43,17 +43,17 @@ class EnvFactABC(abc.ABC):
     def file_logger(self) -> log.logging.Logger:
         fullpath = f"{self.log_dir}/{self.command}/{self.target}.log"
         fullname = f"{self.target}_{self.command}_logger"
-        return log.get_file_logger(file_path=fullpath, logger_name=fullname)
+        return log.get_file_logger(file_path=fullpath, logger_name=fullname, level=log.logging.DEBUG)
 
     @property
     def error_logger(self) -> log.logging.Logger:
         fullpath = f"{self.log_dir}/errors.log"
         fullname = f"error_logger"
-        return log.get_file_logger(file_path=fullpath, logger_name=fullname)
+        return log.get_file_logger(file_path=fullpath, logger_name=fullname, level=log.logging.ERROR)
 
     @property
     def console_logger(self) -> log.logging.Logger:
-        return log.get_console_logger(use_color=True)
+        return log.get_console_logger(use_color=True, level=log.logging.DEBUG)
 
     @property
     def db_adapter(self) -> dbadapt.DatabaseAdapter:

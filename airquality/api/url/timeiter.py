@@ -14,7 +14,7 @@ import airquality.logger.loggable as log
 
 
 # ------------------------------- TimeIterableURLBuilderABC ------------------------------- #
-class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, log.Loggable, abc.ABC):
+class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, log.LoggableABC, abc.ABC):
 
     def __init__(self, from_: tstype.Timestamp, to_: tstype.Timestamp, step_size_in_days: int = 1):
         super(TimeIterableURLBuilderABC, self).__init__()

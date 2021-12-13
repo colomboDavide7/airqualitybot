@@ -21,14 +21,12 @@ COLORED_LEVELS = {'DEBUG': GREEN,
 FMT_STR = f"%(levelname)-20s %(asctime)-30s %(filename)-20s %(message)s"
 
 
-def get_formatter_cls(use_color=False):
-
-    formatter = CustomFormatter
-    if use_color:
-        formatter = ColoredFormatter
-    return formatter
+################################ get_formatter_cls() ################################
+def get_formatter(use_color=False):
+    return ColoredFormatter(fmt=FMT_STR) if use_color else CustomFormatter(fmt=FMT_STR)
 
 
+# ------------------------------- CustomFormatter ------------------------------- #
 class CustomFormatter(logging.Formatter):
     """Custom formatter for changing the name of the file and calling function (used in the 'log_decorator')."""
 
@@ -40,6 +38,7 @@ class CustomFormatter(logging.Formatter):
         return super(CustomFormatter, self).format(record)
 
 
+# ------------------------------- ColoredFormatter ------------------------------- #
 class ColoredFormatter(logging.Formatter):
 
     def format(self, record) -> str:

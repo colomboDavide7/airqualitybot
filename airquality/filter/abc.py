@@ -9,7 +9,7 @@ import abc
 import airquality.logger.loggable as log
 
 
-class FilterABC(log.Loggable, abc.ABC):
+class FilterABC(log.LoggableABC, abc.ABC):
 
     @abc.abstractmethod
     def filter(self, all_resp):

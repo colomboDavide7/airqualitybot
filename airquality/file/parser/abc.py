@@ -9,7 +9,7 @@ import abc
 import airquality.logger.loggable as log
 
 
-class FileParserABC(log.Loggable, abc.ABC):
+class FileParserABC(log.LoggableABC, abc.ABC):
 
     @abc.abstractmethod
     def parse(self, text: str):

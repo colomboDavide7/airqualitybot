@@ -13,7 +13,7 @@ import airquality.logger.loggable as log
 
 
 ################################ DATABASE ADAPTER BASE CLASS ################################
-class DatabaseAdapter(log.Loggable):
+class DatabaseAdapter(log.LoggableABC):
 
     @abc.abstractmethod
     def close_conn(self):

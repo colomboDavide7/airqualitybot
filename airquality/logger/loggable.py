@@ -6,10 +6,10 @@
 #
 ######################################################
 import abc
-import airquality.logger.util.log as log
+import airquality.logger.util.fact as log
 
 
-class Loggable(abc.ABC):
+class LoggableABC(abc.ABC):
 
     def __init__(self):
         self._file_logger = None
