@@ -31,7 +31,7 @@ class AtmotubeEnvFact(factabc.APIEnvFactABC):
         fmt = self.fmt
         resp_parser = parser.JSONParser()
 
-        db_repo = dbrepo.SensorMeasureRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.target)
+        db_repo = dbrepo.SensorMeasureRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, sensor_type=self.target)
         file_logger = self.file_logger
         console_logger = self.console_logger
 

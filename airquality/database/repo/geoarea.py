@@ -8,7 +8,7 @@
 from typing import Generator
 import airquality.database.repo.abc as repoabc
 import airquality.database.conn.adapt as adapt
-import airquality.database.util.query as qry
+import airquality.file.json as filetype
 import airquality.types.postgis as pgistype
 
 
@@ -30,9 +30,9 @@ class GeoareaLookupType(object):
 class GeoareaRepo(repoabc.DatabaseRepoABC):
 
     def __init__(
-            self, db_adapter: adapt.DatabaseAdapter, query_builder: qry.QueryBuilder, country_code: str, postgis_cls=pgistype.PostgisPoint
+            self, db_adapter: adapt.DatabaseAdapter, sql_queries: filetype.JSONFile, country_code: str, postgis_cls=pgistype.PostgisPoint
     ):
-        super(GeoareaRepo, self).__init__(db_adapter=db_adapter, query_builder=query_builder)
+        super(GeoareaRepo, self).__init__(db_adapter=db_adapter, sql_queries=sql_queries)
         self.country_code = country_code
         self.postgis_cls = postgis_cls
 
@@ -43,11 +43,11 @@ class GeoareaRepo(repoabc.DatabaseRepoABC):
 
     @property
     def geoarea_query(self) -> str:
-        return self.query_builder.query_file.i6
+        return self.sql_queries.i6
 
     ################################ lookup() ################################
     def lookup(self) -> Generator[GeoareaLookupType, None, None]:
-        query2exec = self.query_builder.query_file.s13.format(cc=self.country_code)
+        query2exec = self.sql_queries.s13.format(cc=self.country_code)
         db_lookup = self.db_adapter.send(query2exec)
         for pos, name, country, state, prov, lng, lat in db_lookup:
             yield GeoareaLookupType(

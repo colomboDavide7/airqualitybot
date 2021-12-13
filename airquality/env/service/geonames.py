@@ -43,7 +43,7 @@ class GeonamesEnvFact(factabc.EnvFactABC):
         commands = []
         for f in src_repo.files:
             country_code = f.split('.')[0]
-            db_repo = dbtype.GeoareaRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, country_code=country_code)
+            db_repo = dbtype.GeoareaRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, country_code=country_code)
             file_filter = self.craft_file_filter(filename=f)
             query_exec = exetype.GeoareaQueryExecutor(db_repo=db_repo)
             command = cmdtype.ServiceCommand(
@@ -68,7 +68,7 @@ class GeonamesEnvFact(factabc.EnvFactABC):
     def get_database_places(self, filename: str, use=True) -> List[str]:
         if use:
             country_code = filename.split('.')[0]
-            db_repo = dbtype.GeoareaRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, country_code=country_code)
+            db_repo = dbtype.GeoareaRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, country_code=country_code)
             return list(db_repo.places)
         return []
 

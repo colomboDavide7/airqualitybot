@@ -58,9 +58,9 @@ class PurpleairEnvFact(factabc.APIEnvFactABC):
     ################################ craft_database() ################################
     def craft_database(self):
         if self.command == 'init':
-            return inforepo.SensorInfoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.target)
+            return inforepo.SensorInfoRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, sensor_type=self.target)
         elif self.command == 'update':
-            return georepo.SensorGeoRepo(db_adapter=self.db_adapter, query_builder=self.query_builder, sensor_type=self.target)
+            return georepo.SensorGeoRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, sensor_type=self.target)
         else:
             raise SystemExit(f"{self.__class__.__name__} in {self.craft_database.__name__}: invalid command "
                              f"'{self.command}' for PurpleAir sensors")

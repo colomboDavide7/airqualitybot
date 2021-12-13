@@ -11,7 +11,6 @@ import dotenv
 import airquality.env.abc as envtype
 import airquality.logger.fact as log
 import airquality.database.conn.adapt as dbadapt
-import airquality.database.util.query as qry
 import airquality.file.json as jsonfile
 
 
@@ -61,7 +60,6 @@ class EnvFactABC(abc.ABC):
         return dbadapt.Psycopg2DatabaseAdapter(connection_string=connection_string)
 
     @property
-    def query_builder(self) -> qry.QueryBuilder:
+    def sql_queries(self) -> jsonfile.JSONFile:
         fullpath = f"{self.prop_dir}/{os.environ['query_file']}"
-        json_file = jsonfile.JSONFile(path_to_file=fullpath)
-        return qry.QueryBuilder(query_file=json_file)
+        return jsonfile.JSONFile(path_to_file=fullpath)
