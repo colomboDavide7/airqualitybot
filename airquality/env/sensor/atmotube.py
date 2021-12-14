@@ -13,7 +13,6 @@ import airquality.api.api_repo as apirepo
 import airquality.file.parser.json_parser as parser
 import airquality.api.resp.atmotube as builder
 import airquality.filter.tsfilt as filtertype
-import airquality.database.repo.measure as dbrepo
 import airquality.command.sensor as cmdtype
 import airquality.types.timestamp as tstype
 import airquality.database.sql.measure as sqltype
@@ -29,47 +28,37 @@ class AtmotubeEnvFact(factabc.APIEnvFactABC):
     def craft_env(self) -> envtype.Environment:
         url = self.url
         fmt = self.fmt
-        file_logger = self.file_logger
-        console_logger = self.console_logger
-        db_adapter = self.db_adapter
-        sql_queries = self.sql_queries
-
         resp_parser = parser.JSONParser()
-        db_repo = dbrepo.SensorMeasureRepo(db_adapter=db_adapter, sql_queries=sql_queries, sensor_type=self.target)
 
-        db_lookup = db_repo.lookup()
         commands = []
-        for lookup in db_lookup:
-            for channel in lookup.channels:
-                private_url = prvturl.PrivateURLBuilder(url=url, key=channel.ch_key, ident=channel.ch_id, fmt=fmt)
-                url_builder = urltype.AtmotubeTimeIterableURL(url=private_url, from_=channel.last_acquisition, to_=tstype.CurrentTimestamp())
-                url_builder.set_console_logger(console_logger)
-                url_builder.set_file_logger(file_logger)
+        for api_param in super().api_param:
+            private_url = prvturl.PrivateURLBuilder(url=url, key=api_param.ch_key, ident=api_param.ch_id, fmt=fmt)
+            url_builder = urltype.AtmotubeTimeIterableURL(url=private_url, from_=api_param.last_acquisition, to_=tstype.CurrentTimestamp())
+            url_builder.set_console_logger(self.console_logger)
+            url_builder.set_file_logger(self.file_logger)
 
-                api_repo = apirepo.APIRepo(url_builder=url_builder)
-                resp_builder = builder.AtmotubeAPIRespBuilder(channel_name=channel.ch_name)
+            api_repo = apirepo.APIRepo(url_builder=url_builder)
+            resp_builder = builder.AtmotubeAPIRespBuilder(channel_name=api_param.ch_name)
 
-                resp_filter = filtertype.TimestampFilter(filter_ts=channel.last_acquisition)
-                resp_filter.set_file_logger(file_logger)
-                resp_filter.set_console_logger(console_logger)
+            resp_filter = filtertype.TimestampFilter(filter_ts=api_param.last_acquisition)
+            resp_filter.set_file_logger(self.file_logger)
+            resp_filter.set_console_logger(self.console_logger)
 
-                start_id = db_repo.max_mobile_record_id
-                measure_param = db_repo.measure_param
-                sql_builder = sqltype.MobileMeasureSQLBuilder(
-                    start_id=start_id, sensor_id=lookup.sensor_id, channel_name=channel.ch_name, measure_param=measure_param, sql_queries=sql_queries
+            measure_param = super().measure_param
+            db_repo = sqltype.MobileMeasureDBRepo(
+                sensor_id=api_param.sensor_id, channel_name=api_param.ch_name, measure_param=measure_param, db_adapter=self.db_adapter, sql_queries=self.sql_queries
+            )
+            command = cmdtype.SensorCommand(
+                    api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, db_repo=db_repo
                 )
+            command.set_file_logger(self.file_logger)
+            command.set_console_logger(self.console_logger)
 
-                command = cmdtype.SensorCommand(
-                        api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, sql_builder=sql_builder, db_adapt=db_adapter
-                    )
-                command.set_file_logger(file_logger)
-                command.set_console_logger(console_logger)
-
-                commands.append(command)
+            commands.append(command)
 
         return envtype.Environment(
-            file_logger=file_logger,
-            console_logger=console_logger,
+            file_logger=self.file_logger,
+            console_logger=self.console_logger,
             error_logger=self.error_logger,
             commands=commands
         )

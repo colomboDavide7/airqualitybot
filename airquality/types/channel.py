@@ -10,7 +10,8 @@ import airquality.types.timestamp as ts
 
 class Channel:
 
-    def __init__(self, ch_id: str, ch_key: str, ch_name: str, last_acquisition: ts.SQLTimestamp):
+    def __init__(self, sensor_id: int, ch_id: str, ch_key: str, ch_name: str, last_acquisition: ts.SQLTimestamp):
+        self.sensor_id = sensor_id
         self.ch_id = ch_id
         self.ch_key = ch_key
         self.ch_name = ch_name

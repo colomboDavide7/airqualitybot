@@ -9,19 +9,21 @@ import itertools
 from typing import List
 import airquality.database.sql.abc as sqlabc
 import airquality.file.json as filetype
+import airquality.database.adapt as dbtype
 import airquality.api.resp.abc as resptype
 import airquality.types.timestamp as tstype
 
 
-# ------------------------------- InfoSQLBuilder ------------------------------- #
-class InfoSQLBuilder(sqlabc.SQLBuilderABC):
+# ------------------------------- InfoDBRepo ------------------------------- #
+class InfoDBRepo(sqlabc.DBRepoABC):
 
-    def __init__(self, start_id: int, sql_queries: filetype.JSONFile):
+    def __init__(self, start_id: int, db_adapter: dbtype.DBAdaptABC, sql_queries: filetype.JSONFile):
         self.start_id = start_id
         self.sql_file = sql_queries
+        self.db_adapter = db_adapter
 
-    ################################ sql() ###############################
-    def sql(self, data: List[resptype.InfoAPIRespTypeABC]) -> str:
+    ################################ push() ###############################
+    def push(self, data: List[resptype.InfoAPIRespTypeABC]) -> None:
         sensor_values = self.sql_file.i3
         apiparam_values = self.sql_file.i4
         geolocation_values = self.sql_file.i5
@@ -33,7 +35,8 @@ class InfoSQLBuilder(sqlabc.SQLBuilderABC):
             apiparam_values += self._apiparam2sql(sensor_id=sensor_id, response=resp)
             geolocation_values += self._geo2sql(sensor_id=sensor_id, response=resp)
 
-        return f"{sensor_values.strip(',')}; {apiparam_values.strip(',')}; {geolocation_values.strip(',')};"
+        query2exec = f"{sensor_values.strip(',')}; {apiparam_values.strip(',')}; {geolocation_values.strip(',')};"
+        self.db_adapter.execute(query2exec)
 
     ################################ _sensor2sql() ###############################
     def _sensor2sql(self, sensor_id: int, response: resptype.InfoAPIRespTypeABC) -> str:

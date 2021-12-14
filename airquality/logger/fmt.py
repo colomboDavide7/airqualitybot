@@ -13,17 +13,13 @@ YELLOW = "\033[1;33m"
 RED = "\033[1;31m"
 RESET = "\033[0m"
 
-COLORED_LEVELS = {'DEBUG': GREEN,
-                  'INFO': BLUE,
-                  'WARNING': YELLOW,
-                  'ERROR': RED}
-
-FMT_STR = f"%(levelname)-20s %(asctime)-30s %(filename)-20s %(message)s"
+COLORED_LEVELS = {'DEBUG': GREEN, 'INFO': BLUE, 'WARNING': YELLOW, 'ERROR': RED}
+FORMAT_STRING = f"%(levelname)-20s %(asctime)-25s %(message)s"
 
 
 ################################ get_formatter_cls() ################################
 def get_formatter(use_color=False):
-    return ColoredFormatter(fmt=FMT_STR) if use_color else CustomFormatter(fmt=FMT_STR)
+    return ColoredFormatter(fmt=FORMAT_STRING) if use_color else CustomFormatter(fmt=FORMAT_STRING)
 
 
 # ------------------------------- CustomFormatter ------------------------------- #

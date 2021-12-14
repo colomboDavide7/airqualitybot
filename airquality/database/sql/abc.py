@@ -8,8 +8,8 @@
 import abc
 
 
-class SQLBuilderABC(abc.ABC):
+class DBRepoABC(abc.ABC):
 
     @abc.abstractmethod
-    def sql(self, data) -> str:
+    def push(self, data) -> None:
         pass

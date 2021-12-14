@@ -11,7 +11,6 @@ import airquality.file.parser.abc as parser
 import airquality.api.resp.abc as builder
 import airquality.filter.abc as filterabc
 import airquality.database.sql.abc as sqltype
-import airquality.database.adapt as dbadapt
 
 
 # ------------------------------- SensorCommand ------------------------------- #
@@ -23,16 +22,14 @@ class SensorCommand(cmdabc.CommandABC):
             resp_parser: parser.FileParserABC,
             resp_builder: builder.APIRespBuilderABC,
             resp_filter: filterabc.FilterABC,
-            sql_builder: sqltype.SQLBuilderABC,
-            db_adapt: dbadapt.DBAdaptABC
+            db_repo: sqltype.DBRepoABC
     ):
         super(SensorCommand, self).__init__()
         self.api_repo = api_repo
         self.resp_parser = resp_parser
         self.resp_builder = resp_builder
         self.resp_filter = resp_filter
-        self.sql_builder = sql_builder
-        self.db_adapt = db_adapt
+        self.db_repo = db_repo
 
     ################################ execute() ################################
     def execute(self):
@@ -49,5 +46,4 @@ class SensorCommand(cmdabc.CommandABC):
                 self.log_info(f"{self.__class__.__name__} all measurements are already present into the database")
                 continue
 
-            query2exec = self.sql_builder.sql(filtered_responses)
-            self.db_adapt.execute(query2exec)
+            self.db_repo.push(filtered_responses)

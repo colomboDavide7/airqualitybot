@@ -8,20 +8,23 @@
 from typing import Generator
 import airquality.database.sql.abc as sqlabc
 import airquality.file.json as filetype
+import airquality.database.adapt as dbtype
 import airquality.file.line.abc as linetype
 
 
-# ------------------------------- GeoareaSQLBuilder ------------------------------- #
-class GeoareaSQLBuilder(sqlabc.SQLBuilderABC):
+# ------------------------------- GeoareaDBRepo ------------------------------- #
+class GeoareaDBRepo(sqlabc.DBRepoABC):
 
-    def __init__(self, sql_queries: filetype.JSONFile):
+    def __init__(self, db_adapter: dbtype.DBAdaptABC, sql_queries: filetype.JSONFile):
+        self.db_adapter = db_adapter
         self.sql_queries = sql_queries
 
-    ################################ sql() ################################
-    def sql(self, lines: Generator[linetype.GeoareaLineTypeABC, None, None]) -> str:
+    ################################ push() ################################
+    def push(self, lines: Generator[linetype.GeoareaLineTypeABC, None, None]) -> None:
         geoarea_values = ""
         for line in lines:
             geoarea_values += f"('{line.postal_code()}', '{line.country_code()}', '{line.place_name()}', " \
                               f"'{line.province()}', '{line.state()}', {line.geolocation().geom_from_text()}),"
         if geoarea_values:
-            return f"{self.sql_queries.i6} {geoarea_values.strip(',')};"
+            query2exec = f"{self.sql_queries.i6} {geoarea_values.strip(',')};"
+            self.db_adapter.execute(query2exec)
