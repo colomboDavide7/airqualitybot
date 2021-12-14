@@ -6,6 +6,7 @@
 #
 ######################################################
 from typing import List
+import airquality.file.json as filetype
 import airquality.env.fact as factabc
 import airquality.env.env as envtype
 import airquality.file.repo.imp as filerepo
@@ -13,8 +14,9 @@ import airquality.file.parser.line_parser as parser
 import airquality.file.line.geonames as builder
 import airquality.file.line.postalcode as posbuilder
 import airquality.filter.geoarea as filtertype
-import airquality.database.exe.geoarea as exetype
+import airquality.database.sql.geoarea as sqltype
 import airquality.database.repo.geoarea as dbtype
+import airquality.database.adapt as dbadapt
 import airquality.command.service as cmdtype
 
 
@@ -28,6 +30,8 @@ class GeonamesEnvFact(factabc.EnvFactABC):
     def craft_env(self) -> envtype.Environment:
         file_logger = self.file_logger
         console_logger = self.console_logger
+        sql_queries = self.sql_queries
+        db_adapter = self.db_adapter
 
         path_to_src_repo = f"{self.prop_dir}/{self.target}"
         src_repo = filerepo.FileRepo(path2directory=path_to_src_repo)
@@ -39,15 +43,13 @@ class GeonamesEnvFact(factabc.EnvFactABC):
         file_parser.set_console_logger(console_logger)
 
         line_builder = builder.GeoareaLineBuilder()
+        sql_builder = sqltype.GeoareaSQLBuilder(sql_queries=sql_queries)
 
         commands = []
         for f in src_repo.files:
-            country_code = f.split('.')[0]
-            db_repo = dbtype.GeoareaRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, country_code=country_code)
-            file_filter = self.craft_file_filter(filename=f)
-            query_exec = exetype.GeoareaQueryExecutor(db_repo=db_repo)
+            file_filter = self.craft_file_filter(filename=f, db_adapter=db_adapter, sql_queries=sql_queries)
             command = cmdtype.ServiceCommand(
-                filename=f, file_repo=src_repo, file_parser=file_parser, line_builder=line_builder, file_filter=file_filter, query_exec=query_exec
+                filename=f, file_repo=src_repo, file_parser=file_parser, line_builder=line_builder, file_filter=file_filter, sql_builder=sql_builder, db_adapter=db_adapter
             )
             commands.append(command)
 
@@ -59,18 +61,11 @@ class GeonamesEnvFact(factabc.EnvFactABC):
         )
 
     ################################ craft_file_filter() ################################
-    def craft_file_filter(self, filename: str) -> filtertype.GeoareaFilter:
+    def craft_file_filter(self, filename: str, db_adapter: dbadapt.DBAdaptABC, sql_queries: filetype.JSONFile) -> filtertype.GeoareaFilter:
+        country_code = filename.split('.')[0]
+        db_repo = dbtype.GeoareaRepo(db_adapter=db_adapter, sql_queries=sql_queries, country_code=country_code)
         postalcodes = self.get_postalcodes(filename)
-        places = self.get_database_places(filename)
-        return filtertype.GeoareaFilter(postalcodes=postalcodes, places=places)
-
-    ################################ get_database_places() ################################
-    def get_database_places(self, filename: str, use=True) -> List[str]:
-        if use:
-            country_code = filename.split('.')[0]
-            db_repo = dbtype.GeoareaRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, country_code=country_code)
-            return list(db_repo.places)
-        return []
+        return filtertype.GeoareaFilter(postalcodes=postalcodes, places=list(db_repo.places))
 
     ################################ get_postalcodes() ################################
     def get_postalcodes(self, filename: str, keep=False) -> List[str]:

@@ -21,21 +21,10 @@ class GeoareaFilter(datafilter.FilterABC):
 
     ################################ filter() ################################
     def filter(self, all_resp: Generator[linetype.GeoareaLineTypeABC, None, None]) -> Generator[linetype.GeoareaLineTypeABC, None, None]:
-        unique_lines = self.unique_lines(all_resp)
-        new_places = self.new_places(unique_lines)
+        new_places = self.new_places(all_resp)
         if self._postalcode2keep:
             return self.patient_postalcodes(new_places)
         return new_places
-
-    def unique_lines(self, all_resp: Generator[linetype.GeoareaLineTypeABC, None, None]) -> Generator[linetype.GeoareaLineTypeABC, None, None]:
-        places_with_more_than_one_occurrence = set()
-        for resp in all_resp:
-            if self.only_unique_lines:
-                if resp.place_name() not in places_with_more_than_one_occurrence:
-                    yield resp
-                    places_with_more_than_one_occurrence.add(resp.place_name())
-            else:
-                yield resp
 
     ################################ new_places() ################################
     def new_places(

@@ -14,9 +14,9 @@ import airquality.file.parser.json_parser as parser
 import airquality.api.resp.atmotube as builder
 import airquality.filter.tsfilt as filtertype
 import airquality.database.repo.measure as dbrepo
-import airquality.database.exe.measure as exetype
 import airquality.command.sensor as cmdtype
 import airquality.types.timestamp as tstype
+import airquality.database.sql.measure as sqltype
 
 
 # ------------------------------- AtmotubeEnvFact ------------------------------- #
@@ -29,11 +29,13 @@ class AtmotubeEnvFact(factabc.APIEnvFactABC):
     def craft_env(self) -> envtype.Environment:
         url = self.url
         fmt = self.fmt
-        resp_parser = parser.JSONParser()
-
-        db_repo = dbrepo.SensorMeasureRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, sensor_type=self.target)
         file_logger = self.file_logger
         console_logger = self.console_logger
+        db_adapter = self.db_adapter
+        sql_queries = self.sql_queries
+
+        resp_parser = parser.JSONParser()
+        db_repo = dbrepo.SensorMeasureRepo(db_adapter=db_adapter, sql_queries=sql_queries, sensor_type=self.target)
 
         db_lookup = db_repo.lookup()
         commands = []
@@ -51,12 +53,14 @@ class AtmotubeEnvFact(factabc.APIEnvFactABC):
                 resp_filter.set_file_logger(file_logger)
                 resp_filter.set_console_logger(console_logger)
 
-                query_executor = exetype.MobileMeasureQueryExecutor(
-                    sensor_id=lookup.sensor_id, channel_name=channel.ch_name, db_repo=db_repo
+                start_id = db_repo.max_mobile_record_id
+                measure_param = db_repo.measure_param
+                sql_builder = sqltype.MobileMeasureSQLBuilder(
+                    start_id=start_id, sensor_id=lookup.sensor_id, channel_name=channel.ch_name, measure_param=measure_param, sql_queries=sql_queries
                 )
 
                 command = cmdtype.SensorCommand(
-                        api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, query_exec=query_executor,
+                        api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, sql_builder=sql_builder, db_adapt=db_adapter
                     )
                 command.set_file_logger(file_logger)
                 command.set_console_logger(console_logger)
@@ -64,8 +68,8 @@ class AtmotubeEnvFact(factabc.APIEnvFactABC):
                 commands.append(command)
 
         return envtype.Environment(
-            file_logger=self.file_logger,
-            console_logger=self.console_logger,
+            file_logger=file_logger,
+            console_logger=console_logger,
             error_logger=self.error_logger,
             commands=commands
         )

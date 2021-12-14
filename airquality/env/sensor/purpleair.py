@@ -6,6 +6,7 @@
 #
 ######################################################
 import airquality.env.sensor.fact as factabc
+import airquality.file.json as filetype
 import airquality.env.env as envtype
 import airquality.api.api_repo as apirepo
 import airquality.api.url.purpleair as urltype
@@ -13,11 +14,11 @@ import airquality.file.parser.json_parser as parser
 import airquality.api.resp.purpleair as builder
 import airquality.filter.namefilt as nameflt
 import airquality.filter.geolocation as geoflt
-import airquality.database.exe.info as infoexe
-import airquality.database.exe.geolocation as geoexe
 import airquality.database.repo.info as inforepo
 import airquality.database.repo.geolocation as georepo
 import airquality.command.sensor as cmdtype
+import airquality.database.sql.info as sqlinfo
+import airquality.database.sql.geolocation as sqlgeo
 
 
 # ------------------------------- PurpleairEnvFact ------------------------------- #
@@ -31,58 +32,41 @@ class PurpleairEnvFact(factabc.APIEnvFactABC):
         file_logger = self.file_logger
         console_logger = self.console_logger
 
+        sql_queries = self.sql_queries
+
         url_builder = urltype.PurpleairURLBuilder(url=self.url)
         api_repo = apirepo.APIRepo(url_builder=url_builder)
         resp_parser = parser.JSONParser()
         resp_builder = builder.PurpleairAPIRespBuilder()
 
-        db_repo = self.craft_database()
-        resp_filter = self.craft_response_filter(db_repo=db_repo)
-        resp_filter.set_file_logger(self.file_logger)
-        resp_filter.set_console_logger(self.console_logger)
+        db_repo, resp_filter, sql_builder = self.craft_dependencies(sql_queries=sql_queries)
+        resp_filter.set_file_logger(file_logger)
+        resp_filter.set_console_logger(console_logger)
 
-        query_executor = self.craft_query_executor(db_repo=db_repo)
         command = cmdtype.SensorCommand(
-            api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, query_exec=query_executor
+            api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, sql_builder=sql_builder, db_adapt=self.db_adapter
         )
         command.set_file_logger(file_logger)
         command.set_console_logger(console_logger)
 
         return envtype.Environment(
-            file_logger=self.file_logger,
-            console_logger=self.console_logger,
+            file_logger=file_logger,
+            console_logger=console_logger,
             error_logger=self.error_logger,
             commands=[command]
         )
 
-    ################################ craft_database() ################################
-    def craft_database(self):
+    ################################ craft_dependencies() ################################
+    def craft_dependencies(self, sql_queries: filetype.JSONFile):
         if self.command == 'init':
-            return inforepo.SensorInfoRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, sensor_type=self.target)
+            db_repo = inforepo.SensorInfoRepo(db_adapter=self.db_adapter, sql_queries=sql_queries, sensor_type=self.target)
+            resp_filter = nameflt.NameFilter(names=db_repo.database_sensor_names)
+            sql_builder = sqlinfo.InfoSQLBuilder(start_id=db_repo.max_sensor_id, sql_queries=sql_queries)
         elif self.command == 'update':
-            return georepo.SensorGeoRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries, sensor_type=self.target)
+            db_repo = georepo.SensorGeoRepo(db_adapter=self.db_adapter, sql_queries=sql_queries, sensor_type=self.target)
+            resp_filter = geoflt.GeoFilter(locations=db_repo.database_locations)
+            sql_builder = sqlgeo.GeolocationSQLBuilder(sensor_name2id=db_repo.name2id, sql_queries=sql_queries)
         else:
-            raise SystemExit(f"{self.__class__.__name__} in {self.craft_database.__name__}: invalid command "
+            raise SystemExit(f"{self.__class__.__name__} in {self.craft_dependencies.__name__}: invalid command "
                              f"'{self.command}' for PurpleAir sensors")
-
-    ################################ craft_response_filter() ################################
-    def craft_response_filter(self, db_repo):
-        if self.command == 'init':
-            sensor_names = db_repo.database_sensor_names
-            return nameflt.NameFilter(sensor_names)
-        elif self.command == 'update':
-            active_locations = db_repo.database_locations
-            return geoflt.GeoFilter(active_locations)
-        else:
-            raise SystemExit(f"{self.__class__.__name__} in {self.craft_response_filter.__name__}: invalid command "
-                             f"'{self.command}' for PurpleAir sensors")
-
-    ################################ craft_query_executor() ################################
-    def craft_query_executor(self, db_repo):
-        if self.command == 'init':
-            return infoexe.InfoQueryExecutor(db_repo=db_repo)
-        elif self.command == 'update':
-            return geoexe.GeolocationQueryExecutor(db_repo=db_repo)
-        else:
-            raise SystemExit(f"{self.__class__.__name__} in {self.craft_query_executor.__name__}: invalid command "
-                             f"'{self.command}' for PurpleAir sensors")
+        return db_repo, resp_filter, sql_builder
