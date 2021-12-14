@@ -12,8 +12,8 @@ import airquality.api.api_repo as apirepo
 import airquality.api.url.purpleair as urltype
 import airquality.file.parser.json_parser as parser
 import airquality.api.resp.purpleair as builder
-import airquality.filter.namefilt as nameflt
-import airquality.filter.geolocation as geoflt
+import airquality.filter.nameflt as nameflt
+import airquality.filter.geoflt as geoflt
 import airquality.command.sensor as cmdtype
 import airquality.database.repo.info as sqlinfo
 import airquality.database.repo.geolocation as sqlgeo

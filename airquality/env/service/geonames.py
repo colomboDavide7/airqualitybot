@@ -12,7 +12,7 @@ import airquality.file.repo.imp as filerepo
 import airquality.file.parser.line_parser as parser
 import airquality.file.line.geoarea as builder
 import airquality.file.line.postalcode as posbuilder
-import airquality.filter.geoarea as filtertype
+import airquality.filter.areaflt as filtertype
 import airquality.database.repo.geoarea as sqltype
 import airquality.command.service as cmdtype
 

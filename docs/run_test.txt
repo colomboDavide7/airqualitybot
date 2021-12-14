@@ -54,6 +54,8 @@ python -m test.reshaper.test_db2api_reshaper
 
 python3.8 -m unittest discover -s test -p 'test_*.py'
 
+python3.8 -m unittest discover -s test/filter -p 'test_*.py'
+
 
 
 

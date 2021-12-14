@@ -12,7 +12,7 @@ import airquality.api.url.private as prvturl
 import airquality.api.api_repo as apirepo
 import airquality.file.parser.json_parser as parser
 import airquality.api.resp.thingspeak as builder
-import airquality.filter.tsfilt as filtertype
+import airquality.filter.timestflt as filtertype
 import airquality.command.sensor as cmdtype
 import airquality.types.timest as tstype
 import airquality.database.repo.measure as sqltype
@@ -40,7 +40,7 @@ class ThingspeakEnvFact(factabc.APIEnvFactABC):
             api_repo = apirepo.APIRepo(url_builder=url_builder)
             resp_builder = builder.ThingspeakAPIRespBuilder(channel_name=api_param.name)
 
-            resp_filter = filtertype.TimestampFilter(filter_ts=api_param.last_timest)
+            resp_filter = filtertype.TimestFilter(timest_boundary=api_param.last_timest)
             resp_filter.set_file_logger(self.file_logger)
             resp_filter.set_console_logger(self.console_logger)
 

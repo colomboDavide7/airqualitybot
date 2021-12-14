@@ -10,7 +10,7 @@ import airquality.types.timest as tstype
 import datetime as dt
 
 
-class TestTimestampBuilder(unittest.TestCase):
+class TestTimest(unittest.TestCase):
 
     def setUp(self) -> None:
         self.atmotube_ts1 = tstype.SQLTimest("2021-10-11T09:44:00.000Z", fmt=tstype.ATMOTUBE_FMT)
@@ -19,7 +19,6 @@ class TestTimestampBuilder(unittest.TestCase):
         self.thingspk_ts2 = tstype.SQLTimest("2020-07-14T14:05:09Z", fmt=tstype.THINGSPK_FMT)
         self.current_ts = tstype.CurrentSQLTimest()
         self.unix_ts = tstype.UnixSQLTimest(timest=1531432748)
-        self.null_ts = tstype.NullTimestamp()
 
     def test_add_days_to_atmotube_timestamp(self):
         new_timest = self.atmotube_ts1.add_days(days=1)
@@ -76,17 +75,6 @@ class TestTimestampBuilder(unittest.TestCase):
     def test_is_same_day_unix_timestamp(self):
         self.assertFalse(self.unix_ts.is_same_day(self.thingspk_ts1))
         self.assertTrue(self.unix_ts.is_same_day(tstype.SQLTimest(timest='2018-07-12 00:00:00')))
-
-    def test_null_timestamp_object(self):
-        self.assertEqual(self.null_ts.ts, "NULL")
-
-    def test_system_exit_when_comparing_null_timestamp(self):
-        with self.assertRaises(SystemExit):
-            self.null_ts.is_after(self.unix_ts)
-
-    def test_system_exit_when_add_days_to_null_timestamp(self):
-        with self.assertRaises(SystemExit):
-            self.null_ts.add_days(100)
 
     def test_conversion_from_database_timestamp_to_timestamp(self):
         test_database_timestamp = dt.datetime.strptime("2021-10-11 09:44:00", tstype.SQL_TIMEST_FMT)
