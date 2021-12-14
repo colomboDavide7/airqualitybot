@@ -41,3 +41,6 @@ class JSONFile(object):
             return self.content[item]
         except KeyError as err:
             raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} in {self.__getattr__.__name__} => {err!r}")
+        except TypeError as err:
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} in {self.__getattr__.__name__} => "
+                             f"{type(self.content)}, required <class '{dict.__name__}'>")

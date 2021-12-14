@@ -6,7 +6,7 @@
 #
 ######################################################
 import unittest
-import file.line.geonames as builder
+import file.line.geoarea as builder
 
 
 class TestGeonamesLineBuilder(unittest.TestCase):
