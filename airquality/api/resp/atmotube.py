@@ -7,7 +7,7 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.api.resp.abc as respabc
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 import airquality.types.postgis as pgistype
 
 
@@ -15,14 +15,14 @@ import airquality.types.postgis as pgistype
 class AtmotubeAPIRespType(respabc.MeasureAPIRespTypeABC):
 
     def __init__(
-            self, item: Dict[str, Any], measure_param: List[str], timestamp_cls=tstype.AtmotubeTimestamp, postgis_cls=pgistype.PostgisPoint
+            self, item: Dict[str, Any], measure_param: List[str], timestamp_cls=tstype.AtmotubeSQLTimest, postgis_cls=pgistype.PostgisPoint
     ):
         self.measure_param = measure_param
         self.item = item
         self.timestamp_cls = timestamp_cls
         self.postgis_cls = postgis_cls
 
-    def measured_at(self) -> tstype.Timestamp:
+    def measured_at(self) -> tstype.TimestABC:
         try:
             time = self.item['time']
             return self.timestamp_cls(timest=time)
@@ -35,7 +35,7 @@ class AtmotubeAPIRespType(respabc.MeasureAPIRespTypeABC):
         except KeyError as err:
             raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} exception in {self.measures.__name__} => {err!r}")
 
-    def located_at(self) -> pgistype.PostgisGeometry:
+    def located_at(self) -> pgistype.PostgisABC:
         try:
             coords = self.item.get('coords')
             return self.postgis_cls(lat=coords['lat'], lng=coords['lon']) if coords is not None else pgistype.NullGeometry()
@@ -48,7 +48,7 @@ class AtmotubeAPIRespBuilder(respabc.APIRespBuilderABC):
 
     CHANNEL_FIELDS = {"main": ["voc", "pm1", "pm25", "pm10", "t", "h", "p"]}
 
-    def __init__(self, channel_name: str, timestamp_cls=tstype.AtmotubeTimestamp, postgis_cls=pgistype.PostgisPoint):
+    def __init__(self, channel_name: str, timestamp_cls=tstype.AtmotubeSQLTimest, postgis_cls=pgistype.PostgisPoint):
         self.channel_name = channel_name
         self.timestamp_cls = timestamp_cls
         self.postgis_cls = postgis_cls

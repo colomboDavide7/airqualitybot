@@ -8,7 +8,7 @@
 import abc
 from collections import namedtuple
 from typing import Dict, Any, List
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 import airquality.types.postgis as pgistype
 
 ChannelParam = namedtuple('ChannelParam', ['key', 'ident', 'name'])
@@ -23,7 +23,7 @@ class APIRespTypeABC(abc.ABC):
 class InfoAPIRespTypeABC(APIRespTypeABC, abc.ABC):
 
     @abc.abstractmethod
-    def date_created(self) -> tstype.Timestamp:
+    def date_created(self) -> tstype.TimestABC:
         pass
 
     @abc.abstractmethod
@@ -35,7 +35,7 @@ class InfoAPIRespTypeABC(APIRespTypeABC, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def geolocation(self) -> pgistype.PostgisGeometry:
+    def geolocation(self) -> pgistype.PostgisABC:
         pass
 
     @abc.abstractmethod
@@ -51,11 +51,11 @@ class MeasureAPIRespTypeABC(APIRespTypeABC, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def measured_at(self) -> tstype.Timestamp:
+    def measured_at(self) -> tstype.TimestABC:
         pass
 
     @abc.abstractmethod
-    def located_at(self) -> pgistype.PostgisGeometry:
+    def located_at(self) -> pgistype.PostgisABC:
         pass
 
 

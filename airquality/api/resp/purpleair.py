@@ -7,7 +7,7 @@
 ######################################################
 from typing import List, Dict, Any
 import airquality.api.resp.abc as respabc
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 import airquality.types.postgis as pgistype
 
 CHANNEL_PARAM = [{'name': 'Primary data - Channel A', 'key': 'primary_key_a', 'id': 'primary_id_a'},
@@ -19,12 +19,12 @@ CHANNEL_PARAM = [{'name': 'Primary data - Channel A', 'key': 'primary_key_a', 'i
 # ------------------------------- PurpleairAPIRespType ------------------------------- #
 class PurpleairAPIRespType(respabc.InfoAPIRespTypeABC):
 
-    def __init__(self, item: Dict[str, Any], timestamp_cls=tstype.UnixTimestamp, postgis_cls=pgistype.PostgisPoint):
+    def __init__(self, item: Dict[str, Any], timestamp_cls=tstype.UnixSQLTimest, postgis_cls=pgistype.PostgisPoint):
         self.item = item
         self.timestamp_cls = timestamp_cls
         self.postgis_cls = postgis_cls
 
-    def date_created(self) -> tstype.Timestamp:
+    def date_created(self) -> tstype.TimestABC:
         try:
             date = self.item['date_created']
             return self.timestamp_cls(timest=date)
@@ -60,7 +60,7 @@ class PurpleairAPIRespType(respabc.InfoAPIRespTypeABC):
 # ------------------------------- PurpleairAPIRespBuilder ------------------------------- #
 class PurpleairAPIRespBuilder(respabc.APIRespBuilderABC):
 
-    def __init__(self, timestamp_cls=tstype.UnixTimestamp, postgis_cls=pgistype.PostgisPoint):
+    def __init__(self, timestamp_cls=tstype.UnixSQLTimest, postgis_cls=pgistype.PostgisPoint):
         self.timestamp_cls = timestamp_cls
         self.postgis_cls = postgis_cls
 

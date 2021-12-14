@@ -6,19 +6,19 @@
 #
 #################################################
 import unittest
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 import datetime as dt
 
 
 class TestTimestampBuilder(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.atmotube_ts1 = tstype.SQLTimestamp("2021-10-11T09:44:00.000Z", fmt=tstype.ATMOTUBE_FMT)
-        self.atmotube_ts2 = tstype.SQLTimestamp("2018-01-01T00:00:00.000Z", fmt=tstype.ATMOTUBE_FMT)
-        self.thingspk_ts1 = tstype.SQLTimestamp("2021-09-04T17:35:44Z", fmt=tstype.THINGSPK_FMT)
-        self.thingspk_ts2 = tstype.SQLTimestamp("2020-07-14T14:05:09Z", fmt=tstype.THINGSPK_FMT)
-        self.current_ts = tstype.CurrentTimestamp()
-        self.unix_ts = tstype.UnixTimestamp(timest=1531432748)
+        self.atmotube_ts1 = tstype.SQLTimest("2021-10-11T09:44:00.000Z", fmt=tstype.ATMOTUBE_FMT)
+        self.atmotube_ts2 = tstype.SQLTimest("2018-01-01T00:00:00.000Z", fmt=tstype.ATMOTUBE_FMT)
+        self.thingspk_ts1 = tstype.SQLTimest("2021-09-04T17:35:44Z", fmt=tstype.THINGSPK_FMT)
+        self.thingspk_ts2 = tstype.SQLTimest("2020-07-14T14:05:09Z", fmt=tstype.THINGSPK_FMT)
+        self.current_ts = tstype.CurrentSQLTimest()
+        self.unix_ts = tstype.UnixSQLTimest(timest=1531432748)
         self.null_ts = tstype.NullTimestamp()
 
     def test_add_days_to_atmotube_timestamp(self):
@@ -75,7 +75,7 @@ class TestTimestampBuilder(unittest.TestCase):
 
     def test_is_same_day_unix_timestamp(self):
         self.assertFalse(self.unix_ts.is_same_day(self.thingspk_ts1))
-        self.assertTrue(self.unix_ts.is_same_day(tstype.SQLTimestamp(timest='2018-07-12 00:00:00')))
+        self.assertTrue(self.unix_ts.is_same_day(tstype.SQLTimest(timest='2018-07-12 00:00:00')))
 
     def test_null_timestamp_object(self):
         self.assertEqual(self.null_ts.ts, "NULL")
@@ -90,7 +90,7 @@ class TestTimestampBuilder(unittest.TestCase):
 
     def test_conversion_from_database_timestamp_to_timestamp(self):
         test_database_timestamp = dt.datetime.strptime("2021-10-11 09:44:00", tstype.SQL_TIMEST_FMT)
-        actual = tstype.datetime2timestamp(datetime_=test_database_timestamp)
+        actual = tstype.datetime2sqltimest(datetime_=test_database_timestamp)
         self.assertEqual(actual.ts, "2021-10-11 09:44:00")
 
 

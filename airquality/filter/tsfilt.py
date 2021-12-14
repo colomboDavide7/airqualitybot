@@ -8,13 +8,13 @@
 import itertools
 from typing import List
 import airquality.filter.abc as basefilter
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 import airquality.api.resp.abc as resptype
 
 
 class TimestampFilter(basefilter.FilterABC):
 
-    def __init__(self, filter_ts: tstype.Timestamp):
+    def __init__(self, filter_ts: tstype.TimestABC):
         super(TimestampFilter, self).__init__()
         self.filter_ts = filter_ts
 

@@ -7,18 +7,18 @@
 ######################################################
 from typing import Dict, Any, List
 import airquality.api.resp.abc as respabc
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 
 
 # ------------------------------- ThingspeakAPIRespType ------------------------------- #
 class ThingspeakAPIRespType(respabc.MeasureAPIRespTypeABC):
 
-    def __init__(self, item: Dict[str, Any], measure_param: Dict[str, str], timestamp_cls=tstype.ThingspeakTimestamp):
+    def __init__(self, item: Dict[str, Any], measure_param: Dict[str, str], timestamp_cls=tstype.ThingspeakSQLTimest):
         self.item = item
         self.measure_param = measure_param
         self.timestamp_cls = timestamp_cls
 
-    def measured_at(self) -> tstype.Timestamp:
+    def measured_at(self) -> tstype.TimestABC:
         try:
             return self.timestamp_cls(timest=self.item['created_at'])
         except KeyError as err:
@@ -52,7 +52,7 @@ class ThingspeakAPIRespBuilder(respabc.APIRespBuilderABC):
         }
     }
 
-    def __init__(self, channel_name: str, timestamp_cls=tstype.ThingspeakTimestamp):
+    def __init__(self, channel_name: str, timestamp_cls=tstype.ThingspeakSQLTimest):
         self.channel_name = channel_name
         self.timestamp_cls = timestamp_cls
 

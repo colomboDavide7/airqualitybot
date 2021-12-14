@@ -46,7 +46,7 @@ class TestSensorGeoRepo(unittest.TestCase):
 
     def test_successfully_get_sensor_name2id(self):
         self.mocked_db_adapter.send.side_effect = [[(1, "n1"), (2, "n2")]]
-        actual = self.repo.name2id
+        actual = self.repo.sensor_name2id
         self.assertEqual(len(actual), 2)
         self.assertEqual(actual["n1"], 1)
         self.assertEqual(actual["n2"], 2)

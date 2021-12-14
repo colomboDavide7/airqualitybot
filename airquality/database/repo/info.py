@@ -11,7 +11,7 @@ import airquality.database.repo.abc as sqlabc
 import airquality.file.json as filetype
 import airquality.database.conn as dbtype
 import airquality.api.resp.abc as resptype
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 
 
 # ------------------------------- InfoDBRepo ------------------------------- #
@@ -49,6 +49,6 @@ class InfoDBRepo(sqlabc.DBRepoABC):
 
     ################################ _geo2sql() ###############################
     def _geo2sql(self, sensor_id: int, response: resptype.InfoAPIRespTypeABC) -> str:
-        timestamp = tstype.CurrentTimestamp().ts
+        timestamp = tstype.CurrentSQLTimest().ts
         geom = response.geolocation().geom_from_text()
         return f"({sensor_id}, '{timestamp}', {geom}),"

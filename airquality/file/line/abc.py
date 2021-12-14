@@ -19,7 +19,7 @@ class LineTypeABC(abc.ABC):
 class GeoareaLineTypeABC(LineTypeABC, abc.ABC):
 
     @abc.abstractmethod
-    def geolocation(self) -> pgistype.PostgisGeometry:
+    def geolocation(self) -> pgistype.PostgisABC:
         pass
 
     @abc.abstractmethod

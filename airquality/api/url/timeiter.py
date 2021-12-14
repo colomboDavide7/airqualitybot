@@ -9,14 +9,14 @@ import abc
 from typing import Tuple
 import airquality.api.url.abc as urlabc
 import airquality.api.url.private as privateurl
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 import airquality.logger.loggable as log
 
 
 # ------------------------------- TimeIterableURLBuilderABC ------------------------------- #
 class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, log.LoggableABC, abc.ABC):
 
-    def __init__(self, from_: tstype.Timestamp, to_: tstype.Timestamp, step_size_in_days: int = 1):
+    def __init__(self, from_: tstype.TimestABC, to_: tstype.TimestABC, step_size_in_days: int = 1):
         super(TimeIterableURLBuilderABC, self).__init__()
         self._from = from_
         self._to = to_
@@ -36,7 +36,7 @@ class TimeIterableURLBuilderABC(urlabc.URLBuilderABC, log.LoggableABC, abc.ABC):
 # ------------------------------- AtmotubeTimeIterableURL ------------------------------- #
 class AtmotubeTimeIterableURL(TimeIterableURLBuilderABC):
 
-    def __init__(self, url: privateurl.PrivateURLBuilder, from_: tstype.Timestamp, to_: tstype.Timestamp, step_size_in_days: int = 1):
+    def __init__(self, url: privateurl.PrivateURLBuilder, from_: tstype.TimestABC, to_: tstype.TimestABC, step_size_in_days: int = 1):
         super(AtmotubeTimeIterableURL, self).__init__(from_=from_, to_=to_, step_size_in_days=step_size_in_days)
         self._url = url.format_url() + "&date={date}"
 
@@ -49,7 +49,7 @@ class AtmotubeTimeIterableURL(TimeIterableURLBuilderABC):
 # ------------------------------- ThingspeakTimeIterableURL ------------------------------- #
 class ThingspeakTimeIterableURL(TimeIterableURLBuilderABC):
 
-    def __init__(self, url: privateurl.PrivateURLBuilder, from_: tstype.Timestamp, to_: tstype.Timestamp, step_size_in_days: int = 7):
+    def __init__(self, url: privateurl.PrivateURLBuilder, from_: tstype.TimestABC, to_: tstype.TimestABC, step_size_in_days: int = 7):
         super(ThingspeakTimeIterableURL, self).__init__(from_=from_, to_=to_, step_size_in_days=step_size_in_days)
         self._url = url.format_url() + "&start={start}&end={end}"
 

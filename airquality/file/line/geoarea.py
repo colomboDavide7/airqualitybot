@@ -26,7 +26,7 @@ class GeoareaLineType(lineabc.GeoareaLineTypeABC):
     def place_name(self) -> str:
         return self._line[2].replace("'", "")
 
-    def geolocation(self) -> pgistype.PostgisGeometry:
+    def geolocation(self) -> pgistype.PostgisABC:
         return self.postgis_cls(lat=self._line[9], lng=self._line[10])
 
     def state(self) -> str:

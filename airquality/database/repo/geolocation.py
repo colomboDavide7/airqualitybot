@@ -10,7 +10,7 @@ import airquality.database.repo.abc as sqlabc
 import airquality.file.json as filetype
 import airquality.database.conn as dbtype
 import airquality.api.resp.abc as resptype
-import airquality.types.timestamp as tstype
+import airquality.types.timest as tstype
 
 
 # ------------------------------- GeolocationDBRepo ------------------------------- #
@@ -23,7 +23,7 @@ class GeolocationDBRepo(sqlabc.DBRepoABC):
 
     ################################ push() ###############################
     def push(self, data: List[resptype.InfoAPIRespTypeABC]) -> None:
-        now = tstype.CurrentTimestamp()
+        now = tstype.CurrentSQLTimest()
         query2 = self.sql_queries.i5
         query1 = ""
         for resp in data:
@@ -35,7 +35,7 @@ class GeolocationDBRepo(sqlabc.DBRepoABC):
         self.db_adapter.execute(query2exec)
 
     ################################ _geo2sql() ###############################
-    def _geo2sql(self, sensor_id: int, timestamp: tstype.Timestamp, response: resptype.InfoAPIRespTypeABC) -> str:
+    def _geo2sql(self, sensor_id: int, timestamp: tstype.TimestABC, response: resptype.InfoAPIRespTypeABC) -> str:
         valid_from = timestamp.ts
         geom = response.geolocation().geom_from_text()
         return f"({sensor_id}, '{valid_from}', {geom}),"

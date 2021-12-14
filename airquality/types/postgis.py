@@ -7,12 +7,12 @@
 ######################################################
 import abc
 
-ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
-POINT_GEOMETRY = "POINT({lng} {lat})"
+GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
+POINT_GEOM = "POINT({lng} {lat})"
 
 
-################################ GEOMETRY CLASS ################################
-class PostgisGeometry(abc.ABC):
+# ------------------------------- PostgisABC ------------------------------- #
+class PostgisABC(abc.ABC):
 
     def __init__(self, srid: int = 26918):
         self.srid = srid
@@ -26,8 +26,8 @@ class PostgisGeometry(abc.ABC):
         pass
 
 
-################################ POINT CLASS ################################
-class PostgisPoint(PostgisGeometry):
+# ------------------------------- PostgisPoint ------------------------------- #
+class PostgisPoint(PostgisABC):
 
     def __init__(self, lat: str, lng: str, srid: int = 26918):
         super(PostgisPoint, self).__init__(srid=srid)
@@ -35,15 +35,15 @@ class PostgisPoint(PostgisGeometry):
         self.lng = lng
 
     def geom_from_text(self) -> str:
-        geom = POINT_GEOMETRY.format(lng=self.lng, lat=self.lat)
-        return ST_GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
+        geom = POINT_GEOM.format(lng=self.lng, lat=self.lat)
+        return GEOM_FROM_TEXT.format(geom=geom, srid=self.srid)
 
     def as_text(self) -> str:
-        return POINT_GEOMETRY.format(lng=self.lng, lat=self.lat)
+        return POINT_GEOM.format(lng=self.lng, lat=self.lat)
 
 
-################################ NULL GEOMETRY CLASS ################################
-class NullGeometry(PostgisGeometry):
+# ------------------------------- NullGeometry ------------------------------- #
+class NullGeometry(PostgisABC):
 
     def __init__(self, srid: int = 26918):
         super(NullGeometry, self).__init__(srid=srid)
