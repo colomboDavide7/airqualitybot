@@ -10,7 +10,7 @@ import airquality.filter.abc as filterabc
 import airquality.file.repo.abc as filerepo
 import airquality.file.parser.abc as parser
 import airquality.file.line.abc as builder
-import airquality.database.sql.abc as sqltype
+import airquality.database.abc as sqltype
 
 
 # ------------------------------- ServiceCommand ------------------------------- #

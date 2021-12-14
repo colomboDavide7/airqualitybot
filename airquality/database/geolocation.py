@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import List, Dict
-import airquality.database.sql.abc as sqlabc
+import airquality.database.abc as sqlabc
 import airquality.file.json as filetype
 import airquality.database.adapt as dbtype
 import airquality.api.resp.abc as resptype

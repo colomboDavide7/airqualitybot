@@ -15,7 +15,7 @@ import airquality.api.resp.thingspeak as builder
 import airquality.filter.tsfilt as filtertype
 import airquality.command.sensor as cmdtype
 import airquality.types.timestamp as tstype
-import airquality.database.sql.measure as sqltype
+import airquality.database.measure as sqltype
 
 
 # ------------------------------- ThingspeakEnvFact ------------------------------- #

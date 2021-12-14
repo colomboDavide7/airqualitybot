@@ -15,8 +15,8 @@ import airquality.api.resp.purpleair as builder
 import airquality.filter.namefilt as nameflt
 import airquality.filter.geolocation as geoflt
 import airquality.command.sensor as cmdtype
-import airquality.database.sql.info as sqlinfo
-import airquality.database.sql.geolocation as sqlgeo
+import airquality.database.info as sqlinfo
+import airquality.database.geolocation as sqlgeo
 
 
 # ------------------------------- PurpleairEnvFact ------------------------------- #

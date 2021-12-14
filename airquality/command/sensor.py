@@ -10,7 +10,7 @@ import airquality.api.api_repo as apirepo
 import airquality.file.parser.abc as parser
 import airquality.api.resp.abc as builder
 import airquality.filter.abc as filterabc
-import airquality.database.sql.abc as sqltype
+import airquality.database.abc as sqltype
 
 
 # ------------------------------- SensorCommand ------------------------------- #

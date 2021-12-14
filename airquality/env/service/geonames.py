@@ -13,7 +13,7 @@ import airquality.file.parser.line_parser as parser
 import airquality.file.line.geonames as builder
 import airquality.file.line.postalcode as posbuilder
 import airquality.filter.geoarea as filtertype
-import airquality.database.sql.geoarea as sqltype
+import airquality.database.geoarea as sqltype
 import airquality.command.service as cmdtype
 
 

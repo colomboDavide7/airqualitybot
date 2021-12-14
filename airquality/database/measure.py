@@ -8,7 +8,7 @@
 import abc
 import itertools
 from typing import Dict, List
-import airquality.database.sql.abc as sqlabc
+import airquality.database.abc as sqlabc
 import airquality.file.json as filetype
 import airquality.api.resp.abc as resptype
 import airquality.database.adapt as dbtype
