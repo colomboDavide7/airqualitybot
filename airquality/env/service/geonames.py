@@ -13,7 +13,7 @@ import airquality.file.parser.line_parser as parser
 import airquality.file.line.geonames as builder
 import airquality.file.line.postalcode as posbuilder
 import airquality.filter.geoarea as filtertype
-import airquality.database.geoarea as sqltype
+import airquality.database.repo.geoarea as sqltype
 import airquality.command.service as cmdtype
 
 
@@ -35,7 +35,7 @@ class GeonamesEnvFact(factabc.EnvFactABC):
         file_parser.set_console_logger(self.console_logger)
 
         line_builder = builder.GeoareaLineBuilder()
-        db_repo = sqltype.GeoareaDBRepo(db_adapter=self.db_adapter, sql_queries=self.sql_queries)
+        db_repo = sqltype.GeoareaDBRepo(db_adapter=self.db_conn, sql_queries=self.sql_queries)
 
         commands = []
         for f in src_repo.files:
@@ -62,7 +62,7 @@ class GeonamesEnvFact(factabc.EnvFactABC):
     def get_database_places(self, filename: str) -> List[str]:
         country_code = filename.split('.')[0]
         query2exec = self.sql_queries.s13.format(cc=country_code)
-        db_lookup = self.db_adapter.execute(query2exec)
+        db_lookup = self.db_conn.execute(query2exec)
         return [item[0] for item in db_lookup]
 
     ################################ get_postalcodes() ################################

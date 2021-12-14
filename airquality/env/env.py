@@ -16,11 +16,7 @@ import airquality.command.abc as cmdtype
 class Environment(envabc.EnvironmentABC):
 
     def __init__(
-            self,
-            file_logger: log.logging.Logger,
-            console_logger: log.logging.Logger,
-            error_logger: log.logging.Logger,
-            commands: List[cmdtype.CommandABC]
+            self, file_logger: log.LOG_TYPE, console_logger: log.LOG_TYPE, error_logger: log.LOG_TYPE, commands: List[cmdtype.CommandABC]
     ):
         super(Environment, self).__init__(file_logger=file_logger, console_logger=console_logger, error_logger=error_logger)
         self.commands = commands

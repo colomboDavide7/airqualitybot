@@ -12,8 +12,8 @@ from typing import List
 import airquality.logger.loggable as log
 
 
-################################ DATABASE ADAPTER BASE CLASS ################################
-class DBAdaptABC(log.LoggableABC):
+# ------------------------------- DBConnABC ------------------------------- #
+class DBConnABC(log.LoggableABC):
 
     @abc.abstractmethod
     def close(self):
@@ -25,23 +25,23 @@ class DBAdaptABC(log.LoggableABC):
 
 
 ################################ shutdown() ################################
-ACTIVE_ADAPTERS: List[DBAdaptABC] = []
+ACTIVE_CONNECTIONS: List[DBConnABC] = []
 
 
 def shutdown():
-    for adapter in ACTIVE_ADAPTERS:
-        adapter.close()
-    ACTIVE_ADAPTERS.clear()
+    for conn in ACTIVE_CONNECTIONS:
+        conn.close()
+    ACTIVE_CONNECTIONS.clear()
 
 
-# ------------------------------- Psycopg2DatabaseAdapter ------------------------------- #
-class Psycopg2DBAdapt(DBAdaptABC):
+# ------------------------------- Psycopg2DBConn ------------------------------- #
+class Psycopg2DBConn(DBConnABC):
 
     def __init__(self, connection_string: str):
-        super(Psycopg2DBAdapt, self).__init__()
+        super(Psycopg2DBConn, self).__init__()
         try:
             self._conn = psycopg2.connect(connection_string)
-            ACTIVE_ADAPTERS.append(self)
+            ACTIVE_CONNECTIONS.append(self)
         except psycopg2.Error as err:
             raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} exception in {self.__init__.__name__} => {err!r}")
 

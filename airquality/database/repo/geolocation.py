@@ -6,9 +6,9 @@
 #
 ######################################################
 from typing import List, Dict
-import airquality.database.abc as sqlabc
+import airquality.database.repo.abc as sqlabc
 import airquality.file.json as filetype
-import airquality.database.adapt as dbtype
+import airquality.database.conn as dbtype
 import airquality.api.resp.abc as resptype
 import airquality.types.timestamp as tstype
 
@@ -16,7 +16,7 @@ import airquality.types.timestamp as tstype
 # ------------------------------- GeolocationDBRepo ------------------------------- #
 class GeolocationDBRepo(sqlabc.DBRepoABC):
 
-    def __init__(self, sensor_name2id: Dict[str, int], db_adapter: dbtype.DBAdaptABC, sql_queries: filetype.JSONFile):
+    def __init__(self, sensor_name2id: Dict[str, int], db_adapter: dbtype.DBConnABC, sql_queries: filetype.JSONFile):
         self.sensor_name2id = sensor_name2id
         self.sql_queries = sql_queries
         self.db_adapter = db_adapter

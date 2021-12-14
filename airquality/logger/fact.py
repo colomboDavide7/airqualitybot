@@ -8,6 +8,13 @@
 import logging
 import airquality.logger.fmt as log_fmt
 
+LOG_TYPE = logging.Logger
+
+
+################################ shutdown() ################################
+def shutdown():
+    logging.shutdown()
+
 
 ################################ get_console_logger() ################################
 def get_console_logger(use_color=True, logger_name="debugger", level=logging.DEBUG):

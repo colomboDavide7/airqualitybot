@@ -7,7 +7,7 @@
 ######################################################
 import unittest
 import airquality.database.conn.fact as fact
-import database.adapt as adapt
+import database.conn as adapt
 import airquality.database.conn.shutdown as shut
 
 
@@ -15,7 +15,7 @@ class TestDatabaseConn(unittest.TestCase):
 
     def test_successfully_get_database_adapter(self):
         actual = fact.get_database_adapter(connection_string="some_connection_string", adapter_type="psycopg2")
-        self.assertEqual(actual.__class__, adapt.Psycopg2DBAdapt)
+        self.assertEqual(actual.__class__, adapt.Psycopg2DBConn)
 
     def test_exit_on_bad_adapter_type(self):
         with self.assertRaises(SystemExit):
@@ -25,7 +25,7 @@ class TestDatabaseConn(unittest.TestCase):
 
     def test_successfully_shutdown_database(self):
         shut.shutdown()
-        self.assertEqual(len(shut.ACTIVE_ADAPTERS), 0)
+        self.assertEqual(len(shut.ACTIVE_CONNECTIONS), 0)
 
 
 if __name__ == '__main__':

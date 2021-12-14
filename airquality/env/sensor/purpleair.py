@@ -15,8 +15,8 @@ import airquality.api.resp.purpleair as builder
 import airquality.filter.namefilt as nameflt
 import airquality.filter.geolocation as geoflt
 import airquality.command.sensor as cmdtype
-import airquality.database.info as sqlinfo
-import airquality.database.geolocation as sqlgeo
+import airquality.database.repo.info as sqlinfo
+import airquality.database.repo.geolocation as sqlgeo
 
 
 # ------------------------------- PurpleairEnvFact ------------------------------- #
@@ -29,27 +29,27 @@ class PurpleairEnvFact(factabc.APIEnvFactABC):
     @property
     def database_sensor_names(self) -> List[str]:
         query2exec = self.sql_queries.s4.format(target=self.target)
-        db_lookup = self.db_adapter.execute(query2exec)
+        db_lookup = self.db_conn.execute(query2exec)
         return [item[0] for item in db_lookup]
 
     @property
     def max_sensor_id(self) -> int:
         query2exec = self.sql_queries.s1
-        db_lookup = self.db_adapter.execute(query2exec)
+        db_lookup = self.db_conn.execute(query2exec)
         max_id = db_lookup[0][0]
         return 1 if max_id is None else (max_id + 1)
 
     @property
     def name2id(self) -> Dict[str, int]:
         query2exec = self.sql_queries.s3.format(target=self.target)
-        db_lookup = self.db_adapter.execute(query2exec)
+        db_lookup = self.db_conn.execute(query2exec)
         return {sensor_name: sensor_id for sensor_id, sensor_name in db_lookup}
 
     @property
     def id2name(self) -> Dict[int, str]:
         if self._id2name is None:
             query2exec = self.sql_queries.s3.format(target=self.target)
-            db_lookup = self.db_adapter.execute(query2exec)
+            db_lookup = self.db_conn.execute(query2exec)
             return {sensor_id: sensor_name for sensor_id, sensor_name in db_lookup}
         return self._id2name
 
@@ -57,7 +57,7 @@ class PurpleairEnvFact(factabc.APIEnvFactABC):
     def database_locations(self) -> Dict[str, str]:
         sensor_ids_string = ','.join(f"{sensor_id}" for sensor_id in self.id2name)
         query2exec = self.sql_queries.s6.format(ids=sensor_ids_string)
-        geo_lookup = self.db_adapter.execute(query2exec)
+        geo_lookup = self.db_conn.execute(query2exec)
         return {self.id2name[sensor_id]: geom for sensor_id, geom in geo_lookup}
 
     ################################ craft_env() ################################
@@ -88,9 +88,9 @@ class PurpleairEnvFact(factabc.APIEnvFactABC):
     ################################ craft_sql_builder() ################################
     def craft_database_repo(self):
         if self.command == 'init':
-            return sqlinfo.InfoDBRepo(start_id=self.max_sensor_id, db_adapter=self.db_adapter, sql_queries=self.sql_queries)
+            return sqlinfo.InfoDBRepo(start_id=self.max_sensor_id, db_adapter=self.db_conn, sql_queries=self.sql_queries)
         elif self.command == 'update':
-            return sqlgeo.GeolocationDBRepo(sensor_name2id=self.name2id, db_adapter=self.db_adapter, sql_queries=self.sql_queries)
+            return sqlgeo.GeolocationDBRepo(sensor_name2id=self.name2id, db_adapter=self.db_conn, sql_queries=self.sql_queries)
         else:
             raise SystemExit(f"{self.__class__.__name__} in {self.craft_database_repo.__name__}: invalid command "
                              f"'{self.command}' for PurpleAir sensors")

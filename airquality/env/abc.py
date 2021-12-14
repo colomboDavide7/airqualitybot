@@ -7,7 +7,7 @@
 ######################################################
 import abc
 import airquality.logger.fact as log
-import airquality.database.adapt as db
+import airquality.database.conn as db
 
 
 # ------------------------------- EnvironmentABC ------------------------------- #
@@ -24,5 +24,8 @@ class EnvironmentABC(abc.ABC):
 
     ################################ shutdown() ################################
     def shutdown(self):
-        log.logging.shutdown()
+        msg = f"{self.__class__.__name__} in {self.shutdown.__name__}: status = success"
+        self.file_logger.info(msg)
+        self.console_logger.info(msg)
+        log.shutdown()
         db.shutdown()

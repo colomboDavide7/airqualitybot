@@ -15,7 +15,7 @@ import airquality.api.resp.atmotube as builder
 import airquality.filter.tsfilt as filtertype
 import airquality.command.sensor as cmdtype
 import airquality.types.timestamp as tstype
-import airquality.database.measure as sqltype
+import airquality.database.repo.measure as sqltype
 
 
 # ------------------------------- AtmotubeEnvFact ------------------------------- #
@@ -46,7 +46,7 @@ class AtmotubeEnvFact(factabc.APIEnvFactABC):
 
             measure_param = super().measure_param
             db_repo = sqltype.MobileMeasureDBRepo(
-                sensor_id=api_param.sensor_id, channel_name=api_param.ch_name, measure_param=measure_param, db_adapter=self.db_adapter, sql_queries=self.sql_queries
+                sensor_id=api_param.sensor_id, channel_name=api_param.ch_name, measure_param=measure_param, db_adapter=self.db_conn, sql_queries=self.sql_queries
             )
             command = cmdtype.SensorCommand(
                     api_repo=api_repo, resp_parser=resp_parser, resp_builder=resp_builder, resp_filter=resp_filter, db_repo=db_repo

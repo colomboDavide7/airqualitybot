@@ -6,16 +6,16 @@
 #
 ######################################################
 from typing import Generator
-import airquality.database.abc as sqlabc
+import airquality.database.repo.abc as sqlabc
 import airquality.file.json as filetype
-import airquality.database.adapt as dbtype
+import airquality.database.conn as dbtype
 import airquality.file.line.abc as linetype
 
 
 # ------------------------------- GeoareaDBRepo ------------------------------- #
 class GeoareaDBRepo(sqlabc.DBRepoABC):
 
-    def __init__(self, db_adapter: dbtype.DBAdaptABC, sql_queries: filetype.JSONFile):
+    def __init__(self, db_adapter: dbtype.DBConnABC, sql_queries: filetype.JSONFile):
         self.db_adapter = db_adapter
         self.sql_queries = sql_queries
 

@@ -10,7 +10,7 @@ import abc
 import dotenv
 import airquality.env.abc as envtype
 import airquality.logger.fact as log
-import airquality.database.adapt as dbadapt
+import airquality.database.conn as dbadapt
 import airquality.file.json as jsonfile
 
 
@@ -32,16 +32,32 @@ class EnvFactABC(abc.ABC):
         pass
 
     @property
-    def db_conn(self) -> str:
-        return os.environ['connection']
+    def connection_string(self) -> str:
+        try:
+            return os.environ['connection']
+        except KeyError as err:
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} => {err!r}")
+
+    @property
+    def query_file(self) -> str:
+        try:
+            return os.environ['query_file']
+        except KeyError as err:
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} => {err!r}")
 
     @property
     def log_dir(self) -> str:
-        return os.environ['directory_of_logs']
+        try:
+            return os.environ['directory_of_logs']
+        except KeyError as err:
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} => {err!r}")
 
     @property
     def prop_dir(self) -> str:
-        return os.environ['directory_of_resources']
+        try:
+            return os.environ['directory_of_resources']
+        except KeyError as err:
+            raise SystemExit(f"{self.__class__.__name__} catches {err.__class__.__name__} => {err!r}")
 
     @property
     def file_logger(self) -> log.logging.Logger:
@@ -66,15 +82,14 @@ class EnvFactABC(abc.ABC):
         return self._console_logger
 
     @property
-    def db_adapter(self) -> dbadapt.DBAdaptABC:
+    def db_conn(self) -> dbadapt.DBConnABC:
         if self._db_adapter is None:
-            connection_string = os.environ['connection']
-            self._db_adapter = dbadapt.Psycopg2DBAdapt(connection_string=connection_string)
+            self._db_adapter = dbadapt.Psycopg2DBConn(connection_string=self.connection_string)
         return self._db_adapter
 
     @property
     def sql_queries(self) -> jsonfile.JSONFile:
         if self._sql_queries is None:
-            fullpath = f"{self.prop_dir}/{os.environ['query_file']}"
+            fullpath = f"{self.prop_dir}/{self.query_file}"
             self._sql_queries = jsonfile.JSONFile(path_to_file=fullpath)
         return self._sql_queries

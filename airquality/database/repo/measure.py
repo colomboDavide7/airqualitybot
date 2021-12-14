@@ -8,16 +8,16 @@
 import abc
 import itertools
 from typing import Dict, List
-import airquality.database.abc as sqlabc
+import airquality.database.repo.abc as sqlabc
 import airquality.file.json as filetype
 import airquality.api.resp.abc as resptype
-import airquality.database.adapt as dbtype
+import airquality.database.conn as dbtype
 
 
 # ------------------------------- MeasureSQLBuilderABC ------------------------------- #
 class MeasureDBRepoABC(sqlabc.DBRepoABC, abc.ABC):
 
-    def __init__(self, sensor_id: int, channel_name: str, measure_param: Dict[str, int], db_adapter: dbtype.DBAdaptABC, sql_queries: filetype.JSONFile):
+    def __init__(self, sensor_id: int, channel_name: str, measure_param: Dict[str, int], db_adapter: dbtype.DBConnABC, sql_queries: filetype.JSONFile):
         self.sensor_id = sensor_id
         self.channel_name = channel_name
         self.measure_param = measure_param

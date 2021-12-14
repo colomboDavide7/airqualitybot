@@ -7,9 +7,9 @@
 ######################################################
 import itertools
 from typing import List
-import airquality.database.abc as sqlabc
+import airquality.database.repo.abc as sqlabc
 import airquality.file.json as filetype
-import airquality.database.adapt as dbtype
+import airquality.database.conn as dbtype
 import airquality.api.resp.abc as resptype
 import airquality.types.timestamp as tstype
 
@@ -17,7 +17,7 @@ import airquality.types.timestamp as tstype
 # ------------------------------- InfoDBRepo ------------------------------- #
 class InfoDBRepo(sqlabc.DBRepoABC):
 
-    def __init__(self, start_id: int, db_adapter: dbtype.DBAdaptABC, sql_queries: filetype.JSONFile):
+    def __init__(self, start_id: int, db_adapter: dbtype.DBConnABC, sql_queries: filetype.JSONFile):
         self.start_id = start_id
         self.sql_file = sql_queries
         self.db_adapter = db_adapter
