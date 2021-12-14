@@ -13,9 +13,9 @@ class TestRunner(unittest.TestCase):
 
     def test_successfully_get_commandline_arguments(self):
         test_args = ["init", "purpleair"]
-        actual_command_name, actual_sensor_type = runner.get_commandline_arguments(test_args)
-        self.assertEqual(actual_command_name, "init")
-        self.assertEqual(actual_sensor_type, "purpleair")
+        command, target = runner.get_commandline_arguments(test_args)
+        self.assertEqual(command, "init")
+        self.assertEqual(target, "purpleair")
 
     def test_exit_on_missing_arguments(self):
         with self.assertRaises(SystemExit):
@@ -28,13 +28,13 @@ class TestRunner(unittest.TestCase):
         with self.assertRaises(SystemExit):
             runner.get_commandline_arguments(["a"])
 
-    def test_exit_on_invalid_command_name(self):
-        test_args = ["bad_command_name", "purpleair"]
+    def test_exit_on_invalid_command(self):
+        test_args = ["bad_command", "purpleair"]
         with self.assertRaises(SystemExit):
             runner.get_commandline_arguments(test_args)
 
-    def test_exit_on_invalid_sensor_type(self):
-        test_args = ["update", "bad type"]
+    def test_exit_on_invalid_target(self):
+        test_args = ["update", "bad_target"]
         with self.assertRaises(SystemExit):
             runner.get_commandline_arguments(test_args)
 

@@ -18,7 +18,6 @@ def shutdown():
 
 ################################ get_console_logger() ################################
 def get_console_logger(use_color=True, logger_name="debugger", level=logging.DEBUG):
-
     handler = logging.StreamHandler()
     fmt = log_fmt.get_formatter(use_color)
     return _get_logger(handler=handler, formatter=fmt, logger_name=logger_name, level=level)
@@ -26,7 +25,6 @@ def get_console_logger(use_color=True, logger_name="debugger", level=logging.DEB
 
 ################################ get_file_logger() ################################
 def get_file_logger(file_path: str, mode='a+', logger_name="logger", level=logging.DEBUG):
-
     handler = logging.FileHandler(filename=file_path, mode=mode)
     fmt = log_fmt.get_formatter()
     return _get_logger(handler=handler, formatter=fmt, logger_name=logger_name, level=level)
