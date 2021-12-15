@@ -11,11 +11,11 @@ import airquality.database.conn as adapt
 
 class TestDatabaseConn(unittest.TestCase):
 
-    def test_exit_on_bad_adapter_type(self):
+    def test_system_exit_on_bad_connection_string(self):
         with self.assertRaises(SystemExit):
-            adapt.Psycopg2DBConn(connection_string="some_connection_string")
+            adapt.Psycopg2DBConn(connection_string="bad connection string")
 
-    def test_successfully_shutdown_database(self):
+    def test_successfully_shutdown_active_connections(self):
         adapt.shutdown()
         self.assertEqual(len(adapt.ACTIVE_CONNECTIONS), 0)
 

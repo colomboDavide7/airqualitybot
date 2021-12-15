@@ -13,7 +13,7 @@ import airquality.logger.loggable as log
 
 
 # ------------------------------- DBConnABC ------------------------------- #
-class DBConnABC(log.LoggableABC):
+class DBConnABC(log.LoggableABC, abc.ABC):
 
     @abc.abstractmethod
     def close(self):
