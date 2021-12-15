@@ -6,7 +6,7 @@
 #
 ######################################################
 import airquality.command.abc as cmdabc
-import airquality.api.api_repo as apirepo
+import airquality.api.deprecated_repo as apirepo
 import airquality.file.parser.abc as parser
 import airquality.api.resp.abc as builder
 import airquality.filter.abc as filterabc

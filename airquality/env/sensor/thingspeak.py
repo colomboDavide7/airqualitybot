@@ -7,9 +7,9 @@
 ######################################################
 import airquality.env.sensor.fact as factabc
 import airquality.env.env as envtype
-import airquality.api.url.timeiter as urltype
+import airquality.api.url.deprecated_url as urltype
 import airquality.api.url.private as prvturl
-import airquality.api.api_repo as apirepo
+import airquality.api.deprecated_repo as apirepo
 import airquality.file.parser.json_parser as parser
 import airquality.api.resp.thingspeak as builder
 import airquality.filter.timestflt as filtertype
@@ -32,8 +32,8 @@ class ThingspeakEnvFact(factabc.APIEnvFactABC):
 
         commands = []
         for api_param in super().api_param:
-            private_url = prvturl.PrivateURLBuilder(url=url, key=api_param.apikey, ident=api_param.ident, fmt=fmt)
-            url_builder = urltype.ThingspeakTimeIterableURL(url=private_url, from_=api_param.last_timest, to_=tstype.CurrentSQLTimest())
+            private_url = prvturl.PrivateURLFormatter(url_template=url, api_key=api_param.apikey, api_ident=api_param.ident, api_response_fmt=fmt)
+            url_builder = urltype.ThingspeakTimeIterableURLFormatter(url=private_url, from_=api_param.last_timest, to_=tstype.CurrentSQLTimest())
             url_builder.set_console_logger(self.console_logger)
             url_builder.set_file_logger(self.file_logger)
 

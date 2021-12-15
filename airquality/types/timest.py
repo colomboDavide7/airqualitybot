@@ -33,6 +33,10 @@ class TimestABC(abc.ABC):
     def is_after(self, other) -> bool:
         pass
 
+    @abc.abstractmethod
+    def is_same_day(self, other) -> bool:
+        pass
+
 
 # ------------------------------- SQLTimestamp ------------------------------- #
 class SQLTimest(TimestABC):

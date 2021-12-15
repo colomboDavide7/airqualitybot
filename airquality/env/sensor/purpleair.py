@@ -8,8 +8,8 @@
 from typing import List, Dict
 import airquality.env.sensor.fact as factabc
 import airquality.env.env as envtype
-import airquality.api.api_repo as apirepo
-import airquality.api.url.purpleair as urltype
+import airquality.api.deprecated_repo as apirepo
+import api.deprecated_fmt as urltype
 import airquality.file.parser.json_parser as parser
 import airquality.api.resp.purpleair as builder
 import airquality.filter.nameflt as nameflt
@@ -62,7 +62,7 @@ class PurpleairEnvFact(factabc.APIEnvFactABC):
 
     ################################ craft_env() ################################
     def craft_env(self) -> envtype.Environment:
-        url_builder = urltype.PurpleairURLBuilder(url=self.url)
+        url_builder = urltype.DefaultURLFormatter(url_template=self.url)
         api_repo = apirepo.APIRepo(url_builder=url_builder)
         resp_parser = parser.JSONParser()
         resp_builder = builder.PurpleairAPIRespBuilder()
