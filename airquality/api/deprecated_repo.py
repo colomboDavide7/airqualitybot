@@ -8,7 +8,7 @@
 from typing import Generator
 from urllib.request import urlopen
 from urllib.error import URLError
-import api.deprecated_fmt as urlabc
+import api.urlfmt as urlabc
 
 
 # ------------------------------- APIRepo ------------------------------- #

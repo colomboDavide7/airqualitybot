@@ -9,7 +9,7 @@ from typing import List, Dict
 import airquality.env.sensor.fact as factabc
 import airquality.env.env as envtype
 import airquality.api.deprecated_repo as apirepo
-import api.deprecated_fmt as urltype
+import api.urlfmt as urltype
 import airquality.file.parser.json_parser as parser
 import airquality.api.resp.purpleair as builder
 import airquality.filter.nameflt as nameflt

@@ -8,7 +8,7 @@
 import airquality.env.sensor.fact as factabc
 import airquality.env.env as envtype
 # import airquality.api.url.timeiter as urltype
-import airquality.api.deprecated_fmt as urlfmt
+import airquality.api.urlfmt as urlfmt
 import airquality.api.deprecated_repo as apirepo
 import airquality.file.parser.json_parser as parser
 import airquality.api.resp.atmotube as builder

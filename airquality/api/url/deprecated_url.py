@@ -6,7 +6,7 @@
 #
 ######################################################
 import abc
-import api.deprecated_fmt as urlabc
+import api.urlfmt as urlabc
 import airquality.types.timest as tstype
 
 
