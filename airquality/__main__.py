@@ -1,12 +1,11 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 11/11/21 13:00
+# Date: 16/12/21 09:37
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import airquality.runner as run
-
+import airquality.main as main
 
 if __name__ == '__main__':
-    run.main()
+    main.main()
