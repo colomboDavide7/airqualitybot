@@ -67,7 +67,7 @@ class SQLDict(collections.abc.MutableMapping):
     def __setitem__(self, key, value):
         """Insert a record composed as (id, type, name) into the sensor table. Ids of a new record starts at '_max_id'."""
         if key in self:
-            return
+            raise KeyError(f"{type(self).__name__} found duplicate {self.pkey}={key} in {self.table}")
         with self.conn.cursor() as cur:
             cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES ({key}, {value})")
             self.conn.commit()
@@ -226,6 +226,7 @@ class SelectOnlyDict(collections.abc.Mapping):
         self.filter_value = filter_value
         self._cols_of_interest = cols_of_interest
         self._joined_cols = None
+        self._where_filter = None
 
     def __getitem__(self, key):
         with self.conn.cursor() as cur:
@@ -238,19 +239,26 @@ class SelectOnlyDict(collections.abc.Mapping):
 
     def __iter__(self):
         with self.conn.cursor() as cur:
-            cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table} WHERE {self.filter_attr} ILIKE '%{self.filter_value}%';")
+            cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table} {self.where_filter()}")
             self.conn.commit()
             return map(itemgetter(0), cur.fetchall())
 
     def __len__(self):
         with self.conn.cursor() as cur:
-            cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table} WHERE {self.filter_attr} ILIKE '%{self.filter_value}%';")
+            cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table} {self.where_filter()};")
             self.conn.commit()
             return cur.fetchone()[0]
 
     def __repr__(self):
         return f"{type(self).__name__}(table={self.table}, schema={self.schema}, pkey={self.pkey}, conn={self.conn}, " \
                f"filter_attr={self.filter_attr}, filter_value={self.filter_value})"
+
+    def where_filter(self) -> str:
+        if self._where_filter is None:
+            if self.filter_attr not in self._cols_of_interest:
+                raise ValueError(f"{type(self).__name__} expected one of: [{self.joined_cols()}] attribute to filter, got '{self.filter_attr}'")
+            self._where_filter = "" if not self.filter_value else f"WHERE {self.filter_attr} ILIKE '%{self.filter_value}%' "
+        return self._where_filter
 
     def joined_cols(self) -> str:
         if self._joined_cols is None:
@@ -378,22 +386,39 @@ def atmotube():
     print(repr(measure_param_table))
     print(f"found #{len(measure_param_table)} rows in {measure_param_table.table}")
 
+    param_code_id = {}
     for key, value in measure_param_table.items():
         code, name, unit = value
         print(f"found param with id={key}, code={code}, name={name}, unit={unit}")
+        param_code_id[code] = key
 
-    # for key, value in sensor_apiparam_join.items():
-    #     sensor_id, api_key, api_id, ch_name, last_activity = value
-    #     print(f"found Atmotube sensor with id={sensor_id}, api_key={api_key}, api_id={api_id}, ch_name={ch_name}, active at {last_activity}")
-    #
-    #     url = atmotube_url.format(api_key=api_key, api_id=api_id)
-    #     print(url)
-    #     with urlopen(url) as resp:
-    #         parsed = json.loads(resp.read())
-    #         items = (item for item in parsed['data']['items'])
-    #         for item in items:
-    #             pass
+    counter = itertools.count(mobile_measure_table.max_id())
+    for key, value in sensor_apiparam_join.items():
+        sensor_id, api_key, api_id, ch_name, last_activity = value
+        print(f"found Atmotube sensor with id={sensor_id}, api_key={api_key}, api_id={api_id}, ch_name={ch_name}, active at {last_activity}")
 
+        url = atmotube_url.format(api_key=api_key, api_id=api_id)
+        print(url)
+        with urlopen(url) as resp:
+            parsed = json.loads(resp.read())
+            items = (item for item in parsed['data']['items'])
+            for item in items:
+                timestamp = item['time'].replace("T", " ").split('.')[0]
+                geom = "NULL"
+                if item.get('coords') is not None:
+                    coords = item['coords']
+                    point = POSTGIS_POINT.format(lat=coords['lat'], lon=coords['lon'])
+                    geom = ST_GEOM.format(geom=point, srid=26918)
+
+                for param_code in item.keys():
+                    if param_code in param_code_id:
+                        record_id = next(counter)
+                        param_id = param_code_id[param_code]
+                        param_value = f"'{item.get(param_code)}'" if item.get(param_code) is not None else "NULL"
+
+                        mobile_measure_table[record_id] = f"{param_id}, {param_value}, '{timestamp}', {geom}"
+
+                break
 
 # sensor_id, valid_from, geom = value
 # print(f"found sensor with id={sensor_id} at location {geom} valid from {valid_from}")
