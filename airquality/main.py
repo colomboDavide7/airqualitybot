@@ -15,8 +15,9 @@ from urllib.request import urlopen
 from urllib.error import HTTPError
 from time import perf_counter
 from datetime import datetime
+from datetime import timedelta
 from operator import itemgetter
-from typing import List
+from typing import List, Iterable, Dict, Any
 
 purpleair_url = "https://api.purpleair.com/v1/sensors?" \
                 "api_key=A57E57A3-D2B1-11EB-913E-42010A800082" \
@@ -53,8 +54,9 @@ class PurpleairResponses(object):
             yield item
 
 
-def itemgetter_default(*attrs, **kwargs):
+# return map(itemgetter_default(*self.items_of_interest, default=self.default), items)
 
+def itemgetter_default(*attrs, **kwargs):
     default = kwargs.pop('default', None)
     if kwargs:
         raise TypeError(f"itemgetter_default() got unexpected keyword argument(s): %r", sorted(kwargs))
@@ -62,20 +64,67 @@ def itemgetter_default(*attrs, **kwargs):
     def fn(item):
         getter = lambda attr: item.get(attr, default)
         return tuple(map(getter, attrs))
+
     return fn
+
+
+class AtmotubeItem(object):
+
+    ATMOTUBE_MEASURE_PARAM = ['voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p']
+
+    def __init__(self, item: Dict[str, Any]):
+        self.item = item
+        self._at = None
+        self._coords = None
+        self._at_datetime = None
+
+    @property
+    def measured_at_datetime(self) -> datetime:
+        if self._at_datetime is None:
+            self._at_datetime = datetime.strptime(self.measured_at, SQL_DATETIME_FMT)
+        return self._at_datetime
+
+    @property
+    def measured_at(self) -> str:
+        if self._at is None:
+            self._at = self.item['time'].replace("T", " ").split('.')[0]
+        return self._at
+
+    @property
+    def coords(self):
+        if self._coords is None:
+            tmp = self.item.pop('coords', None)
+            self._coords = "NULL"
+            if tmp is not None:
+                pt = POSTGIS_POINT.format(lat=tmp['lat'], lon=tmp['lon'])
+                self._coords = ST_GEOM.format(geom=pt, srid=26918)
+        return self._coords
+
+    @property
+    def values(self) -> Dict[str, Any]:
+        return {pname: self.item.get(pname) for pname in self.ATMOTUBE_MEASURE_PARAM}
 
 
 class AtmotubeResponses(collections.abc.Iterable):
 
-    def __init__(self, url: str, items_of_interest: List[str]):
+    def __init__(self, url: str, items_of_interest: List[str], default=None, ):
         self.items_of_interest = items_of_interest
+        self.default = default
         self.url = url
-        with urlopen(url) as resp:
+        with urlopen(self.url) as resp:
             self.parsed = json.loads(resp.read())
-            self.items = (item for item in self.parsed['data']['items'])
 
-    def __iter__(self):
-        return map(itemgetter_default(*self.items_of_interest, default="NULL"), self.items)
+    def __getitem__(self, index) -> AtmotubeItem:
+        if isinstance(index, int):
+            if index < 0:
+                index += len(self)
+            if index < 0 or index >= len(self):
+                raise IndexError(f"{type(self).__name__} index {index} out of range")
+            return AtmotubeItem(self.parsed['data']['items'][index])
+        raise TypeError(f"{type(self).__name__} invalid type {type(index)}")
+
+    def __iter__(self) -> Iterable[AtmotubeItem]:
+        return (AtmotubeItem(item) for item in self.parsed['data']['items'])
 
     def __len__(self):
         return sum(1 for _ in self.parsed['data']['items'])
@@ -245,7 +294,8 @@ MOBILE_MEASURE_COLS = ['param_id', 'param_value', 'timestamp', 'geom']
 
 class SelectOnlyDict(collections.abc.Mapping):
 
-    def __init__(self, conn: str, table: str, pkey: str, cols_of_interest: List[str], filter_attr: str, filter_value: str, schema="level0_raw"):
+    def __init__(self, conn: str, table: str, pkey: str, cols_of_interest: List[str], filter_attr: str,
+                 filter_value: str, schema="level0_raw"):
         self.conn = psycopg2.connect(conn)
         self.table = table
         self.pkey = pkey
@@ -284,7 +334,8 @@ class SelectOnlyDict(collections.abc.Mapping):
     def where_filter(self) -> str:
         if self._where_filter is None:
             if self.filter_attr not in self._cols_of_interest:
-                raise ValueError(f"{type(self).__name__} expected one of: [{self.joined_cols()}] attribute to filter, got '{self.filter_attr}'")
+                raise ValueError(
+                    f"{type(self).__name__} expected one of: [{self.joined_cols()}] attribute to filter, got '{self.filter_attr}'")
             self._where_filter = "" if not self.filter_value else f"WHERE {self.filter_attr} ILIKE '%{self.filter_value}%' "
         return self._where_filter
 
@@ -396,7 +447,60 @@ class JoinDict(collections.abc.Mapping):
         return self._joined_cols
 
 
+class UpdateDict(collections.abc.MutableMapping):
+
+    def __init__(self, table: str, pkey: str, conn: str, cols_of_interest: List[str], schema="level0_raw"):
+        self.table = table
+        self.pkey = pkey
+        self.conn = psycopg2.connect(conn)
+        self.schema = schema
+        self._cols_of_interest = cols_of_interest
+        self._joined_cols = None
+
+    def __setitem__(self, key, value):
+        if key in self:
+            del self[key]
+        with self.conn.cursor() as cur:
+            cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES ({key}, {value});")
+            self.conn.commit()
+
+    def __delitem__(self, key):
+        if key not in self:
+            raise KeyError(f"{type(self).__name__}: __delitem__() cannot found {self.pkey}={key}")
+        with self.conn.cursor() as cur:
+            cur.execute(f"DELETE FROM {self.schema}.{self.table} WHERE {self.pkey}={key};")
+            self.conn.commit()
+
+    def __getitem__(self, key):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT {self.joined_cols()} FROM {self.schema}.{self.table} WHERE {self.pkey}={key}")
+            self.conn.commit()
+            row = cur.fetchone()
+            if row is None:
+                raise KeyError(
+                    f"{type(self).__name__}: __getitem__() cannot found {self.pkey}={key} in table {self.table}")
+            return row
+
+    def __iter__(self):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table};")
+            self.conn.commit()
+            return map(itemgetter(0), cur.fetchall())
+
+    def __len__(self):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table};")
+            self.conn.commit()
+            return cur.fetchone()[0]
+
+    def joined_cols(self) -> str:
+        if self._joined_cols is None:
+            self._joined_cols = ','.join(f"{col}" for col in self._cols_of_interest)
+        return self._joined_cols
+
+
 ITEMS_OF_INTEREST = ['time', 'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p', 'coords']
+ATMOTUBE_PARAM_NAMES = {'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p'}
 
 
 def atmotube():
@@ -407,8 +511,11 @@ def atmotube():
 
     mobile_measure_table = SQLDict(table="mobile_measurement", pkey="id", conn=connection_string,
                                    cols_of_interest=MOBILE_MEASURE_COLS)
-    measure_param_table = SelectOnlyDict(table="measure_param", pkey="id", conn=connection_string, cols_of_interest=MEASUREPARAM_COLS,
+    measure_param_table = SelectOnlyDict(table="measure_param", pkey="id", conn=connection_string,
+                                         cols_of_interest=MEASUREPARAM_COLS,
                                          filter_attr="param_name", filter_value="atmotube")
+
+    apiparam_update = UpdateDict(table="api_param", pkey="id", conn=connection_string, cols_of_interest=APIPARAM_COLS)
 
     print(repr(sensor_apiparam_join))
     print(f"found #{len(sensor_apiparam_join)} rows in {sensor_apiparam_join.child_table}")
@@ -416,6 +523,7 @@ def atmotube():
     print(f"found #{len(mobile_measure_table)} rows in {mobile_measure_table.table}")
     print(repr(measure_param_table))
     print(f"found #{len(measure_param_table)} rows in {measure_param_table.table}")
+    print(f"found #{len(apiparam_update)} rows in {apiparam_update.table}")
 
     param_code_id = {}
     for key, value in measure_param_table.items():
@@ -428,43 +536,66 @@ def atmotube():
         sensor_id, api_key, api_id, ch_name, last_activity = value
         print(f"found Atmotube sensor with id={sensor_id}, api_key={api_key}, api_id={api_id}, ch_name={ch_name}, active at {last_activity}")
 
-        url = atmotube_url.format(api_key=api_key, api_id=api_id)
-        responses = AtmotubeResponses(url=url, items_of_interest=ITEMS_OF_INTEREST)
+        now = datetime.now()
+        begin = last_activity + timedelta(0)
+        while begin <= now:
+            date_to_lookat = extract_date(timestamp=begin, fmt=ATMOTUBE_DATE_FORMAT)
+            url = atmotube_url.format(api_key=api_key, api_id=api_id) + f"&date={date_to_lookat}"
+            responses = AtmotubeResponses(url=url, items_of_interest=ITEMS_OF_INTEREST)
+            for resp in responses:
+                if resp.measured_at_datetime > last_activity:
+                    for code, val in resp.values.items():
+                        record_id = next(counter)
+                        param_id = param_code_id[code]
+                        mobile_measure_table[record_id] = f"{param_id}, {wrap_value(val)}, '{resp.measured_at}', {resp.coords}"
 
-        for resp in responses:
-            ts, voc, pm1, pm25, pm10, t, h, p, coords = resp
-            measured_at = ts.replace("T", " ").split('.')[0]
-            if coords != "NULL":
-                point = POSTGIS_POINT.format(lat=coords['lat'], lon=coords['lon'])
-                coords = ST_GEOM.format(geom=point, srid=26918)
+            if responses:
+                # Update last activity field at the acquisition time of the last measure stored
+                last_acquisition = responses[-1].measured_at
+                apiparam_update[key] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
 
-            # print(f"found response at '{measured_at}': voc={voc}, pm1={pm1}, pm25={pm25}, pm10={pm10}, temperature={t},"
-            #       f" humidity={h}, pressure={p}, coords={coords}")
-
-            record_id = next(counter)
-            mobile_measure_table[record_id] = f"{param_code_id['voc']}, '{voc}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['voc']}, {voc}, '{measured_at}', {coords}"
-            record_id = next(counter)
-            mobile_measure_table[record_id] = f"{param_code_id['pm1']}, '{pm1}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['pm1']}, {pm1}, '{measured_at}', {coords}"
-            record_id = next(counter)
-            mobile_measure_table[record_id] = f"{param_code_id['pm25']}, '{pm25}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['pm25']}, {pm25}, '{measured_at}', {coords}"
-            record_id = next(counter)
-            mobile_measure_table[record_id] = f"{param_code_id['pm10']}, '{pm10}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['pm10']}, {pm10}, '{measured_at}', {coords}"
-            record_id = next(counter)
-            mobile_measure_table[record_id] = f"{param_code_id['t']}, '{t}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['t']}, {t}, '{measured_at}', {coords}"
-            record_id = next(counter)
-            mobile_measure_table[record_id] = f"{param_code_id['h']}, '{h}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['h']}, {h}, '{measured_at}', {coords}"
-            record_id = next(counter)
-            mobile_measure_table[record_id] = f"{param_code_id['p']}, '{p}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['p']}, {p}, '{measured_at}', {coords}"
+            begin = add_days(begin, days=1)
 
 
-            # for param_code in item.keys():
-            #     if param_code in param_code_id:
-            #         record_id = next(counter)
-            #         param_id = param_code_id[param_code]
-            #         param_value = f"'{item.get(param_code)}'" if item.get(param_code) is not None else "NULL"
-            #
-            #         mobile_measure_table[record_id] = f"{param_id}, {param_value}, '{timestamp}', {geom}"
+def wrap_value(value: str, default="NULL") -> str:
+    return f"'{value}'" if value is not None else default
+
+
+ATMOTUBE_DATE_FORMAT = "%Y-%m-%d"
+
+
+def extract_date(timestamp: datetime, fmt=ATMOTUBE_DATE_FORMAT) -> str:
+    return timestamp.date().strftime(fmt)
+
+
+def add_days(timestamp: datetime, days: int) -> datetime:
+    return timestamp + timedelta(days=days)
+
+
+# for param_code in item.keys():
+#     if param_code in param_code_id:
+#         record_id = next(counter)
+#         param_id = param_code_id[param_code]
+#         param_value = f"'{item.get(param_code)}'" if item.get(param_code) is not None else "NULL"
+#
+#         mobile_measure_table[record_id] = f"{param_id}, {param_value}, '{timestamp}', {geom}"
 
 
 # sensor_id, valid_from, geom = value
 # print(f"found sensor with id={sensor_id} at location {geom} valid from {valid_from}")
+
+
+# record_id = next(counter)
+# mobile_measure_table[record_id] = f"{param_code_id['voc']}, {wrap_value(voc)}, '{measured_at}', {geom}"
+# record_id = next(counter)
+# mobile_measure_table[record_id] = f"{param_code_id['pm1']}, {wrap_value(pm1)}, '{measured_at}', {geom}"
+# record_id = next(counter)
+# mobile_measure_table[record_id] = f"{param_code_id['pm25']}, {wrap_value(pm25)}, '{measured_at}', {geom}"
+# record_id = next(counter)
+# mobile_measure_table[record_id] = f"{param_code_id['pm10']}, {wrap_value(pm10)}, '{measured_at}', {geom}"
+# record_id = next(counter)
+# mobile_measure_table[record_id] = f"{param_code_id['t']}, {wrap_value(t)}, '{measured_at}', {geom}"
+# record_id = next(counter)
+# mobile_measure_table[record_id] = f"{param_code_id['h']}, {wrap_value(h)}, '{measured_at}', {geom}"
+# record_id = next(counter)
+# mobile_measure_table[record_id] = f"{param_code_id['p']}, {wrap_value(p)}, '{measured_at}', {geom}"
