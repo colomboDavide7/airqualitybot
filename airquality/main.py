@@ -19,14 +19,13 @@ from operator import itemgetter
 from typing import List
 
 purpleair_url = "https://api.purpleair.com/v1/sensors?" \
-      "api_key=A57E57A3-D2B1-11EB-913E-42010A800082" \
-      "&fields=name,latitude,longitude,altitude,date_created,secondary_id_b," \
-      "secondary_key_b,secondary_id_a,secondary_key_a,primary_id_a," \
-      "primary_key_a,primary_id_b,primary_key_b" \
-      "&nwlng=9.133101&nwlat=45.211471&selng=9.190360&selat=45.173243"
+                "api_key=A57E57A3-D2B1-11EB-913E-42010A800082" \
+                "&fields=name,latitude,longitude,altitude,date_created,secondary_id_b," \
+                "secondary_key_b,secondary_id_a,secondary_key_a,primary_id_a," \
+                "primary_key_a,primary_id_b,primary_key_b" \
+                "&nwlng=9.133101&nwlat=45.211471&selng=9.190360&selat=45.173243"
 
 bad_url = "https://api.purpleair.com/v1/sensors?some_bad_field=some_value"
-
 
 SENSOR_COLS = ['sensor_type', 'sensor_name']
 APIPARAM_COLS = ['sensor_id', 'ch_key', 'ch_id', 'ch_name', 'last_acquisition']
@@ -78,8 +77,7 @@ class SQLDict(collections.abc.MutableMapping):
             self.conn.commit()
             row = cur.fetchone()
             if row is None:
-                raise KeyError(f"{self.__class__.__name__} on '{self.table}' table cannot found {self.pkey}='{key}' in "
-                               f"'{self.__getitem__.__name__}' method")
+                raise KeyError(f"{type(self).__name__} on '{self.table}' table => '__getitem__({key})'")
             return row
 
     def __delitem__(self, key):
@@ -99,8 +97,8 @@ class SQLDict(collections.abc.MutableMapping):
             return map(itemgetter(0), cur.fetchall())
 
     def __repr__(self):
-        return f"{type(self).__name__}(table={self.table}, schema={self.schema}, conn={self.conn!r}, pkey={self.pkey}, " \
-               f"cols_of_interest={self.cols_of_interest()})"
+        return f"{type(self).__name__}(table={self.table}, conn={self.conn!r}, pkey={self.pkey}, " \
+               f"cols_of_interest={self.cols_of_interest()}, schema={self.schema})"
 
     def max_id(self) -> int:
         if self._max_id is None:
@@ -108,7 +106,7 @@ class SQLDict(collections.abc.MutableMapping):
                 cur.execute(f"SELECT MAX({self.pkey}) FROM {self.schema}.{self.table};")
                 self.conn.commit()
                 x_id = cur.fetchone()[0]
-                self._max_id = 1 if x_id is None else x_id+1
+                self._max_id = 1 if x_id is None else x_id + 1
         return self._max_id
 
     def cols_of_interest(self) -> str:
@@ -121,168 +119,186 @@ class SQLDict(collections.abc.MutableMapping):
 
 
 def main():
+    args = sys.argv[1:]
+    if len(args) != 1:
+        print("USAGE => python(version) -m airquality [purpleair]")
+        sys.exit(1)
+
+    personality = args[0]
+    print(personality)
     start = perf_counter()
     try:
-        purpleair_api_dict = PurpleairResponses(url=purpleair_url)
-        connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
-
-        sensor_table = SQLDict(table="sensor", pkey="id", conn=connection_string, cols_of_interest=SENSOR_COLS)
-        apiparam_table = SQLDict(table="api_param", pkey="id", conn=connection_string, cols_of_interest=APIPARAM_COLS)
-        geolocation_table = SQLDict(table="sensor_at_location", pkey="id", conn=connection_string, cols_of_interest=GEOLOCATION_COLS)
-
-        print(f"found #{len(sensor_table)} sensors")
-        print(f"found #{len(apiparam_table)} api_parameters")
-        print(f"found #{len(geolocation_table)} geolocations")
-
-        # print(repr(sensor_table))
-        # print(repr(apiparam_table))
-        # print(repr(geolocation_table))
-
-        # for key, value in sensor_table.items():
-        #     tp, fn = value
-        #     print(f"found sensor {fn} of type {tp} identified by {key}")
-
-        # for key, value in apiparam_table.items():
-        #     sensor_id, api_key, api_id, ch_name, last_activity = value
-        #     print(f"found parameters for sensor {sensor_id}: key={api_key}, ident={api_id}, name={ch_name}, active={last_activity}")
-
-        # for key, value in geolocation_table.items():
-        #     valid_from, geom = value
-        #     print(f"found sensor {key} at location {geom} valid from {valid_from}")
-
-        counter = itertools.count(sensor_table.max_id())
-        apiparam_counter = itertools.count(apiparam_table.max_id())
-        geolocation_counter = itertools.count(geolocation_table.max_id())
-
-        for item in iter(purpleair_api_dict):
-            sensor_id = next(counter)
-            fn = f"{item['name']} ({item['sensor_index']})"
-            sensor_table[sensor_id] = f"'PurpleairThingspeak', '{fn}'"
-
-            la = datetime.fromtimestamp(item['date_created']).strftime(SQL_DATETIME_FMT)
-
-            apiparam_id = next(apiparam_counter)
-            apiparam_table[apiparam_id] = f"{sensor_id}, '{item['primary_key_a']}', '{item['primary_id_a']}', '1A', '{la}'"
-
-            apiparam_id = next(apiparam_counter)
-            apiparam_table[apiparam_id] = f"{sensor_id}, '{item['primary_key_b']}', '{item['primary_id_b']}', '1B', '{la}'"
-
-            apiparam_id = next(apiparam_counter)
-            apiparam_table[apiparam_id] = f"{sensor_id}, '{item['secondary_key_a']}', '{item['secondary_id_a']}', '2A', '{la}'"
-
-            apiparam_id = next(apiparam_counter)
-            apiparam_table[apiparam_id] = f"{sensor_id}, '{item['secondary_key_b']}', '{item['secondary_id_b']}', '2B', '{la}'"
-
-            geolocation_id = next(geolocation_counter)
-            now = datetime.now().strftime(SQL_DATETIME_FMT)
-            point = POSTGIS_POINT.format(lon=item['longitude'], lat=item['latitude'])
-            geom = ST_GEOM.format(geom=point, srid=26918)
-            geolocation_table[geolocation_id] = f"{sensor_id}, '{now}', NULL, {geom}"
-
+        if personality == 'purpleair':
+            purpleair()
+        elif personality == 'atmotube':
+            atmotube()
+        else:
+            raise ValueError(f"Wrong command line argument '{personality}'")
     except (HTTPError, ValueError, KeyError, psycopg2.errors.Error) as err:
         print(f"{err!r} exception caught in {main.__name__}")
         sys.exit(1)
 
     stop = perf_counter()
-    print(f"success in {stop-start} seconds")
+    print(f"success in {stop - start} seconds")
 
 
-# sensor_query.add(f"({sensor_id}, 'Purpleair/Thingspeak', '{fn}')")
+def purpleair():
+    purpleair_responses = PurpleairResponses(url=purpleair_url)
+    connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
 
-# la = datetime.fromtimestamp(item['date_created']).strftime(SQL_DATETIME_FMT)
-# apiparam_query.add(f"({sensor_id}, '{item['primary_key_a']}', '{item['primary_id_a']}', '1A', '{la}')")
-# apiparam_query.add(f"({sensor_id}, '{item['primary_key_b']}', '{item['primary_id_b']}', '1B', '{la}')")
-# apiparam_query.add(f"({sensor_id}, '{item['secondary_key_a']}', '{item['secondary_id_a']}', '2A', '{la}')")
-# apiparam_query.add(f"({sensor_id}, '{item['secondary_key_b']}', '{item['secondary_id_b']}', '2B', '{la}')")
+    sensor_table = SQLDict(table="sensor", pkey="id", conn=connection_string, cols_of_interest=SENSOR_COLS)
+    apiparam_table = SQLDict(table="api_param", pkey="id", conn=connection_string, cols_of_interest=APIPARAM_COLS)
+    geolocation_table = SQLDict(table="sensor_at_location", pkey="id", conn=connection_string,
+                                cols_of_interest=GEOLOCATION_COLS)
 
-# now = datetime.now().strftime(SQL_DATETIME_FMT)
-# point = POSTGIS_POINT.format(lon=item['longitude'], lat=item['latitude'])
-# geom = ST_GEOM.format(geom=point, srid=26918)
-# geolocation_query.add(f"({sensor_id}, '{now}', {geom})")
+    print(repr(sensor_table))
+    print(repr(apiparam_table))
+    print(repr(geolocation_table))
 
-# with conn.cursor() as cur:
-#     cur.execute(str(sensor_query))
-#     cur.execute(str(apiparam_query))
-#     cur.execute(str(geolocation_query))
-#     conn.commit()
+    # for key, value in sensor_table.items():
+    #     tp, fn = value
+    #     print(f"found sensor {fn} of type {tp} identified by {key}")
 
-# print(sensor_query)
-# print('\n')
-# print(apiparam_query)
-# print('\n')
-# print(geolocation_query)
+    # for key, value in apiparam_table.items():
+    #     sensor_id, api_key, api_id, ch_name, last_activity = value
+    #     print(f"found parameters for sensor {sensor_id}: key={api_key}, ident={api_id}, name={ch_name}, active={last_activity}")
 
+    # for key, value in geolocation_table.items():
+    #     valid_from, geom = value
+    #     print(f"found sensor {key} at location {geom} valid from {valid_from}")
 
+    counter = itertools.count(sensor_table.max_id())
+    apiparam_counter = itertools.count(apiparam_table.max_id())
+    geolocation_counter = itertools.count(geolocation_table.max_id())
 
+    purpleair_names = []
+    for sensor_id, value in sensor_table.items():
+        tp, fn = value
+        if 'purpleair' in tp.lower():
+            purpleair_names.append(fn)
 
-# class Number(object):
-#
-#     def __init__(self, minval=None, maxval=None):
-#         self.minval = minval
-#         self.maxval = maxval
-#
-#     def __set_name__(self, owner, name):
-#         self.private_name = f'_{name}'
-#
-#     def __get__(self, instance, owner):
-#         return getattr(instance, self.private_name)
-#
-#     def __set__(self, instance, value):
-#         self.validate(value)
-#         setattr(instance, self.private_name, value)
-#
-#     def validate(self, value):
-#         if not isinstance(value, int):
-#             raise TypeError(f"Expected {value!r} to be and int")
-#         if self.minval is not None and value < self.minval:
-#             raise ValueError(f"Expected {value!r} to be at least {self.minval}")
-#         if self.maxval is not None and value > self.maxval:
-#             raise ValueError(f"Expected {value!r} to be at most {self.maxval}")
+    for resp in purpleair_responses:
+        sensor_id = next(counter)
+        fn = f"{resp['name']} ({resp['sensor_index']})"
+        if fn not in purpleair_names:
+            print(f"INSERTING {fn}")
+            sensor_table[sensor_id] = f"'PurpleairThingspeak', '{fn}'"
 
-# class SensorValue(object):
-#
-#     def __init__(self, ident: int, fn: str, tp: str):
-#         self.ident = ident
-#         self.fn = fn
-#         self.tp = tp
-#
-#     def __str__(self):
-#         return f"({self.ident}, '{self.tp}', '{self.fn}')"
-#
-#
-# class APIParamValue(object):
-#
-#     def __init__(self, ident: int, api_key: str, api_id: str, api_fn: str,
-#                  last_acquisition: datetime):
-#         self.ident = ident
-#         self.api_key = api_key
-#         self.api_id = api_id
-#         self.api_fn = api_fn
-#         self.last_acquisition = last_acquisition
-#
-#     def __str__(self):
-#         sql_timestamp = self.last_acquisition.strftime('%Y-%m-%d %H:%M:%S')
-#         return f"({self.ident}, '{self.api_key}', '{self.api_id}', '{self.api_fn}', '{sql_timestamp}')"
+            la = datetime.fromtimestamp(resp['date_created']).strftime(SQL_DATETIME_FMT)
+
+            apiparam_id = next(apiparam_counter)
+            apiparam_table[
+                apiparam_id] = f"{sensor_id}, '{resp['primary_key_a']}', '{resp['primary_id_a']}', '1A', '{la}'"
+
+            apiparam_id = next(apiparam_counter)
+            apiparam_table[
+                apiparam_id] = f"{sensor_id}, '{resp['primary_key_b']}', '{resp['primary_id_b']}', '1B', '{la}'"
+
+            apiparam_id = next(apiparam_counter)
+            apiparam_table[
+                apiparam_id] = f"{sensor_id}, '{resp['secondary_key_a']}', '{resp['secondary_id_a']}', '2A', '{la}'"
+
+            apiparam_id = next(apiparam_counter)
+            apiparam_table[
+                apiparam_id] = f"{sensor_id}, '{resp['secondary_key_b']}', '{resp['secondary_id_b']}', '2B', '{la}'"
+
+            geolocation_id = next(geolocation_counter)
+            now = datetime.now().strftime(SQL_DATETIME_FMT)
+            point = POSTGIS_POINT.format(lon=resp['longitude'], lat=resp['latitude'])
+            geom = ST_GEOM.format(geom=point, srid=26918)
+            geolocation_table[geolocation_id] = f"{sensor_id}, '{now}', NULL, {geom}"
 
 
+atmotube_url = "https://api.atmotube.com/api/v1/data?api_key={api_key}&mac={api_id}&order=asc&format=json"
 
-# class InsertQuery(object):
-#
-#     def __init__(self, table: str, cols: List[str], schema="level0_raw"):
-#         self.values = set()
-#         self.cols = cols
-#         self.header = f"INSERT INTO {schema}.{table} (" + ','.join(
-#             f"{v}" for v in cols) + ") VALUES "
-#
-#     def add(self, value):
-#         if not isinstance(value, str):
-#             raise TypeError(f"{self.__class__.__name__} got {type(value)} required str or SensorValue")
-#         self.values.add(value)
-#
-#     def __str__(self):
-#         return self.header + ','.join(f"{v}" for v in self.values) + ';'
+MOBILE_MEASURE_COLS = ['param_id', 'param_value', 'timestamp', 'geom']
 
 
-# sensor_query = InsertQuery(table="sensor", cols=SENSOR_COLS)
-        # apiparam_query = InsertQuery(table="api_param", cols=APIPARAM_COLS)
-        # geolocation_query = InsertQuery(table="sensor_at_location", cols=GEOLOCATION_COLS)
+class JoinDict(collections.abc.Mapping):
+    """Read-only dict class that allows to make SQL joins between parent table and a child table."""
+
+    def __init__(
+            self, parent_table: str, child_table: str, pkey: str, fkey: str, conn: str, cols_of_interest: List[str],
+            filter_attr: str, filter_value: str, schema="level0_raw", child_alias="c", parent_alias="p"
+    ):
+        self.conn = psycopg2.connect(conn)
+        self.parent_table = parent_table
+        self.parent_alias = parent_alias
+        self.child_table = child_table
+        self.child_alias = child_alias
+        self.pkey = pkey
+        self.fkey = fkey
+        self.schema = schema
+        self.filter_attr = filter_attr
+        self.filter_value = filter_value
+        self._cols_of_interest = cols_of_interest
+        self._join_predicate = None
+        self._joined_cols = None
+
+    def __getitem__(self, key):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT {self.cols_of_interest()} {self.join_predicate()} "
+                        f"AND {self.child_alias}.{self.fkey}={key};")
+            self.conn.commit()
+            row = cur.fetchone()
+            if row is None:
+                raise KeyError(key)
+            return row
+
+    def __len__(self):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) {self.join_predicate()};")
+            self.conn.commit()
+            return cur.fetchone()[0]
+
+    def __iter__(self):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT {self.child_alias}.{self.fkey} {self.join_predicate()};")
+            self.conn.commit()
+            return map(itemgetter(0), cur.fetchall())
+
+    def __repr__(self):
+        return f"{type(self).__name__}(parent_table={self.parent_table}, child_table={self.child_table}, pkey={self.pkey}, " \
+               f"fkey={self.fkey}, conn={self.conn}, cols_of_interest={self.cols_of_interest()}, filter_attr={self.filter_attr}," \
+               f"filter_value={self.filter_value}, parent_alias={self.parent_alias}, child_alias={self.child_alias}, schema={self.schema})"
+
+    def join_predicate(self):
+        if self._join_predicate is None:
+            self._join_predicate = f"FROM {self.schema}.{self.child_table} as {self.child_alias} " \
+                                   f"INNER JOIN {self.schema}.{self.parent_table} as {self.parent_alias} " \
+                                   f"ON {self.parent_alias}.{self.pkey}={self.child_alias}.{self.fkey} " \
+                                   f"WHERE {self.parent_alias}.{self.filter_attr} ILIKE '%{self.filter_value}%'"
+        return self._join_predicate
+
+    def cols_of_interest(self) -> str:
+        if self._joined_cols is None:
+            self._joined_cols = ','.join(f"{self.child_alias}.{col}" for col in self._cols_of_interest)
+        return self._joined_cols
+
+
+def atmotube():
+    connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
+    sensor_apiparam_join = JoinDict(parent_table="sensor", child_table="api_param", pkey="id", fkey="sensor_id",
+                                    conn=connection_string, cols_of_interest=APIPARAM_COLS, filter_attr="sensor_type",
+                                    filter_value="atmotube")
+
+    mobile_measure_table = SQLDict(table="mobile_measurement", pkey="id", conn=connection_string,
+                                   cols_of_interest=MOBILE_MEASURE_COLS)
+
+    print(repr(sensor_apiparam_join))
+    print(f"found #{len(sensor_apiparam_join)} rows in {sensor_apiparam_join.child_table}")
+    print(repr(mobile_measure_table))
+    print(f"found #{len(mobile_measure_table)} rows in {mobile_measure_table.table}")
+
+    for key, value in sensor_apiparam_join.items():
+        sensor_id, api_key, api_id, ch_name, last_activity = value
+        print(f"found Atmotube sensor with id={sensor_id}, api_key={api_key}, api_id={api_id}, ch_name={ch_name}, active at {last_activity}")
+
+        url = atmotube_url.format(api_key=api_key, api_id=api_id)
+        print(url)
+        with urlopen(url) as resp:
+            parsed = json.loads(resp.read())
+            
+
+# sensor_id, valid_from, geom = value
+# print(f"found sensor with id={sensor_id} at location {geom} valid from {valid_from}")
