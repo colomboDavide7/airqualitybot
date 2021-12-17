@@ -53,6 +53,34 @@ class PurpleairResponses(object):
             yield item
 
 
+def itemgetter_default(*attrs, **kwargs):
+
+    default = kwargs.pop('default', None)
+    if kwargs:
+        raise TypeError(f"itemgetter_default() got unexpected keyword argument(s): %r", sorted(kwargs))
+
+    def fn(item):
+        getter = lambda attr: item.get(attr, default)
+        return tuple(map(getter, attrs))
+    return fn
+
+
+class AtmotubeResponses(collections.abc.Iterable):
+
+    def __init__(self, url: str, items_of_interest: List[str]):
+        self.items_of_interest = items_of_interest
+        self.url = url
+        with urlopen(url) as resp:
+            self.parsed = json.loads(resp.read())
+            self.items = (item for item in self.parsed['data']['items'])
+
+    def __iter__(self):
+        return map(itemgetter_default(*self.items_of_interest, default="NULL"), self.items)
+
+    def __len__(self):
+        return sum(1 for _ in self.parsed['data']['items'])
+
+
 class SQLDict(collections.abc.MutableMapping):
 
     def __init__(self, table: str, conn: str, pkey: str, cols_of_interest: List[str], schema="level0_raw"):
@@ -368,6 +396,9 @@ class JoinDict(collections.abc.Mapping):
         return self._joined_cols
 
 
+ITEMS_OF_INTEREST = ['time', 'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p', 'coords']
+
+
 def atmotube():
     connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
     sensor_apiparam_join = JoinDict(parent_table="sensor", child_table="api_param", pkey="id", fkey="sensor_id",
@@ -398,27 +429,42 @@ def atmotube():
         print(f"found Atmotube sensor with id={sensor_id}, api_key={api_key}, api_id={api_id}, ch_name={ch_name}, active at {last_activity}")
 
         url = atmotube_url.format(api_key=api_key, api_id=api_id)
-        print(url)
-        with urlopen(url) as resp:
-            parsed = json.loads(resp.read())
-            items = (item for item in parsed['data']['items'])
-            for item in items:
-                timestamp = item['time'].replace("T", " ").split('.')[0]
-                geom = "NULL"
-                if item.get('coords') is not None:
-                    coords = item['coords']
-                    point = POSTGIS_POINT.format(lat=coords['lat'], lon=coords['lon'])
-                    geom = ST_GEOM.format(geom=point, srid=26918)
+        responses = AtmotubeResponses(url=url, items_of_interest=ITEMS_OF_INTEREST)
 
-                for param_code in item.keys():
-                    if param_code in param_code_id:
-                        record_id = next(counter)
-                        param_id = param_code_id[param_code]
-                        param_value = f"'{item.get(param_code)}'" if item.get(param_code) is not None else "NULL"
+        for resp in responses:
+            ts, voc, pm1, pm25, pm10, t, h, p, coords = resp
+            measured_at = ts.replace("T", " ").split('.')[0]
+            if coords != "NULL":
+                point = POSTGIS_POINT.format(lat=coords['lat'], lon=coords['lon'])
+                coords = ST_GEOM.format(geom=point, srid=26918)
 
-                        mobile_measure_table[record_id] = f"{param_id}, {param_value}, '{timestamp}', {geom}"
+            # print(f"found response at '{measured_at}': voc={voc}, pm1={pm1}, pm25={pm25}, pm10={pm10}, temperature={t},"
+            #       f" humidity={h}, pressure={p}, coords={coords}")
 
-                break
+            record_id = next(counter)
+            mobile_measure_table[record_id] = f"{param_code_id['voc']}, '{voc}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['voc']}, {voc}, '{measured_at}', {coords}"
+            record_id = next(counter)
+            mobile_measure_table[record_id] = f"{param_code_id['pm1']}, '{pm1}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['pm1']}, {pm1}, '{measured_at}', {coords}"
+            record_id = next(counter)
+            mobile_measure_table[record_id] = f"{param_code_id['pm25']}, '{pm25}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['pm25']}, {pm25}, '{measured_at}', {coords}"
+            record_id = next(counter)
+            mobile_measure_table[record_id] = f"{param_code_id['pm10']}, '{pm10}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['pm10']}, {pm10}, '{measured_at}', {coords}"
+            record_id = next(counter)
+            mobile_measure_table[record_id] = f"{param_code_id['t']}, '{t}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['t']}, {t}, '{measured_at}', {coords}"
+            record_id = next(counter)
+            mobile_measure_table[record_id] = f"{param_code_id['h']}, '{h}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['h']}, {h}, '{measured_at}', {coords}"
+            record_id = next(counter)
+            mobile_measure_table[record_id] = f"{param_code_id['p']}, '{p}', '{measured_at}', {coords}" if voc != "NULL" else f"{param_code_id['p']}, {p}, '{measured_at}', {coords}"
+
+
+            # for param_code in item.keys():
+            #     if param_code in param_code_id:
+            #         record_id = next(counter)
+            #         param_id = param_code_id[param_code]
+            #         param_value = f"'{item.get(param_code)}'" if item.get(param_code) is not None else "NULL"
+            #
+            #         mobile_measure_table[record_id] = f"{param_id}, {param_value}, '{timestamp}', {geom}"
+
 
 # sensor_id, valid_from, geom = value
 # print(f"found sensor with id={sensor_id} at location {geom} valid from {valid_from}")
