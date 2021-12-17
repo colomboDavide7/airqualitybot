@@ -30,6 +30,7 @@ bad_url = "https://api.purpleair.com/v1/sensors?some_bad_field=some_value"
 SENSOR_COLS = ['sensor_type', 'sensor_name']
 APIPARAM_COLS = ['sensor_id', 'ch_key', 'ch_id', 'ch_name', 'last_acquisition']
 GEOLOCATION_COLS = ['sensor_id', 'valid_from', 'geom']
+MEASUREPARAM_COLS = ['param_code', 'param_name', 'param_unit']
 SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 ST_GEOM = "ST_GeomFromText('{geom}', {srid})"
 POSTGIS_POINT = "POINT({lon} {lat})"
@@ -214,6 +215,89 @@ atmotube_url = "https://api.atmotube.com/api/v1/data?api_key={api_key}&mac={api_
 MOBILE_MEASURE_COLS = ['param_id', 'param_value', 'timestamp', 'geom']
 
 
+class SelectOnlyDict(collections.abc.Mapping):
+
+    def __init__(self, conn: str, table: str, pkey: str, cols_of_interest: List[str], filter_attr: str, filter_value: str, schema="level0_raw"):
+        self.conn = psycopg2.connect(conn)
+        self.table = table
+        self.pkey = pkey
+        self.schema = schema
+        self.filter_attr = filter_attr
+        self.filter_value = filter_value
+        self._cols_of_interest = cols_of_interest
+        self._joined_cols = None
+
+    def __getitem__(self, key):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT {self.joined_cols()} FROM {self.schema}.{self.table} WHERE {self.pkey}={key};")
+            self.conn.commit()
+            row = cur.fetchone()
+            if row is None:
+                raise KeyError(key)
+            return row
+
+    def __iter__(self):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table} WHERE {self.filter_attr} ILIKE '%{self.filter_value}%';")
+            self.conn.commit()
+            return map(itemgetter(0), cur.fetchall())
+
+    def __len__(self):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table} WHERE {self.filter_attr} ILIKE '%{self.filter_value}%';")
+            self.conn.commit()
+            return cur.fetchone()[0]
+
+    def __repr__(self):
+        return f"{type(self).__name__}(table={self.table}, schema={self.schema}, pkey={self.pkey}, conn={self.conn}, " \
+               f"filter_attr={self.filter_attr}, filter_value={self.filter_value})"
+
+    def joined_cols(self) -> str:
+        if self._joined_cols is None:
+            self._joined_cols = ','.join(f"{col}" for col in self._cols_of_interest)
+        return self._joined_cols
+
+
+class SelectDict(collections.abc.Mapping):
+
+    def __init__(self, conn: str, table: str, pkey: str, cols_of_interest: List[str], schema="level0_raw"):
+        self.conn = psycopg2.connect(conn)
+        self.table = table
+        self.schema = schema
+        self.pkey = pkey
+        self._cols_of_interest = cols_of_interest
+        self._joined_cols = None
+
+    def __getitem__(self, key):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT {self.joined_cols()} FROM {self.schema}.{self.table} WHERE {self.pkey}={key};")
+            self.conn.commit()
+            row = cur.fetchone()
+            if row is None:
+                raise KeyError(key)
+            return row
+
+    def __len__(self):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table};")
+            self.conn.commit()
+            return cur.fetchone()[0]
+
+    def __iter__(self):
+        with self.conn.cursor() as cur:
+            cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table};")
+            self.conn.commit()
+            return map(itemgetter(0), cur.fetchall())
+
+    def __repr__(self):
+        return f"{type(self).__name__}(table={self.table}, schema={self.schema}, conn={self.conn}, pkey={self.pkey}, cols={self.joined_cols()})"
+
+    def joined_cols(self) -> str:
+        if self._joined_cols is None:
+            self._joined_cols = ','.join(f"{col}" for col in self._cols_of_interest)
+        return self._joined_cols
+
+
 class JoinDict(collections.abc.Mapping):
     """Read-only dict class that allows to make SQL joins between parent table and a child table."""
 
@@ -284,21 +368,32 @@ def atmotube():
 
     mobile_measure_table = SQLDict(table="mobile_measurement", pkey="id", conn=connection_string,
                                    cols_of_interest=MOBILE_MEASURE_COLS)
+    measure_param_table = SelectOnlyDict(table="measure_param", pkey="id", conn=connection_string, cols_of_interest=MEASUREPARAM_COLS,
+                                         filter_attr="param_name", filter_value="atmotube")
 
     print(repr(sensor_apiparam_join))
     print(f"found #{len(sensor_apiparam_join)} rows in {sensor_apiparam_join.child_table}")
     print(repr(mobile_measure_table))
     print(f"found #{len(mobile_measure_table)} rows in {mobile_measure_table.table}")
+    print(repr(measure_param_table))
+    print(f"found #{len(measure_param_table)} rows in {measure_param_table.table}")
 
-    for key, value in sensor_apiparam_join.items():
-        sensor_id, api_key, api_id, ch_name, last_activity = value
-        print(f"found Atmotube sensor with id={sensor_id}, api_key={api_key}, api_id={api_id}, ch_name={ch_name}, active at {last_activity}")
+    for key, value in measure_param_table.items():
+        code, name, unit = value
+        print(f"found param with id={key}, code={code}, name={name}, unit={unit}")
 
-        url = atmotube_url.format(api_key=api_key, api_id=api_id)
-        print(url)
-        with urlopen(url) as resp:
-            parsed = json.loads(resp.read())
-            
+    # for key, value in sensor_apiparam_join.items():
+    #     sensor_id, api_key, api_id, ch_name, last_activity = value
+    #     print(f"found Atmotube sensor with id={sensor_id}, api_key={api_key}, api_id={api_id}, ch_name={ch_name}, active at {last_activity}")
+    #
+    #     url = atmotube_url.format(api_key=api_key, api_id=api_id)
+    #     print(url)
+    #     with urlopen(url) as resp:
+    #         parsed = json.loads(resp.read())
+    #         items = (item for item in parsed['data']['items'])
+    #         for item in items:
+    #             pass
+
 
 # sensor_id, valid_from, geom = value
 # print(f"found sensor with id={sensor_id} at location {geom} valid from {valid_from}")
