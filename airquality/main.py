@@ -107,7 +107,7 @@ class AtmotubeItem(object):
 
 class AtmotubeResponses(collections.abc.Iterable):
 
-    def __init__(self, url: str, items_of_interest: List[str], default=None, ):
+    def __init__(self, url: str, items_of_interest: List[str], default=None):
         self.items_of_interest = items_of_interest
         self.default = default
         self.url = url
@@ -140,14 +140,21 @@ class SQLDict(collections.abc.MutableMapping):
         self._cols_of_interest = cols_of_interest
         self._cols_of_interest_str = None
         self._max_id = None
+        self._new_items = ""
+
+    def insert(self):
+        """Insert multiple elements """
+        if not self._new_items:
+            return
+            # raise ValueError(f"{type(self).__name__} cannot insert '{self._new_items}' values")
+        with self.conn.cursor() as cur:
+            cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES {self._new_items.strip(',')};")
+            self.conn.commit()
+            self._new_items = ""
 
     def __setitem__(self, key, value):
-        """Insert a record composed as (id, type, name) into the sensor table. Ids of a new record starts at '_max_id'."""
-        if key in self:
-            raise KeyError(f"{type(self).__name__} found duplicate {self.pkey}={key} in {self.table}")
-        with self.conn.cursor() as cur:
-            cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES ({key}, {value})")
-            self.conn.commit()
+        """Append values to '_new_items' in order to commit MANY changes into database at a time"""
+        self._new_items += f"({key}, {value}),"
 
     def __getitem__(self, key):
         with self.conn.cursor() as cur:
@@ -536,20 +543,27 @@ def atmotube():
         sensor_id, api_key, api_id, ch_name, last_activity = value
         print(f"found Atmotube sensor with id={sensor_id}, api_key={api_key}, api_id={api_id}, ch_name={ch_name}, active at {last_activity}")
 
+        url = atmotube_url.format(api_key=api_key, api_id=api_id) + "&date={date}"
+
         now = datetime.now()
         begin = last_activity + timedelta(0)
+        print(f"start to look for new measurements at: {begin!s}")
         while begin <= now:
             date_to_lookat = extract_date(timestamp=begin, fmt=ATMOTUBE_DATE_FORMAT)
-            url = atmotube_url.format(api_key=api_key, api_id=api_id) + f"&date={date_to_lookat}"
-            responses = AtmotubeResponses(url=url, items_of_interest=ITEMS_OF_INTEREST)
+            url_with_date = url.format(date=date_to_lookat)
+            responses = AtmotubeResponses(url=url_with_date, items_of_interest=ITEMS_OF_INTEREST)
             for resp in responses:
                 if resp.measured_at_datetime > last_activity:
+                    print(f"found new response at {resp.measured_at}: values={resp.values!r}, coords={resp.coords}")
                     for code, val in resp.values.items():
                         record_id = next(counter)
                         param_id = param_code_id[code]
                         mobile_measure_table[record_id] = f"{param_id}, {wrap_value(val)}, '{resp.measured_at}', {resp.coords}"
 
             if responses:
+                # commit all the measurements at once
+                mobile_measure_table.insert()
+
                 # Update last activity field at the acquisition time of the last measure stored
                 last_acquisition = responses[-1].measured_at
                 apiparam_update[key] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
