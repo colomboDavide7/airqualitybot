@@ -397,125 +397,73 @@ class SelectDict(collections.abc.Mapping):
         return self._joined_cols
 
 
-class JoinDict(collections.abc.Mapping):
-    """Read-only dict class that allows to make SQL joins between parent table and a child table."""
-
-    def __init__(
-            self, parent_table: str, child_table: str, pkey: str, fkey: str, conn: str, cols_of_interest: List[str],
-            filter_attr: str, filter_value: str, schema="level0_raw", child_alias="c", parent_alias="p"
-    ):
-        self.conn = psycopg2.connect(conn)
-        self.parent_table = parent_table
-        self.parent_alias = parent_alias
-        self.child_table = child_table
-        self.child_alias = child_alias
-        self.pkey = pkey
-        self.fkey = fkey
-        self.schema = schema
-        self.filter_attr = filter_attr
-        self.filter_value = filter_value
-        self._cols_of_interest = cols_of_interest
-        self._join_predicate = None
-        self._joined_cols = None
-
-    def __getitem__(self, key):
-        with self.conn.cursor() as cur:
-            cur.execute(f"SELECT {self.cols_of_interest()} {self.join_predicate()} "
-                        f"AND {self.child_alias}.{self.fkey}={key};")
-            self.conn.commit()
-            row = cur.fetchone()
-            if row is None:
-                raise KeyError(key)
-            return row
-
-    def __len__(self):
-        with self.conn.cursor() as cur:
-            cur.execute(f"SELECT COUNT(*) {self.join_predicate()};")
-            self.conn.commit()
-            return cur.fetchone()[0]
-
-    def __iter__(self):
-        with self.conn.cursor() as cur:
-            cur.execute(f"SELECT {self.child_alias}.{self.fkey} {self.join_predicate()};")
-            self.conn.commit()
-            return map(itemgetter(0), cur.fetchall())
-
-    def __repr__(self):
-        return f"{type(self).__name__}(parent_table={self.parent_table}, child_table={self.child_table}, pkey={self.pkey}, " \
-               f"fkey={self.fkey}, conn={self.conn}, cols_of_interest={self.cols_of_interest()}, filter_attr={self.filter_attr}," \
-               f"filter_value={self.filter_value}, parent_alias={self.parent_alias}, child_alias={self.child_alias}, schema={self.schema})"
-
-    def join_predicate(self):
-        if self._join_predicate is None:
-            self._join_predicate = f"FROM {self.schema}.{self.child_table} as {self.child_alias} " \
-                                   f"INNER JOIN {self.schema}.{self.parent_table} as {self.parent_alias} " \
-                                   f"ON {self.parent_alias}.{self.pkey}={self.child_alias}.{self.fkey} " \
-                                   f"WHERE {self.parent_alias}.{self.filter_attr} ILIKE '%{self.filter_value}%'"
-        return self._join_predicate
-
-    def cols_of_interest(self) -> str:
-        if self._joined_cols is None:
-            self._joined_cols = ','.join(f"{self.child_alias}.{col}" for col in self._cols_of_interest)
-        return self._joined_cols
-
-
-# class UpdateDict(collections.abc.MutableMapping):
+# class JoinDict(collections.abc.Mapping):
+#     """Read-only dict class that allows to make SQL joins between parent table and a child table."""
 #
-#     def __init__(self, table: str, pkey: str, conn: str, cols_of_interest: List[str], schema="level0_raw"):
-#         self.table = table
-#         self.pkey = pkey
+#     def __init__(
+#             self, parent_table: str, child_table: str, pkey: str, fkey: str, conn: str, cols_of_interest: List[str],
+#             filter_attr: str, filter_value: str, schema="level0_raw", child_alias="c", parent_alias="p"
+#     ):
 #         self.conn = psycopg2.connect(conn)
+#         self.parent_table = parent_table
+#         self.parent_alias = parent_alias
+#         self.child_table = child_table
+#         self.child_alias = child_alias
+#         self.pkey = pkey
+#         self.fkey = fkey
 #         self.schema = schema
+#         self.filter_attr = filter_attr
+#         self.filter_value = filter_value
 #         self._cols_of_interest = cols_of_interest
+#         self._join_predicate = None
 #         self._joined_cols = None
-#
-#     def __setitem__(self, key, value):
-#         if key in self:
-#             del self[key]
-#         with self.conn.cursor() as cur:
-#             cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES ({key}, {value});")
-#             self.conn.commit()
-#
-#     def __delitem__(self, key):
-#         if key not in self:
-#             raise KeyError(f"{type(self).__name__}: __delitem__() cannot found {self.pkey}={key}")
-#         with self.conn.cursor() as cur:
-#             cur.execute(f"DELETE FROM {self.schema}.{self.table} WHERE {self.pkey}={key};")
-#             self.conn.commit()
 #
 #     def __getitem__(self, key):
 #         with self.conn.cursor() as cur:
-#             cur.execute(f"SELECT {self.joined_cols()} FROM {self.schema}.{self.table} WHERE {self.pkey}={key}")
+#             cur.execute(f"SELECT {self.cols_of_interest()} {self.join_predicate()} "
+#                         f"AND {self.child_alias}.{self.fkey}={key};")
 #             self.conn.commit()
 #             row = cur.fetchone()
 #             if row is None:
-#                 raise KeyError(
-#                     f"{type(self).__name__}: __getitem__() cannot found {self.pkey}={key} in table {self.table}")
+#                 raise KeyError(key)
 #             return row
-#
-#     def __iter__(self):
-#         with self.conn.cursor() as cur:
-#             cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table};")
-#             self.conn.commit()
-#             return map(itemgetter(0), cur.fetchall())
 #
 #     def __len__(self):
 #         with self.conn.cursor() as cur:
-#             cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table};")
+#             cur.execute(f"SELECT COUNT(*) {self.join_predicate()};")
 #             self.conn.commit()
 #             return cur.fetchone()[0]
 #
-#     def joined_cols(self) -> str:
-#         if self._joined_cols is None:
-#             self._joined_cols = ','.join(f"{col}" for col in self._cols_of_interest)
-#         return self._joined_cols
+#     def __iter__(self):
+#         with self.conn.cursor() as cur:
+#             cur.execute(f"SELECT {self.child_alias}.{self.fkey} {self.join_predicate()};")
+#             self.conn.commit()
+#             return map(itemgetter(0), cur.fetchall())
 #
+#     def __repr__(self):
+#         return f"{type(self).__name__}(parent_table={self.parent_table}, child_table={self.child_table}, pkey={self.pkey}, " \
+#                f"fkey={self.fkey}, conn={self.conn}, cols_of_interest={self.cols_of_interest()}, filter_attr={self.filter_attr}," \
+#                f"filter_value={self.filter_value}, parent_alias={self.parent_alias}, child_alias={self.child_alias}, schema={self.schema})"
+#
+#     def join_predicate(self):
+#         if self._join_predicate is None:
+#             self._join_predicate = f"FROM {self.schema}.{self.child_table} as {self.child_alias} " \
+#                                    f"INNER JOIN {self.schema}.{self.parent_table} as {self.parent_alias} " \
+#                                    f"ON {self.parent_alias}.{self.pkey}={self.child_alias}.{self.fkey} " \
+#                                    f"WHERE {self.parent_alias}.{self.filter_attr} ILIKE '%{self.filter_value}%'"
+#         return self._join_predicate
+#
+#     def cols_of_interest(self) -> str:
+#         if self._joined_cols is None:
+#             self._joined_cols = ','.join(f"{self.child_alias}.{col}" for col in self._cols_of_interest)
+#         return self._joined_cols
+
 
 ITEMS_OF_INTEREST = ['time', 'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p', 'coords']
 ATMOTUBE_PARAM_NAMES = {'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p'}
 
 
-from airquality.sqldict import SelectOnlyWhereDict, SelectInsertDict, UpdateDict
+from airquality.sqldict import SelectOnlyWhereDict, SelectInsertDict, UpdateDict, JoinFilterDict
 
 
 def atmotube():
@@ -525,16 +473,17 @@ def atmotube():
     mobile_measure_table = SelectInsertDict(dbconn=connection_string, table="mobile_measurement", pkey="id", selected_cols=MOBILE_MEASURE_COLS)
     measure_param_table = SelectOnlyWhereDict(dbconn=connection_string, table="measure_param", pkey="id",
                                               selected_cols=MEASUREPARAM_COLS, filter_attr="param_name", filter_value="atmotube")
-    sensor_apiparam_join = JoinDict(parent_table="sensor", child_table="api_param", pkey="id", fkey="sensor_id",
-                                    conn=connection_string, cols_of_interest=APIPARAM_COLS, filter_attr="sensor_type",
-                                    filter_value="atmotube")
+    sensor_apiparam_join = JoinFilterDict(conn=connection_string, join_table="sensor", join_key="id",
+                                          table="api_param", pkey="sensor_id", cols_of_interest=APIPARAM_COLS,
+                                          join_filter_col="sensor_type", join_filter_val="atmotube")
 
     print(repr(sensor_apiparam_join))
-    print(f"found #{len(sensor_apiparam_join)} rows in {sensor_apiparam_join.child_table}")
+    print(f"found #{len(sensor_apiparam_join)} rows in {sensor_apiparam_join.table}")
     print(repr(mobile_measure_table))
     print(f"found #{len(mobile_measure_table)} rows in {mobile_measure_table.table}")
     print(repr(measure_param_table))
     print(f"found #{len(measure_param_table)} rows in {measure_param_table.table}")
+    print(repr(apiparam_update))
     print(f"found #{len(apiparam_update)} rows in {apiparam_update.table}")
 
     param_code_id = {}
