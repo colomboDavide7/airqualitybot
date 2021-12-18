@@ -129,7 +129,6 @@ def atmotube():
 
         now = datetime.now()
         begin = last_activity + timedelta(0)
-        print(f"start to look for new measurements at: {begin!s}")
         while begin <= now:
             date_to_lookat = extract_date(timestamp=begin, fmt=ATMOTUBE_DATE_FORMAT)
             url_with_date = url.format(date=date_to_lookat)
@@ -143,13 +142,10 @@ def atmotube():
 
             if responses:
                 # commit all the measurements at once
-                print("insert")
                 mobile_measure_table.insert()
 
                 # Update last activity field at the acquisition time of the last measure stored
-                print("update last acquisition")
                 last_acquisition = responses[-1].measured_at
-                print(last_acquisition)
                 apiparam_update[key] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
 
             begin = add_days(begin, days=1)

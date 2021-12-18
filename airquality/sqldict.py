@@ -12,6 +12,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping, MutableMapping
 
 
+############################################# SelectOnlyABC(ABC) #############################################
 class SelectOnlyABC(Mapping, ABC):
 
     def __init__(self, dbconn: str, table: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
@@ -36,7 +37,8 @@ class SelectOnlyABC(Mapping, ABC):
         self.dbconn.close()
 
 
-class MultipleInsertABC(MutableMapping):
+################################# MultipleInsertABC(MutableMapping, ABC) #################################
+class MultipleInsertABC(MutableMapping, ABC):
 
     @abstractmethod
     def insert(self) -> None:
@@ -47,11 +49,16 @@ class MultipleInsertABC(MutableMapping):
         pass
 
 
+################################ SelectInsertDict(SelectOnlyABC, MultipleInsertABC) ################################
 class SelectInsertDict(SelectOnlyABC, MultipleInsertABC):
+    """
+    Read-write dict class that performs multiple SQL INSERT INTO statement on 'table' table.
+    The values to insert are accumulated into the '_values' instance variable and flushed away after the insertion
+    happens. To commit the changes to the database, the user must call 'insert()' method.
+    """
 
     def __init__(self, table: str, dbconn: str, pkey: str, selected_cols: List[str], schema="level0_raw"):
-        super(SelectInsertDict, self).__init__(dbconn=dbconn, table=table, pkey=pkey, selected_cols=selected_cols,
-                                               schema=schema)
+        super(SelectInsertDict, self).__init__(dbconn=dbconn, table=table, pkey=pkey, selected_cols=selected_cols, schema=schema)
         self.values = ""
 
     def insert(self):
@@ -98,19 +105,24 @@ class SelectInsertDict(SelectOnlyABC, MultipleInsertABC):
             return 1 if x_id is None else x_id + 1
 
 
-class SelectWhereABC(Mapping, ABC):
+############################################# WhereABC(ABC) #############################################
+class WhereABC(ABC):
 
     @abstractmethod
     def filter_condition(self) -> str:
         pass
 
 
-class SelectOnlyWhereDict(SelectOnlyABC, SelectWhereABC):
+################################# SelectOnlyWhereDict(SelectOnlyABC, WhereABC) #################################
+class SelectOnlyWhereDict(SelectOnlyABC, WhereABC):
+    """
+    Read-only dict class that performs SQL SELECT statements on 'table' by searching for all the records which
+    'filter_attr' attribute contains 'filter_value' argument.
+    """
 
     def __init__(self, dbconn: str, table: str, pkey: str, selected_cols: List[str], filter_attr: str,
                  filter_value: str, schema="level0_raw"):
-        super(SelectOnlyWhereDict, self).__init__(dbconn=dbconn, table=table, pkey=pkey, selected_cols=selected_cols,
-                                                  schema=schema)
+        super(SelectOnlyWhereDict, self).__init__(dbconn=dbconn, table=table, pkey=pkey, selected_cols=selected_cols, schema=schema)
         self.filter_attr = filter_attr
         self.filter_value = filter_value
         self._filter_cond = ""
@@ -144,11 +156,15 @@ class SelectOnlyWhereDict(SelectOnlyABC, SelectWhereABC):
         return self._filter_cond
 
 
+###################################### UpdateDict(SelectOnlyABC, MutableMapping) ######################################
 class UpdateDict(SelectOnlyABC, MutableMapping):
-
-    def __init__(self, table: str, dbconn: str, pkey: str, selected_cols: List[str], schema="level0_raw"):
-        super(UpdateDict, self).__init__(table=table, dbconn=dbconn, pkey=pkey, selected_cols=selected_cols,
-                                         schema=schema)
+    """
+    Read-write dict class that allows to perform SQL updates on the 'table' table.
+    The update consists in different steps:
+        - __setitem__() method calls __delitem__() method if the 'key' to insert already exist
+        - __delitem__() method executes a SQL DELETE statement to remove the row associated to 'key'
+        - __delitem__() return the control to __setitem__() method that performs the SQL INSERT INTO statement
+    """
 
     def __setitem__(self, key, value):
         if key in self:
@@ -187,6 +203,7 @@ class UpdateDict(SelectOnlyABC, MutableMapping):
             return cur.fetchone()[0]
 
 
+############################################# JoinABC(ABC) #############################################
 class JoinABC(ABC):
 
     @abstractmethod
@@ -194,15 +211,20 @@ class JoinABC(ABC):
         pass
 
 
-class JoinFilterDict(SelectOnlyABC, JoinABC, SelectWhereABC):
-    """Read-only dict class that allows to make SQL joins between parent table and a child table."""
+############################ JoinFilterDict(SelectOnlyABC, JoinABC, WhereABC) ############################
+class JoinFilterDict(SelectOnlyABC, JoinABC, WhereABC):
+    """
+    Read-only dict class that allows to make SQL joins between 'join_table' and 'table'.
+    The join is performed on 'join_key' from 'join_table' and 'pkey' from 'table'.
+    Records retrieved by the 'join' statement are filtered by selecting only the records
+    which 'join_filter_col' attribute of 'join_table' contains 'join_filter_val' value.
+    """
 
     def __init__(
             self, conn: str, join_table: str, join_key: str, table: str, pkey: str, cols_of_interest: List[str],
             join_filter_col: str, join_filter_val: str, join_table_alias="j", schema="level0_raw"
     ):
-        super(JoinFilterDict, self).__init__(table=table, pkey=pkey, dbconn=conn, selected_cols=cols_of_interest,
-                                             schema=schema)
+        super(JoinFilterDict, self).__init__(table=table, pkey=pkey, dbconn=conn, selected_cols=cols_of_interest, schema=schema)
         self.join_table = join_table
         self.join_table_alias = join_table_alias
         self.join_key = join_key
