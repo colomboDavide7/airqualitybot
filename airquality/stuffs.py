@@ -1,3 +1,17 @@
+
+# return map(itemgetter_default(*self.items_of_interest, default=self.default), items)
+
+# def itemgetter_default(*attrs, **kwargs):
+#     default = kwargs.pop('default', None)
+#     if kwargs:
+#         raise TypeError(f"itemgetter_default() got unexpected keyword argument(s): %r", sorted(kwargs))
+#
+#     def fn(item):
+#         getter = lambda attr: item.get(attr, default)
+#         return tuple(map(getter, attrs))
+#
+#     return fn
+
 # class Number(object):
 #
 #     def __init__(self, minval=None, maxval=None):

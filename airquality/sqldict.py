@@ -242,10 +242,6 @@ class JoinFilterDict(SelectOnlyABC, JoinABC, SelectWhereABC):
                f", join_table={self.join_table}, join_key={self.join_key}, join_table_alias={self.join_table_alias}, " \
                f"join_filter_col={self.join_filter_col}, join_filter_val={self.join_filter_val})"
 
-        # return f"{type(self).__name__}(dbconn={self.dbconn}, join_table={self.join_table}, join_key={self.join_key}, " \
-        #        f"join_table_alias={self.join_table_alias}, join_filter_col={self.join_filter_col}, join_filter_val={self.join_filter_val}, " \
-        #        f"table={self.table}, pkey={self.pkey}, selected_cols={self.join_cols()}, alias={self.alias}, schema={self.schema})"
-
     def join_condition(self) -> str:
         if not self._join_cond:
             self._join_cond = f"INNER JOIN {self.schema}.{self.join_table} as {self.join_table_alias} " \
