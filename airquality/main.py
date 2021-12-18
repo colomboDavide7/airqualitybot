@@ -215,7 +215,7 @@ class SQLDict(collections.abc.MutableMapping):
 def main():
     args = sys.argv[1:]
     if len(args) != 1:
-        print("USAGE => python(version) -m airquality [purpleair]")
+        print("USAGE => python(version) -m airquality [purpleair|atmotube]")
         sys.exit(1)
 
     personality = args[0]
@@ -519,17 +519,18 @@ ITEMS_OF_INTEREST = ['time', 'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p', 'coord
 ATMOTUBE_PARAM_NAMES = {'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p'}
 
 
+from airquality.sqldict import SelectOnlyWhereDict, SelectInsertDict
+
+
 def atmotube():
     connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
     sensor_apiparam_join = JoinDict(parent_table="sensor", child_table="api_param", pkey="id", fkey="sensor_id",
                                     conn=connection_string, cols_of_interest=APIPARAM_COLS, filter_attr="sensor_type",
                                     filter_value="atmotube")
 
-    mobile_measure_table = SQLDict(table="mobile_measurement", pkey="id", conn=connection_string,
-                                   cols_of_interest=MOBILE_MEASURE_COLS)
-    measure_param_table = SelectOnlyDict(table="measure_param", pkey="id", conn=connection_string,
-                                         cols_of_interest=MEASUREPARAM_COLS,
-                                         filter_attr="param_name", filter_value="atmotube")
+    mobile_measure_table = SelectInsertDict(dbconn=connection_string, table="mobile_measurement", pkey="id", selected_cols=MOBILE_MEASURE_COLS)
+    measure_param_table = SelectOnlyWhereDict(dbconn=connection_string, table="measure_param", pkey="id",
+                                              selected_cols=MEASUREPARAM_COLS, filter_attr="param_name", filter_value="atmotube")
 
     apiparam_update = UpdateDict(table="api_param", pkey="id", conn=connection_string, cols_of_interest=APIPARAM_COLS)
 
