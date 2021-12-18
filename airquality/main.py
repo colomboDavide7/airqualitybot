@@ -17,7 +17,7 @@ from time import perf_counter
 from datetime import datetime
 from datetime import timedelta
 from operator import itemgetter
-from typing import List, Iterable, Dict, Any
+from typing import List, Dict, Any, Generator
 
 purpleair_url = "https://api.purpleair.com/v1/sensors?" \
                 "api_key=A57E57A3-D2B1-11EB-913E-42010A800082" \
@@ -78,6 +78,11 @@ class AtmotubeItem(object):
         self._coords = None
         self._at_datetime = None
 
+    def __gt__(self, other):
+        if not isinstance(other, datetime):
+            raise TypeError(f"{type(self).__name__} expected 'datetime' object, got {type(other).__name__}")
+        return (self.measured_at_datetime - other).total_seconds() > 0
+
     @property
     def measured_at_datetime(self) -> datetime:
         if self._at_datetime is None:
@@ -101,15 +106,16 @@ class AtmotubeItem(object):
         return self._coords
 
     @property
-    def values(self) -> Dict[str, Any]:
-        return {pname: self.item.get(pname) for pname in self.ATMOTUBE_MEASURE_PARAM}
+    def values(self):
+        return [(pcode, self.item.get(pcode)) for pcode in self.ATMOTUBE_MEASURE_PARAM]
 
 
 class AtmotubeResponses(collections.abc.Iterable):
 
-    def __init__(self, url: str, items_of_interest: List[str], default=None):
+    def __init__(self, url: str, items_of_interest: List[str], filter_ts: datetime, default=None):
         self.items_of_interest = items_of_interest
         self.default = default
+        self.filter_ts = filter_ts
         self.url = url
         with urlopen(self.url) as resp:
             self.parsed = json.loads(resp.read())
@@ -123,11 +129,15 @@ class AtmotubeResponses(collections.abc.Iterable):
             return AtmotubeItem(self.parsed['data']['items'][index])
         raise TypeError(f"{type(self).__name__} invalid type {type(index)}")
 
-    def __iter__(self) -> Iterable[AtmotubeItem]:
-        return (AtmotubeItem(item) for item in self.parsed['data']['items'])
+    def __iter__(self) -> Generator[AtmotubeItem, None, None]:
+        items = (AtmotubeItem(item) for item in self.parsed['data']['items'])
+        for item in items:
+            if item > self.filter_ts:
+                yield item
 
     def __len__(self):
-        return sum(1 for _ in self.parsed['data']['items'])
+        items = (AtmotubeItem(item) for item in self.parsed['data']['items'])
+        return sum(1 for item in items if item.measured_at_datetime > self.filter_ts)
 
 
 class SQLDict(collections.abc.MutableMapping):
@@ -145,8 +155,7 @@ class SQLDict(collections.abc.MutableMapping):
     def insert(self):
         """Insert multiple elements """
         if not self._new_items:
-            return
-            # raise ValueError(f"{type(self).__name__} cannot insert '{self._new_items}' values")
+            raise ValueError(f"{type(self).__name__} cannot insert '{self._new_items}' values")
         with self.conn.cursor() as cur:
             cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES {self._new_items.strip(',')};")
             self.conn.commit()
@@ -551,14 +560,13 @@ def atmotube():
         while begin <= now:
             date_to_lookat = extract_date(timestamp=begin, fmt=ATMOTUBE_DATE_FORMAT)
             url_with_date = url.format(date=date_to_lookat)
-            responses = AtmotubeResponses(url=url_with_date, items_of_interest=ITEMS_OF_INTEREST)
+            responses = AtmotubeResponses(url=url_with_date, items_of_interest=ITEMS_OF_INTEREST, filter_ts=last_activity)
             for resp in responses:
-                if resp.measured_at_datetime > last_activity:
-                    print(f"found new response at {resp.measured_at}: values={resp.values!r}, coords={resp.coords}")
-                    for code, val in resp.values.items():
-                        record_id = next(counter)
-                        param_id = param_code_id[code]
-                        mobile_measure_table[record_id] = f"{param_id}, {wrap_value(val)}, '{resp.measured_at}', {resp.coords}"
+                print(f"found new response at {resp.measured_at}: values={resp.values!r}, coords={resp.coords}")
+                for code, val in resp.values:
+                    record_id = next(counter)
+                    param_id = param_code_id[code]
+                    mobile_measure_table[record_id] = f"{param_id}, {wrap_value(val)}, '{resp.measured_at}', {resp.coords}"
 
             if responses:
                 # commit all the measurements at once
