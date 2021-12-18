@@ -136,3 +136,44 @@ class SelectOnlyWhereDict(SelectOnlyABC, SelectWhereABC):
         if not self._filter_cond:
             self._filter_cond = f"{self.filter_attr} ILIKE '%{self.filter_value}%'"
         return self._filter_cond
+
+
+class UpdateDict(SelectOnlyABC, MutableMapping):
+
+    def __init__(self,  table: str, dbconn: str, pkey: str, selected_cols: List[str], schema="level0_raw"):
+        super(UpdateDict, self).__init__(table=table, dbconn=dbconn, pkey=pkey, selected_cols=selected_cols, schema=schema)
+
+    def __setitem__(self, key, value):
+        if key in self:
+            del self[key]
+        with self.dbconn.cursor() as cur:
+            cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES ({key}, {value});")
+            self.dbconn.commit()
+
+    def __delitem__(self, key):
+        if key not in self:
+            raise KeyError(f"{type(self).__name__}: __delitem__() cannot found {self.pkey}={key}")
+        with self.dbconn.cursor() as cur:
+            cur.execute(f"DELETE FROM {self.schema}.{self.table} WHERE {self.pkey}={key};")
+            self.dbconn.commit()
+
+    def __getitem__(self, key):
+        with self.dbconn.cursor() as cur:
+            cur.execute(f"SELECT {self.join_cols()} FROM {self.schema}.{self.table} WHERE {self.pkey}={key}")
+            self.dbconn.commit()
+            row = cur.fetchone()
+            if row is None:
+                raise KeyError(f"{type(self).__name__}: __getitem__() cannot found {self.pkey}={key} in table {self.table}")
+            return row
+
+    def __iter__(self):
+        with self.dbconn.cursor() as cur:
+            cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table};")
+            self.dbconn.commit()
+            return map(itemgetter(0), cur.fetchall())
+
+    def __len__(self):
+        with self.dbconn.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table};")
+            self.dbconn.commit()
+            return cur.fetchone()[0]

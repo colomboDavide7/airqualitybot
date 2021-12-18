@@ -121,13 +121,9 @@ class AtmotubeResponses(collections.abc.Iterable):
             self.parsed = json.loads(resp.read())
 
     def __getitem__(self, index) -> AtmotubeItem:
-        if isinstance(index, int):
-            if index < 0:
-                index += len(self)
-            if index < 0 or index >= len(self):
-                raise IndexError(f"{type(self).__name__} index {index} out of range")
-            return AtmotubeItem(self.parsed['data']['items'][index])
-        raise TypeError(f"{type(self).__name__} invalid type {type(index)}")
+        if index >= len(self):
+            raise IndexError(f"{type(self).__name__} index {index} out of range")
+        return AtmotubeItem(self.parsed['data']['items'][index])
 
     def __iter__(self) -> Generator[AtmotubeItem, None, None]:
         items = (AtmotubeItem(item) for item in self.parsed['data']['items'])
@@ -463,76 +459,75 @@ class JoinDict(collections.abc.Mapping):
         return self._joined_cols
 
 
-class UpdateDict(collections.abc.MutableMapping):
-
-    def __init__(self, table: str, pkey: str, conn: str, cols_of_interest: List[str], schema="level0_raw"):
-        self.table = table
-        self.pkey = pkey
-        self.conn = psycopg2.connect(conn)
-        self.schema = schema
-        self._cols_of_interest = cols_of_interest
-        self._joined_cols = None
-
-    def __setitem__(self, key, value):
-        if key in self:
-            del self[key]
-        with self.conn.cursor() as cur:
-            cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES ({key}, {value});")
-            self.conn.commit()
-
-    def __delitem__(self, key):
-        if key not in self:
-            raise KeyError(f"{type(self).__name__}: __delitem__() cannot found {self.pkey}={key}")
-        with self.conn.cursor() as cur:
-            cur.execute(f"DELETE FROM {self.schema}.{self.table} WHERE {self.pkey}={key};")
-            self.conn.commit()
-
-    def __getitem__(self, key):
-        with self.conn.cursor() as cur:
-            cur.execute(f"SELECT {self.joined_cols()} FROM {self.schema}.{self.table} WHERE {self.pkey}={key}")
-            self.conn.commit()
-            row = cur.fetchone()
-            if row is None:
-                raise KeyError(
-                    f"{type(self).__name__}: __getitem__() cannot found {self.pkey}={key} in table {self.table}")
-            return row
-
-    def __iter__(self):
-        with self.conn.cursor() as cur:
-            cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table};")
-            self.conn.commit()
-            return map(itemgetter(0), cur.fetchall())
-
-    def __len__(self):
-        with self.conn.cursor() as cur:
-            cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table};")
-            self.conn.commit()
-            return cur.fetchone()[0]
-
-    def joined_cols(self) -> str:
-        if self._joined_cols is None:
-            self._joined_cols = ','.join(f"{col}" for col in self._cols_of_interest)
-        return self._joined_cols
-
+# class UpdateDict(collections.abc.MutableMapping):
+#
+#     def __init__(self, table: str, pkey: str, conn: str, cols_of_interest: List[str], schema="level0_raw"):
+#         self.table = table
+#         self.pkey = pkey
+#         self.conn = psycopg2.connect(conn)
+#         self.schema = schema
+#         self._cols_of_interest = cols_of_interest
+#         self._joined_cols = None
+#
+#     def __setitem__(self, key, value):
+#         if key in self:
+#             del self[key]
+#         with self.conn.cursor() as cur:
+#             cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES ({key}, {value});")
+#             self.conn.commit()
+#
+#     def __delitem__(self, key):
+#         if key not in self:
+#             raise KeyError(f"{type(self).__name__}: __delitem__() cannot found {self.pkey}={key}")
+#         with self.conn.cursor() as cur:
+#             cur.execute(f"DELETE FROM {self.schema}.{self.table} WHERE {self.pkey}={key};")
+#             self.conn.commit()
+#
+#     def __getitem__(self, key):
+#         with self.conn.cursor() as cur:
+#             cur.execute(f"SELECT {self.joined_cols()} FROM {self.schema}.{self.table} WHERE {self.pkey}={key}")
+#             self.conn.commit()
+#             row = cur.fetchone()
+#             if row is None:
+#                 raise KeyError(
+#                     f"{type(self).__name__}: __getitem__() cannot found {self.pkey}={key} in table {self.table}")
+#             return row
+#
+#     def __iter__(self):
+#         with self.conn.cursor() as cur:
+#             cur.execute(f"SELECT {self.pkey} FROM {self.schema}.{self.table};")
+#             self.conn.commit()
+#             return map(itemgetter(0), cur.fetchall())
+#
+#     def __len__(self):
+#         with self.conn.cursor() as cur:
+#             cur.execute(f"SELECT COUNT(*) FROM {self.schema}.{self.table};")
+#             self.conn.commit()
+#             return cur.fetchone()[0]
+#
+#     def joined_cols(self) -> str:
+#         if self._joined_cols is None:
+#             self._joined_cols = ','.join(f"{col}" for col in self._cols_of_interest)
+#         return self._joined_cols
+#
 
 ITEMS_OF_INTEREST = ['time', 'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p', 'coords']
 ATMOTUBE_PARAM_NAMES = {'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p'}
 
 
-from airquality.sqldict import SelectOnlyWhereDict, SelectInsertDict
+from airquality.sqldict import SelectOnlyWhereDict, SelectInsertDict, UpdateDict
 
 
 def atmotube():
     connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
-    sensor_apiparam_join = JoinDict(parent_table="sensor", child_table="api_param", pkey="id", fkey="sensor_id",
-                                    conn=connection_string, cols_of_interest=APIPARAM_COLS, filter_attr="sensor_type",
-                                    filter_value="atmotube")
 
+    apiparam_update = UpdateDict(table="api_param", pkey="id", dbconn=connection_string, selected_cols=APIPARAM_COLS)
     mobile_measure_table = SelectInsertDict(dbconn=connection_string, table="mobile_measurement", pkey="id", selected_cols=MOBILE_MEASURE_COLS)
     measure_param_table = SelectOnlyWhereDict(dbconn=connection_string, table="measure_param", pkey="id",
                                               selected_cols=MEASUREPARAM_COLS, filter_attr="param_name", filter_value="atmotube")
-
-    apiparam_update = UpdateDict(table="api_param", pkey="id", conn=connection_string, cols_of_interest=APIPARAM_COLS)
+    sensor_apiparam_join = JoinDict(parent_table="sensor", child_table="api_param", pkey="id", fkey="sensor_id",
+                                    conn=connection_string, cols_of_interest=APIPARAM_COLS, filter_attr="sensor_type",
+                                    filter_value="atmotube")
 
     print(repr(sensor_apiparam_join))
     print(f"found #{len(sensor_apiparam_join)} rows in {sensor_apiparam_join.child_table}")
@@ -571,10 +566,13 @@ def atmotube():
 
             if responses:
                 # commit all the measurements at once
+                print("insert")
                 mobile_measure_table.insert()
 
                 # Update last activity field at the acquisition time of the last measure stored
+                print("update last acquisition")
                 last_acquisition = responses[-1].measured_at
+                print(last_acquisition)
                 apiparam_update[key] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
 
             begin = add_days(begin, days=1)
