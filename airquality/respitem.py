@@ -23,7 +23,7 @@ class AtmotubeItem(object):
         self.item = item
         self._at = ""
         self._geom = ""
-        self._at_datetime = ""
+        self._at_datetime = None
 
     def __gt__(self, other):
         if not isinstance(other, datetime):
@@ -32,7 +32,7 @@ class AtmotubeItem(object):
 
     @property
     def measured_at_datetime(self) -> datetime:
-        if not self._at_datetime:
+        if self._at_datetime is None:
             self._at_datetime = datetime.strptime(self.measured_at, SQL_DATETIME_FMT)
         return self._at_datetime
 
@@ -114,3 +114,37 @@ class PurpleairItem(object):
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name}, created_at={self.created_at}, located_at={self.located_at}, " \
                f"channels={self.channel_properties!r})"
+
+
+###################################### ThingspeakItem(object) ######################################
+class ThingspeakItem(object):
+
+    def __init__(self, item: Dict[str, Any], field_map: Dict[str, str]):
+        self.item = item
+        self.field_map = field_map
+        self._at = ""
+        self._at_datetime = None
+
+    def __gt__(self, other):
+        if not isinstance(other, datetime):
+            raise TypeError(f"{type(self).__name__} in __gt__(): expected 'datetime' object, got {type(other).__name__}")
+        return (self.created_at_datetime - other).total_seconds() > 0
+
+    @property
+    def created_at_datetime(self) -> datetime:
+        if self._at_datetime is None:
+            self._at_datetime = datetime.strptime(self.created_at, SQL_DATETIME_FMT)
+        return self._at_datetime
+
+    @property
+    def created_at(self) -> str:
+        if not self._at:
+            self._at = self.item['created_at'].replace("T", " ").strip("Z")
+        return self._at
+
+    @property
+    def values(self) -> Set[Tuple[str, Any]]:
+        return {(self.field_map[f], self.item.get(f)) for f in self.field_map}
+
+    def __repr__(self):
+        return f"{type(self).__name__}(created_at={self.created_at}, values={self.values!r})"

@@ -19,7 +19,7 @@ class FrozenSQLDict(Mapping):
     def __getitem__(self, key):
         with self.table.dbconn.cursor() as cur:
             cur.execute(f"SELECT {self.table.join_cols} FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
-                        f"{self.table.select_key_condition(key=key)}")
+                        f"{self.table.select_condition()} AND {self.table.alias}.{self.table.pkey}={key};")
             self.table.dbconn.commit()
             row = cur.fetchone()
             if row is None:
