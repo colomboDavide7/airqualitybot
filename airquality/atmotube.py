@@ -97,7 +97,7 @@ class AtmotubeResponses(Iterable):
 
 
 from itertools import count
-from airquality.sqldict import FilterSQLTable, JoinSQLTable, SQLTable
+from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
 
 
