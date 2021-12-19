@@ -22,7 +22,7 @@ class AtmotubeItem(object):
     def __init__(self, item: Dict[str, Any]):
         self.item = item
         self._at = ""
-        self._coords = ""
+        self._geom = ""
         self._at_datetime = ""
 
     def __gt__(self, other):
@@ -43,18 +43,21 @@ class AtmotubeItem(object):
         return self._at
 
     @property
-    def coords(self):
-        if not self._coords:
+    def located_at(self):
+        if not self._geom:
             tmp = self.item.pop('coords', None)
-            self._coords = "NULL"
+            self._geom = "NULL"
             if tmp is not None:
                 pt = POSTGIS_POINT.format(lat=tmp['lat'], lon=tmp['lon'])
-                self._coords = ST_GEOM_FROM_TEXT.format(geom=pt, srid=26918)
-        return self._coords
+                self._geom = ST_GEOM_FROM_TEXT.format(geom=pt, srid=26918)
+        return self._geom
 
     @property
     def values(self) -> List[Tuple[str, Any]]:
         return [(pcode, self.item.get(pcode)) for pcode in self.ATMOTUBE_MEASURE_PARAM]
+
+    def __repr__(self):
+        return f"{type(self).__name__}(measured_at={self.measured_at}, values={self.values!r}, located_at={self.located_at})"
 
 
 ###################################### ChannelProperties(namedtuple) ######################################

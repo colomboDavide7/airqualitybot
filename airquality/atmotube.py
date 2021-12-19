@@ -95,11 +95,11 @@ def atmotube():
             url_with_date = url.format(date=date_to_lookat)
             responses = AtmotubeResponses(url=url_with_date, filter_ts=last_activity)
             for resp in responses:
-                print(f"found new response at {resp.measured_at}: values={resp.values!r}, coords={resp.coords}")
+                print(f"found new response: {resp!r}")
                 for code, val in resp.values:
                     record_id = next(counter)
                     param_id = param_code_id[code]
-                    heavyweight_mobile_dict[record_id] = f"{param_id}, {wrap_value(val)}, '{resp.measured_at}', {resp.coords}"
+                    heavyweight_mobile_dict[record_id] = f"{param_id}, {wrap_value(val)}, '{resp.measured_at}', {resp.located_at}"
 
             if responses:
                 # commit all the measurements at once
