@@ -51,6 +51,15 @@ class MutableSQLDict(MutableMapping):
     def __init__(self, sqldict: FrozenSQLDict):
         self.sqldict = sqldict
 
+    @property
+    def start_id(self) -> int:
+        with self.sqldict.table.dbconn.cursor() as cur:
+            cur.execute(
+                f"SELECT MAX({self.sqldict.table.pkey}) FROM {self.sqldict.table.schema}.{self.sqldict.table.name};")
+            self.sqldict.table.dbconn.commit()
+            x_id = cur.fetchone()[0]
+            return 1 if x_id is None else x_id + 1
+
     def __getitem__(self, key):
         return self.sqldict.__getitem__(key)
 
@@ -86,6 +95,15 @@ class HeavyweightMutableSQLDict(MutableMapping):
         self.sqldict = sqldict
         self._heavyweight_values = ""
 
+    @property
+    def start_id(self) -> int:
+        with self.sqldict.table.dbconn.cursor() as cur:
+            cur.execute(
+                f"SELECT MAX({self.sqldict.table.pkey}) FROM {self.sqldict.table.schema}.{self.sqldict.table.name};")
+            self.sqldict.table.dbconn.commit()
+            x_id = cur.fetchone()[0]
+            return 1 if x_id is None else x_id + 1
+
     def commit(self):
         if not self._heavyweight_values:
             raise ValueError(f"{self.__class__.__name__}: cannot commit value '{self._heavyweight_values}' to {self.sqldict!r}")
@@ -93,14 +111,6 @@ class HeavyweightMutableSQLDict(MutableMapping):
             cur.execute(f"INSERT INTO {self.sqldict.table.schema}.{self.sqldict.table.name} VALUES {self._heavyweight_values.strip(',')};")
             self.sqldict.table.dbconn.commit()
             self._heavyweight_values = ""
-
-    @property
-    def start_id(self) -> int:
-        with self.sqldict.table.dbconn.cursor() as cur:
-            cur.execute(f"SELECT MAX({self.sqldict.table.pkey}) FROM {self.sqldict.table.schema}.{self.sqldict.table.name};")
-            self.sqldict.table.dbconn.commit()
-            x_id = cur.fetchone()[0]
-            return 1 if x_id is None else x_id + 1
 
     def __getitem__(self, key):
         return self.sqldict.__getitem__(key)
