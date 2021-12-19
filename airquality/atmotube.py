@@ -13,7 +13,6 @@ SENSOR_COLS = ['sensor_type', 'sensor_name']
 APIPARAM_COLS = ['sensor_id', 'ch_key', 'ch_id', 'ch_name', 'last_acquisition']
 MEASURE_PARAM_COLS = ['param_code', 'param_name', 'param_unit']
 MOBILE_MEASURE_COLS = ['param_id', 'param_value', 'timestamp', 'geom']
-RESPONSE_ITEMS = ['time', 'voc', 'pm1', 'pm25', 'pm10', 't', 'h', 'p', 'coords']
 
 
 from itertools import count
@@ -94,7 +93,7 @@ def atmotube():
         while begin <= now:
             date_to_lookat = extract_date(timestamp=begin, fmt=DATE_FMT)
             url_with_date = url.format(date=date_to_lookat)
-            responses = AtmotubeResponses(url=url_with_date, items_of_interest=RESPONSE_ITEMS, filter_ts=last_activity)
+            responses = AtmotubeResponses(url=url_with_date, filter_ts=last_activity)
             for resp in responses:
                 print(f"found new response at {resp.measured_at}: values={resp.values!r}, coords={resp.coords}")
                 for code, val in resp.values:
