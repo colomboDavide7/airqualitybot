@@ -25,6 +25,7 @@ THINGSPEAK_FIELDS = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B':
 
 from itertools import count
 from datetime import datetime, timedelta
+from airquality.dbadapter import DBAdapter
 from airquality.response import ThingspeakResponses
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
@@ -38,16 +39,15 @@ def add_days(timestamp: datetime, days: int) -> datetime:
     return timestamp + timedelta(days=days)
 
 
-def thingspeak():
-    connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
+def thingspeak(dbadapter: DBAdapter):
 
-    station_measure_table = SQLTable(dbconn=connection_string, table_name="station_measurement", pkey="id",
+    station_measure_table = SQLTable(dbadapter=dbadapter, table_name="station_measurement", pkey="id",
                                      selected_cols=STATION_MEASURE_COLS)
     frozen_mobile_dict = FrozenSQLDict(table=station_measure_table)
     heavyweight_station_dict = HeavyweightMutableSQLDict(sqldict=frozen_mobile_dict)
 
     thingspeak_measure_param_table = FilterSQLTable(
-        dbconn=connection_string,
+        dbadapter=dbadapter,
         table_name="measure_param",
         pkey="id",
         selected_cols=MEASURE_PARAM_COLS,
@@ -58,7 +58,7 @@ def thingspeak():
     frozen_measure_param_dict = FrozenSQLDict(table=thingspeak_measure_param_table)
 
     thingspeak_sensor_table = FilterSQLTable(
-        dbconn=connection_string,
+        dbadapter=dbadapter,
         table_name="sensor",
         pkey="id",
         selected_cols=SENSOR_COLS,
@@ -68,7 +68,7 @@ def thingspeak():
     )
 
     thingspeak_apiparam_table = JoinSQLTable(
-        dbconn=connection_string,
+        dbadapter=dbadapter,
         table_name="api_param",
         pkey="id",
         fkey="sensor_id",
@@ -83,7 +83,6 @@ def thingspeak():
     param_code_id = {}
     for key, value in frozen_measure_param_dict.items():
         code, name, unit = value
-        print(f"found param with id={key}, code={code}, name={name}, unit={unit}")
         param_code_id[code] = key
 
     counter = count(heavyweight_station_dict.start_id)

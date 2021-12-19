@@ -5,14 +5,15 @@
 # Description: Restart from scratch
 #
 ######################################################
+import os
 import sys
-import psycopg2
+import dotenv
 from time import perf_counter
-from psycopg2.errors import Error
 from urllib.error import HTTPError
 from airquality.atmotube import atmotube
 from airquality.purpleair import purpleair
 from airquality.thingspeak import thingspeak
+from airquality.dbadapter import DBAdapter
 
 
 def main():
@@ -21,20 +22,32 @@ def main():
         print("USAGE => python(version) -m airquality [purpleair|atmotube|thingspeak]")
         sys.exit(1)
 
+    dotenv.load_dotenv(dotenv_path='.env')
     personality = args[0]
     start = perf_counter()
     try:
-        if personality == 'purpleair':
-            purpleair()
-        elif personality == 'atmotube':
-            atmotube()
-        elif personality == 'thingspeak':
-            thingspeak()
-        else:
-            raise ValueError(f"Wrong command line argument '{personality}'")
-    except (HTTPError, ValueError, KeyError, psycopg2.errors.Error) as err:
+        db_adapter = DBAdapter(
+            dbname=os.environ['database'],
+            host=os.environ['host'],
+            port=os.environ['port'],
+            user=os.environ['user'],
+            password=os.environ['password']
+        )
+
+        with db_adapter as db:
+            print(f"database connection opened: {db!r}")
+            if personality == 'purpleair':
+                purpleair(db)
+            elif personality == 'atmotube':
+                atmotube(db)
+            elif personality == 'thingspeak':
+                thingspeak(db)
+            else:
+                raise ValueError(f"Wrong command line argument '{personality}'")
+        print(f"database connection closed successfully")
+    except (HTTPError, ValueError, KeyError) as err:
         print(f"{err!r} exception caught in {main.__name__}")
         sys.exit(1)
-
-    stop = perf_counter()
-    print(f"success in {stop - start} seconds")
+    finally:
+        stop = perf_counter()
+        print(f"elapsed: {stop - start}s")

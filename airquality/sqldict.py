@@ -17,29 +17,27 @@ class FrozenSQLDict(Mapping):
         self.table = table
 
     def __getitem__(self, key):
-        with self.table.dbconn.cursor() as cur:
-            cur.execute(f"SELECT {self.table.join_cols} FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
-                        f"{self.table.select_condition()} AND {self.table.alias}.{self.table.pkey}={key};")
-            self.table.dbconn.commit()
-            row = cur.fetchone()
-            if row is None:
-                raise KeyError(f"{type(self).__name__}: __getitem__() cannot found row indexed at '{key}' in table {self.table!r}")
-            return row
+        #  AND {self.table.alias}.{self.table.pkey}={key}
+        row = self.table.dbadapter.fetch_one(
+            f"SELECT {self.table.join_cols} FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
+            f"{self.table.select_key_condition(key)};"
+        )
+        if row is None:
+            raise KeyError(f"{type(self).__name__} in __getitem__(): cannot found row indexed at '{key}' in table {self.table!r}")
+        return row
 
     def __iter__(self):
-        with self.table.dbconn.cursor() as cur:
-            cur.execute(f"SELECT {self.table.alias}.{self.table.pkey} "
-                        f"FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
-                        f"{self.table.select_condition()};")
-            self.table.dbconn.commit()
-            return map(itemgetter(0), cur.fetchall())
+        rows = self.table.dbadapter.fetch_all(
+            f"SELECT {self.table.alias}.{self.table.pkey} FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
+            f"{self.table.select_condition()};"
+        )
+        return map(itemgetter(0), rows)
 
     def __len__(self):
-        with self.table.dbconn.cursor() as cur:
-            cur.execute(f"SELECT COUNT(*) FROM {self.table.schema}.{self.table.name} AS {self.table.alias}"
-                        f"{self.table.select_condition()};")
-            self.table.dbconn.commit()
-            return cur.fetchone()[0]
+        row = self.table.dbadapter.fetch_one(
+            f"SELECT COUNT(*) FROM {self.table.schema}.{self.table.name} AS {self.table.alias} {self.table.select_condition()};"
+        )
+        return row[0]
 
     def __repr__(self):
         return self.table.__repr__()
@@ -53,12 +51,10 @@ class MutableSQLDict(MutableMapping):
 
     @property
     def start_id(self) -> int:
-        with self.sqldict.table.dbconn.cursor() as cur:
-            cur.execute(
-                f"SELECT MAX({self.sqldict.table.pkey}) FROM {self.sqldict.table.schema}.{self.sqldict.table.name};")
-            self.sqldict.table.dbconn.commit()
-            x_id = cur.fetchone()[0]
-            return 1 if x_id is None else x_id + 1
+        row = self.sqldict.table.dbadapter.fetch_one(
+            f"SELECT MAX({self.sqldict.table.pkey}) FROM {self.sqldict.table.schema}.{self.sqldict.table.name};"
+        )
+        return 1 if row[0] is None else row[0] + 1
 
     def __getitem__(self, key):
         return self.sqldict.__getitem__(key)
@@ -72,17 +68,17 @@ class MutableSQLDict(MutableMapping):
     def __setitem__(self, key, value):
         if key in self:
             del self[key]
-        with self.sqldict.table.dbconn.cursor() as cur:
-            cur.execute(f"INSERT INTO {self.sqldict.table.schema}.{self.sqldict.table.name} VALUES ({key}, {value});")
-            self.sqldict.table.dbconn.commit()
+        self.sqldict.table.dbadapter.execute(
+            f"INSERT INTO {self.sqldict.table.schema}.{self.sqldict.table.name} VALUES ({key}, {value});"
+        )
 
     def __delitem__(self, key):
         if key not in self:
-            raise KeyError(f"{self.__class__.__name__}: __delitem__() cannot found record indexed by '{key}' in {self.sqldict!r}")
-        with self.sqldict.table.dbconn.cursor() as cur:
-            cur.execute(f"DELETE FROM {self.sqldict.table.schema}.{self.sqldict.table.name} AS {self.sqldict.table.alias} "
-                        f"{self.sqldict.table.delete_key_condition(key)};")
-            self.sqldict.table.dbconn.commit()
+            raise KeyError(f"{self.__class__.__name__} in __delitem__(): cannot found record indexed by '{key}' in {self.sqldict!r}")
+        self.sqldict.table.dbadapter.execute(
+            f"DELETE FROM {self.sqldict.table.schema}.{self.sqldict.table.name} AS {self.sqldict.table.alias} "
+            f"{self.sqldict.table.delete_key_condition(key)};"
+        )
 
     def __repr__(self):
         return self.sqldict.__repr__()
@@ -97,20 +93,18 @@ class HeavyweightMutableSQLDict(MutableMapping):
 
     @property
     def start_id(self) -> int:
-        with self.sqldict.table.dbconn.cursor() as cur:
-            cur.execute(
-                f"SELECT MAX({self.sqldict.table.pkey}) FROM {self.sqldict.table.schema}.{self.sqldict.table.name};")
-            self.sqldict.table.dbconn.commit()
-            x_id = cur.fetchone()[0]
-            return 1 if x_id is None else x_id + 1
+        row = self.sqldict.table.dbadapter.fetch_one(
+            f"SELECT MAX({self.sqldict.table.pkey}) FROM {self.sqldict.table.schema}.{self.sqldict.table.name};"
+        )
+        return 1 if row[0] is None else row[0] + 1
 
     def commit(self):
         if not self._heavyweight_values:
-            raise ValueError(f"{self.__class__.__name__}: cannot commit value '{self._heavyweight_values}' to {self.sqldict!r}")
-        with self.sqldict.table.dbconn.cursor() as cur:
-            cur.execute(f"INSERT INTO {self.sqldict.table.schema}.{self.sqldict.table.name} VALUES {self._heavyweight_values.strip(',')};")
-            self.sqldict.table.dbconn.commit()
-            self._heavyweight_values = ""
+            raise ValueError(f"{self.__class__.__name__} in commit(): expected not empty values in {self.sqldict!r}")
+        self.sqldict.table.dbadapter.execute(
+            f"INSERT INTO {self.sqldict.table.schema}.{self.sqldict.table.name} VALUES {self._heavyweight_values.strip(',')};"
+        )
+        self._heavyweight_values = ""
 
     def __getitem__(self, key):
         return self.sqldict.__getitem__(key)

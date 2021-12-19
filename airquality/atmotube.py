@@ -17,6 +17,7 @@ MOBILE_MEASURE_COLS = ['param_id', 'param_value', 'timestamp', 'geom']
 
 from itertools import count
 from datetime import datetime, timedelta
+from airquality.dbadapter import DBAdapter
 from airquality.response import AtmotubeResponses
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
@@ -34,16 +35,14 @@ def add_days(timestamp: datetime, days: int) -> datetime:
     return timestamp + timedelta(days=days)
 
 
-def atmotube():
-    # TODO: read from environment
-    connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
+def atmotube(dbadapter: DBAdapter):
 
-    mobile_measure_table = SQLTable(dbconn=connection_string, table_name="mobile_measurement", pkey="id", selected_cols=MOBILE_MEASURE_COLS)
+    mobile_measure_table = SQLTable(dbadapter=dbadapter, table_name="mobile_measurement", pkey="id", selected_cols=MOBILE_MEASURE_COLS)
     frozen_mobile_dict = FrozenSQLDict(table=mobile_measure_table)
     heavyweight_mobile_dict = HeavyweightMutableSQLDict(sqldict=frozen_mobile_dict)
 
     atmotube_measure_param_table = FilterSQLTable(
-            dbconn=connection_string,
+            dbadapter=dbadapter,
             table_name="measure_param",
             pkey="id",
             selected_cols=MEASURE_PARAM_COLS,
@@ -54,7 +53,7 @@ def atmotube():
     frozen_measure_param_dict = FrozenSQLDict(table=atmotube_measure_param_table)
 
     atmotube_sensor_table = FilterSQLTable(
-        dbconn=connection_string,
+        dbadapter=dbadapter,
         table_name="sensor",
         pkey="id",
         selected_cols=SENSOR_COLS,
@@ -63,7 +62,7 @@ def atmotube():
         alias="s")
 
     atmotube_apiparam_table = JoinSQLTable(
-            dbconn=connection_string,
+            dbadapter=dbadapter,
             table_name="api_param",
             pkey="id",
             fkey="sensor_id",
@@ -78,7 +77,6 @@ def atmotube():
     param_code_id = {}
     for key, value in frozen_measure_param_dict.items():
         code, name, unit = value
-        print(f"found param with id={key}, code={code}, name={name}, unit={unit}")
         param_code_id[code] = key
 
     counter = count(heavyweight_mobile_dict.start_id)

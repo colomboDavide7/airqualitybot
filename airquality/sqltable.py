@@ -5,16 +5,16 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import psycopg2
 from typing import List
 from abc import ABC, abstractmethod
+from airquality.dbadapter import DBAdapter
 
 
 ############################################# SQLTableABC(ABC) #############################################
 class SQLTableABC(ABC):
 
-    def __init__(self, dbconn: str, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
-        self.dbconn = psycopg2.connect(dbconn)
+    def __init__(self, dbadapter: DBAdapter, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
+        self.dbadapter = dbadapter
         self.name = table_name
         self.alias = alias
         self.pkey = pkey
@@ -23,7 +23,7 @@ class SQLTableABC(ABC):
         self._join_cols = ""
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(dbconn={self.dbconn!r}, table_name={self.name}, pkey={self.pkey}, " \
+        return f"{self.__class__.__name__}(dbconn={self.dbadapter!r}, table_name={self.name}, pkey={self.pkey}, " \
                f"selected_cols={self.join_cols}, schema={self.schema}, alias={self.alias})"
 
     @property
@@ -48,9 +48,9 @@ class SQLTableABC(ABC):
 ############################################# SQLTable(SQLTableABC) #############################################
 class SQLTable(SQLTableABC):
 
-    def __init__(self, dbconn: str, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
+    def __init__(self, dbadapter: DBAdapter, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
         super(SQLTable, self).__init__(
-            dbconn=dbconn, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
+            dbadapter=dbadapter, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
         )
 
     def select_condition(self) -> str:
@@ -68,7 +68,7 @@ class JoinSQLTable(SQLTableABC):
 
     def __init__(
             self,
-            dbconn: str,
+            dbadapter: DBAdapter,
             table_name: str,
             pkey: str,
             fkey: str,
@@ -78,7 +78,7 @@ class JoinSQLTable(SQLTableABC):
             alias="t"
     ):
         super(JoinSQLTable, self).__init__(
-            dbconn=dbconn, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
+            dbadapter=dbadapter, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
         )
         self.join_table = join_table
         self.fkey = fkey
@@ -95,7 +95,7 @@ class JoinSQLTable(SQLTableABC):
         return self.join_cond + f" {self.join_table.select_condition()}"
 
     def select_key_condition(self, key) -> str:
-        return self.join_cond + f" {self.join_table.select_key_condition(key=key)}"
+        return f"{self.select_condition()} AND {self.alias}.{self.pkey}={key}"
 
     def delete_key_condition(self, key) -> str:
         return f"WHERE {self.alias}.{self.pkey}={key}"
@@ -106,7 +106,7 @@ class FilterSQLTable(SQLTableABC):
 
     def __init__(
             self,
-            dbconn: str,
+            dbadapter: DBAdapter,
             table_name: str,
             pkey: str,
             selected_cols: List[str],
@@ -116,7 +116,7 @@ class FilterSQLTable(SQLTableABC):
             alias="t"
     ):
         super(FilterSQLTable, self).__init__(
-            dbconn=dbconn, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
+            dbadapter=dbadapter, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
         )
         self._filter_col = filter_col
         self._filter_val = filter_val

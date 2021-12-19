@@ -13,8 +13,6 @@ purpleair_url = "https://api.purpleair.com/v1/sensors?" \
                 "primary_key_a,primary_id_b,primary_key_b" \
                 "&nwlng=9.133101&nwlat=45.211471&selng=9.190360&selat=45.173243"
 
-bad_url = "https://api.purpleair.com/v1/sensors?some_bad_field=some_value"
-
 SENSOR_COLS = ['sensor_type', 'sensor_name']
 APIPARAM_COLS = ['sensor_id', 'ch_key', 'ch_id', 'ch_name', 'last_acquisition']
 GEOLOCATION_COLS = ['sensor_id', 'valid_from', 'geom']
@@ -23,17 +21,16 @@ SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 
 from itertools import count
 from datetime import datetime
+from airquality.dbadapter import DBAdapter
 from airquality.response import PurpleairResponses
 from airquality.sqltable import SQLTable, FilterSQLTable
 from airquality.sqldict import MutableSQLDict, FrozenSQLDict
 
 
-def purpleair():
-
-    connection_string = "dbname=airquality host=localhost port=5432 user=root password=a1R-d3B-R00t!"
+def purpleair(dbadapter: DBAdapter):
 
     sensor_table = FilterSQLTable(
-        dbconn=connection_string,
+        dbadapter=dbadapter,
         table_name="sensor", pkey="id",
         selected_cols=SENSOR_COLS,
         filter_col="sensor_type",
@@ -42,11 +39,11 @@ def purpleair():
     frozen_sensor_dict = FrozenSQLDict(table=sensor_table)
     mutable_sensor_dict = MutableSQLDict(sqldict=frozen_sensor_dict)
 
-    apiparam_table = SQLTable(dbconn=connection_string, table_name="api_param", pkey="id", selected_cols=APIPARAM_COLS)
+    apiparam_table = SQLTable(dbadapter=dbadapter, table_name="api_param", pkey="id", selected_cols=APIPARAM_COLS)
     frozen_apiparam_dict = FrozenSQLDict(table=apiparam_table)
     mutable_apiparam_dict = MutableSQLDict(sqldict=frozen_apiparam_dict)
 
-    geolocation_table = SQLTable(dbconn=connection_string, table_name="sensor_at_location", pkey="id", selected_cols=GEOLOCATION_COLS)
+    geolocation_table = SQLTable(dbadapter=dbadapter, table_name="sensor_at_location", pkey="id", selected_cols=GEOLOCATION_COLS)
     frozen_geolocation_dict = FrozenSQLDict(table=geolocation_table)
     mutable_geolocation_dict = MutableSQLDict(sqldict=frozen_geolocation_dict)
 
