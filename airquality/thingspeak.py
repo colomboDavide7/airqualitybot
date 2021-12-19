@@ -111,7 +111,9 @@ def thingspeak(dbadapter: DBAdapter, url_template: str):
                 heavyweight_station_dict.commit()
 
                 # Update last acquisition timestamp to avoid redundancy
-                last_acquisition = responses[-1].created_at
+                last_resp = responses[-1]
+                last_acquisition = last_resp.created_at
+                last_activity = last_resp.created_at_datetime
                 mutable_apiparam_dict[pkey] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
 
             begin = add_days(begin, days=7)

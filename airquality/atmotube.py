@@ -101,7 +101,9 @@ def atmotube(dbadapter: DBAdapter, url_template: str):
                 heavyweight_mobile_dict.commit()
 
                 # Update last activity field at the acquisition time of the last measure stored
-                last_acquisition = responses[-1].measured_at
+                last_resp = responses[-1]
+                last_acquisition = last_resp.measured_at
+                last_activity = last_resp.measured_at_datetime
                 mutable_apiparam_dict[pkey] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
 
             begin = add_days(begin, days=1)
