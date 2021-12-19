@@ -73,7 +73,7 @@ class SelectInsertDict(SelectOnlyABC, MultipleInsertABC):
     def __setitem__(self, key, value) -> None:
         self.values += f"({key}, {value}),"
 
-    def __delitem__(self, value) -> None:
+    def __delitem__(self, key) -> None:
         pass
 
     def __getitem__(self, key):
@@ -211,8 +211,8 @@ class JoinABC(ABC):
         pass
 
 
-############################ JoinFilterDict(SelectOnlyABC, JoinABC, WhereABC) ############################
-class JoinFilterDict(SelectOnlyABC, JoinABC, WhereABC):
+############################ SelectJoinOnlyWhere(SelectOnlyABC, JoinABC, WhereABC) ############################
+class SelectJoinOnlyWhereDict(SelectOnlyABC, MutableMapping, JoinABC, WhereABC):
     """
     Read-only dict class that allows to make SQL joins between 'join_table' and 'table'.
     The join is performed on 'join_key' from 'join_table' and 'pkey' from 'table'.
@@ -224,7 +224,7 @@ class JoinFilterDict(SelectOnlyABC, JoinABC, WhereABC):
             self, conn: str, join_table: str, join_key: str, table: str, pkey: str, cols_of_interest: List[str],
             join_filter_col: str, join_filter_val: str, join_table_alias="j", schema="level0_raw"
     ):
-        super(JoinFilterDict, self).__init__(table=table, pkey=pkey, dbconn=conn, selected_cols=cols_of_interest, schema=schema)
+        super(SelectJoinOnlyWhereDict, self).__init__(table=table, pkey=pkey, dbconn=conn, selected_cols=cols_of_interest, schema=schema)
         self.join_table = join_table
         self.join_table_alias = join_table_alias
         self.join_key = join_key
@@ -232,6 +232,20 @@ class JoinFilterDict(SelectOnlyABC, JoinABC, WhereABC):
         self.join_filter_val = join_filter_val
         self._join_cond = ""
         self._filter_cond = ""
+
+    def __setitem__(self, key, value):
+        if key in self:
+            del self[key]
+        with self.dbconn.cursor() as cur:
+            cur.execute(f"INSERT INTO {self.schema}.{self.table} VALUES ({key}, {value});")
+            self.dbconn.commit()
+
+    def __delitem__(self, key):
+        if key not in self:
+            raise KeyError(f"{type(self).__name__}: __delitem__() cannot found {self.pkey}={key}")
+        with self.dbconn.cursor() as cur:
+            cur.execute(f"DELETE FROM {self.schema}.{self.table} WHERE {self.pkey}={key};")
+            self.dbconn.commit()
 
     def __getitem__(self, key):
         with self.dbconn.cursor() as cur:
@@ -260,7 +274,7 @@ class JoinFilterDict(SelectOnlyABC, JoinABC, WhereABC):
             return map(itemgetter(0), cur.fetchall())
 
     def __repr__(self):
-        return super(JoinFilterDict, self).__repr__().strip(')') + \
+        return super(SelectJoinOnlyWhereDict, self).__repr__().strip(')') + \
                f", join_table={self.join_table}, join_key={self.join_key}, join_table_alias={self.join_table_alias}, " \
                f"join_filter_col={self.join_filter_col}, join_filter_val={self.join_filter_val})"
 
@@ -274,3 +288,139 @@ class JoinFilterDict(SelectOnlyABC, JoinABC, WhereABC):
         if not self._filter_cond:
             self._filter_cond = f"{self.join_table_alias}.{self.join_filter_col} ILIKE '%{self.join_filter_val}%'"
         return self._filter_cond
+
+
+############################################# SQLTable(ABC) #############################################
+class SQLTableABC(ABC):
+
+    def __init__(self, dbconn: str, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
+        self.dbconn = psycopg2.connect(dbconn)
+        self.name = table_name
+        self.alias = alias
+        self.pkey = pkey
+        self.schema = schema
+        self.selected_cols = selected_cols
+        self._join_cols = ""
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(dbconn={self.dbconn!r}, table_name={self.name}, pkey={self.pkey}, " \
+               f"selected_cols={self.join_cols}, schema={self.schema}, alias={self.alias})"
+
+    @property
+    def join_cols(self) -> str:
+        if not self._join_cols:
+            self._join_cols = ','.join(f"{self.alias}.{col}" for col in self.selected_cols)
+        return self._join_cols
+
+    @abstractmethod
+    def condition(self) -> str:
+        pass
+
+    @abstractmethod
+    def condition_with_key(self, key) -> str:
+        pass
+
+
+############################################# JoinSQLTable(SQLTable) #############################################
+class JoinSQLTable(SQLTableABC):
+
+    def __init__(
+            self,
+            dbconn: str,
+            table_name: str,
+            pkey: str,
+            fkey: str,
+            selected_cols: List[str],
+            join_table: SQLTableABC,
+            schema="level0_raw",
+            alias="t"
+    ):
+        super(JoinSQLTable, self).__init__(
+            dbconn=dbconn, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
+        )
+        self.join_table = join_table
+        self.fkey = fkey
+        self._join_cond = ""
+
+    @property
+    def join_cond(self) -> str:
+        if not self._join_cond:
+            self._join_cond = f"INNER JOIN {self.join_table.schema}.{self.join_table.name} AS {self.join_table.alias} " \
+                              f"ON {self.alias}.{self.fkey} = {self.join_table.alias}.{self.join_table.pkey}"
+        return self._join_cond
+
+    def condition(self) -> str:
+        return self.join_cond + f" {self.join_table.condition()}"
+
+    def condition_with_key(self, key) -> str:
+        return self.join_cond + f" {self.join_table.condition_with_key(key=key)}"
+
+
+############################################# FilterSQLTable(SQLTable) #############################################
+class FilterSQLTable(SQLTableABC):
+
+    def __init__(
+            self,
+            dbconn: str,
+            table_name: str,
+            pkey: str,
+            selected_cols: List[str],
+            filter_col: str,
+            filter_val: str,
+            schema="level0_raw",
+            alias="t"
+    ):
+        super(FilterSQLTable, self).__init__(
+            dbconn=dbconn, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
+        )
+        self._filter_col = filter_col
+        self._filter_val = filter_val
+        self._filter_condition = ""
+        self._filter_condition_with_key = ""
+
+    def __repr__(self):
+        return super(SQLTableABC, self).__repr__().strip(')') + \
+               f", filter_col={self._filter_col}, filter_val={self._filter_val})"
+
+    @property
+    def filt_cond(self) -> str:
+        if not self._filter_condition:
+            self._filter_condition = f"WHERE {self.alias}.{self._filter_col} ILIKE '%{self._filter_val}%'"
+        return self._filter_condition
+
+    def condition(self) -> str:
+        return self.filt_cond
+
+    def condition_with_key(self, key) -> str:
+        return self.filt_cond + f" AND {self.alias}.{self.pkey}={key}"
+
+
+class FrozenSQLTable(Mapping):
+
+    def __init__(self, table: SQLTableABC):
+        self.table = table
+
+    def __getitem__(self, key):
+        with self.table.dbconn.cursor() as cur:
+            cur.execute(f"SELECT {self.table.join_cols} FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
+                        f"{self.table.condition_with_key(key=key)}")
+            self.table.dbconn.commit()
+            row = cur.fetchone()
+            if row is None:
+                raise KeyError(f"{type(self).__name__}: __getitem__() cannot found row indexed at '{key}' in table {self.table!r}")
+            return row
+
+    def __iter__(self):
+        with self.table.dbconn.cursor() as cur:
+            cur.execute(f"SELECT {self.table.alias}.{self.table.pkey} "
+                        f"FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
+                        f"{self.table.condition()};")
+            self.table.dbconn.commit()
+            return map(itemgetter(0), cur.fetchall())
+
+    def __len__(self):
+        with self.table.dbconn.cursor() as cur:
+            cur.execute(f"SELECT COUNT(*) FROM {self.table.schema}.{self.table.name} AS {self.table.alias}"
+                        f"{self.table.condition()};")
+            self.table.dbconn.commit()
+            return cur.fetchone()[0]
