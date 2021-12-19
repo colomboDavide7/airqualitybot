@@ -40,8 +40,8 @@ def thingspeak(dbadapter: DBAdapter, url_template: str):
 
     station_measure_table = SQLTable(dbadapter=dbadapter, table_name="station_measurement", pkey="id",
                                      selected_cols=STATION_MEASURE_COLS)
-    frozen_mobile_dict = FrozenSQLDict(table=station_measure_table)
-    heavyweight_station_dict = HeavyweightMutableSQLDict(sqldict=frozen_mobile_dict)
+    frozen_measure_dict = FrozenSQLDict(table=station_measure_table)
+    heavyweight_measure_dict = HeavyweightMutableSQLDict(sqldict=frozen_measure_dict)
 
     thingspeak_measure_param_table = FilterSQLTable(
         dbadapter=dbadapter,
@@ -77,12 +77,16 @@ def thingspeak(dbadapter: DBAdapter, url_template: str):
     frozen_apiparam_dict = FrozenSQLDict(table=thingspeak_apiparam_table)
     mutable_apiparam_dict = MutableSQLDict(sqldict=frozen_apiparam_dict)
 
+    print(f"\ninsert measurements into: {heavyweight_measure_dict!r}")
+    print(f"\ngetting measure parameters from: {frozen_measure_param_dict!r}")
+    print(f"\ngetting sensor API parameters from: {mutable_apiparam_dict!r}")
+
     param_code_id = {}
     for key, value in frozen_measure_param_dict.items():
         code, name, unit = value
         param_code_id[code] = key
 
-    counter = count(heavyweight_station_dict.start_id)
+    counter = count(heavyweight_measure_dict.start_id)
     for pkey, record in mutable_apiparam_dict.items():
         sensor_id, api_key, api_id, ch_name, last_activity = record
         print(f"found Thingspeak sensor with id={sensor_id}: {record!r}")
@@ -104,11 +108,11 @@ def thingspeak(dbadapter: DBAdapter, url_template: str):
                 for code, value in resp.values:
                     record_id = next(counter)
                     param_id = param_code_id[code]
-                    heavyweight_station_dict[record_id] = f"{param_id}, '{sensor_id}', {wrap_value(value)}, '{resp.created_at}'"
+                    heavyweight_measure_dict[record_id] = f"{param_id}, '{sensor_id}', {wrap_value(value)}, '{resp.created_at}'"
 
             if responses:
                 # Commit all the measurement to insert
-                heavyweight_station_dict.commit()
+                heavyweight_measure_dict.commit()
 
                 # Update last acquisition timestamp to avoid redundancy
                 last_resp = responses[-1]

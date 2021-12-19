@@ -40,7 +40,7 @@ class FrozenSQLDict(Mapping):
         return row[0]
 
     def __repr__(self):
-        return self.table.__repr__()
+        return f"{type(self).__name__}(table={self.table!r})"
 
 
 ########################################### MutableSQLDict(MutableMapping) ###########################################
@@ -81,7 +81,7 @@ class MutableSQLDict(MutableMapping):
         )
 
     def __repr__(self):
-        return self.sqldict.__repr__()
+        return f"{type(self).__name__}(sqldict={self.sqldict!r})"
 
 
 ###################################### HeavyweightMutableSQLDict(MutableMapping) ######################################
@@ -121,3 +121,6 @@ class HeavyweightMutableSQLDict(MutableMapping):
     def __delitem__(self, key):
         """For future implementation it can be used for deleting multiple records at a time."""
         pass
+
+    def __repr__(self):
+        return f"{type(self).__name__}(sqldict={self.sqldict!r})"

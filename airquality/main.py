@@ -44,7 +44,7 @@ def main():
                 thingspeak(dbadapter=db, url_template=os.environ['thingspeak_url'])
             else:
                 raise ValueError(f"Wrong command line argument '{personality}'")
-        print(f"database connection closed successfully")
+        print(f"\ndatabase connection closed successfully")
     except (HTTPError, ValueError, KeyError) as err:
         print(f"{err!r} exception caught in {main.__name__}")
         sys.exit(1)

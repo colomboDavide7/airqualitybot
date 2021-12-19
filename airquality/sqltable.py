@@ -22,10 +22,6 @@ class SQLTableABC(ABC):
         self.selected_cols = selected_cols
         self._join_cols = ""
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(dbconn={self.dbadapter!r}, table_name={self.name}, pkey={self.pkey}, " \
-               f"selected_cols={self.join_cols}, schema={self.schema}, alias={self.alias})"
-
     @property
     def join_cols(self) -> str:
         if not self._join_cols:
@@ -43,6 +39,10 @@ class SQLTableABC(ABC):
     @abstractmethod
     def delete_key_condition(self, key) -> str:
         pass
+
+    def __repr__(self):
+        return f"{type(self).__name__}(dbconn={self.dbadapter!r}, table_name={self.name}, pkey={self.pkey}, " \
+               f"selected_cols={self.join_cols}, schema={self.schema}, alias={self.alias})"
 
 
 ############################################# SQLTable(SQLTableABC) #############################################
@@ -100,6 +100,9 @@ class JoinSQLTable(SQLTableABC):
     def delete_key_condition(self, key) -> str:
         return f"WHERE {self.alias}.{self.pkey}={key}"
 
+    def __repr__(self):
+        return super(JoinSQLTable, self).__repr__().strip(')') + f", join_table={self.join_table!r})"
+
 
 ############################################# FilterSQLTable(SQLTableABC) #############################################
 class FilterSQLTable(SQLTableABC):
@@ -123,10 +126,6 @@ class FilterSQLTable(SQLTableABC):
         self._filter_condition = ""
         self._filter_condition_with_key = ""
 
-    def __repr__(self):
-        return super(SQLTableABC, self).__repr__().strip(')') + \
-               f", filter_col={self._filter_col}, filter_val={self._filter_val})"
-
     @property
     def filt_cond(self) -> str:
         if not self._filter_condition:
@@ -137,7 +136,11 @@ class FilterSQLTable(SQLTableABC):
         return self.filt_cond
 
     def select_key_condition(self, key) -> str:
-        return self.filt_cond + f" AND {self.alias}.{self.pkey}={key}"
+        return f"{self.filt_cond} AND {self.alias}.{self.pkey}={key}"
 
     def delete_key_condition(self, key) -> str:
-        return f"{self.filt_cond} AND {self.alias}.{self.pkey}={key}"
+        return self.select_key_condition(key=key)
+
+    def __repr__(self):
+        return super(FilterSQLTable, self).__repr__().strip(')') + \
+               f", filter_col={self._filter_col}, filter_val={self._filter_val})"

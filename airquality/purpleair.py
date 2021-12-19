@@ -43,6 +43,10 @@ def purpleair(dbadapter: DBAdapter, url_template: str):
     apiparam_counter = count(mutable_apiparam_dict.start_id)
     geolocation_counter = count(mutable_geolocation_dict.start_id)
 
+    print(f"\ninsert sensor into: {mutable_sensor_dict!r}")
+    print(f"\ninsert sensor API parameters into: {mutable_apiparam_dict!r}")
+    print(f"\ninsert sensor locations into: {mutable_geolocation_dict!r}")
+
     existing_names = []
     for pkey, record in mutable_sensor_dict.items():
         print(f"found sensor indexed by {pkey}: {record!r}")

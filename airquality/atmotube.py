@@ -71,6 +71,10 @@ def atmotube(dbadapter: DBAdapter, url_template: str):
     frozen_apiparam_dict = FrozenSQLDict(table=atmotube_apiparam_table)
     mutable_apiparam_dict = MutableSQLDict(sqldict=frozen_apiparam_dict)
 
+    print(f"\ninsert measurements into: {heavyweight_mobile_dict!r}")
+    print(f"\ngetting measure parameters from: {frozen_measure_param_dict!r}")
+    print(f"\ngetting sensor API parameters from: {mutable_apiparam_dict!r}")
+
     param_code_id = {}
     for key, value in frozen_measure_param_dict.items():
         code, name, unit = value
