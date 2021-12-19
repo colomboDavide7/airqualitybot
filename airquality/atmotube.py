@@ -5,9 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-# TODO: load from the environment file
-atmotube_url = "https://api.atmotube.com/api/v1/data?api_key={api_key}&mac={api_id}&order=asc&format=json"
-
 DATE_FMT = "%Y-%m-%d"
 SENSOR_COLS = ['sensor_type', 'sensor_name']
 APIPARAM_COLS = ['sensor_id', 'ch_key', 'ch_id', 'ch_name', 'last_acquisition']
@@ -35,7 +32,7 @@ def add_days(timestamp: datetime, days: int) -> datetime:
     return timestamp + timedelta(days=days)
 
 
-def atmotube(dbadapter: DBAdapter):
+def atmotube(dbadapter: DBAdapter, url_template: str):
 
     mobile_measure_table = SQLTable(dbadapter=dbadapter, table_name="mobile_measurement", pkey="id", selected_cols=MOBILE_MEASURE_COLS)
     frozen_mobile_dict = FrozenSQLDict(table=mobile_measure_table)
@@ -84,7 +81,7 @@ def atmotube(dbadapter: DBAdapter):
         sensor_id, api_key, api_id, ch_name, last_activity = record
         print(f"found Atmotube sensor with id={sensor_id}: {record!r}")
 
-        url = atmotube_url.format(api_key=api_key, api_id=api_id) + "&date={date}"
+        url = url_template.format(api_key=api_key, api_id=api_id, api_fmt="json") + "&date={date}"
 
         now = datetime.now()
         begin = last_activity + timedelta(0)

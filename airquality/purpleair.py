@@ -5,14 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-
-purpleair_url = "https://api.purpleair.com/v1/sensors?" \
-                "api_key=A57E57A3-D2B1-11EB-913E-42010A800082" \
-                "&fields=name,latitude,longitude,altitude,date_created,secondary_id_b," \
-                "secondary_key_b,secondary_id_a,secondary_key_a,primary_id_a," \
-                "primary_key_a,primary_id_b,primary_key_b" \
-                "&nwlng=9.133101&nwlat=45.211471&selng=9.190360&selat=45.173243"
-
 SENSOR_COLS = ['sensor_type', 'sensor_name']
 APIPARAM_COLS = ['sensor_id', 'ch_key', 'ch_id', 'ch_name', 'last_acquisition']
 GEOLOCATION_COLS = ['sensor_id', 'valid_from', 'geom']
@@ -27,7 +19,7 @@ from airquality.sqltable import SQLTable, FilterSQLTable
 from airquality.sqldict import MutableSQLDict, FrozenSQLDict
 
 
-def purpleair(dbadapter: DBAdapter):
+def purpleair(dbadapter: DBAdapter, url_template: str):
 
     sensor_table = FilterSQLTable(
         dbadapter=dbadapter,
@@ -56,7 +48,7 @@ def purpleair(dbadapter: DBAdapter):
         print(f"found sensor indexed by {pkey}: {record!r}")
         existing_names.append(record[1])
 
-    responses = PurpleairResponses(url=purpleair_url, existing_names=existing_names)
+    responses = PurpleairResponses(url=url_template, existing_names=existing_names)
     for resp in responses:
         print(f"found new response: {resp!r}")
 

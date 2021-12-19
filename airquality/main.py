@@ -37,11 +37,11 @@ def main():
         with db_adapter as db:
             print(f"database connection opened: {db!r}")
             if personality == 'purpleair':
-                purpleair(db)
+                purpleair(dbadapter=db, url_template=os.environ['purpleair_url'])
             elif personality == 'atmotube':
-                atmotube(db)
+                atmotube(dbadapter=db, url_template=os.environ['atmotube_url'])
             elif personality == 'thingspeak':
-                thingspeak(db)
+                thingspeak(dbadapter=db, url_template=os.environ['thingspeak_url'])
             else:
                 raise ValueError(f"Wrong command line argument '{personality}'")
         print(f"database connection closed successfully")

@@ -5,9 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-# TODO: move to environment file
-url_template = "https://api.thingspeak.com/channels/{api_id}/feeds.{api_fmt}?api_key={api_key}"
-
 SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 SENSOR_COLS = ['sensor_type', 'sensor_name']
 APIPARAM_COLS = ['sensor_id', 'ch_key', 'ch_id', 'ch_name', 'last_acquisition']
@@ -39,7 +36,7 @@ def add_days(timestamp: datetime, days: int) -> datetime:
     return timestamp + timedelta(days=days)
 
 
-def thingspeak(dbadapter: DBAdapter):
+def thingspeak(dbadapter: DBAdapter, url_template: str):
 
     station_measure_table = SQLTable(dbadapter=dbadapter, table_name="station_measurement", pkey="id",
                                      selected_cols=STATION_MEASURE_COLS)
