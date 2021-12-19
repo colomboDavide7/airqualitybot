@@ -313,15 +313,19 @@ class SQLTableABC(ABC):
         return self._join_cols
 
     @abstractmethod
-    def condition(self) -> str:
+    def select_condition(self) -> str:
         pass
 
     @abstractmethod
-    def condition_with_key(self, key) -> str:
+    def select_key_condition(self, key) -> str:
+        pass
+
+    @abstractmethod
+    def delete_key_condition(self, key) -> str:
         pass
 
 
-############################################# JoinSQLTable(SQLTable) #############################################
+############################################# JoinSQLTable(SQLTableABC) #############################################
 class JoinSQLTable(SQLTableABC):
 
     def __init__(
@@ -349,14 +353,17 @@ class JoinSQLTable(SQLTableABC):
                               f"ON {self.alias}.{self.fkey} = {self.join_table.alias}.{self.join_table.pkey}"
         return self._join_cond
 
-    def condition(self) -> str:
-        return self.join_cond + f" {self.join_table.condition()}"
+    def select_condition(self) -> str:
+        return self.join_cond + f" {self.join_table.select_condition()}"
 
-    def condition_with_key(self, key) -> str:
-        return self.join_cond + f" {self.join_table.condition_with_key(key=key)}"
+    def select_key_condition(self, key) -> str:
+        return self.join_cond + f" {self.join_table.select_key_condition(key=key)}"
+
+    def delete_key_condition(self, key) -> str:
+        return f"WHERE {self.alias}.{self.pkey}={key}"
 
 
-############################################# FilterSQLTable(SQLTable) #############################################
+############################################# FilterSQLTable(SQLTableABC) #############################################
 class FilterSQLTable(SQLTableABC):
 
     def __init__(
@@ -388,14 +395,18 @@ class FilterSQLTable(SQLTableABC):
             self._filter_condition = f"WHERE {self.alias}.{self._filter_col} ILIKE '%{self._filter_val}%'"
         return self._filter_condition
 
-    def condition(self) -> str:
+    def select_condition(self) -> str:
         return self.filt_cond
 
-    def condition_with_key(self, key) -> str:
+    def select_key_condition(self, key) -> str:
         return self.filt_cond + f" AND {self.alias}.{self.pkey}={key}"
 
+    def delete_key_condition(self, key) -> str:
+        return f"{self.filt_cond} AND {self.alias}.{self.pkey}={key}"
 
-class FrozenSQLTable(Mapping):
+
+############################################# FrozenSQLDict(Mapping) #############################################
+class FrozenSQLDict(Mapping):
 
     def __init__(self, table: SQLTableABC):
         self.table = table
@@ -403,7 +414,7 @@ class FrozenSQLTable(Mapping):
     def __getitem__(self, key):
         with self.table.dbconn.cursor() as cur:
             cur.execute(f"SELECT {self.table.join_cols} FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
-                        f"{self.table.condition_with_key(key=key)}")
+                        f"{self.table.select_key_condition(key=key)}")
             self.table.dbconn.commit()
             row = cur.fetchone()
             if row is None:
@@ -414,13 +425,50 @@ class FrozenSQLTable(Mapping):
         with self.table.dbconn.cursor() as cur:
             cur.execute(f"SELECT {self.table.alias}.{self.table.pkey} "
                         f"FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
-                        f"{self.table.condition()};")
+                        f"{self.table.select_condition()};")
             self.table.dbconn.commit()
             return map(itemgetter(0), cur.fetchall())
 
     def __len__(self):
         with self.table.dbconn.cursor() as cur:
             cur.execute(f"SELECT COUNT(*) FROM {self.table.schema}.{self.table.name} AS {self.table.alias}"
-                        f"{self.table.condition()};")
+                        f"{self.table.select_condition()};")
             self.table.dbconn.commit()
             return cur.fetchone()[0]
+
+    def __repr__(self):
+        return self.table.__repr__()
+
+
+########################################### MutableSQLDict(MutableMapping) ###########################################
+class MutableSQLDict(MutableMapping):
+
+    def __init__(self, sqldict: FrozenSQLDict):
+        self.sqldict = sqldict
+
+    def __getitem__(self, key):
+        return self.sqldict.__getitem__(key)
+
+    def __iter__(self):
+        return self.sqldict.__iter__()
+
+    def __len__(self):
+        return self.sqldict.__len__()
+
+    def __setitem__(self, key, value):
+        if key in self:
+            del self[key]
+        with self.sqldict.table.dbconn.cursor() as cur:
+            cur.execute(f"INSERT INTO {self.sqldict.table.schema}.{self.sqldict.table.name} VALUES ({key}, {value});")
+            self.sqldict.table.dbconn.commit()
+
+    def __delitem__(self, key):
+        if key not in self:
+            raise KeyError(f"{self.__class__.__name__}: __delitem__() cannot found record indexed at '{key}' on table {self.sqldict.table!r}")
+        with self.sqldict.table.dbconn.cursor() as cur:
+            cur.execute(f"DELETE FROM {self.sqldict.table.schema}.{self.sqldict.table.name} AS {self.sqldict.table.alias} "
+                        f"{self.sqldict.table.delete_key_condition(key)};")
+            self.sqldict.table.dbconn.commit()
+
+    def __repr__(self):
+        return self.sqldict.__repr__()

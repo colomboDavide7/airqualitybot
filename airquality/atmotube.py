@@ -97,8 +97,9 @@ class AtmotubeResponses(Iterable):
 
 
 from itertools import count
-from airquality.sqldict import SelectInsertDict, SelectJoinOnlyWhereDict
-from airquality.sqldict import FrozenSQLTable, FilterSQLTable, JoinSQLTable
+from airquality.sqldict import SelectInsertDict
+from airquality.sqldict import FilterSQLTable, JoinSQLTable
+from airquality.sqldict import FrozenSQLDict, MutableSQLDict
 
 
 def atmotube():
@@ -112,7 +113,7 @@ def atmotube():
         selected_cols=MOBILE_MEASURE_COLS
     )
 
-    atmotube_measure_param_table = FrozenSQLTable(
+    atmotube_measure_param_table = FrozenSQLDict(
         table=FilterSQLTable(
             dbconn=connection_string,
             table_name="measure_param",
@@ -131,8 +132,7 @@ def atmotube():
         filter_val="atmotube",
         alias="s")
 
-    atmotube_apiparam_table = FrozenSQLTable(
-        table=JoinSQLTable(
+    atmotube_apiparam_table = JoinSQLTable(
             dbconn=connection_string,
             table_name="api_param",
             pkey="id",
@@ -140,12 +140,10 @@ def atmotube():
             selected_cols=APIPARAM_COLS,
             alias="a",
             join_table=atmotube_sensor_table
-        ))
+    )
 
-    # atmotube_apiparam_table = SelectJoinOnlyWhereDict(conn=connection_string, join_table="sensor", join_key="id",
-    #                                                   table="api_param", pkey="sensor_id",
-    #                                                   cols_of_interest=APIPARAM_COLS,
-    #                                                   join_filter_col="sensor_type", join_filter_val="atmotube")
+    frozen_atmotube_apiparam = FrozenSQLDict(table=atmotube_apiparam_table)
+    mutable_atmotube_apiparam = MutableSQLDict(sqldict=frozen_atmotube_apiparam)
 
     param_code_id = {}
     for key, value in atmotube_measure_param_table.items():
@@ -153,38 +151,37 @@ def atmotube():
         print(f"found param with id={key}, code={code}, name={name}, unit={unit}")
         param_code_id[code] = key
 
-    # counter = count(mobile_measure_table.max_id())
-    for pkey, record in atmotube_apiparam_table.items():
+    counter = count(mobile_measure_table.max_id())
+    for pkey, record in mutable_atmotube_apiparam.items():
         sensor_id, api_key, api_id, ch_name, last_activity = record
         print(f"found Atmotube sensor with id={sensor_id}: {record!r}")
 
-    #     url = atmotube_url.format(api_key=api_key, api_id=api_id) + "&date={date}"
-    #
-    #     now = datetime.now()
-    #     begin = last_activity + timedelta(0)
-    #     while begin <= now:
-    #         date_to_lookat = extract_date(timestamp=begin, fmt=ATMOTUBE_DATE_FORMAT)
-    #         url_with_date = url.format(date=date_to_lookat)
-    #         responses = AtmotubeResponses(url=url_with_date, items_of_interest=ITEMS_OF_INTEREST,
-    #                                       filter_ts=last_activity)
-    #         for resp in responses:
-    #             print(f"found new response at {resp.measured_at}: values={resp.values!r}, coords={resp.coords}")
-    #             for code, val in resp.values:
-    #                 record_id = next(counter)
-    #                 param_id = param_code_id[code]
-    #                 mobile_measure_table[
-    #                     record_id] = f"{param_id}, {wrap_value(val)}, '{resp.measured_at}', {resp.coords}"
-    #
-    #         if responses:
-    #             # commit all the measurements at once
-    #             mobile_measure_table.insert()
-    #
-    #             # Update last activity field at the acquisition time of the last measure stored
-    #             last_acquisition = responses[-1].measured_at
-    #             atmotube_apiparam_table[
-    #                 pkey] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
-    #
-    #         begin = add_days(begin, days=1)
+        url = atmotube_url.format(api_key=api_key, api_id=api_id) + "&date={date}"
+
+        now = datetime.now()
+        begin = last_activity + timedelta(0)
+        while begin <= now:
+            date_to_lookat = extract_date(timestamp=begin, fmt=ATMOTUBE_DATE_FORMAT)
+            url_with_date = url.format(date=date_to_lookat)
+            responses = AtmotubeResponses(url=url_with_date, items_of_interest=ITEMS_OF_INTEREST,
+                                          filter_ts=last_activity)
+            for resp in responses:
+                print(f"found new response at {resp.measured_at}: values={resp.values!r}, coords={resp.coords}")
+                for code, val in resp.values:
+                    record_id = next(counter)
+                    param_id = param_code_id[code]
+                    mobile_measure_table[
+                        record_id] = f"{param_id}, {wrap_value(val)}, '{resp.measured_at}', {resp.coords}"
+
+            if responses:
+                # commit all the measurements at once
+                mobile_measure_table.insert()
+
+                # Update last activity field at the acquisition time of the last measure stored
+                last_acquisition = responses[-1].measured_at
+                mutable_atmotube_apiparam[pkey] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
+
+            begin = add_days(begin, days=1)
 
 
 def wrap_value(value: str, default="NULL") -> str:
