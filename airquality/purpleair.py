@@ -13,7 +13,7 @@ SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 
 from itertools import count
 from datetime import datetime
-from airquality.dbadapterabc import DBAdapterABC
+from airquality.dbadapter import DBAdapterABC
 from airquality.response import PurpleairResponse
 from airquality.sqltable import SQLTable, FilterSQLTable
 from airquality.sqldict import MutableSQLDict

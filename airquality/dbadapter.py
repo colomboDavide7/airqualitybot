@@ -16,6 +16,7 @@ class DatabaseAdapterError(Exception):
         return f"{type(self).__name__}"
 
 
+###################################### DatabaseAdapterABC(ABC) ######################################
 class DBAdapterABC(ABC):
 
     def __enter__(self):
@@ -23,7 +24,7 @@ class DBAdapterABC(ABC):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type == DatabaseAdapterError:
-            print(f"{self.__class__.__name__} in __exit__(): {exc_tb}")
+            print(f"{type(self).__name__} in __exit__(): {exc_tb}")
         self.close()
 
     def execute(self, query: str):
@@ -50,6 +51,7 @@ class DBAdapterABC(ABC):
         pass
 
 
+###################################### Psycopg2DBAdapter(DBAdapterABC) ######################################
 class Psycopg2DBAdapter(DBAdapterABC):
 
     def __init__(self, dbname: str, user: str, password: str, host="localhost", port="5432"):

@@ -14,7 +14,7 @@ MOBILE_MEASURE_COLS = ['param_id', 'param_value', 'timestamp', 'geom']
 
 from itertools import count
 from datetime import datetime, timedelta
-from airquality.dbadapterabc import DBAdapterABC
+from airquality.dbadapter import DBAdapterABC
 from airquality.response import AtmotubeResponse
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict

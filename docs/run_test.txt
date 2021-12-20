@@ -5,5 +5,3 @@ standard library.
 ###################### RUN ALL TESTS ######################
 
 python3.8 -m unittest discover -s test -p 'test_*.py'
-
-python3.8 -m unittest discover -s test/filter -p 'test_*.py'

@@ -13,7 +13,7 @@ from urllib.error import HTTPError
 from airquality.atmotube import atmotube
 from airquality.purpleair import purpleair
 from airquality.thingspeak import thingspeak
-from airquality.dbadapterabc import Psycopg2DBAdapter
+from airquality.dbadapter import Psycopg2DBAdapter
 
 
 def main():

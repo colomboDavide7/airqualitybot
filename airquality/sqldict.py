@@ -8,7 +8,7 @@
 from operator import itemgetter
 from collections.abc import Mapping, MutableMapping
 from airquality.sqltable import SQLTableABC
-from airquality.dbadapterabc import DBAdapterABC
+from airquality.dbadapter import DBAdapterABC
 
 
 ############################################# FrozenSQLDict(Mapping) #############################################

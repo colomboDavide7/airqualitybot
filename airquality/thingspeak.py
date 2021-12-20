@@ -22,7 +22,7 @@ THINGSPEAK_FIELDS = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B':
 
 from itertools import count
 from datetime import datetime, timedelta
-from airquality.dbadapterabc import DBAdapterABC
+from airquality.dbadapter import DBAdapterABC
 from airquality.response import ThingspeakResponse
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
