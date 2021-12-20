@@ -10,6 +10,7 @@ from collections.abc import Iterable
 from typing import List, Generator, Dict
 from urllib.request import urlopen
 from datetime import datetime
+from itertools import islice
 from json import loads
 
 
@@ -21,20 +22,24 @@ class AtmotubeResponses(Iterable):
         with urlopen(url) as resp:
             self.parsed = loads(resp.read())
 
+    @property
+    def items(self):
+        return (AtmotubeItem(item) for item in self.parsed['data']['items'])
+
+    @property
+    def filtered_items(self):
+        return (item for item in self.items if item > self.filter_ts)
+
     def __getitem__(self, index) -> AtmotubeItem:
         if index >= len(self):
             raise IndexError(f"{type(self).__name__} in __getitem__(): index '{index}' out of range")
-        return AtmotubeItem(self.parsed['data']['items'][index])
+        return next(islice(self.filtered_items, index, None))
 
     def __iter__(self) -> Generator[AtmotubeItem, None, None]:
-        items = (AtmotubeItem(item) for item in self.parsed['data']['items'])
-        for item in items:
-            if item > self.filter_ts:
-                yield item
+        return self.filtered_items
 
     def __len__(self):
-        items = (AtmotubeItem(item) for item in self.parsed['data']['items'])
-        return sum(1 for item in items if item > self.filter_ts)
+        return sum(1 for item in self.filtered_items)
 
 
 ###################################### PurpleairResponses(Iterable) ######################################
