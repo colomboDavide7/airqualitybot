@@ -39,7 +39,7 @@ class AtmotubeResponses(Iterable):
         return self.filtered_items
 
     def __len__(self):
-        return sum(1 for item in self.filtered_items)
+        return sum(1 for _ in self.filtered_items)
 
 
 ###################################### PurpleairResponses(Iterable) ######################################
@@ -52,15 +52,24 @@ class PurpleairResponses(Iterable):
             self.fields = resp['fields']
             self.data = resp['data']
 
+    @property
+    def items(self):
+        return (PurpleairItem(dict(zip(self.fields, d))) for d in self.data)
+
+    @property
+    def filtered_items(self):
+        return (item for item in self.items if item.name not in self.existing_names)
+
+    def __getitem__(self, index):
+        if index >= len(self):
+            raise IndexError(f"{type(self).__name__} in __getitem__(): index '{index}' out of range")
+        return next(islice(self.filtered_items, index, None))
+
     def __iter__(self) -> Generator[PurpleairItem, None, None]:
-        items = (PurpleairItem(dict(zip(self.fields, d))) for d in self.data)
-        for item in items:
-            if item.name not in self.existing_names:
-                yield item
+        return self.filtered_items
 
     def __len__(self):
-        items = (PurpleairItem(dict(zip(self.fields, d))) for d in self.data)
-        return sum(1 for item in items if item.name not in self.existing_names)
+        return sum(1 for _ in self.filtered_items)
 
 
 ###################################### ThingspeakResponses(Iterable) ######################################
