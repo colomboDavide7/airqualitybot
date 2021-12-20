@@ -14,7 +14,7 @@ SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 from itertools import count
 from datetime import datetime
 from airquality.dbadapterabc import DBAdapterABC
-from airquality.response import PurpleairResponses
+from airquality.response import PurpleairResponse
 from airquality.sqltable import SQLTable, FilterSQLTable
 from airquality.sqldict import MutableSQLDict
 
@@ -43,7 +43,7 @@ def purpleair(dbadapter: DBAdapterABC, url_template: str):
         print(f"found sensor indexed by {pkey}: {record!r}")
         existing_names.append(record[1])
 
-    responses = PurpleairResponses(url=url_template, existing_names=existing_names)
+    responses = PurpleairResponse(url=url_template, existing_names=existing_names)
     for resp in responses:
         print(f"found new response: {resp!r}")
 

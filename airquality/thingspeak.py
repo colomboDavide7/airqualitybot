@@ -23,7 +23,7 @@ THINGSPEAK_FIELDS = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B':
 from itertools import count
 from datetime import datetime, timedelta
 from airquality.dbadapterabc import DBAdapterABC
-from airquality.response import ThingspeakResponses
+from airquality.response import ThingspeakResponse
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
 
@@ -79,7 +79,7 @@ def thingspeak(dbadapter: DBAdapterABC, url_template: str):
             url_with_date = url.format(start=start_date, end=end_date)
             print(f"looking at time range [{start_date!s} - {end_date!s}]")
 
-            responses = ThingspeakResponses(url=url_with_date, filter_ts=last_activity, field_map=field_map)
+            responses = ThingspeakResponse(url=url_with_date, filter_ts=last_activity, field_map=field_map)
             for resp in responses:
                 # print(f"found new response: {resp!r}")
                 for code, value in resp.values:

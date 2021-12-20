@@ -1,0 +1,32 @@
+{
+    "channel": {
+        "field1": "0.3um",
+        "field2": "0.5um",
+        "field3": "1.0um",
+        "field4": "2.5um",
+        "field5": "5.0um",
+        "field6": "10.0um"
+      },
+      "feeds": [
+        {
+          "created_at": "2021-12-19T11:06:23Z",
+          "entry_id": 1,
+          "field1": "10544.95",
+          "field2": "2980.84",
+          "field3": "724.11",
+          "field4": "127.53",
+          "field5": "28.51",
+          "field6": "2.25"
+        },
+        {
+          "created_at": "2021-12-19T11:08:23Z",
+          "entry_id": 2,
+          "field1": "10676.61",
+          "field2": "3037.76",
+          "field3": "744.85",
+          "field4": "122.69",
+          "field5": "24.39",
+          "field6": "0.96"
+        }
+    ]
+}

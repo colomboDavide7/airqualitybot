@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.response import PurpleairResponses
+from airquality.response import PurpleairResponse
 from airquality.respitem import ChannelProperties
 
 TEST_PURPLEAIR_RESPONSES = """
@@ -42,7 +42,7 @@ class TestPurpleairResponse(TestCase):
         mocked_urlopen.return_value = mocked_resp
 
         existing_names = ["n1 (1)", "n2 (2)"]
-        responses = PurpleairResponses(url="foo", existing_names=existing_names)
+        responses = PurpleairResponse(url="foo", existing_names=existing_names)
         self.assertEqual(len(responses), 1)
         resp = responses[0]
         self.assertEqual(resp.name, "n3 (3)")
@@ -67,7 +67,7 @@ class TestPurpleairResponse(TestCase):
         mocked_urlopen.return_value = mocked_resp
 
         existing_names = ["n1 (1)", "n2 (2)"]
-        responses = PurpleairResponses(url="foo", existing_names=existing_names)
+        responses = PurpleairResponse(url="foo", existing_names=existing_names)
         self.assertEqual(len(responses), 0)
 
         with self.assertRaises(IndexError):

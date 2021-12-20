@@ -15,7 +15,7 @@ MOBILE_MEASURE_COLS = ['param_id', 'param_value', 'timestamp', 'geom']
 from itertools import count
 from datetime import datetime, timedelta
 from airquality.dbadapterabc import DBAdapterABC
-from airquality.response import AtmotubeResponses
+from airquality.response import AtmotubeResponse
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
 
@@ -71,7 +71,7 @@ def atmotube(dbadapter: DBAdapterABC, url_template: str):
         while begin <= now:
             date_to_lookat = extract_date(timestamp=begin, fmt=DATE_FMT)
             url_with_date = url.format(date=date_to_lookat)
-            responses = AtmotubeResponses(url=url_with_date, filter_ts=last_activity)
+            responses = AtmotubeResponse(url=url_with_date, filter_ts=last_activity)
             for resp in responses:
                 print(f"found new response: {resp!r}")
                 for code, val in resp.values:
