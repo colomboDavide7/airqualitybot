@@ -41,19 +41,12 @@ class ItemWithIdentityABC(ABC):
     def created_at(self) -> str:
         pass
 
-    def __repr__(self):
-        return f"{type(self).__name__}(name={self.name()}, type={self.type()}, created_at={self.created_at}, " \
-               f"channels={self.channel_properties()!r})"
-
 
 class ItemWithLocationABC(ABC):
 
     @abstractmethod
     def located_at(self) -> str:
         pass
-
-    def __repr__(self):
-        return f"{type(self).__name__}(located_at={self.located_at()})"
 
 
 class ItemWithMeasuresABC(ABC):
@@ -74,9 +67,6 @@ class ItemWithMeasuresABC(ABC):
     @abstractmethod
     def values(self) -> Set[Tuple[str, Any]]:
         pass
-
-    def __repr__(self):
-        return f"{type(self).__name__}(created_at={self.measured_at()}, values={self.values()!r})"
 
 
 ###################################### AtmotubeItem(object) ######################################
@@ -112,7 +102,7 @@ class AtmotubeItem(ItemWithMeasuresABC, ItemWithLocationABC):
         return self._geom
 
     def __repr__(self):
-        return super().__repr__()
+        return f"{type(self).__name__}(created_at={self.measured_at()}, values={self.values()!r}, located_at={self.located_at()})"
 
 
 ###################################### PurpleairItem(object) ######################################
@@ -154,6 +144,10 @@ class PurpleairItem(ItemWithIdentityABC, ItemWithLocationABC):
             self._geom = ST_GEOM_FROM_TEXT.format(geom=point, srid=26918)
         return self._geom
 
+    def __repr__(self):
+        return f"{type(self).__name__}(name={self.name()}, type={self.type()}, created_at={self.created_at}, " \
+               f"channel_properties={self.channel_properties()!r}, located_at={self.located_at()})"
+
 
 ###################################### ThingspeakItem(object) ######################################
 class ThingspeakItem(ItemWithMeasuresABC):
@@ -176,3 +170,6 @@ class ThingspeakItem(ItemWithMeasuresABC):
 
     def values(self) -> Set[Tuple[str, Any]]:
         return {(self.field_map[f], self.item.get(f)) for f in self.field_map}
+
+    def __repr__(self):
+        return f"{type(self).__name__}(created_at={self.measured_at()}, values={self.values()!r})"
