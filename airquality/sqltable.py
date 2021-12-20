@@ -74,7 +74,7 @@ class JoinSQLTable(SQLTableABC):
     def join_cond(self) -> str:
         if not self._join_cond:
             self._join_cond = f"INNER JOIN {self.join_table.schema}.{self.join_table.name} AS {self.join_table.alias} " \
-                              f"ON {self.alias}.{self.fkey} = {self.join_table.alias}.{self.join_table.pkey}"
+                              f"ON {self.alias}.{self.fkey}={self.join_table.alias}.{self.join_table.pkey}"
         return self._join_cond
 
     def select_condition(self) -> str:
