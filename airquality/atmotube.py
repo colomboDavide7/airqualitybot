@@ -14,7 +14,7 @@ MOBILE_MEASURE_COLS = ['param_id', 'param_value', 'timestamp', 'geom']
 
 from itertools import count
 from datetime import datetime, timedelta
-from airquality.dbadapter import DBAdapter
+from airquality.dbadapterabc import DBAdapterABC
 from airquality.response import AtmotubeResponses
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
@@ -32,44 +32,23 @@ def add_days(timestamp: datetime, days: int) -> datetime:
     return timestamp + timedelta(days=days)
 
 
-def atmotube(dbadapter: DBAdapter, url_template: str):
+def atmotube(dbadapter: DBAdapterABC, url_template: str):
 
-    mobile_measure_table = SQLTable(dbadapter=dbadapter, table_name="mobile_measurement", pkey="id", selected_cols=MOBILE_MEASURE_COLS)
-    frozen_mobile_dict = FrozenSQLDict(table=mobile_measure_table)
-    heavyweight_mobile_dict = HeavyweightMutableSQLDict(sqldict=frozen_mobile_dict)
+    mobile_measure_table = SQLTable(table_name="mobile_measurement", pkey="id", selected_cols=MOBILE_MEASURE_COLS)
+    heavyweight_mobile_dict = HeavyweightMutableSQLDict(table=mobile_measure_table, dbadapter=dbadapter)
 
     atmotube_measure_param_table = FilterSQLTable(
-            dbadapter=dbadapter,
-            table_name="measure_param",
-            pkey="id",
-            selected_cols=MEASURE_PARAM_COLS,
-            filter_col="param_name",
-            filter_val="atmotube"
+        table_name="measure_param", pkey="id", selected_cols=MEASURE_PARAM_COLS, filter_col="param_name", filter_val="atmotube"
     )
-
-    frozen_measure_param_dict = FrozenSQLDict(table=atmotube_measure_param_table)
+    frozen_measure_param_dict = FrozenSQLDict(table=atmotube_measure_param_table, dbadapter=dbadapter)
 
     atmotube_sensor_table = FilterSQLTable(
-        dbadapter=dbadapter,
-        table_name="sensor",
-        pkey="id",
-        selected_cols=SENSOR_COLS,
-        filter_col="sensor_type",
-        filter_val="atmotube",
-        alias="s")
-
-    atmotube_apiparam_table = JoinSQLTable(
-            dbadapter=dbadapter,
-            table_name="api_param",
-            pkey="id",
-            fkey="sensor_id",
-            selected_cols=APIPARAM_COLS,
-            alias="a",
-            join_table=atmotube_sensor_table
+        table_name="sensor", pkey="id", selected_cols=SENSOR_COLS, filter_col="sensor_type", filter_val="atmotube", alias="s"
     )
-
-    frozen_apiparam_dict = FrozenSQLDict(table=atmotube_apiparam_table)
-    mutable_apiparam_dict = MutableSQLDict(sqldict=frozen_apiparam_dict)
+    atmotube_apiparam_table = JoinSQLTable(
+            table_name="api_param", pkey="id", fkey="sensor_id", selected_cols=APIPARAM_COLS, alias="a", join_table=atmotube_sensor_table
+    )
+    mutable_apiparam_dict = MutableSQLDict(table=atmotube_apiparam_table, dbadapter=dbadapter)
 
     print(f"\ninsert measurements into: {heavyweight_mobile_dict!r}")
     print(f"\ngetting measure parameters from: {frozen_measure_param_dict!r}")

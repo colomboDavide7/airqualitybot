@@ -7,14 +7,12 @@
 ######################################################
 from typing import List
 from abc import ABC, abstractmethod
-from airquality.dbadapter import DBAdapter
 
 
 ############################################# SQLTableABC(ABC) #############################################
 class SQLTableABC(ABC):
 
-    def __init__(self, dbadapter: DBAdapter, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
-        self.dbadapter = dbadapter
+    def __init__(self, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
         self.name = table_name
         self.alias = alias
         self.pkey = pkey
@@ -41,17 +39,15 @@ class SQLTableABC(ABC):
         pass
 
     def __repr__(self):
-        return f"{type(self).__name__}(dbconn={self.dbadapter!r}, table_name={self.name}, pkey={self.pkey}, " \
+        return f"{type(self).__name__}(table_name={self.name}, pkey={self.pkey}, " \
                f"selected_cols={self.join_cols}, schema={self.schema}, alias={self.alias})"
 
 
 ############################################# SQLTable(SQLTableABC) #############################################
 class SQLTable(SQLTableABC):
 
-    def __init__(self, dbadapter: DBAdapter, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
-        super(SQLTable, self).__init__(
-            dbadapter=dbadapter, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
-        )
+    def __init__(self, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
+        super(SQLTable, self).__init__(table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias)
 
     def select_condition(self) -> str:
         return ""
@@ -67,19 +63,9 @@ class SQLTable(SQLTableABC):
 class JoinSQLTable(SQLTableABC):
 
     def __init__(
-            self,
-            dbadapter: DBAdapter,
-            table_name: str,
-            pkey: str,
-            fkey: str,
-            selected_cols: List[str],
-            join_table: SQLTableABC,
-            schema="level0_raw",
-            alias="t"
+        self, table_name: str, pkey: str, fkey: str, selected_cols: List[str], join_table: SQLTableABC, schema="level0_raw", alias="t"
     ):
-        super(JoinSQLTable, self).__init__(
-            dbadapter=dbadapter, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
-        )
+        super(JoinSQLTable, self).__init__(table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias)
         self.join_table = join_table
         self.fkey = fkey
         self._join_cond = ""
@@ -108,19 +94,9 @@ class JoinSQLTable(SQLTableABC):
 class FilterSQLTable(SQLTableABC):
 
     def __init__(
-            self,
-            dbadapter: DBAdapter,
-            table_name: str,
-            pkey: str,
-            selected_cols: List[str],
-            filter_col: str,
-            filter_val: str,
-            schema="level0_raw",
-            alias="t"
+        self, table_name: str, pkey: str, selected_cols: List[str], filter_col: str, filter_val: str, schema="level0_raw", alias="t"
     ):
-        super(FilterSQLTable, self).__init__(
-            dbadapter=dbadapter, table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias
-        )
+        super(FilterSQLTable, self).__init__(table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias)
         self._filter_col = filter_col
         self._filter_val = filter_val
         self._filter_condition = ""
@@ -142,5 +118,4 @@ class FilterSQLTable(SQLTableABC):
         return self.select_key_condition(key=key)
 
     def __repr__(self):
-        return super(FilterSQLTable, self).__repr__().strip(')') + \
-               f", filter_col={self._filter_col}, filter_val={self._filter_val})"
+        return super(FilterSQLTable, self).__repr__().strip(')') + f", filter_col={self._filter_col}, filter_val={self._filter_val})"

@@ -22,7 +22,7 @@ THINGSPEAK_FIELDS = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B':
 
 from itertools import count
 from datetime import datetime, timedelta
-from airquality.dbadapter import DBAdapter
+from airquality.dbadapterabc import DBAdapterABC
 from airquality.response import ThingspeakResponses
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
 from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
@@ -36,46 +36,23 @@ def add_days(timestamp: datetime, days: int) -> datetime:
     return timestamp + timedelta(days=days)
 
 
-def thingspeak(dbadapter: DBAdapter, url_template: str):
+def thingspeak(dbadapter: DBAdapterABC, url_template: str):
 
-    station_measure_table = SQLTable(dbadapter=dbadapter, table_name="station_measurement", pkey="id",
-                                     selected_cols=STATION_MEASURE_COLS)
-    frozen_measure_dict = FrozenSQLDict(table=station_measure_table)
-    heavyweight_measure_dict = HeavyweightMutableSQLDict(sqldict=frozen_measure_dict)
+    station_measure_table = SQLTable(table_name="station_measurement", pkey="id", selected_cols=STATION_MEASURE_COLS)
+    heavyweight_measure_dict = HeavyweightMutableSQLDict(table=station_measure_table, dbadapter=dbadapter)
 
     thingspeak_measure_param_table = FilterSQLTable(
-        dbadapter=dbadapter,
-        table_name="measure_param",
-        pkey="id",
-        selected_cols=MEASURE_PARAM_COLS,
-        filter_col="param_name",
-        filter_val="thingspeak"
+        table_name="measure_param", pkey="id", selected_cols=MEASURE_PARAM_COLS, filter_col="param_name", filter_val="thingspeak"
     )
-
-    frozen_measure_param_dict = FrozenSQLDict(table=thingspeak_measure_param_table)
+    frozen_measure_param_dict = FrozenSQLDict(table=thingspeak_measure_param_table, dbadapter=dbadapter)
 
     thingspeak_sensor_table = FilterSQLTable(
-        dbadapter=dbadapter,
-        table_name="sensor",
-        pkey="id",
-        selected_cols=SENSOR_COLS,
-        filter_col="sensor_type",
-        filter_val="thingspeak",
-        alias="s"
+        table_name="sensor", pkey="id", selected_cols=SENSOR_COLS, filter_col="sensor_type", filter_val="thingspeak", alias="s"
     )
-
     thingspeak_apiparam_table = JoinSQLTable(
-        dbadapter=dbadapter,
-        table_name="api_param",
-        pkey="id",
-        fkey="sensor_id",
-        selected_cols=APIPARAM_COLS,
-        alias="a",
-        join_table=thingspeak_sensor_table
+        table_name="api_param", pkey="id", fkey="sensor_id", selected_cols=APIPARAM_COLS, alias="a", join_table=thingspeak_sensor_table
     )
-
-    frozen_apiparam_dict = FrozenSQLDict(table=thingspeak_apiparam_table)
-    mutable_apiparam_dict = MutableSQLDict(sqldict=frozen_apiparam_dict)
+    mutable_apiparam_dict = MutableSQLDict(table=thingspeak_apiparam_table, dbadapter=dbadapter)
 
     print(f"\ninsert measurements into: {heavyweight_measure_dict!r}")
     print(f"\ngetting measure parameters from: {frozen_measure_param_dict!r}")

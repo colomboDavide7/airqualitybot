@@ -13,7 +13,7 @@ from urllib.error import HTTPError
 from airquality.atmotube import atmotube
 from airquality.purpleair import purpleair
 from airquality.thingspeak import thingspeak
-from airquality.dbadapter import DBAdapter
+from airquality.dbadapterabc import Psycopg2DBAdapter
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     personality = args[0]
     start = perf_counter()
     try:
-        db_adapter = DBAdapter(
+        db_adapter = Psycopg2DBAdapter(
             dbname=os.environ['database'],
             host=os.environ['host'],
             port=os.environ['port'],

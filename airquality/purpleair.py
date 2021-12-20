@@ -13,31 +13,22 @@ SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 
 from itertools import count
 from datetime import datetime
-from airquality.dbadapter import DBAdapter
+from airquality.dbadapterabc import DBAdapterABC
 from airquality.response import PurpleairResponses
 from airquality.sqltable import SQLTable, FilterSQLTable
-from airquality.sqldict import MutableSQLDict, FrozenSQLDict
+from airquality.sqldict import MutableSQLDict
 
 
-def purpleair(dbadapter: DBAdapter, url_template: str):
+def purpleair(dbadapter: DBAdapterABC, url_template: str):
 
-    sensor_table = FilterSQLTable(
-        dbadapter=dbadapter,
-        table_name="sensor", pkey="id",
-        selected_cols=SENSOR_COLS,
-        filter_col="sensor_type",
-        filter_val="purpleair"
-    )
-    frozen_sensor_dict = FrozenSQLDict(table=sensor_table)
-    mutable_sensor_dict = MutableSQLDict(sqldict=frozen_sensor_dict)
+    sensor_table = FilterSQLTable(table_name="sensor", pkey="id", selected_cols=SENSOR_COLS, filter_col="sensor_type", filter_val="purpleair")
+    mutable_sensor_dict = MutableSQLDict(table=sensor_table, dbadapter=dbadapter)
 
-    apiparam_table = SQLTable(dbadapter=dbadapter, table_name="api_param", pkey="id", selected_cols=APIPARAM_COLS)
-    frozen_apiparam_dict = FrozenSQLDict(table=apiparam_table)
-    mutable_apiparam_dict = MutableSQLDict(sqldict=frozen_apiparam_dict)
+    apiparam_table = SQLTable(table_name="api_param", pkey="id", selected_cols=APIPARAM_COLS)
+    mutable_apiparam_dict = MutableSQLDict(table=apiparam_table, dbadapter=dbadapter)
 
-    geolocation_table = SQLTable(dbadapter=dbadapter, table_name="sensor_at_location", pkey="id", selected_cols=GEOLOCATION_COLS)
-    frozen_geolocation_dict = FrozenSQLDict(table=geolocation_table)
-    mutable_geolocation_dict = MutableSQLDict(sqldict=frozen_geolocation_dict)
+    geolocation_table = SQLTable(table_name="sensor_at_location", pkey="id", selected_cols=GEOLOCATION_COLS)
+    mutable_geolocation_dict = MutableSQLDict(table=geolocation_table, dbadapter=dbadapter)
 
     sensor_counter = count(mutable_sensor_dict.start_id)
     apiparam_counter = count(mutable_apiparam_dict.start_id)
