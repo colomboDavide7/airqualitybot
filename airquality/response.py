@@ -7,7 +7,7 @@
 ######################################################
 from airquality.respitem import AtmotubeItem, PurpleairItem, ThingspeakItem
 from collections.abc import Iterable
-from typing import List, Dict
+from typing import List, Dict, Generator
 from urllib.request import urlopen
 from datetime import datetime
 from itertools import islice
@@ -49,10 +49,10 @@ class AtmotubeResponse(APIResponse):
         with urlopen(url) as resp:
             self.parsed = loads(resp.read())
 
-    def items(self):
+    def items(self) -> Generator[AtmotubeItem, None, None]:
         return (self.item_factory(item) for item in self.parsed['data']['items'])
 
-    def filtered_items(self):
+    def filtered_items(self) -> Generator[AtmotubeItem, None, None]:
         return (item for item in self.items() if item > self.filter_ts)
 
 
@@ -67,11 +67,11 @@ class PurpleairResponse(APIResponse):
             self.fields = resp['fields']
             self.data = resp['data']
 
-    def items(self):
+    def items(self) -> Generator[PurpleairItem, None, None]:
         return (self.item_factory(dict(zip(self.fields, d))) for d in self.data)
 
-    def filtered_items(self):
-        return (item for item in self.items() if item.name not in self.existing_names)
+    def filtered_items(self) -> Generator[PurpleairItem, None, None]:
+        return (item for item in self.items() if item.name() not in self.existing_names)
 
 
 ###################################### ThingspeakResponses(Iterable) ######################################
@@ -85,8 +85,8 @@ class ThingspeakResponse(APIResponse):
             parsed = loads(resp.read())
             self.feeds = parsed['feeds']
 
-    def items(self):
+    def items(self) -> Generator[ThingspeakItem, None, None]:
         return (self.item_factory(item, field_map=self.field_map) for item in self.feeds)
 
-    def filtered_items(self):
+    def filtered_items(self) -> Generator[ThingspeakItem, None, None]:
         return (item for item in self.items() if item > self.filter_ts)

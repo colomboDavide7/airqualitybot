@@ -30,10 +30,10 @@ class TestResponses(unittest.TestCase):
         responses = AtmotubeResponse(url="some_url", filter_ts=filter_datetime)
         self.assertEqual(len(responses), 1)
         resp = responses[0]
-        self.assertEqual(resp.measured_at, "2021-08-11 00:00:00")
-        expected_values = [('voc', 0.17), ('pm1', 7), ('pm25', 9), ('pm10', 10), ('t', 29), ('h', 42), ('p', 1004.72)]
-        self.assertEqual(resp.values, expected_values)
-        self.assertEqual(resp.located_at, "ST_GeomFromText('POINT(9 45)', 26918)")
+        self.assertEqual(resp.measured_at(), "2021-08-11 00:00:00")
+        expected_values = {('voc', 0.17), ('pm1', 7), ('pm25', 9), ('pm10', 10), ('t', 29), ('h', 42), ('p', 1004.72)}
+        self.assertEqual(resp.values(), expected_values)
+        self.assertEqual(resp.located_at(), "ST_GeomFromText('POINT(9 45)', 26918)")
 
 
 if __name__ == '__main__':
