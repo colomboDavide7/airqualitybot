@@ -11,13 +11,7 @@ from airquality.response import ThingspeakResponse
 from datetime import datetime
 from airquality.thingspeak import MAPPING_1A, MAPPING_1B, MAPPING_2A, MAPPING_2B     # importing the 'field_map'
 
-
 SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
-TEST_THINGSPEAK_RESPONSES_1A = """
-{
-    "channel":
-}
-"""
 
 
 class TestThingspeakResponse(TestCase):

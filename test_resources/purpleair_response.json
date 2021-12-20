@@ -1,0 +1,67 @@
+{
+    "fields":
+    [
+        "sensor_index",
+        "name",
+        "latitude",
+        "longitude",
+        "altitude",
+        "primary_id_a",
+        "primary_key_a",
+        "primary_id_b",
+        "primary_key_b",
+        "secondary_id_a",
+        "secondary_key_a",
+        "secondary_id_b",
+        "secondary_key_b",
+        "date_created"
+    ],
+    "data": [
+                [
+                    1,
+                    "n1",
+                    45.29,
+                    9.13,
+                    274,
+                    "id1a1",
+                    "key1a1",
+                    "id1b1",
+                    "key1b1",
+                    "id2a1",
+                    "key2a1",
+                    "id2b1",
+                    "key2b1",
+                    1531432748
+                ],
+                [
+                    2,
+                    "n2",
+                    45.23,
+                    9.11, 274,
+                    "id1a2",
+                    "key1a2",
+                    "id1b2",
+                    "key1b2",
+                    "id2a2",
+                    "key2a2",
+                    "id2b2",
+                    "key2b2",
+                    1531432758
+                ],
+                [
+                    3,
+                    "n3",
+                    45.24,
+                    9.12, 274,
+                    "id1a3",
+                    "key1a3",
+                    "id1b3",
+                    "key1b3",
+                    "id2a3",
+                    "key2a3",
+                    "id2b3",
+                    "key2b3",
+                    1538255423
+                ]
+        ]
+}
