@@ -56,12 +56,12 @@ class MutableSQLDict(FrozenSQLDict, MutableMapping):
         return 1 if row[0] is None else row[0] + 1
 
     def __setitem__(self, key, value):
-        if key in self:
+        if key in super(MutableSQLDict, self).__iter__():
             del self[key]
         self.dbadapter.execute(f"INSERT INTO {self.table.schema}.{self.table.name} VALUES ({key}, {value});")
 
     def __delitem__(self, key):
-        if key not in self:
+        if key not in super(MutableSQLDict, self).__iter__():
             raise KeyError(f"{self.__class__.__name__} in __delitem__(): cannot found record indexed by '{key}' in {self.table!r}")
         self.dbadapter.execute(
             f"DELETE FROM {self.table.schema}.{self.table.name} AS {self.table.alias} {self.table.delete_key_condition(key)};"

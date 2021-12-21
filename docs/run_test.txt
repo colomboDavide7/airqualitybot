@@ -1,7 +1,10 @@
-The program is tested using 'unittest' framework implementation in python
-standard library.
+The program is tested using 'unittest' framework implementation in python standard library.
 
 
 ###################### RUN ALL TESTS ######################
 
 python3.8 -m unittest discover -s test -p 'test_*.py'
+
+###################### RUN ALL THE TESTS WITH COVERAGE ######################
+
+coverage run --source airquality -m unittest discover && coverage report --skip-covered
