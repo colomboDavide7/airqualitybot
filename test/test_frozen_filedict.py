@@ -8,7 +8,7 @@
 from os import listdir
 from os.path import join, isfile
 from unittest import TestCase, main
-from airquality.frozenfiledict import FrozenFileDict
+from airquality.filedict import FrozenFileDict
 
 TEST_DIRECTORY = "test_resources"
 

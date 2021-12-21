@@ -38,7 +38,8 @@ class FrozenFileDict(Mapping):
             raise KeyError(f"{type(self).__name__} in __getitem__: expected '{key}' to be one of: {self.included_files!r}")
         fullname = join(self.path_to_dir, key)
         with open(fullname, 'r') as f:
-            return f.read()
+            text = f.read()
+            return (line for line in text.split('\n') if line)
 
     def __iter__(self):
         return iter(self.included_files)
