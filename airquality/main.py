@@ -13,13 +13,14 @@ from urllib.error import HTTPError
 from airquality.atmotube import atmotube
 from airquality.purpleair import purpleair
 from airquality.thingspeak import thingspeak
+from airquality.geonames import geonames
 from airquality.dbadapter import Psycopg2DBAdapter
 
 
 def main():
     args = sys.argv[1:]
     if len(args) != 1:
-        print("USAGE => python(version) -m airquality [purpleair|atmotube|thingspeak]")
+        print("USAGE => python(version) -m airquality [purpleair|atmotube|thingspeak|geonames]")
         sys.exit(1)
 
     dotenv.load_dotenv(dotenv_path='.env')
@@ -42,6 +43,14 @@ def main():
                 atmotube(dbadapter=db, url_template=os.environ['atmotube_url'])
             elif personality == 'thingspeak':
                 thingspeak(dbadapter=db, url_template=os.environ['thingspeak_url'])
+            elif personality == 'geonames':
+                path_to_repo = f"{os.environ['resource_dir']}/{os.environ['geonames_dir']}"
+                data_dir = os.environ['geonames_data_dir']
+                patient_poscodes_dir = os.environ['geonames_pos_dir']
+                countries_to_include = os.environ['geonames_included_files'].split(',')
+                geonames(
+                    path_to_repo=path_to_repo, data_dir=data_dir, include=countries_to_include, patient_poscodes_dir=patient_poscodes_dir
+                )
             else:
                 raise ValueError(f"Wrong command line argument '{personality}'")
         print(f"\ndatabase connection closed successfully")
