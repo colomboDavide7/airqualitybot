@@ -16,18 +16,16 @@ from airquality.mixindict import GeonamesDict
 from contextlib import suppress
 
 
-def geonames(path_to_repo: str, data_dir: str, include: List[str], dbadapter: DBAdapterABC, patient_poscodes_dir: str = ""):
+def geonames(country_data_dir: str, include: List[str], dbadapter: DBAdapterABC, patient_poscodes_dir: str = ""):
 
     frozen_poscodes_files = None
     if patient_poscodes_dir:
-        path_to_dir = f"{path_to_repo}/{patient_poscodes_dir}"
-        frozen_poscodes_files = FrozenFileDict(path_to_dir=path_to_dir, include=include, line_factory=PoscodeLine)
+        frozen_poscodes_files = FrozenFileDict(path_to_dir=patient_poscodes_dir, include=include, line_factory=PoscodeLine)
         print(repr(frozen_poscodes_files))
 
-    path_to_dir = f"{path_to_repo}/{data_dir}"
     geoarea_table = SQLTable(table_name="geographical_area", pkey="id", selected_cols=['postal_code'])
     geonames_dict = GeonamesDict(
-        path_to_dir=path_to_dir, include=include, table=geoarea_table, dbadapter=dbadapter, line_factory=GeonamesLine)
+        path_to_dir=country_data_dir, include=include, table=geoarea_table, dbadapter=dbadapter, line_factory=GeonamesLine)
     print(repr(geonames_dict))
 
     # Create a local (to the function) FrozenSQLDict on 'geographical_area' to get the database postcodes

@@ -15,11 +15,12 @@ from airquality.purpleair import purpleair
 from airquality.thingspeak import thingspeak
 from airquality.geonames import geonames
 from airquality.dbadapter import Psycopg2DBAdapter
+from airquality.factory import GeonamesFactory
 
 
 def main():
     args = sys.argv[1:]
-    if len(args) != 1:
+    if len(args) < 1:
         print("USAGE => python(version) -m airquality [purpleair|atmotube|thingspeak|geonames]")
         sys.exit(1)
 
@@ -44,13 +45,9 @@ def main():
             elif personality == 'thingspeak':
                 thingspeak(dbadapter=db, url_template=os.environ['thingspeak_url'])
             elif personality == 'geonames':
-                path_to_repo = f"{os.environ['resource_dir']}/{os.environ['geonames_dir']}"
-                data_dir = os.environ['geonames_data_dir']
-                patient_poscodes_dir = os.environ['geonames_pos_dir']
-                countries_to_include = os.environ['geonames_included_files'].split(',')
-                geonames(
-                    path_to_repo=path_to_repo, data_dir=data_dir, include=countries_to_include, dbadapter=db
-                )
+                fact = GeonamesFactory(personality=personality, options=args[1:])
+                geonames(country_data_dir=fact.country_data_dir, include=fact.country_to_include, dbadapter=db,
+                         patient_poscodes_dir=fact.patient_poscode_dir)
             else:
                 raise ValueError(f"Wrong command line argument '{personality}'")
         print(f"\ndatabase connection closed successfully")
