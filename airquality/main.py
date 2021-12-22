@@ -15,7 +15,7 @@ from airquality.purpleair import purpleair
 from airquality.thingspeak import thingspeak
 from airquality.geonames import geonames
 from airquality.dbadapter import Psycopg2DBAdapter
-from airquality.factory import GeonamesFactory
+from airquality.geonames_factory import GeonamesFactory
 from airquality.purpleair_factory import PurpleairFactory
 from airquality.atmotube_factory import AtmotubeFactory
 from airquality.thingspeak_factory import ThingspeakFactory

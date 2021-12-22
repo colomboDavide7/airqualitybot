@@ -5,8 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
-
 MAPPING_1A = {'field1': 'pm1.0_atm_a', 'field2': 'pm2.5_atm_a', 'field3': 'pm10.0_atm_a', 'field6': 'temperature_a',
               'field7': 'humidity_a'}
 MAPPING_1B = {'field1': 'pm1.0_atm_b', 'field2': 'pm2.5_atm_b', 'field3': 'pm10.0_atm_b', 'field6': 'pressure_b'}
@@ -18,7 +16,6 @@ THINGSPEAK_FIELDS = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B':
 
 from itertools import count
 from contextlib import suppress
-from datetime import datetime, timedelta
 from airquality.dblookup import MeasureParamLookup
 from airquality.response import ThingspeakResponse
 from airquality.iterableurl import ThingspeakIterableURL
@@ -27,10 +24,6 @@ from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightInsertS
 
 def wrap_value(value: str, default="NULL") -> str:
     return f"'{value}'" if value is not None else default
-
-
-def add_days(timestamp: datetime, days: int) -> datetime:
-    return timestamp + timedelta(days=days)
 
 
 def thingspeak(
@@ -51,7 +44,6 @@ def thingspeak(
 
         iterable_url = ThingspeakIterableURL(url_template=url, begin=last_activity, step_in_days=7)
         for url in iterable_url:
-            print(url)
             items = ThingspeakResponse(url=url, filter_ts=last_activity, field_map=field_map)
 
             values = ','.join(
