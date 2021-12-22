@@ -28,6 +28,10 @@ class APIResponse(Iterable, ABC):
     def filtered_items(self):
         pass
 
+    @property
+    def last_item(self):
+        return next(islice(self, len(self) - 1, None))
+
     def __getitem__(self, index):
         if index >= len(self):
             raise IndexError(f"{type(self).__name__} in __getitem__(): index '{index}' out of range")
@@ -48,10 +52,6 @@ class AtmotubeResponse(APIResponse):
         self.filter_ts = filter_ts
         with urlopen(url) as resp:
             self.parsed = loads(resp.read())
-
-    @property
-    def last_item(self) -> AtmotubeItem:
-        return next(islice(self, len(self)-1, None))
 
     def items(self) -> Generator[AtmotubeItem, None, None]:
         return (self.item_factory(item) for item in self.parsed['data']['items'])
