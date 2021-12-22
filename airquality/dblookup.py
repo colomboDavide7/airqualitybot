@@ -7,7 +7,7 @@
 ######################################################
 from collections import namedtuple
 
-
+SENSOR_COLS = ['sensor_type', 'sensor_name']
 MEASURE_PARAM_COLS = ['param_code', 'param_name', 'param_unit']
 
 
@@ -16,3 +16,10 @@ class MeasureParamLookup(namedtuple('MeasureParamLookup', MEASURE_PARAM_COLS)):
 
     def __repr__(self):
         return f"{type(self).__name__}(param_code={self.param_code}, param_name={self.param_name}, param_unit={self.param_unit})"
+
+
+class SensorLookup(namedtuple('SensorLookup', SENSOR_COLS)):
+    """A class that wraps a database lookup to 'sensor' table just to avoid using list indexing."""
+
+    def __repr__(self):
+        return f"{type(self).__name__}(sensor_type={self.sensor_type}, sensor_name={self.sensor_name})"
