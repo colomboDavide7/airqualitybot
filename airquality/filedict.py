@@ -9,14 +9,16 @@ from os import listdir
 from typing import List
 from os.path import join, isfile, isdir
 from collections.abc import Mapping
+from airquality.fileline import GeonamesLine
 
 
 class FrozenFileDict(Mapping):
 
-    def __init__(self, path_to_dir: str, include: List[str]):
+    def __init__(self, path_to_dir: str, include: List[str], line_factory=GeonamesLine):
         if not isdir(path_to_dir):
             raise NotADirectoryError(f"{type(self).__name__} expected '{path_to_dir}' to be a directory!")
         self.path_to_dir = path_to_dir
+        self.line_factory = line_factory
         self.include = include
         self._all = []
         self._included = []
@@ -33,13 +35,12 @@ class FrozenFileDict(Mapping):
             self._included = [f for f in self.all_files if f in self.include]
         return self._included
 
-    def __getitem__(self, key):
-        if key not in self.included_files:
-            raise KeyError(f"{type(self).__name__} in __getitem__: expected '{key}' to be one of: {self.included_files!r}")
-        fullname = join(self.path_to_dir, key)
+    def __getitem__(self, filename):
+        if filename not in self.included_files:
+            raise KeyError(f"{type(self).__name__} in __getitem__: expected '{filename}' to be one of: {self.included_files!r}")
+        fullname = join(self.path_to_dir, filename)
         with open(fullname, 'r') as f:
-            text = f.read()
-            return (line for line in text.split('\n') if line)
+            return (self.line_factory(line) for line in f.read().split('\n') if line)
 
     def __iter__(self):
         return iter(self.included_files)

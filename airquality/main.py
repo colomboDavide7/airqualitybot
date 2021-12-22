@@ -49,7 +49,7 @@ def main():
                 patient_poscodes_dir = os.environ['geonames_pos_dir']
                 countries_to_include = os.environ['geonames_included_files'].split(',')
                 geonames(
-                    path_to_repo=path_to_repo, data_dir=data_dir, include=countries_to_include, dbadapter=db, patient_poscodes_dir=patient_poscodes_dir
+                    path_to_repo=path_to_repo, data_dir=data_dir, include=countries_to_include, dbadapter=db
                 )
             else:
                 raise ValueError(f"Wrong command line argument '{personality}'")

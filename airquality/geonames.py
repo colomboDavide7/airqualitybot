@@ -1,77 +1,63 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 21/12/21 10:09
+# Date: 22/12/21 08:44
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from itertools import count
+GEOGRAPHICAL_AREA_COLS = ['postal_code', 'country_code', 'place_name', 'province', 'state', 'geom']
+
 from typing import List
+from itertools import count
 from airquality.dbadapter import DBAdapterABC
 from airquality.filedict import FrozenFileDict
-from airquality.sqltable import FilterSQLTable
-from airquality.sqldict import HeavyweightMutableSQLDict
-
-
-GEOGRAPHICAL_AREA_COLS = ['postal_code', 'country_code', 'place_name', 'province', 'state', 'geom']
-ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
-POSTGIS_POINT = "POINT({lon} {lat})"
+from airquality.sqltable import SQLTable
+from airquality.sqldict import FrozenSQLDict
+from airquality.mixindict import GeonamesDict
+from contextlib import suppress
 
 
 def strip_extension(filename: str) -> str:
+    """Remove the extension from the *filename* argument
+
+    >>> strip_extension("test.txt")
+    test
+    """
+
     return filename.split('.')[0]
-
-
-def clean_value(string: str) -> str:
-    return string.replace("'", "")
 
 
 def geonames(path_to_repo: str, data_dir: str, include: List[str], dbadapter: DBAdapterABC, patient_poscodes_dir: str = ""):
 
-    frozen_data_files = FrozenFileDict(path_to_dir=f"{path_to_repo}/{data_dir}", include=include)
-    print(repr(frozen_data_files))
-
+    frozen_poscodes_files = None
     if patient_poscodes_dir:
         frozen_poscodes_files = FrozenFileDict(path_to_dir=f"{path_to_repo}/{patient_poscodes_dir}", include=include)
         print(repr(frozen_poscodes_files))
 
-    for f in frozen_data_files:
-        print(f"looking at country '{strip_extension(f)}'")
-        country_table = FilterSQLTable(table_name="geographical_area", pkey="id", selected_cols=GEOGRAPHICAL_AREA_COLS,
-                                       filter_col="country_code", filter_val=strip_extension(f))
-        heavyweight_mutable_dict = HeavyweightMutableSQLDict(table=country_table, dbadapter=dbadapter)
+    geoarea_table = SQLTable(table_name="geographical_area", pkey="id", selected_cols=GEOGRAPHICAL_AREA_COLS)
+    geonames_dict = GeonamesDict(path_to_dir=f"{path_to_repo}/{data_dir}", include=include, table=geoarea_table, dbadapter=dbadapter)
 
-        print(repr(heavyweight_mutable_dict))
-        print(len(heavyweight_mutable_dict))
+    # Create a local (to the function) FrozenSQLDict on 'geographical_area' to get the database postcodes
+    geoarea_frozen_dict = FrozenSQLDict(table=geoarea_table, dbadapter=dbadapter)
+    database_poscodes = {record[0] for record in geoarea_frozen_dict.values()}
+    print(f"How much UNIQUE postal codes do we have into the database? #{len(database_poscodes)}")
 
-        # Create a Set for speed-up the lookup with the downside of wasting more memory
-        database_poscodes = {record[0] for pkey, record in heavyweight_mutable_dict.items()}
+    for filename in geonames_dict:
+        print(f"looking at country '{strip_extension(filename)}'")
 
-        lines = frozen_data_files[f]
-        parsed_lines = (line.split('\t') for line in lines)
-        new_poscodes = {line[1] for line in parsed_lines}
+        lines = geonames_dict[filename]
+        new_poscodes = {line.poscode for line in lines}
         print(f"How much UNIQUE postal codes do we have? #{len(new_poscodes)}")
 
         new_poscodes |= database_poscodes
         new_poscodes -= database_poscodes
-        print(f"How much UNIQUE new postal codes do we have? #{len(new_poscodes)}")
+        print(f"How much UNIQUE new (not in database) postal codes do we have? #{len(new_poscodes)}")
 
-        if patient_poscodes_dir:
-            new_poscodes &= set(frozen_poscodes_files[f])
-            print(f"How much UNIQUE new postal codes INTERSECTED to patient postal codes do we have? #{len(new_poscodes)}")
+        if frozen_poscodes_files is not None:
+            new_poscodes &= set(frozen_poscodes_files[filename])
+            print(f"How much UNIQUE new (not in database) PATIENT postal codes do we have? #{len(new_poscodes)}")
 
-        poscode_counter = count(heavyweight_mutable_dict.start_id)
-
-        lines = frozen_data_files[f]
-        for line in lines:
-            country, poscode, place, state, state_code, prov, prov_code, comm, comm_code, lat, lon, acc = line.split('\t')
-            if poscode in new_poscodes:
-                # print(f"found new place '{place}' in {country} with postal code {poscode}")
-                point = POSTGIS_POINT.format(lat=lat, lon=lon)
-                geom = ST_GEOM_FROM_TEXT.format(geom=point, srid=26918)
-                heavyweight_mutable_dict[next(poscode_counter)] = \
-                    f"'{poscode}', '{country}', '{clean_value(place)}', '{clean_value(prov)}', '{clean_value(state)}', {geom}"
-
-        if next(poscode_counter) != heavyweight_mutable_dict.start_id:
-            print(f"found new places to commit!")
-            heavyweight_mutable_dict.commit()
+        poscode_counter = count(geonames_dict.start_id)
+        values = ','.join(f"({next(poscode_counter)}, {line.sql_record})" for line in geonames_dict[filename] if line.poscode in new_poscodes)
+        with suppress(ValueError):
+            geonames_dict.commit(values)

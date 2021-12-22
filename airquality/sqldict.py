@@ -68,37 +68,6 @@ class MutableSQLDict(FrozenSQLDict, MutableMapping):
         )
 
 
-# class HeavyweightFrozenSQLDict(Mapping):
-#
-#     def __init__(self, table: SQLTableABC, dbadapter: DBAdapterABC):
-#         self.table = table
-#         self.dbadapter = dbadapter
-#         self._rows = None
-#
-#     @property
-#     def rows(self):
-#         if self._rows is None:
-#             tmp = self.dbadapter.fetch_all(
-#                 f"SELECT {self.table.alias}.{self.table.pkey} FROM {self.table.schema}.{self.table.name} AS {self.table.alias} "
-#                 f"{self.table.select_condition()};"
-#             )
-#             self._rows = ()
-#         return self._rows
-#
-#
-#     def __getitem__(self, key):
-#         pass
-#
-#     def __iter__(self):
-#         rows
-#
-#     def __len__(self):
-#         row = self.dbadapter.fetch_one(
-#             f"SELECT COUNT(*) FROM {self.table.schema}.{self.table.name} AS {self.table.alias} {self.table.select_condition()};"
-#         )
-#         return row[0]
-
-
 ###################################### HeavyweightMutableSQLDict(MutableMapping) ######################################
 class HeavyweightMutableSQLDict(FrozenSQLDict, MutableMapping):
 
