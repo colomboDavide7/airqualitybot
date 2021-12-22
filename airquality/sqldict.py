@@ -47,9 +47,6 @@ class FrozenSQLDict(Mapping):
 ########################################### MutableSQLDict(MutableMapping) ###########################################
 class MutableSQLDict(FrozenSQLDict, MutableMapping):
 
-    def __init__(self, table: SQLTableABC, dbadapter: DBAdapterABC):
-        super(MutableSQLDict, self).__init__(table=table, dbadapter=dbadapter)
-
     @property
     def start_id(self) -> int:
         row = self.dbadapter.fetch_one(f"SELECT MAX({self.table.pkey}) FROM {self.table.schema}.{self.table.name};")
@@ -68,27 +65,15 @@ class MutableSQLDict(FrozenSQLDict, MutableMapping):
         )
 
 
-###################################### HeavyweightMutableSQLDict(MutableMapping) ######################################
-class HeavyweightMutableSQLDict(FrozenSQLDict, MutableMapping):
-
-    def __init__(self, table: SQLTableABC, dbadapter: DBAdapterABC):
-        super(HeavyweightMutableSQLDict, self).__init__(table=table, dbadapter=dbadapter)
-        self._values2insert = ""
+###################################### HeavyweightMutableSQLDict(FrozenSQLDict) ######################################
+class HeavyweightInsertSQLDict(FrozenSQLDict):
 
     @property
     def start_id(self) -> int:
         row = self.dbadapter.fetch_one(f"SELECT MAX({self.table.pkey}) FROM {self.table.schema}.{self.table.name};")
         return 1 if row[0] is None else row[0] + 1
 
-    def commit(self):
-        if not self._values2insert:
+    def commit(self, values: str):
+        if not values:
             raise ValueError(f"{type(self).__name__} in commit(): cannot commit empty values to {self.table!r}")
-        self.dbadapter.execute(f"INSERT INTO {self.table.schema}.{self.table.name} VALUES {self._values2insert.strip(',')};")
-        self._values2insert = ""
-
-    def __setitem__(self, key, value):
-        self._values2insert += f"({key}, {value}),"
-
-    def __delitem__(self, key):
-        """For future implementation it can be used for deleting multiple records at a time."""
-        pass
+        self.dbadapter.execute(f"INSERT INTO {self.table.schema}.{self.table.name} VALUES {values};")

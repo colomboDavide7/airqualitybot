@@ -15,7 +15,7 @@ SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 
 class IterableURL(Iterable, ABC):
 
-    def __init__(self, url_template: str, begin: datetime, until: datetime, step_in_days=1):
+    def __init__(self, url_template: str, begin: datetime, until=datetime.now(), step_in_days=1):
         self.url_template = url_template
         self.begin = begin
         self.until = until
@@ -33,11 +33,15 @@ class IterableURL(Iterable, ABC):
     def __len__(self):
         return ((self.until - self.begin).days // self.step_in_days) + 1
 
+    def __repr__(self):
+        return f"{type(self).__name__}(begin={self.begin}, until={self.until}, step_in_days={self.step_in_days}, " \
+               f"url_template={self.url_template})"
+
 
 class AtmotubeIterableURL(IterableURL):
     DATE_KW = 'date'
 
-    def __init__(self, url_template: str, begin: datetime, until: datetime, step_in_days=1):
+    def __init__(self, url_template: str, begin: datetime, until=datetime.now(), step_in_days=1):
         super(AtmotubeIterableURL, self).__init__(url_template=url_template, begin=begin, until=until, step_in_days=step_in_days)
         self.url_template += "&date={%s}" % self.DATE_KW
 
@@ -52,7 +56,7 @@ class ThingspeakIterableURL(IterableURL):
     START_KW = 'start'
     END_KW = 'end'
 
-    def __init__(self, url_template: str, begin: datetime, until: datetime, step_in_days=1):
+    def __init__(self, url_template: str, begin: datetime, until=datetime.now(), step_in_days=1):
         super(ThingspeakIterableURL, self).__init__(url_template=url_template, begin=begin, until=until, step_in_days=step_in_days)
         self.url_template += "&start={%s}&end={%s}" % (self.START_KW, self.END_KW)
 

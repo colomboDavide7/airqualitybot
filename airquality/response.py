@@ -49,6 +49,10 @@ class AtmotubeResponse(APIResponse):
         with urlopen(url) as resp:
             self.parsed = loads(resp.read())
 
+    @property
+    def last_item(self) -> AtmotubeItem:
+        return next(islice(self, len(self)-1, None))
+
     def items(self) -> Generator[AtmotubeItem, None, None]:
         return (self.item_factory(item) for item in self.parsed['data']['items'])
 

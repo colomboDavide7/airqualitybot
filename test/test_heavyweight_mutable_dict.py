@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.sqldict import HeavyweightMutableSQLDict
+from airquality.sqldict import HeavyweightInsertSQLDict
 
 
 class TestHeavyweightMutableSQLDict(TestCase):
@@ -25,7 +25,7 @@ class TestHeavyweightMutableSQLDict(TestCase):
         return mocked_adapter
 
     def test_commit_empty_values_raises_ValueError(self):
-        heavyweight_dict = HeavyweightMutableSQLDict(table=self.mocked_table, dbadapter=self.mocked_adapter)
+        heavyweight_dict = HeavyweightInsertSQLDict(table=self.mocked_table, dbadapter=self.mocked_adapter)
         with self.assertRaises(ValueError):
             heavyweight_dict.commit()
 

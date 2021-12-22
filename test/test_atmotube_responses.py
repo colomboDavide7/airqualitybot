@@ -35,6 +35,21 @@ class TestResponses(unittest.TestCase):
         self.assertEqual(resp.values(), expected_values)
         self.assertEqual(resp.located_at(), "ST_GeomFromText('POINT(9 45)', 26918)")
 
+    @patch('airquality.response.urlopen')
+    def test_last_item(self, mocked_urlopen):
+        with open('test_resources/atmotube_response.json') as rf:
+            api_responses = rf.read()
+
+        mocked_resp = MagicMock()
+        mocked_resp.read.side_effect = [api_responses]
+        mocked_resp.__enter__.return_value = mocked_resp
+        mocked_urlopen.return_value = mocked_resp
+
+        filter_datetime = datetime.strptime("2021-08-10 17:59:00", SQL_DATETIME_FMT)
+        responses = AtmotubeResponse(url="some_url", filter_ts=filter_datetime)
+        self.assertEqual(len(responses), 2)
+        self.assertEqual(responses.last_item.measured_at(), "2021-08-11 00:00:00")
+
 
 if __name__ == '__main__':
     unittest.main()

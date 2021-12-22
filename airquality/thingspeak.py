@@ -25,7 +25,7 @@ from datetime import datetime, timedelta
 from airquality.dbadapter import DBAdapterABC
 from airquality.response import ThingspeakResponse
 from airquality.sqltable import FilterSQLTable, JoinSQLTable, SQLTable
-from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightMutableSQLDict
+from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightInsertSQLDict
 
 
 def wrap_value(value: str, default="NULL") -> str:
@@ -39,7 +39,7 @@ def add_days(timestamp: datetime, days: int) -> datetime:
 def thingspeak(dbadapter: DBAdapterABC, url_template: str):
 
     station_measure_table = SQLTable(table_name="station_measurement", pkey="id", selected_cols=STATION_MEASURE_COLS)
-    heavyweight_measure_dict = HeavyweightMutableSQLDict(table=station_measure_table, dbadapter=dbadapter)
+    heavyweight_measure_dict = HeavyweightInsertSQLDict(table=station_measure_table, dbadapter=dbadapter)
 
     thingspeak_measure_param_table = FilterSQLTable(
         table_name="measure_param", pkey="id", selected_cols=MEASURE_PARAM_COLS, filter_col="param_name", filter_val="thingspeak"

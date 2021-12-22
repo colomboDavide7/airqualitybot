@@ -17,6 +17,7 @@ from airquality.geonames import geonames
 from airquality.dbadapter import Psycopg2DBAdapter
 from airquality.factory import GeonamesFactory
 from airquality.purpleair_factory import PurpleairFactory
+from airquality.atmotube_factory import AtmotubeFactory
 
 
 def main():
@@ -43,7 +44,8 @@ def main():
                 fact = PurpleairFactory(personality=personality, options=args[1:], dbadapter=db)
                 purpleair(sensor_dict=fact.sensor_dict, apiparam_dict=fact.apiparam_dict, geolocation_dict=fact.geolocation_dict, url_template=fact.url_template)
             elif personality == 'atmotube':
-                atmotube(dbadapter=db, url_template=os.environ['atmotube_url'])
+                fact = AtmotubeFactory(personality=personality, options=args[1:], dbadapter=db)
+                atmotube(mobile_dict=fact.mobile_dict, measure_param_dict=fact.measure_param_dict, apiparam_dict=fact.apiparam_dict, url_template=fact.url_template)
             elif personality == 'thingspeak':
                 thingspeak(dbadapter=db, url_template=os.environ['thingspeak_url'])
             elif personality == 'geonames':
