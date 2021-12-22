@@ -9,12 +9,12 @@ from os import listdir
 from typing import List
 from os.path import join, isfile, isdir
 from collections.abc import Mapping
-from airquality.fileline import GeonamesLine
+from airquality.fileline import ParsedFileLineABC
 
 
 class FrozenFileDict(Mapping):
 
-    def __init__(self, path_to_dir: str, include: List[str], line_factory=GeonamesLine):
+    def __init__(self, path_to_dir: str, include: List[str], line_factory=ParsedFileLineABC):
         if not isdir(path_to_dir):
             raise NotADirectoryError(f"{type(self).__name__} expected '{path_to_dir}' to be a directory!")
         self.path_to_dir = path_to_dir

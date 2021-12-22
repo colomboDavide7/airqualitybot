@@ -5,10 +5,9 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-GEOGRAPHICAL_AREA_COLS = ['postal_code', 'country_code', 'place_name', 'province', 'state', 'geom']
-
 from typing import List
 from itertools import count
+from airquality.fileline import PoscodeLine, GeonamesLine
 from airquality.dbadapter import DBAdapterABC
 from airquality.filedict import FrozenFileDict
 from airquality.sqltable import SQLTable
@@ -17,25 +16,19 @@ from airquality.mixindict import GeonamesDict
 from contextlib import suppress
 
 
-def strip_extension(filename: str) -> str:
-    """Remove the extension from the *filename* argument
-
-    >>> strip_extension("test.txt")
-    test
-    """
-
-    return filename.split('.')[0]
-
-
 def geonames(path_to_repo: str, data_dir: str, include: List[str], dbadapter: DBAdapterABC, patient_poscodes_dir: str = ""):
 
     frozen_poscodes_files = None
     if patient_poscodes_dir:
-        frozen_poscodes_files = FrozenFileDict(path_to_dir=f"{path_to_repo}/{patient_poscodes_dir}", include=include)
+        path_to_dir = f"{path_to_repo}/{patient_poscodes_dir}"
+        frozen_poscodes_files = FrozenFileDict(path_to_dir=path_to_dir, include=include, line_factory=PoscodeLine)
         print(repr(frozen_poscodes_files))
 
-    geoarea_table = SQLTable(table_name="geographical_area", pkey="id", selected_cols=GEOGRAPHICAL_AREA_COLS)
-    geonames_dict = GeonamesDict(path_to_dir=f"{path_to_repo}/{data_dir}", include=include, table=geoarea_table, dbadapter=dbadapter)
+    path_to_dir = f"{path_to_repo}/{data_dir}"
+    geoarea_table = SQLTable(table_name="geographical_area", pkey="id", selected_cols=['postal_code'])
+    geonames_dict = GeonamesDict(
+        path_to_dir=path_to_dir, include=include, table=geoarea_table, dbadapter=dbadapter, line_factory=GeonamesLine)
+    print(repr(geonames_dict))
 
     # Create a local (to the function) FrozenSQLDict on 'geographical_area' to get the database postcodes
     geoarea_frozen_dict = FrozenSQLDict(table=geoarea_table, dbadapter=dbadapter)
@@ -43,8 +36,6 @@ def geonames(path_to_repo: str, data_dir: str, include: List[str], dbadapter: DB
     print(f"How much UNIQUE postal codes do we have into the database? #{len(database_poscodes)}")
 
     for filename in geonames_dict:
-        print(f"looking at country '{strip_extension(filename)}'")
-
         lines = geonames_dict[filename]
         new_poscodes = {line.poscode for line in lines}
         print(f"How much UNIQUE postal codes do we have? #{len(new_poscodes)}")
@@ -54,7 +45,8 @@ def geonames(path_to_repo: str, data_dir: str, include: List[str], dbadapter: DB
         print(f"How much UNIQUE new (not in database) postal codes do we have? #{len(new_poscodes)}")
 
         if frozen_poscodes_files is not None:
-            new_poscodes &= set(frozen_poscodes_files[filename])
+            lines = frozen_poscodes_files[filename]
+            new_poscodes &= {line.poscode for line in lines}
             print(f"How much UNIQUE new (not in database) PATIENT postal codes do we have? #{len(new_poscodes)}")
 
         poscode_counter = count(geonames_dict.start_id)
