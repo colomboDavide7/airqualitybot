@@ -145,7 +145,7 @@ class PurpleairItem(ItemWithIdentityABC, ItemWithLocationABC):
         return self._geom
 
     def __repr__(self):
-        return f"{type(self).__name__}(name={self.name()}, type={self.type()}, created_at={self.created_at}, " \
+        return f"{type(self).__name__}(name={self.name()}, type={self.type()}, created_at={self.created_at()}, " \
                f"channel_properties={self.channel_properties()!r}, located_at={self.located_at()})"
 
 

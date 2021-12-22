@@ -7,7 +7,7 @@
 ######################################################
 from airquality.respitem import AtmotubeItem, PurpleairItem, ThingspeakItem
 from collections.abc import Iterable
-from typing import List, Dict, Generator
+from typing import Set, Dict, Generator
 from urllib.request import urlopen
 from datetime import datetime
 from itertools import islice
@@ -59,7 +59,7 @@ class AtmotubeResponse(APIResponse):
 ###################################### PurpleairResponses(APIResponse) ######################################
 class PurpleairResponse(APIResponse):
 
-    def __init__(self, url: str, existing_names: List[str], item_factory=PurpleairItem):
+    def __init__(self, url: str, existing_names: Set[str], item_factory=PurpleairItem):
         super(PurpleairResponse, self).__init__(item_factory=item_factory)
         self.existing_names = existing_names
         with urlopen(url) as resp:
