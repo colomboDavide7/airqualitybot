@@ -45,9 +45,8 @@ def main():
             elif personality == 'thingspeak':
                 thingspeak(dbadapter=db, url_template=os.environ['thingspeak_url'])
             elif personality == 'geonames':
-                fact = GeonamesFactory(personality=personality, options=args[1:])
-                geonames(country_data_dir=fact.country_data_dir, include=fact.country_to_include, dbadapter=db,
-                         patient_poscodes_dir=fact.patient_poscode_dir)
+                fact = GeonamesFactory(personality=personality, options=args[1:], dbadapter=db)
+                geonames(geonames_dict=fact.geonames_dict, geoarea_dict=fact.geoarea_dict, poscodes_files=fact.poscodes_files)
             else:
                 raise ValueError(f"Wrong command line argument '{personality}'")
         print(f"\ndatabase connection closed successfully")
