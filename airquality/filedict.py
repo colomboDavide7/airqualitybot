@@ -37,7 +37,7 @@ class FrozenFileDict(Mapping):
 
     def __getitem__(self, filename):
         if filename not in self.included_files:
-            raise KeyError(f"{type(self).__name__} in __getitem__: expected '{filename}' to be one of: {self.included_files!r}")
+            raise KeyError(f"{type(self).__name__} in __getitem__(): expected '{filename}' to be one of: [{self.included_files!r}]")
         fullname = join(self.path_to_dir, filename)
         with open(fullname, 'r') as f:
             return (self.line_factory(line) for line in f.read().split('\n') if line)

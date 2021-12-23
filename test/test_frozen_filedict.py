@@ -9,6 +9,7 @@ from os import listdir
 from os.path import join, isfile
 from unittest import TestCase, main
 from airquality.filedict import FrozenFileDict
+from airquality.fileline import GeonamesLine
 
 TEST_DIRECTORY = "test_resources"
 
@@ -27,12 +28,12 @@ class TestFrozenFileDict(TestCase):
     def test_include_files(self):
         """Test that the only available files are those included."""
 
-        file_dict = FrozenFileDict(path_to_dir=TEST_DIRECTORY, include=["ES.txt"])
+        file_dict = FrozenFileDict(path_to_dir=TEST_DIRECTORY, include=["ES.txt"], line_factory=GeonamesLine)
         self.assertEqual(file_dict.all_files, self.all_files)
         expected_included_files = ["ES.txt"]
         self.assertEqual(file_dict.included_files, expected_included_files)
         self.assertEqual(len(file_dict), 1)
-        print(file_dict['ES.txt'])
+        print(repr(next(file_dict['ES.txt'])))
 
     def test_get_invalid_file_content(self):
         """Test KeyError when call __getitem__() with a filename that is not included (and also does not exist)."""

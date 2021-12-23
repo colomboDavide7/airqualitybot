@@ -25,6 +25,7 @@ class DBAdapterABC(ABC):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type == DatabaseAdapterError:
             print(f"{type(self).__name__} in __exit__(): {exc_tb}")
+        print(f"\ndatabase connection closed successfully")
         self.close()
 
     def execute(self, query: str):
@@ -61,6 +62,7 @@ class Psycopg2DBAdapter(DBAdapterABC):
         self._host = host
         self._port = port
         self._conn = psycopg2.connect(database=self._dbname, user=self._user, password=self._password, host=self._host, port=self._port)
+        print(f"database connection opened: {self!r}")
 
     def process_query(self, query: str, fetchone=False, execute=False):
         try:

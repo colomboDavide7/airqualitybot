@@ -11,12 +11,12 @@ POSTGIS_POINT = "POINT({lon} {lat})"
 
 class ParsedFileLine(object):
 
-    def __init__(self, line: str, line_limit: int, separator='\t'):
+    def __init__(self, line: str, line_limit=0, separator='\t'):
         self.separator = separator
         self.line_limit = line_limit
         self.line = line.split(separator)
         if len(self.line) != line_limit:
-            raise ValueError(f"{type(self).__name__} expected line length to be 12 instead of '{len(self.line)}'")
+            raise ValueError(f"{type(self).__name__} expected line length to be '{self.line_limit}' instead of '{len(self.line)}'")
 
     def __repr__(self):
         return f"{type(self).__name__}(line={self.line}, separator='{self.separator}', line_limit={self.line_limit})"
