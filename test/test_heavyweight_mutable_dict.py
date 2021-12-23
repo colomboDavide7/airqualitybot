@@ -27,7 +27,7 @@ class TestHeavyweightMutableSQLDict(TestCase):
     def test_commit_empty_values_raises_ValueError(self):
         heavyweight_dict = HeavyweightInsertSQLDict(table=self.mocked_table, dbadapter=self.mocked_adapter)
         with self.assertRaises(ValueError):
-            heavyweight_dict.commit()
+            heavyweight_dict.commit(values="")
 
 
 if __name__ == '__main__':

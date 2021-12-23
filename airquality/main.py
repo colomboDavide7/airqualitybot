@@ -46,7 +46,7 @@ def main():
                 purpleair(sensor_dict=fact.sensor_dict, apiparam_dict=fact.apiparam_dict, geolocation_dict=fact.geolocation_dict, url_template=fact.url_template)
             elif personality == 'atmotube':
                 fact = AtmotubeFactory(personality=personality, dbadapter=db)
-                atmotube(mobile_dict=fact.mobile_dict, measure_param_dict=fact.measure_param_dict, apiparam_dict=fact.apiparam_dict, url_template=fact.url_template)
+                atmotube(mobile_dict=fact.measure_dict, measure_param_dict=fact.measure_param_dict, apiparam_dict=fact.apiparam_dict, url_template=fact.url_template)
             elif personality == 'thingspeak':
                 fact = ThingspeakFactory(personality=personality, dbadapter=db)
                 thingspeak(measure_dict=fact.measure_dict, measure_param_dict=fact.measure_param_dict, apiparam_dict=fact.apiparam_dict, url_template=fact.url_template)
