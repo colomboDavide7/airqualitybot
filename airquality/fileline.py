@@ -5,15 +5,13 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import abc
-
 ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 POSTGIS_POINT = "POINT({lon} {lat})"
 
 
-class ParsedFileLineABC(abc.ABC):
+class ParsedFileLine(object):
 
-    def __init__(self, line: str, separator='\t', line_limit=1):
+    def __init__(self, line: str, line_limit: int, separator='\t'):
         self.separator = separator
         self.line_limit = line_limit
         self.line = line.split(separator)
@@ -21,10 +19,10 @@ class ParsedFileLineABC(abc.ABC):
             raise ValueError(f"{type(self).__name__} expected line length to be 12 instead of '{len(self.line)}'")
 
     def __repr__(self):
-        return f"{type(self).__name__}(line={self.line}, separator={self.separator}, line_limit={self.line_limit})"
+        return f"{type(self).__name__}(line={self.line}, separator='{self.separator}', line_limit={self.line_limit})"
 
 
-class PoscodeLine(ParsedFileLineABC):
+class PoscodeLine(ParsedFileLine):
 
     def __init__(self, line: str, separator='\t', line_limit=1):
         super(PoscodeLine, self).__init__(line=line, separator=separator, line_limit=line_limit)
@@ -34,7 +32,7 @@ class PoscodeLine(ParsedFileLineABC):
         return self.line[0]
 
 
-class GeonamesLine(ParsedFileLineABC):
+class GeonamesLine(ParsedFileLine):
 
     def __init__(self, line: str, separator='\t', line_limit=12):
         super(GeonamesLine, self).__init__(line=line, separator=separator, line_limit=line_limit)
