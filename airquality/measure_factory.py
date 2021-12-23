@@ -7,13 +7,10 @@
 ######################################################
 import os
 from abc import ABC, abstractmethod
+from airquality.dbrepo import DBRepository
 from airquality.dbadapter import DBAdapterABC
-from airquality.sqltable import SQLTableABC, FilterSQLTable, JoinSQLTable
+from airquality.sqltable import SQLTable
 from airquality.sqldict import HeavyweightInsertSQLDict, FrozenSQLDict, MutableSQLDict
-
-SENSOR_COLS = ['sensor_type', 'sensor_name']
-MEASURE_PARAM_COLS = ['param_code', 'param_name', 'param_unit']
-APIPARAM_COLS = ['sensor_id', 'ch_key', 'ch_id', 'ch_name', 'last_acquisition']
 
 
 class MeasureFactory(ABC):
@@ -24,7 +21,7 @@ class MeasureFactory(ABC):
         self.options = options
 
     @abstractmethod
-    def measure_table(self) -> SQLTableABC:
+    def measure_table(self) -> SQLTable:
         pass
 
     @property
@@ -36,24 +33,26 @@ class MeasureFactory(ABC):
         return HeavyweightInsertSQLDict(table=self.measure_table(), dbadapter=self.dbadapter)
 
     @property
-    def measure_param_table(self) -> FilterSQLTable:
-        return FilterSQLTable(
-            table_name="measure_param", pkey="id", selected_cols=MEASURE_PARAM_COLS, filter_col="param_name", filter_val=self.personality
-        )
-
-    @property
     def measure_param_dict(self) -> FrozenSQLDict:
-        return FrozenSQLDict(table=self.measure_param_table, dbadapter=self.dbadapter)
-
-    @property
-    def apiparam_table(self) -> JoinSQLTable:
-        join_table = FilterSQLTable(
-            table_name="sensor", pkey="id", selected_cols=SENSOR_COLS, filter_col="sensor_type", filter_val=self.personality, alias="s"
-        )
-        return JoinSQLTable(
-            table_name="api_param", pkey="id", fkey="sensor_id", selected_cols=APIPARAM_COLS, alias="a", join_table=join_table
+        return FrozenSQLDict(
+            table=DBRepository.filtered_measure_param_table(requested_param=self.personality), dbadapter=self.dbadapter
         )
 
     @property
     def apiparam_dict(self) -> MutableSQLDict:
-        return MutableSQLDict(table=self.apiparam_table, dbadapter=self.dbadapter)
+        join_table = DBRepository.filtered_sensor_table(requested_type=self.personality)
+        return MutableSQLDict(
+            table=DBRepository.joined_sensor_api_param_table(join_table=join_table), dbadapter=self.dbadapter
+        )
+
+
+class AtmotubeFactory(MeasureFactory):
+
+    def measure_table(self) -> SQLTable:
+        return DBRepository.mobile_measure_table()
+
+
+class ThingspeakFactory(MeasureFactory):
+
+    def measure_table(self) -> SQLTable:
+        return DBRepository.station_measure_table()

@@ -32,7 +32,8 @@ def thingspeak(
         apiparam_dict: MutableSQLDict,
         url_template: str
 ):
-    measure_counter = count(measure_dict.start_id)
+    measure_counter = count(measure_dict.start_measure_id)
+    packet_counter = count(measure_dict.start_packet_id)
     code2id = {MeasureParamLookup(*record).param_code: pkey for pkey, record in measure_param_dict.items()}
 
     for pkey, record in apiparam_dict.items():
@@ -46,16 +47,16 @@ def thingspeak(
         for url in iterable_url:
             items = ThingspeakResponse(url=url, filter_ts=last_activity, field_map=field_map)
 
-            values = ','.join(
-                f"({next(measure_counter)}, {code2id[code]}, '{sensor_id}', {wrap_value(val)}, '{item.measured_at()}')"
-                for item in items for code, val in item.values()
-            )
+            values = ""
+            for item in items:
+                packet_id = next(packet_counter)
+                for code, val in item.values():
+                    values += f"({next(measure_counter)}, {packet_id}, {sensor_id}, {code2id[code]}, {wrap_value(val)}, '{item.measured_at()}'),"
 
             with suppress(ValueError):
-                # Commit all the measurement to insert
-                measure_dict.commit(values)
+                print(f"{values[0:200]} ...... {values[-200:-1]}")
+                measure_dict.commit(values.strip(','))
 
-                # Update last acquisition timestamp to avoid redundancy
                 last_acquisition = items.last_item.measured_at()
-                print(last_acquisition)
                 apiparam_dict[pkey] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
+                print(f"last_acquisition: {last_acquisition}")

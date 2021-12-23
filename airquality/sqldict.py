@@ -69,8 +69,13 @@ class MutableSQLDict(FrozenSQLDict, MutableMapping):
 class HeavyweightInsertSQLDict(FrozenSQLDict):
 
     @property
-    def start_id(self) -> int:
+    def start_measure_id(self) -> int:
         row = self.dbadapter.fetch_one(f"SELECT MAX({self.table.pkey}) FROM {self.table.schema}.{self.table.name};")
+        return 1 if row[0] is None else row[0] + 1
+
+    @property
+    def start_packet_id(self) -> int:
+        row = self.dbadapter.fetch_one(f"SELECT MAX(packet_id) FROM {self.table.schema}.{self.table.name};")
         return 1 if row[0] is None else row[0] + 1
 
     def commit(self, values: str):

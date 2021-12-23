@@ -12,10 +12,13 @@ from airquality.mixindict import GeonamesDict
 from airquality.filedict import FrozenFileDict
 
 
-def geonames(geonames_dict: GeonamesDict, geoarea_dict: FrozenSQLDict, poscodes_files: FrozenFileDict):
+def geonames(geonames_dict: GeonamesDict, geoarea_dict: FrozenSQLDict, service_dict: FrozenSQLDict, poscodes_files: FrozenFileDict):
 
     database_poscodes = {record[0] for record in geoarea_dict.values()}
     print(f"How much UNIQUE postal codes do we have into the database? #{len(database_poscodes)}")
+
+    service_id = next(iter(service_dict))
+    print(f"found service {service_id}")
 
     for filename in geonames_dict:
         lines = geonames_dict[filename]
@@ -31,6 +34,6 @@ def geonames(geonames_dict: GeonamesDict, geoarea_dict: FrozenSQLDict, poscodes_
         print(f"How much UNIQUE new (not in database) postal codes do we have? #{len(new_poscodes)}")
 
         poscode_counter = count(geonames_dict.start_id)
-        values = ','.join(f"({next(poscode_counter)}, {line.sql_record})" for line in geonames_dict[filename] if line.poscode in new_poscodes)
+        values = ','.join(f"({next(poscode_counter)}, {service_id}, {line.sql_record})" for line in geonames_dict[filename] if line.poscode in new_poscodes)
         with suppress(ValueError):
             geonames_dict.commit(values)

@@ -10,7 +10,7 @@ from typing import List
 from airquality.dbadapter import DBAdapterABC
 from airquality.filedict import FrozenFileDict
 from airquality.fileline import PoscodeLine, GeonamesLine
-from airquality.sqltable import SQLTable
+from airquality.dbrepo import DBRepository
 from airquality.sqldict import FrozenSQLDict
 from airquality.mixindict import GeonamesDict
 
@@ -53,16 +53,14 @@ class GeonamesFactory(object):
         return FrozenFileDict(path_to_dir=self._country_data_dir(), include=self._country_to_include(), line_factory=GeonamesLine)
 
     @property
-    def geoarea_table(self):
-        if self._geoarea_table is None:
-            self._geoarea_table = SQLTable(table_name="geographical_area", pkey="id", selected_cols=['postal_code'])
-        return self._geoarea_table
-
-    @property
     def geoarea_dict(self):
         if self._geoarea_dict is None:
-            self._geoarea_dict = FrozenSQLDict(table=self.geoarea_table, dbadapter=self.dbadapter)
+            self._geoarea_dict = FrozenSQLDict(table=DBRepository.geoarea_table(), dbadapter=self.dbadapter)
         return self._geoarea_dict
+
+    @property
+    def service_dict(self) -> FrozenSQLDict:
+        return FrozenSQLDict(table=DBRepository.filtered_service_table(requested_type=self.personality), dbadapter=self.dbadapter)
 
     @property
     def geonames_dict(self):
@@ -70,7 +68,7 @@ class GeonamesFactory(object):
             self._geonames_dict = GeonamesDict(
                 path_to_dir=self._country_data_dir(),
                 include=self._country_to_include(),
-                table=self.geoarea_table,
+                table=DBRepository.geoarea_table(),
                 dbadapter=self.dbadapter,
                 line_factory=GeonamesLine
             )

@@ -23,7 +23,8 @@ def atmotube(
         apiparam_dict: MutableSQLDict,
         url_template: str
 ):
-    measure_counter = count(mobile_dict.start_id)
+    measure_counter = count(mobile_dict.start_measure_id)
+    packet_counter = count(mobile_dict.start_packet_id)
     code2id = {MeasureParamLookup(*record).param_code: pkey for pkey, record in measure_param_dict.items()}
 
     for pkey, record in apiparam_dict.items():
@@ -36,14 +37,15 @@ def atmotube(
         for url in iterable_url:
             items = AtmotubeResponse(url=url, filter_ts=last_activity)
 
-            values = ','.join(
-                f"({next(measure_counter)}, {code2id[code]}, {wrap_value(val)}, '{item.measured_at()}', {item.located_at()})"
-                for item in items for code, val in item.values()
-            )
+            values = ""
+            for item in items:
+                packet_id = next(packet_counter)
+                for code, val in item.values():
+                    values += f"({next(measure_counter)}, {packet_id}, {code2id[code]}, {wrap_value(val)}, '{item.measured_at()}', {item.located_at()}),"
 
             with suppress(ValueError):
                 print(f"{values[0:200]} ...... {values[-200:-1]}")
-                mobile_dict.commit(values)
+                mobile_dict.commit(values.strip(','))
 
                 last_acquisition = items.last_item.measured_at()
                 apiparam_dict[pkey] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"

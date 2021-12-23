@@ -14,8 +14,7 @@ from airquality.program_timer import ProgramTimer
 from airquality.dbadapter import Psycopg2DBAdapter
 from airquality.geonames_factory import GeonamesFactory
 from airquality.purpleair_factory import PurpleairFactory
-from airquality.atmotube_factory import AtmotubeFactory
-from airquality.thingspeak_factory import ThingspeakFactory
+from airquality.measure_factory import AtmotubeFactory, ThingspeakFactory
 
 
 def main():
@@ -40,4 +39,6 @@ def main():
                     thingspeak(measure_dict=fact.measure_dict, measure_param_dict=fact.measure_param_dict, apiparam_dict=fact.apiparam_dict, url_template=fact.url_template)
                 if personality == 'geonames':
                     fact = GeonamesFactory(personality=personality, dbadapter=dbadapter, options=options)
-                    geonames(geonames_dict=fact.geonames_dict, geoarea_dict=fact.geoarea_dict, poscodes_files=fact.poscodes_files)
+                    geonames(geonames_dict=fact.geonames_dict, geoarea_dict=fact.geoarea_dict, service_dict=fact.service_dict, poscodes_files=fact.poscodes_files)
+                if personality == 'openweathermap':
+                    print("running OpenWeatherData....")
