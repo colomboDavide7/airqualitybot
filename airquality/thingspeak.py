@@ -33,7 +33,6 @@ def thingspeak(
         url_template: str
 ):
     measure_counter = count(measure_dict.start_measure_id)
-    packet_counter = count(measure_dict.start_packet_id)
     code2id = {MeasureParamLookup(*record).param_code: pkey for pkey, record in measure_param_dict.items()}
 
     for pkey, record in apiparam_dict.items():
@@ -46,12 +45,11 @@ def thingspeak(
         iterable_url = ThingspeakIterableURL(url_template=url, begin=last_activity, step_in_days=7)
         for url in iterable_url:
             items = ThingspeakResponse(url=url, filter_ts=last_activity, field_map=field_map)
-
-            values = ""
-            for item in items:
-                packet_id = next(packet_counter)
-                for code, val in item.values():
-                    values += f"({next(measure_counter)}, {packet_id}, {sensor_id}, {code2id[code]}, {wrap_value(val)}, '{item.measured_at()}'),"
+            max_packet_id = measure_dict.max_packet_id
+            values = ','.join(
+                f"({next(measure_counter)}, {max_packet_id + idx}, {sensor_id}, {code2id[code]}, {wrap_value(val)}, '{item.measured_at()}')"
+                for idx, item in enumerate(items) for code, val in item.values()
+            )
 
             with suppress(ValueError):
                 print(f"{values[0:200]} ...... {values[-200:-1]}")

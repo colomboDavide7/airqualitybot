@@ -74,7 +74,7 @@ class HeavyweightInsertSQLDict(FrozenSQLDict):
         return 1 if row[0] is None else row[0] + 1
 
     @property
-    def start_packet_id(self) -> int:
+    def max_packet_id(self) -> int:
         row = self.dbadapter.fetch_one(f"SELECT MAX(packet_id) FROM {self.table.schema}.{self.table.name};")
         return 1 if row[0] is None else row[0] + 1
 
