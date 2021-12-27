@@ -9,7 +9,7 @@ import sys
 import os
 from unittest import TestCase, main
 from unittest.mock import patch
-from airquality.program_handler import ProgramHandler, Option
+from airquality.program_handler import ProgramHandler, Option, HelpException
 
 
 class TestProgramHandler(TestCase):
@@ -32,7 +32,10 @@ class TestProgramHandler(TestCase):
         with patch.object(sys, 'argv', test_argv):
             with patch.dict(os.environ, self.test_environ):
                 with ProgramHandler() as ph:
-                    expected_options = [Option(pers='p3', short_name='-a', long_name='--all')]
+                    expected_options = [Option(pers='p1', short_name='', long_name=''),
+                                        Option(pers='p2', short_name='', long_name=''),
+                                        Option(pers='p3', short_name='-a', long_name='--all'),
+                                        Option(pers='p4', short_name='', long_name='')]
                     self.assertEqual(ph.valid_options, expected_options)
                     self.assertEqual(ph.valid_personalities, ['p1', 'p2', 'p3', 'p4'])
                     self.assertEqual(ph.personality, "p1")
@@ -68,7 +71,16 @@ class TestProgramHandler(TestCase):
         with patch.object(sys, 'argv', test_argv):
             with self.assertRaises(KeyError):
                 handler = ProgramHandler()
-                handler.personality
+                print(handler.personality)
+
+    def test_help_exception_when_personality_is_help(self):
+        test_argv = ['program_name', 'help']
+
+        with patch.object(sys, 'argv', test_argv):
+            with patch.dict(os.environ, self.test_environ):
+                with ProgramHandler() as ph:
+                    with self.assertRaises(HelpException):
+                        print(ph.personality)
 
 
 if __name__ == '__main__':

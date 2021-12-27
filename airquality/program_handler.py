@@ -9,7 +9,6 @@ import sys
 from os import environ
 from typing import List
 from dotenv import load_dotenv
-from contextlib import suppress
 from collections import namedtuple
 from urllib.error import HTTPError, URLError
 
@@ -17,10 +16,16 @@ from urllib.error import HTTPError, URLError
 class Option(namedtuple('Option', ['pers', 'short_name', 'long_name'])):
 
     def __str__(self):
-        return f"{self.short_name},{self.long_name}"
+        if self.short_name and self.long_name:
+            return f"{self.short_name},{self.long_name}"
+        return ""
 
     def __repr__(self):
         return f"{type(self).__name__}(personality={self.pers}, short_name={self.short_name}, long_name={self.long_name})"
+
+
+class HelpException(Exception):
+    pass
 
 
 class ProgramHandler(object):
@@ -37,13 +42,17 @@ class ProgramHandler(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type == HelpException:
+            print(self.program_usage_message)
+            sys.exit(1)
+
         if exc_type in (ValueError, KeyError, HTTPError, URLError):
             print(f"{type(self).__name__} in __exit__(): {exc_val!r}")
             sys.exit(1)
 
     @property
     def program_usage_message(self) -> str:
-        pers = ' | '.join(f"{vp} [{opt!s}]" if opt.pers == vp else f"{vp} []" for vp in self.valid_personalities for opt in self.valid_options)
+        pers = ' | '.join(f"{opt.pers} [{opt!s}]" for opt in self.valid_options)
         return environ['program_usage_msg'].format(pers=pers)
 
     @property
@@ -68,15 +77,21 @@ class ProgramHandler(object):
     def valid_options(self) -> List[Option]:
         if not self._options:
             for pers in self.valid_personalities:
-                with suppress(KeyError):
+                try:
                     short_name, long_name = environ[f'{pers}_opt'].split(',')
                     self._options.append(Option(pers=pers, short_name=short_name, long_name=long_name))
+                except KeyError:
+                    self._options.append(Option(pers=pers, short_name="", long_name=""))
         return self._options
 
     @property
     def personality(self) -> str:
         p = self._args[0]
+        if p == 'help':
+            raise HelpException()
+
         if p not in self.valid_personalities:
+            print(self.program_usage_message)
             raise ValueError(f"Expected '{p}' to be one of: {self.valid_personalities!r}")
         return p
 
