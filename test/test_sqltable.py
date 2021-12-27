@@ -7,6 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from airquality.sqltable import SQLTable, FilterSQLTable, JoinSQLTable
+from airquality.sqlsearch import ILIKESearch
 
 TEST_SELECTED_COLS = ["fake_col1", "fake_col2"]
 
@@ -18,9 +19,13 @@ class TestSQLTable(TestCase):
         return SQLTable(table_name="fake_table", pkey="fake_pkey", selected_cols=TEST_SELECTED_COLS, schema="fake_schema", alias="fake_alias")
 
     @property
+    def ilike_search(self):
+        return ILIKESearch(search_column="fake_col1", search_value="v1", alias="fake_alias")
+
+    @property
     def filter_sqltable(self):
         return FilterSQLTable(table_name="fake_table", pkey="fake_pkey", selected_cols=TEST_SELECTED_COLS,
-                              schema="fake_schema", alias="fake_alias", filter_col="fake_col1", filter_val="v1")
+                              schema="fake_schema", alias="fake_alias", search=self.ilike_search)
 
     def test_simple_sqltable(self):
         table = self.simple_sqltable

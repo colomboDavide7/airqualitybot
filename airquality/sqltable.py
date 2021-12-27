@@ -5,14 +5,15 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import List
 from abc import ABC, abstractmethod
+from airquality.sqlsearch import SQLSearchABC
+from airquality.sqlcolumn import SQLColumnABC
 
 
 ############################################# SQLTableABC(ABC) #############################################
 class SQLTableABC(ABC):
 
-    def __init__(self, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
+    def __init__(self, table_name: str, pkey: str, selected_cols: SQLColumnABC, schema="level0_raw", alias="t"):
         self.name = table_name
         self.alias = alias
         self.pkey = pkey
@@ -23,7 +24,7 @@ class SQLTableABC(ABC):
     @property
     def join_cols(self) -> str:
         if not self._join_cols:
-            self._join_cols = ','.join(f"{self.alias}.{col}" for col in self.selected_cols)
+            self._join_cols = self.selected_cols.selected_columns()
         return self._join_cols
 
     @abstractmethod
@@ -40,13 +41,13 @@ class SQLTableABC(ABC):
 
     def __repr__(self):
         return f"{type(self).__name__}(table_name={self.name}, pkey={self.pkey}, " \
-               f"selected_cols={self.join_cols}, schema={self.schema}, alias={self.alias})"
+               f"selected_cols={self.selected_cols!r}, schema={self.schema}, alias={self.alias})"
 
 
 ############################################# SQLTable(SQLTableABC) #############################################
 class SQLTable(SQLTableABC):
 
-    def __init__(self, table_name: str, pkey: str, selected_cols: List[str], schema="level0_raw", alias="t"):
+    def __init__(self, table_name: str, pkey: str, selected_cols: SQLColumnABC, schema="level0_raw", alias="t"):
         super(SQLTable, self).__init__(table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias)
 
     def select_condition(self) -> str:
@@ -63,7 +64,7 @@ class SQLTable(SQLTableABC):
 class JoinSQLTable(SQLTableABC):
 
     def __init__(
-        self, table_name: str, pkey: str, fkey: str, selected_cols: List[str], join_table: SQLTableABC, schema="level0_raw", alias="t"
+        self, table_name: str, pkey: str, fkey: str, selected_cols: SQLColumnABC, join_table: SQLTableABC, schema="level0_raw", alias="t"
     ):
         super(JoinSQLTable, self).__init__(table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias)
         self.join_table = join_table
@@ -94,18 +95,17 @@ class JoinSQLTable(SQLTableABC):
 class FilterSQLTable(SQLTableABC):
 
     def __init__(
-        self, table_name: str, pkey: str, selected_cols: List[str], filter_col: str, filter_val: str, schema="level0_raw", alias="t"
+        self, table_name: str, pkey: str, selected_cols: SQLColumnABC, search: SQLSearchABC, schema="level0_raw", alias="t"
     ):
         super(FilterSQLTable, self).__init__(table_name=table_name, pkey=pkey, selected_cols=selected_cols, schema=schema, alias=alias)
-        self._filter_col = filter_col
-        self._filter_val = filter_val
+        self._search = search
         self._filter_condition = ""
         self._filter_condition_with_key = ""
 
     @property
     def filt_cond(self) -> str:
         if not self._filter_condition:
-            self._filter_condition = f"WHERE {self.alias}.{self._filter_col} ILIKE '%{self._filter_val}%'"
+            self._filter_condition = f"WHERE {self._search.search_condition()}"
         return self._filter_condition
 
     def select_condition(self) -> str:
@@ -118,4 +118,4 @@ class FilterSQLTable(SQLTableABC):
         return self.select_key_condition(key=key)
 
     def __repr__(self):
-        return super(FilterSQLTable, self).__repr__().strip(')') + f", filter_col={self._filter_col}, filter_val={self._filter_val})"
+        return super(FilterSQLTable, self).__repr__().strip(')') + f", search={self._search!r}"
