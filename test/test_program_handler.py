@@ -17,7 +17,7 @@ class TestProgramHandler(TestCase):
     def setUp(self) -> None:
         self.test_environ = {
             "valid_personalities": "p1,p2,p3,p4",
-            "program_usage_msg": "python(version) -m airquality [{pers}] [{opt}]",
+            "program_usage_msg": "python(version) -m airquality [{pers}]",
             "p3_opt": "-a,--all",
             "database": "test_db",
             "host": "test_host",
@@ -33,16 +33,27 @@ class TestProgramHandler(TestCase):
             with patch.dict(os.environ, self.test_environ):
                 with ProgramHandler() as ph:
                     expected_options = [Option(pers='p3', short_name='-a', long_name='--all')]
-                    self.assertEqual(ph.options, expected_options)
+                    self.assertEqual(ph.valid_options, expected_options)
                     self.assertEqual(ph.valid_personalities, ['p1', 'p2', 'p3', 'p4'])
                     self.assertEqual(ph.personality, "p1")
-                    expected_usage_msg = "python(version) -m airquality [p1|p2|p3|p4] [-a,--all]"
+                    expected_usage_msg = "python(version) -m airquality [p1 [] | p2 [] | p3 [-a,--all] | p4 []]"
                     self.assertEqual(ph.program_usage_message, expected_usage_msg)
                     self.assertEqual(ph.dbname, "test_db")
                     self.assertEqual(ph.port, "test_port")
                     self.assertEqual(ph.host, "test_host")
                     self.assertEqual(ph.user, "test_user")
                     self.assertEqual(ph.password, "test_password")
+                    self.assertEqual(ph.options, [])
+
+    def test_extract_options(self):
+        test_argv = ['prog_name', 'p3', '-a', '--bad_option']
+
+        with patch.object(sys, 'argv', test_argv):
+            with patch.dict(os.environ, self.test_environ):
+                with ProgramHandler() as ph:
+                    inserted_options = ph.options
+                    expected = [Option(pers="p3", short_name="-a", long_name="--all")]
+                    self.assertEqual(inserted_options, expected)
 
     def test_ValueError_when_arguments_length_is_less_than_one(self):
         test_argv = ["program_name"]

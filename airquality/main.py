@@ -44,4 +44,4 @@ def main():
                     geonames(geonames_dict=fact.geonames_dict, geoarea_dict=fact.geoarea_dict, service_dict=fact.service_dict, poscodes_files=fact.poscodes_files)
                 if personality == 'openweathermap':
                     fact = OpenWeatherMapFactory(personality=personality, dbadapter=dbadapter, options=options)
-                    openweathermap(service_apiparam=fact.service_api_param_dict, geoarea_dict=fact.geoarea_dict, url_template=fact.url_template)
+                    openweathermap(service_apiparam=fact.service_api_param_dict, geoarea_dict=fact.geoarea_dict, measure_param_dict=fact.measure_param_dict, url_template=fact.url_template)

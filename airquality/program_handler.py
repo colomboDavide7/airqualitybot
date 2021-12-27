@@ -43,7 +43,8 @@ class ProgramHandler(object):
 
     @property
     def program_usage_message(self) -> str:
-        return environ['program_usage_msg'].format(pers='|'.join(self.valid_personalities), opt='|'.join(f"{opt!s}" for opt in self.options))
+        pers = ' | '.join(f"{vp} [{opt!s}]" if opt.pers == vp else f"{vp} []" for vp in self.valid_personalities for opt in self.valid_options)
+        return environ['program_usage_msg'].format(pers=pers)
 
     @property
     def valid_personalities(self) -> List[str]:
@@ -53,6 +54,18 @@ class ProgramHandler(object):
 
     @property
     def options(self) -> List[Option]:
+        program_options = self._args[1:]
+        inserted_options = []
+        if program_options:
+            valid_options = [opt for opt in self.valid_options if opt.pers == self.personality]
+            for opt in program_options:
+                for valid in valid_options:
+                    if opt == valid.short_name or opt == valid.long_name:
+                        inserted_options.append(valid)
+        return inserted_options
+
+    @property
+    def valid_options(self) -> List[Option]:
         if not self._options:
             for pers in self.valid_personalities:
                 with suppress(KeyError):

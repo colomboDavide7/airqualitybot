@@ -15,8 +15,8 @@ class MeasureParamLookup(namedtuple('MeasureParamLookup', MEASURE_PARAM_COLS)):
     """A class that wraps a database lookup to 'measure_param' table just to avoid using list indexing."""
 
     def __repr__(self):
-        return f"{type(self).__name__}(param_owner={self.param_owner}, param_code={self.param_code}, " \
-               f"param_name={self.param_name}, param_unit={self.param_unit})"
+        return f"{type(self).__name__}(param_owner='{self.param_owner}', param_code='{self.param_code}', " \
+               f"param_name='{self.param_name}', param_unit='{self.param_unit}')"
 
 
 class SensorLookup(namedtuple('SensorLookup', SENSOR_COLS)):

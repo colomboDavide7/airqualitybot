@@ -77,9 +77,9 @@ class DBRepository(object):
         return SQLTable(table_name="geographical_area", pkey="id", selected_cols=column)
 
     @staticmethod
-    def filtered_geoarea_table(requested_cities="Pavia", country='IT') -> FilterSQLTable:
-        search_city = EqualSearch(search_column="place_name", search_value="Pavia")
-        search_country = EqualSearch(search_column='country_code', search_value="IT")
+    def filtered_geoarea_table(requested_cities: str, country: str) -> FilterSQLTable:
+        search_city = INSearch(search_column="place_name", search_value=requested_cities)
+        search_country = EqualSearch(search_column='country_code', search_value=country)
         search = SQLSearchLink(search_conditions=[search_city, search_country], link_keyword="AND")
         # in_search = INSearch(search_column="place_name", search_value=requested_cities)
 
