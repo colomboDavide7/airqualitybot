@@ -8,15 +8,21 @@
 from unittest import TestCase, main
 from airquality.sqltable import SQLTable, FilterSQLTable, JoinSQLTable
 from airquality.sqlsearch import ILIKESearch
+from airquality.sqlcolumn import SQLColumn
+from airquality.sqlcolumn_link import SQLColumnLink
 
 TEST_SELECTED_COLS = ["fake_col1", "fake_col2"]
 
 
 class TestSQLTable(TestCase):
 
+    @staticmethod
+    def columns(alias="fake_alias"):
+        return SQLColumnLink(columns=[SQLColumn(target_column=col, alias=alias) for col in TEST_SELECTED_COLS])
+
     @property
     def simple_sqltable(self):
-        return SQLTable(table_name="fake_table", pkey="fake_pkey", selected_cols=TEST_SELECTED_COLS, schema="fake_schema", alias="fake_alias")
+        return SQLTable(table_name="fake_table", pkey="fake_pkey", selected_cols=TestSQLTable.columns(), schema="fake_schema", alias="fake_alias")
 
     @property
     def ilike_search(self):
@@ -24,7 +30,7 @@ class TestSQLTable(TestCase):
 
     @property
     def filter_sqltable(self):
-        return FilterSQLTable(table_name="fake_table", pkey="fake_pkey", selected_cols=TEST_SELECTED_COLS,
+        return FilterSQLTable(table_name="fake_table", pkey="fake_pkey", selected_cols=TestSQLTable.columns(),
                               schema="fake_schema", alias="fake_alias", search=self.ilike_search)
 
     def test_simple_sqltable(self):
@@ -43,7 +49,7 @@ class TestSQLTable(TestCase):
 
     def test_join_sqltable_joined_to_simple_sqltable(self):
         join_table = self.simple_sqltable
-        table = JoinSQLTable(table_name="fake_join", pkey="join_pkey", fkey="join_fkey", selected_cols=TEST_SELECTED_COLS,
+        table = JoinSQLTable(table_name="fake_join", pkey="join_pkey", fkey="join_fkey", selected_cols=TestSQLTable.columns(alias="join_alias"),
                              schema="fake_schema", alias="join_alias", join_table=join_table)
         self.assertEqual(table.join_cols, "join_alias.fake_col1,join_alias.fake_col2")
         expected_join_cond = "INNER JOIN fake_schema.fake_table AS fake_alias ON join_alias.join_fkey=fake_alias.fake_pkey"
@@ -57,7 +63,7 @@ class TestSQLTable(TestCase):
     def test_join_sqltable_joined_to_filter_sqltable(self):
         join_table = self.filter_sqltable
         table = JoinSQLTable(table_name="fake_join", pkey="join_pkey", fkey="join_fkey",
-                             selected_cols=TEST_SELECTED_COLS,
+                             selected_cols=TestSQLTable.columns(alias="join_alias"),
                              schema="fake_schema", alias="join_alias", join_table=join_table)
         self.assertEqual(table.join_cols, "join_alias.fake_col1,join_alias.fake_col2")
         expected_join_cond = "INNER JOIN fake_schema.fake_table AS fake_alias ON join_alias.join_fkey=fake_alias.fake_pkey"
