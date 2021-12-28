@@ -5,15 +5,10 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from abc import ABC, abstractmethod
 import psycopg2
 import psycopg2.errors as pg2err
-
-
-class DatabaseAdapterError(Exception):
-
-    def __repr__(self):
-        return f"{type(self).__name__}"
+from abc import ABC, abstractmethod
+from airquality.exc import DatabaseAdapterError
 
 
 ###################################### DatabaseAdapterABC(ABC) ######################################
@@ -72,13 +67,13 @@ class Psycopg2DBAdapter(DBAdapterABC):
                 if not execute:
                     return cur.fetchone() if fetchone else cur.fetchall()
         except pg2err.Error as err:
-            raise DatabaseAdapterError(f"{type(self).__name__} in process_query(): {err!r}")
+            raise DatabaseAdapterError(msg=f"{err!r}", cause="process_query()")
 
     def close(self):
         try:
             self._conn.close()
         except pg2err.Error as err:
-            raise DatabaseAdapterError(f"{type(self).__name__} in process_query(): {err!r}")
+            raise DatabaseAdapterError(msg=f"{err!r}", cause=f"close()")
 
     def __repr__(self):
         return f"{type(self).__name__}(dbname={self._dbname}, user={self._user}, password=XXX, host={self._host}, port={self._port})"

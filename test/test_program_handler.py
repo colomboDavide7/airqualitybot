@@ -9,7 +9,7 @@ import sys
 import os
 from unittest import TestCase, main
 from unittest.mock import patch
-from airquality.program_handler import ProgramHandler, Option, HelpException
+from airquality.env import Environment, Option, HelpException
 
 
 class TestProgramHandler(TestCase):
@@ -31,7 +31,7 @@ class TestProgramHandler(TestCase):
 
         with patch.object(sys, 'argv', test_argv):
             with patch.dict(os.environ, self.test_environ):
-                with ProgramHandler() as ph:
+                with Environment() as ph:
                     expected_options = [Option(pers='p1', short_name='', long_name=''),
                                         Option(pers='p2', short_name='', long_name=''),
                                         Option(pers='p3', short_name='-a', long_name='--all'),
@@ -53,7 +53,7 @@ class TestProgramHandler(TestCase):
 
         with patch.object(sys, 'argv', test_argv):
             with patch.dict(os.environ, self.test_environ):
-                with ProgramHandler() as ph:
+                with Environment() as ph:
                     inserted_options = ph.options
                     expected = [Option(pers="p3", short_name="-a", long_name="--all")]
                     self.assertEqual(inserted_options, expected)
@@ -63,14 +63,14 @@ class TestProgramHandler(TestCase):
 
         with patch.object(sys, 'argv', test_argv):
             with self.assertRaises(ValueError):
-                ProgramHandler()
+                Environment()
 
     def test_KeyError_when_handler_is_used_without_context_manager(self):
         test_argv = ["program_name", "p4"]
 
         with patch.object(sys, 'argv', test_argv):
             with self.assertRaises(KeyError):
-                handler = ProgramHandler()
+                handler = Environment()
                 print(handler.personality)
 
     def test_help_exception_when_personality_is_help(self):
@@ -78,7 +78,7 @@ class TestProgramHandler(TestCase):
 
         with patch.object(sys, 'argv', test_argv):
             with patch.dict(os.environ, self.test_environ):
-                with ProgramHandler() as ph:
+                with Environment() as ph:
                     with self.assertRaises(HelpException):
                         print(ph.personality)
 

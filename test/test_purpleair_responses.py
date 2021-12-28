@@ -7,8 +7,8 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.response import PurpleairResponse
-from airquality.respitem import ChannelProperties
+from airquality.response import PurpleairAPIResponses
+from airquality.respitem import Channel
 
 
 class TestPurpleairResponse(TestCase):
@@ -25,17 +25,17 @@ class TestPurpleairResponse(TestCase):
         mocked_urlopen.return_value = mocked_resp
 
         existing_names = ["n1 (1)", "n2 (2)"]
-        responses = PurpleairResponse(url="foo", existing_names=existing_names)
+        responses = PurpleairAPIResponses(url="foo", existing_names=existing_names)
         self.assertEqual(len(responses), 1)
         resp = responses[0]
         self.assertEqual(resp.name(), "n3 (3)")
         self.assertEqual(resp.created_at(), "2018-09-29 23:10:23")
         self.assertEqual(resp.located_at(), "ST_GeomFromText('POINT(9.12 45.24)', 26918)")
-        expected_channels = {ChannelProperties(key="key1a3", ident="id1a3", name="1A"),
-                             ChannelProperties(key="key1b3", ident="id1b3", name="1B"),
-                             ChannelProperties(key="key2a3", ident="id2a3", name="2A"),
-                             ChannelProperties(key="key2b3", ident="id2b3", name="2B")}
-        self.assertEqual(resp.channel_properties(), expected_channels)
+        expected_channels = {Channel(key="key1a3", ident="id1a3", name="1A"),
+                             Channel(key="key1b3", ident="id1b3", name="1B"),
+                             Channel(key="key2a3", ident="id2a3", name="2A"),
+                             Channel(key="key2b3", ident="id2b3", name="2B")}
+        self.assertEqual(resp.channels(), expected_channels)
 
         with self.assertRaises(IndexError):
             print("IndexError caught successfully")

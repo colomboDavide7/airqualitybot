@@ -5,43 +5,47 @@
 # Description: Restart from scratch
 #
 ######################################################
-from airquality.atmotube import atmotube
-from airquality.purpleair import purpleair
-from airquality.thingspeak import thingspeak
+import os
+from airquality.atmotube import Atmotube
+from airquality.thingspeak_cls import Thingspeak
+from airquality.purpleair import Purpleair
 from airquality.geonames import geonames
 from airquality.open_weather_map import openweathermap
-from airquality.program_handler import ProgramHandler
+from airquality.env import Environment
+from airquality.argshandler import ArgsHandler
 from airquality.program_timer import ProgramTimer
 from airquality.dbadapter import Psycopg2DBAdapter
-from airquality.geonames_factory import GeonamesFactory
-from airquality.purpleair_factory import PurpleairFactory
-from airquality.measure_factory import AtmotubeFactory, ThingspeakFactory
-from airquality.open_weather_map_factory import OpenWeatherMapFactory
 
 
 def main():
 
-    with ProgramHandler() as handler:
+    with Environment() as env:
         with ProgramTimer():
-            personality = handler.personality
-            options = handler.options
+
+            args = ArgsHandler(valid_pers=env.valid_personalities, valid_options=env.valid_options)
+            personality = args.personality
+            options = args.options
 
             psycopg2adapter = Psycopg2DBAdapter(
-                dbname=handler.dbname, host=handler.host, port=handler.port, user=handler.user, password=handler.password
+                dbname=env.dbname, host=env.host, port=env.port, user=env.user, password=env.password
             )
+
             with psycopg2adapter as dbadapter:
                 if personality == 'purpleair':
-                    fact = PurpleairFactory(personality=personality, dbadapter=dbadapter, options=options)
-                    purpleair(sensor_dict=fact.sensor_dict, apiparam_dict=fact.apiparam_dict, geolocation_dict=fact.geolocation_dict, url_template=fact.url_template)
+                    url = os.environ[f'{personality}_url']
+                    Purpleair(personality=personality, url=url, dbadapter=dbadapter).execute()
                 if personality == 'atmotube':
-                    fact = AtmotubeFactory(personality=personality, dbadapter=dbadapter, options=options)
-                    atmotube(mobile_dict=fact.measure_dict, measure_param_dict=fact.measure_param_dict, apiparam_dict=fact.apiparam_dict, url_template=fact.url_template)
-                if personality == 'thingspeak':
-                    fact = ThingspeakFactory(personality=personality, dbadapter=dbadapter, options=options)
-                    thingspeak(measure_dict=fact.measure_dict, measure_param_dict=fact.measure_param_dict, apiparam_dict=fact.apiparam_dict, url_template=fact.url_template)
-                if personality == 'geonames':
-                    fact = GeonamesFactory(personality=personality, dbadapter=dbadapter, options=options)
-                    geonames(geonames_dict=fact.geonames_dict, geoarea_dict=fact.geoarea_dict, service_dict=fact.service_dict, poscodes_files=fact.poscodes_files)
-                if personality == 'openweathermap':
-                    fact = OpenWeatherMapFactory(personality=personality, dbadapter=dbadapter, options=options)
-                    openweathermap(service_apiparam=fact.service_api_param_dict, geoarea_dict=fact.geoarea_dict, measure_param_dict=fact.measure_param_dict, url_template=fact.url_template)
+                    url = os.environ[f'{personality}_url']
+                    url_opt = {'api_fmt': 'json'}
+                    Atmotube(personality=personality, url_template=url, dbadapter=dbadapter, **url_opt).execute()
+
+                # if personality == 'thingspeak':
+                #     fact = ThingspeakFactory(personality=personality, dbadapter=dbadapter, options=options)
+                #     Thingspeak(personality=personality, url_template=fact.url_template, **fact.url_options).execute()
+                #     # thingspeak(measure_dict=fact.measure_dict, measure_param_dict=fact.measure_param_dict, apiparam_dict=fact.apiparam_dict, url_template=fact.url_template)
+                # if personality == 'geonames':
+                #     fact = GeonamesFactory(personality=personality, dbadapter=dbadapter, options=options)
+                #     geonames(geonames_dict=fact.geonames_dict, geoarea_dict=fact.geoarea_dict, service_dict=fact.service_dict, poscodes_files=fact.poscodes_files)
+                # if personality == 'openweathermap':
+                #     fact = OpenWeatherMapFactory(personality=personality, dbadapter=dbadapter, options=options)
+                #     openweathermap(service_apiparam=fact.service_api_param_dict, geoarea_dict=fact.geoarea_dict, measure_param_dict=fact.measure_param_dict, url_template=fact.url_template)

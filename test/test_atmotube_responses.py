@@ -8,7 +8,7 @@
 import unittest
 from datetime import datetime
 from unittest.mock import MagicMock, patch
-from airquality.response import AtmotubeResponse
+from airquality.response import AtmotubeAPIResponses
 
 SQL_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"
 
@@ -27,7 +27,7 @@ class TestResponses(unittest.TestCase):
         mocked_urlopen.return_value = mocked_resp
 
         filter_datetime = datetime.strptime("2021-08-10 23:59:00", SQL_DATETIME_FMT)
-        responses = AtmotubeResponse(url="some_url", filter_ts=filter_datetime)
+        responses = AtmotubeAPIResponses(url="some_url", filter_ts=filter_datetime)
         self.assertEqual(len(responses), 1)
         resp = responses[0]
         self.assertEqual(resp.measured_at(), "2021-08-11 00:00:00")
@@ -46,7 +46,7 @@ class TestResponses(unittest.TestCase):
         mocked_urlopen.return_value = mocked_resp
 
         filter_datetime = datetime.strptime("2021-08-10 17:59:00", SQL_DATETIME_FMT)
-        responses = AtmotubeResponse(url="some_url", filter_ts=filter_datetime)
+        responses = AtmotubeAPIResponses(url="some_url", filter_ts=filter_datetime)
         self.assertEqual(len(responses), 2)
         self.assertEqual(responses.last_item.measured_at(), "2021-08-11 00:00:00")
 

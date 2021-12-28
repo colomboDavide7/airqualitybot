@@ -1,50 +1,68 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 18/12/21 18:10
+# Date: 27/12/21 19:25
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from itertools import count
-from contextlib import suppress
-from airquality.response import AtmotubeResponse
-from airquality.dblookup import MeasureParamLookup
+import itertools
+from typing import Dict, Set
+from airquality.dblookup import SensorAPIParam
+from airquality.dbadapter import DBAdapterABC
+from airquality.response import AtmotubeAPIResponses
+from airquality.respfilter import AtmotubeFilteredResponses
+from airquality.sqlrecord import AtmotubeSQLRecords
 from airquality.iterableurl import AtmotubeIterableURL
-from airquality.sqldict import FrozenSQLDict, MutableSQLDict, HeavyweightInsertSQLDict
 
 
-def wrap_value(value: str, default="NULL") -> str:
-    return f"'{value}'" if value is not None else default
+class Atmotube:
 
+    def __init__(self, personality: str, url_template: str, dbadapter: DBAdapterABC, **url_options):
+        self.url_template = url_template
+        self.url_options = url_options
+        self.personality = personality
+        self.dbadapter = dbadapter
+        self._measure_param = {}
 
-def atmotube(
-        mobile_dict: HeavyweightInsertSQLDict,
-        measure_param_dict: FrozenSQLDict,
-        apiparam_dict: MutableSQLDict,
-        url_template: str
-):
-    measure_counter = count(mobile_dict.start_measure_id)
-    code2id = {MeasureParamLookup(*record).param_code: pkey for pkey, record in measure_param_dict.items()}
+    @property
+    def start_packet_id(self) -> int:
+        row = self.dbadapter.fetch_one(f"SELECT MAX(packet_id) FROM level0_raw.mobile_measurement;")
+        return 1 if row[0] is None else row[0] + 1
 
-    for pkey, record in apiparam_dict.items():
-        print(f"found API param: {record!r}")
-        sensor_id, api_key, api_id, ch_name, last_activity = record
+    @property
+    def measure_param(self) -> Dict[str, int]:
+        if not self._measure_param:
+            rows = self.dbadapter.fetch_all(
+                f"SELECT param_code, id FROM level0_raw.measure_param WHERE param_owner ILIKE '%{self.personality}%';")
+            self._measure_param = {param_code: param_id for param_code, param_id in rows}
+        return self._measure_param
 
-        url = url_template.format(api_key=api_key, api_id=api_id, api_fmt="json")
-        iterable_url = AtmotubeIterableURL(url_template=url, begin=last_activity)
+    @property
+    def apiparam(self) -> Set[SensorAPIParam]:
+        rows = self.dbadapter.fetch_all(
+            "SELECT a.id, a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.last_acquisition "
+            "FROM level0_raw.sensor_api_param AS a INNER JOIN level0_raw.sensor AS s ON s.id = a.sensor_id "
+            f"WHERE s.sensor_type ILIKE '%{self.personality}%';")
+        for row in rows:
+            yield SensorAPIParam(*row)
 
-        for url in iterable_url:
-            items = AtmotubeResponse(url=url, filter_ts=last_activity)
-            max_packet_id = mobile_dict.max_packet_id
-            values = ','.join(
-                f"({next(measure_counter)}, {max_packet_id + idx}, {code2id[code]}, {wrap_value(val)}, '{item.measured_at()}', {item.located_at()})"
-                for idx, item in enumerate(items) for code, val in item.values()
-            )
+    def execute(self):
+        for param in self.apiparam:
+            self.url_options.update(param.database_url_param)
+            url = self.url_template.format(**self.url_options)
+            urls = AtmotubeIterableURL(url=url, begin=param.last_acquisition)
+            for url in urls:
+                api_responses = AtmotubeAPIResponses(url=url)
+                filtered_responses = AtmotubeFilteredResponses(responses=api_responses, filter_ts=param.last_acquisition)
+                sql_records = AtmotubeSQLRecords(responses=filtered_responses, measure_param=self.measure_param)
+                if len(sql_records) > 0:
+                    query = self.build_query(sql_records=sql_records, sensor_id=param.sensor_id)
+                    self.dbadapter.execute(query)
 
-            with suppress(ValueError):
-                print(f"{values[0:200]} ...... {values[-200:-1]}")
-                mobile_dict.commit(values.strip(','))
+    def build_query(self, sql_records: AtmotubeSQLRecords, sensor_id: int) -> str:
+        measurement_query = "INSERT INTO level0_raw.mobile_measurement (packet_id, param_id, param_value, timestamp, geom) VALUES "
+        apiparam_query = "UPDATE level0_raw.sensor_api_param SET last_acquisition = '{timestamp}' WHERE sensor_id= %s;" % sensor_id
 
-                last_acquisition = items.last_item.measured_at()
-                apiparam_dict[pkey] = f"{sensor_id}, '{api_key}', '{api_id}', '{ch_name}', '{last_acquisition}'"
-                print(f"last_acquisition: {last_acquisition}")
+        packet_id = itertools.count(self.start_packet_id)
+        measurement_query += ','.join(record.measurement.format(packet_id=next(packet_id)) for record in sql_records)
+        return f"{measurement_query.strip(',')}; {apiparam_query.format(timestamp=sql_records[-1].measured_at)};"
