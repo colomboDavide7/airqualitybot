@@ -17,3 +17,9 @@ class FixedSensorSQLRecord(object):
     sensor_record: str                  # The sensor's basic information SQL record.
     apiparam_record: str                # The sensor's API parameters SQL record.
     geolocation_record: str             # The sensor's geolocation SQL record.
+
+
+@dataclass
+class MobileMeasureSQLRecord(object):
+
+    measure_record: str

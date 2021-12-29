@@ -6,8 +6,8 @@
 #
 ######################################################
 from datetime import datetime
-from airquality.response import AddFixedSensorResponse
-from airquality.sqlrecord import FixedSensorSQLRecord
+from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse
+from airquality.sqlrecord import FixedSensorSQLRecord, MobileMeasureSQLRecord
 
 SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
 POSTGIS_POINT = "POINT({lon} {lat})"
@@ -35,3 +35,19 @@ class FixedSensorSQLRecordBuilder(object):
             apiparam_record=apiparam_record,
             geolocation_record=geolocation_record
         )
+
+
+class MobileMeasureSQLRecordBuilder(object):
+
+    def __init__(self, response: AddMobileMeasureResponse, packet_id: int):
+        self.response = response
+        self.packet_id = packet_id
+
+    def build_sqlrecord(self) -> MobileMeasureSQLRecord:
+        timestamp = self.response.timestamp.strftime(SQL_TIMESTAMP_FTM)
+
+        point = POSTGIS_POINT.format(lat=self.response.geolocation.latitude, lon=self.response.geolocation.longitude)
+        geometry = ST_GEOM_FROM_TEXT.format(geom=point, srid=26918)
+
+        measure_record = ','.join(f"({self.packet_id}, {pid}, '{pval}', '{timestamp}', {geometry})" for pid, pval in self.response.measures)
+        return MobileMeasureSQLRecord(measure_record=measure_record)
