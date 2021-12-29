@@ -1,56 +1,53 @@
 ######################################################
-# 
+#
 # Author: Davide Colombo
-# Date: 19/12/21 14:28
+# Date: 29/12/21 16:13
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import json
-import urllib.request
-from typing import Generator
-from airquality.iterabc import IterableItemsABC
-from airquality.respitem import AtmotubeItem, PurpleairItem, ThingspeakItem
+from dataclasses import dataclass
+from datetime import datetime
+from typing import List, Tuple
 
 
-###################################### AtmotubeResponses(IterableItemsABC) ######################################
-class AtmotubeAPIResponses(IterableItemsABC):
+@dataclass
+class Geolocation(object):
+    latitude: float
+    longitude: float
 
-    def __init__(self, url: str, item_factory=AtmotubeItem):
-        self.item_factory = item_factory
-        with urllib.request.urlopen(url) as resp:
-            self.parsed = json.loads(resp.read())
-
-    def items(self) -> Generator[AtmotubeItem, None, None]:
-        return (self.item_factory(item) for item in self.parsed['data']['items'])
-
-
-###################################### PurpleairResponses(IterableItemsABC) ######################################
-class PurpleairAPIResponses(IterableItemsABC):
-
-    def __init__(self, url: str, item_factory=PurpleairItem):
-        self.item_factory = item_factory
-        with urllib.request.urlopen(url) as resp:
-            resp = json.loads(resp.read())
-            self.fields = resp['fields']
-            self.data = resp['data']
-
-    def items(self) -> Generator[PurpleairItem, None, None]:
-        return (self.item_factory(dict(zip(self.fields, d))) for d in self.data)
+    def __post_init__(self):
+        if self.latitude < -90.0 or self.latitude > 90.0:
+            raise ValueError(f"{type(self).__name__} expected *latitude* to be in range [-90.0 - +90.0]")
+        if self.longitude < -180.0 or self.longitude > 180.0:
+            raise ValueError(f"{type(self).__name__} expected *longitude* to be in range [-180.0 - +180.0]")
 
 
-# ###################################### ThingspeakResponses(Iterable) ######################################
-# class ThingspeakResponse(APIResponse):
-#
-#     def __init__(self, url: str, filter_ts: datetime, field_map: Dict[str, str], item_factory=ThingspeakItem):
-#         super(ThingspeakResponse, self).__init__(item_factory=item_factory)
-#         self.field_map = field_map
-#         self.filter_ts = filter_ts
-#         with urlopen(url) as resp:
-#             parsed = loads(resp.read())
-#             self.feeds = parsed['feeds']
-#
-#     def items(self) -> Generator[ThingspeakItem, None, None]:
-#         return (self.item_factory(item, field_map=self.field_map) for item in self.feeds)
-#
-#     def filtered_items(self) -> Generator[ThingspeakItem, None, None]:
-#         return (item for item in self.items() if item > self.filter_ts)
+@dataclass
+class Channel(object):
+    key: str
+    ident: str
+    name: str
+    last_acquisition: datetime
+
+
+@dataclass
+class AddFixedSensorResponse(object):
+    """
+    A *dataclass* that represents the response model for adding a new sensor.
+    """
+
+    name: str                           # The name assigned to the sensor.
+    type: str                           # The type assigned to the sensor.
+    api_param: List[Channel]            # The API parameters of each channel associated to the sensor.
+    geolocation: Geolocation            # The sensor's geolocation in decimal degrees.
+
+
+@dataclass
+class AddMobileMeasureResponse(object):
+    """
+    A *dataclass* that represents the response model for adding a new measure of a mobile sensor.
+    """
+
+    timestamp: datetime                 # The datetime object that represents the acquisition time.
+    geolocation: Geolocation            # The sensor's geolocation at the moment of the acquisition in decimal degrees.
+    measures: List[Tuple[int, float]]   # The collection of (param_id, param_value) tuples for each parameter.
