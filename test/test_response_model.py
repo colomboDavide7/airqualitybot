@@ -28,22 +28,22 @@ class TestResponseModel(TestCase):
     def test_create_response_for_adding_fixed_sensor(self):
         test_last_acquisition = datetime.fromtimestamp(1234567890)
         test_channels = [
-            Channel(key="k1", ident="1", name="fakename1", last_acquisition=test_last_acquisition),
-            Channel(key="k2", ident="2", name="fakename2", last_acquisition=test_last_acquisition),
-            Channel(key="k3", ident="3", name="fakename3", last_acquisition=test_last_acquisition),
-            Channel(key="k4", ident="4", name="fakename4", last_acquisition=test_last_acquisition)
+            Channel(api_key="k1", api_id="1", channel_name="fakename1", last_acquisition=test_last_acquisition),
+            Channel(api_key="k2", api_id="2", channel_name="fakename2", last_acquisition=test_last_acquisition),
+            Channel(api_key="k3", api_id="3", channel_name="fakename3", last_acquisition=test_last_acquisition),
+            Channel(api_key="k4", api_id="4", channel_name="fakename4", last_acquisition=test_last_acquisition)
         ]
         test_geolocation = Geolocation(latitude=10.99, longitude=-36.88)
 
         resp = AddFixedSensorResponse(
             type="faketype",
             name="fakename",
-            api_param=test_channels,
+            channels=test_channels,
             geolocation=test_geolocation
         )
         self.assertEqual(resp.type, "faketype")
         self.assertEqual(resp.name, "fakename")
-        self.assertEqual(resp.api_param, test_channels)
+        self.assertEqual(resp.channels, test_channels)
         self.assertEqual(resp.geolocation, test_geolocation)
 
     def test_create_response_for_adding_mobile_sensor_measure(self):

@@ -18,21 +18,21 @@ class AddPurpleairSensorResponseBuilder(object):
 
     def build_response(self) -> AddFixedSensorResponse:
         last_acquisition = datetime.fromtimestamp(self.request.date_created)
-        api_param = [
-            Channel(key=self.request.primary_key_a, ident=str(self.request.primary_id_a), name="1A",
+        channels = [
+            Channel(api_key=self.request.primary_key_a, api_id=str(self.request.primary_id_a), channel_name="1A",
                     last_acquisition=last_acquisition),
-            Channel(key=self.request.primary_key_b, ident=str(self.request.primary_id_b), name="1B",
+            Channel(api_key=self.request.primary_key_b, api_id=str(self.request.primary_id_b), channel_name="1B",
                     last_acquisition=last_acquisition),
-            Channel(key=self.request.secondary_key_a, ident=str(self.request.secondary_id_a), name="2A",
+            Channel(api_key=self.request.secondary_key_a, api_id=str(self.request.secondary_id_a), channel_name="2A",
                     last_acquisition=last_acquisition),
-            Channel(key=self.request.secondary_key_b, ident=str(self.request.secondary_id_b), name="2B",
+            Channel(api_key=self.request.secondary_key_b, api_id=str(self.request.secondary_id_b), channel_name="2B",
                     last_acquisition=last_acquisition),
         ]
 
         geolocation = Geolocation(latitude=self.request.latitude, longitude=self.request.longitude)
-
+        name = f"{self.request.name} ({self.request.sensor_index})"
         return AddFixedSensorResponse(
-            type="Purpleair/Thingspeak", name=self.request.name, api_param=api_param, geolocation=geolocation
+            type="Purpleair/Thingspeak", name=name, channels=channels, geolocation=geolocation
         )
 
 

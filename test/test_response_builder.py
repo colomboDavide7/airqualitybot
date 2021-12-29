@@ -36,16 +36,16 @@ class TestResponseBuilder(TestCase):
 
         expected_last_acquisition = datetime.fromtimestamp(1234567890)
         expected_api_param = [
-            Channel(key="key1a", ident="111", name="1A", last_acquisition=expected_last_acquisition),
-            Channel(key="key1b", ident="222", name="1B", last_acquisition=expected_last_acquisition),
-            Channel(key="key2a", ident="333", name="2A", last_acquisition=expected_last_acquisition),
-            Channel(key="key2b", ident="444", name="2B", last_acquisition=expected_last_acquisition)
+            Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=expected_last_acquisition),
+            Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=expected_last_acquisition),
+            Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=expected_last_acquisition),
+            Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=expected_last_acquisition)
         ]
         expected_geolocation = Geolocation(latitude=1.234, longitude=5.666)
 
         self.assertEqual(resp.type, "Purpleair/Thingspeak")
-        self.assertEqual(resp.name, "fakename")
-        self.assertEqual(resp.api_param, expected_api_param)
+        self.assertEqual(resp.name, "fakename (9)")
+        self.assertEqual(resp.channels, expected_api_param)
         self.assertEqual(resp.geolocation, expected_geolocation)
 
     def test_create_response_for_adding_atmotube_measure(self):
