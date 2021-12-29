@@ -11,7 +11,7 @@ from dataclasses import dataclass
 @dataclass
 class FixedSensorSQLRecord(object):
     """
-    A *dataclass* that represents a fixed sensor (i.e., a station) database records.
+    A *dataclass* that represents a fixed sensor (i.e., a station) database record.
     """
 
     sensor_record: str                  # The sensor's basic information SQL record.
@@ -21,5 +21,8 @@ class FixedSensorSQLRecord(object):
 
 @dataclass
 class MobileMeasureSQLRecord(object):
+    """
+    A *dataclass* that represents a mobile sensor acquisition database record.
+    """
 
-    measure_record: str
+    measure_record: str                 # The sensor's measurement SQL record.
