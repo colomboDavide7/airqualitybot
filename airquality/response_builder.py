@@ -40,7 +40,7 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
             valid_from = datetime.now().strftime(SQL_TIMESTAMP_FTM)
             point = POSTGIS_POINT.format(lon=req.geolocation.longitude, lat=req.geolocation.latitude)
             geom = ST_GEOM_FROM_TEXT.format(geom=point, srid=26918)
-            geolocation_record = f"({sid}, '{valid_from}', NULL, {geom})"
+            geolocation_record = f"({sid}, '{valid_from}', {geom})"
 
             yield AddFixedSensorResponse(
                 sensor_record=sensor_record, apiparam_record=apiparam_record, geolocation_record=geolocation_record

@@ -62,7 +62,7 @@ class TestResponseBuilder(TestCase):
                                    f"(12, 'key2b', '444', '2B', '{expected_datetime}')"
 
         expected_geometry = "ST_GeomFromText('POINT(5.666 1.234)', 26918)"
-        expected_geolocation_record = f"(12, '{mocked_now}', NULL, {expected_geometry})"
+        expected_geolocation_record = f"(12, '{mocked_now}', {expected_geometry})"
 
         self.assertEqual(record.sensor_record, "(12, 'faketype', 'fakename')")
         self.assertEqual(record.apiparam_record, expected_apiparam_record)
