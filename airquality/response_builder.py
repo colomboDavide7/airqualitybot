@@ -32,14 +32,12 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
         for req in self.requests:
             sid = next(sensor_id)
             sensor_record = f"({sid}, '{req.type}', '{req.name}')"
-
             apiparam_record = ','.join(
                 f"({sid}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')" for ch in req.channels
             )
 
             valid_from = datetime.now().strftime(SQL_TIMESTAMP_FTM)
-            point = POSTGIS_POINT.format(lon=req.geolocation.longitude, lat=req.geolocation.latitude)
-            geom = ST_GEOM_FROM_TEXT.format(geom=point, srid=26918)
+            geom = req.geolocation.geometry_as_text
             geolocation_record = f"({sid}, '{valid_from}', {geom})"
 
             yield AddFixedSensorResponse(
@@ -59,17 +57,14 @@ class AddMobileMeasureResponseBuilder(IterableItemsABC):
         self.start_packet_id = start_packet_id
 
     def items(self) -> Generator[AddMobileMeasureResponse, None, None]:
-        packet_id = count(self.start_packet_id)
+        packet_id_counter = count(self.start_packet_id)
         for req in self.requests:
-
             timestamp = req.timestamp.strftime(SQL_TIMESTAMP_FTM)
+            geometry = req.geolocation.geometry_as_text
 
-            point = POSTGIS_POINT.format(lat=req.geolocation.latitude, lon=req.geolocation.longitude)
-            geometry = ST_GEOM_FROM_TEXT.format(geom=point, srid=26918)
-
-            pid = next(packet_id)
+            packet_id = next(packet_id_counter)
             measure_record = ','.join(
-                f"({pid}, {param_id}, '{param_val}', '{timestamp}', {geometry})" for param_id, param_val in req.measures
+                f"({packet_id}, {param_id}, '{param_val}', '{timestamp}', {geometry})" for param_id, param_val in req.measures
             )
 
             yield AddMobileMeasureResponse(measure_record=measure_record)

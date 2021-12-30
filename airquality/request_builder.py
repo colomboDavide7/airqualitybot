@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation
+from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation, NullGeolocation
 from airquality.iteritems import IterableItemsABC
 from typing import Dict, Generator
 from datetime import datetime
@@ -51,6 +51,9 @@ class AddAtmotubeMeasureRequestBuilder(IterableItemsABC):
 
     def items(self) -> Generator[AddMobileMeasureRequest, None, None]:
         for dm in self.datamodel:
+            pt = dm.coords
+            geolocation = NullGeolocation() if pt is None else Geolocation(latitude=pt['lat'], longitude=pt['lon'])
+
             measures = [
                 (self.code2id['voc'], dm.voc),
                 (self.code2id['pm1'], dm.pm1),
@@ -63,6 +66,6 @@ class AddAtmotubeMeasureRequestBuilder(IterableItemsABC):
 
             yield AddMobileMeasureRequest(
                 timestamp=datetime.strptime(dm.time, self.TIMESTAMP_FMT),
-                geolocation=Geolocation(latitude=dm.coords['lat'], longitude=dm.coords['lon']),
+                geolocation=geolocation,
                 measures=measures
             )

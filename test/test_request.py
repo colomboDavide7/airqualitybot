@@ -7,10 +7,20 @@
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation
+from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation, NullGeolocation
 
 
 class TestRequestModel(TestCase):
+
+    def test_geometry_from_geolocation(self):
+        geo = Geolocation(latitude=5, longitude=10)
+        self.assertEqual(geo.geometry, "POINT(10 5)")
+        self.assertEqual(geo.geometry_as_text, "ST_GeomFromText('POINT(10 5)', 26918)")
+
+    def test_null_geolocation(self):
+        geo = NullGeolocation()
+        self.assertEqual(geo.geometry, "NULL")
+        self.assertEqual(geo.geometry_as_text, "NULL")
 
     def test_raise_ValueError_when_create_geolocation(self):
         with self.assertRaises(ValueError):
