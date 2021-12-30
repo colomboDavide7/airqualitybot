@@ -5,9 +5,9 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.response_builder import AddFixedSensorResponseBuilder
+from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
 from airquality.database_adapter import DatabaseAdapter
-from typing import Set
+from typing import Set, Dict
 
 
 class DatabaseGateway(object):
@@ -36,6 +36,21 @@ class DatabaseGateway(object):
             geolocation_query += response.geolocation_record + ','
 
         self.dbadapter.execute(f"{sensor_query.strip(',')}; {apiparam_query.strip(',')}; {geolocation_query.strip(',')};")
+
+    def get_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
+        rows = self.dbadapter.fetchall(f"SELECT id, param_code FROM level0_raw.measure_param WHERE param_owner ILIKE '%{owner}%';")
+        return {code: ident for ident, code in rows}
+
+    def insert_mobile_sensor_measures(self, responses: AddMobileMeasureResponseBuilder):
+        measure_query = "INSERT INTO level0_raw.mobile_measurement (packet_id, param_id, param_value, timestamp, geom) VALUES "
+        measure_query += ','.join(resp.measure_record for resp in responses)
+        self.dbadapter.execute(f"{measure_query};")
+
+    def update_last_acquisition(self, timestamp: str, sensor_id: int, ch_name: str):
+        self.dbadapter.execute(
+            f"UPDATE level0_raw.sensor_api_param SET last_acquisition = '{timestamp}' "
+            f"WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
+        )
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"
