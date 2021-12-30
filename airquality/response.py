@@ -11,7 +11,7 @@ from dataclasses import dataclass
 @dataclass
 class AddFixedSensorResponse(object):
     """
-    A *dataclass* that represents the response to a request of a adding a fixed sensor (i.e., a station).
+    A *dataclass* that represents the response to a request of adding a fixed sensor (i.e., a station).
     """
 
     sensor_record: str                  # The sensor's basic information SQL record.

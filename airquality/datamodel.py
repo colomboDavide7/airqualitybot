@@ -12,7 +12,7 @@ from typing import Dict
 @dataclass
 class PurpleairDatamodel(object):
     """
-    A *dataclass* that represents the request to add a Purpleair sensor.
+    A *dataclass* that represents the raw Purpleair API data of a single sensor.
     """
 
     name: str                           # The name assigned to a Purpleair sensor.
@@ -34,7 +34,7 @@ class PurpleairDatamodel(object):
 @dataclass
 class AtmotubeDatamodel(object):
     """
-    A *dataclass* that represents the request to add an Atmotube measure.
+    A *dataclass* that represents the raw Atmotube API data of a single sensor.
     """
 
     time: str                           # The acquisition timestamp (e.g., 2021-10-11T09:44:00.000Z)

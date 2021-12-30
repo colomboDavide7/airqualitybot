@@ -6,46 +6,21 @@
 #
 ######################################################
 from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation
-from airquality.datamodel_builder import PurpleairDatamodelBuilder, AtmotubeDatamodelBuilder
-from collections.abc import Iterable
+from airquality.iteritems import IterableItemsABC
 from typing import Dict, Generator
-from abc import abstractmethod
 from datetime import datetime
-from itertools import islice
 
 
-class RequestBuilder(Iterable):
+class AddPurpleairSensorRequestBuilder(IterableItemsABC):
     """
-    An *Iterable* that represents the interface for building system requests.
-    """
-
-    @abstractmethod
-    def get_requests(self):
-        pass
-
-    def __getitem__(self, index):
-        if index < 0:
-            index += len(self)
-        if index < 0 or index >= len(self):
-            raise IndexError(f"{type(self).__name__} expected '{index}' to be in [0 - {len(self)}]")
-        return next(islice(self, index, None))
-
-    def __iter__(self):
-        return self.get_requests()
-
-    def __len__(self):
-        return sum(1 for _ in self.get_requests())
-
-
-class AddPurpleairSensorRequestBuilder(RequestBuilder):
-    """
-    A *RequestBuilder* that defines how an *AddFixedSensorRequest* is created.
+    An *IterableItemsABC* that defines the business rules for translating
+    a set of *PurpleairDatamodel* items into an *AddFixedSensorRequest* Generator.
     """
 
-    def __init__(self, datamodel: PurpleairDatamodelBuilder):
+    def __init__(self, datamodel: IterableItemsABC):
         self.datamodel = datamodel
 
-    def get_requests(self) -> Generator[AddFixedSensorRequest, None, None]:
+    def items(self) -> Generator[AddFixedSensorRequest, None, None]:
         for dm in self.datamodel:
             last_acquisition = datetime.fromtimestamp(dm.date_created)
             channels = [
@@ -61,18 +36,19 @@ class AddPurpleairSensorRequestBuilder(RequestBuilder):
             yield AddFixedSensorRequest(type="Purpleair/Thingspeak", name=name, channels=channels, geolocation=geolocation)
 
 
-class AddAtmotubeMeasureRequestBuilder(RequestBuilder):
+class AddAtmotubeMeasureRequestBuilder(IterableItemsABC):
     """
-    A *RequestBuilder* that defines how an *AddMobileMeasureRequest* is created.
+    An *IterableItemsABC* that defines the business rules for translating
+    a set of *AtmotubeDatamodel* items into an *AddMobileMeasureRequest* Generator.
     """
 
     ATMOTUBE_TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 
-    def __init__(self, datamodel: AtmotubeDatamodelBuilder, code2id: Dict[str, int]):
+    def __init__(self, datamodel: IterableItemsABC, code2id: Dict[str, int]):
         self.datamodel = datamodel
         self.code2id = code2id
 
-    def get_requests(self) -> Generator[AddMobileMeasureRequest, None, None]:
+    def items(self) -> Generator[AddMobileMeasureRequest, None, None]:
         for dm in self.datamodel:
             coords = dm.coords
             geolocation = Geolocation(latitude=coords['lat'], longitude=coords['lon'])

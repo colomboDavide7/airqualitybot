@@ -13,7 +13,7 @@ from typing import List, Tuple
 @dataclass
 class Geolocation(object):
     """
-    A *dataclass* that holds the sensor's localization point.
+    A *dataclass* that holds the sensor's geolocation point.
     """
 
     latitude: float                     # The sensor's latitude in decimal degrees (-90,+90)
