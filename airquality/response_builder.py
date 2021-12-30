@@ -1,63 +1,57 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 29/12/21 16:35
+# Date: 29/12/21 18:54
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.request import AddPurpleairSensorRequest, AddAtmotubeMeasureRequest
-from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse, Channel, Geolocation
 from datetime import datetime
-from typing import Dict
+from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest
+from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse
+
+SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
+POSTGIS_POINT = "POINT({lon} {lat})"
+ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 
 
-class AddPurpleairSensorResponseBuilder(object):
+class AddFixedSensorResponseBuilder(object):
 
-    def __init__(self, request: AddPurpleairSensorRequest):
-        self.request = request
+    def __init__(self, response: AddFixedSensorRequest, sensor_id: int):
+        self.response = response
+        self.sensor_id = sensor_id
 
     def build_response(self) -> AddFixedSensorResponse:
-        last_acquisition = datetime.fromtimestamp(self.request.date_created)
-        channels = [
-            Channel(api_key=self.request.primary_key_a, api_id=str(self.request.primary_id_a), channel_name="1A",
-                    last_acquisition=last_acquisition),
-            Channel(api_key=self.request.primary_key_b, api_id=str(self.request.primary_id_b), channel_name="1B",
-                    last_acquisition=last_acquisition),
-            Channel(api_key=self.request.secondary_key_a, api_id=str(self.request.secondary_id_a), channel_name="2A",
-                    last_acquisition=last_acquisition),
-            Channel(api_key=self.request.secondary_key_b, api_id=str(self.request.secondary_id_b), channel_name="2B",
-                    last_acquisition=last_acquisition),
-        ]
+        sensor_record = f"({self.sensor_id}, '{self.response.type}', '{self.response.name}')"
+        apiparam_record = ','.join(
+            f"({self.sensor_id}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')"
+            for ch in self.response.channels
+        )
 
-        geolocation = Geolocation(latitude=self.request.latitude, longitude=self.request.longitude)
-        name = f"{self.request.name} ({self.request.sensor_index})"
+        valid_from = datetime.now().strftime(SQL_TIMESTAMP_FTM)
+        point = POSTGIS_POINT.format(lon=self.response.geolocation.longitude, lat=self.response.geolocation.latitude)
+        geom = ST_GEOM_FROM_TEXT.format(geom=point, srid=26918)
+        geolocation_record = f"({self.sensor_id}, '{valid_from}', NULL, {geom})"
+
         return AddFixedSensorResponse(
-            type="Purpleair/Thingspeak", name=name, channels=channels, geolocation=geolocation
+            sensor_record=sensor_record,
+            apiparam_record=apiparam_record,
+            geolocation_record=geolocation_record
         )
 
 
-class AddAtmotubeMeasureResponseBuilder(object):
-    ATMOTUBE_TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
+class AddMobileMeasureResponseBuilder(object):
 
-    def __init__(self, request: AddAtmotubeMeasureRequest, code2id: Dict[str, int]):
-        self.request = request
-        self.code2id = code2id
+    def __init__(self, response: AddMobileMeasureRequest, packet_id: int):
+        self.response = response
+        self.packet_id = packet_id
 
     def build_response(self) -> AddMobileMeasureResponse:
-        coords = self.request.coords
-        geolocation = Geolocation(latitude=coords['lat'], longitude=coords['lon'])
-        timestamp = datetime.strptime(self.request.time, self.ATMOTUBE_TIMESTAMP_FMT)
+        timestamp = self.response.timestamp.strftime(SQL_TIMESTAMP_FTM)
 
-        measures = [
-            (self.code2id['voc'], self.request.voc),
-            (self.code2id['pm1'], self.request.pm1),
-            (self.code2id['pm25'], self.request.pm25),
-            (self.code2id['pm10'], self.request.pm10),
-            (self.code2id['t'], self.request.t),
-            (self.code2id['h'], self.request.h),
-            (self.code2id['p'], self.request.p)
-        ]
+        point = POSTGIS_POINT.format(lat=self.response.geolocation.latitude, lon=self.response.geolocation.longitude)
+        geometry = ST_GEOM_FROM_TEXT.format(geom=point, srid=26918)
 
-        return AddMobileMeasureResponse(
-            timestamp=timestamp, geolocation=geolocation, measures=measures
-        )
+        measure_record = ','.join(f"({self.packet_id}, {pid}, '{pval}', '{timestamp}', {geometry})"
+                                  for pid, pval in self.response.measures)
+
+        return AddMobileMeasureResponse(measure_record=measure_record)

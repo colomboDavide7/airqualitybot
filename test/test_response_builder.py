@@ -1,77 +1,82 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 29/12/21 16:00
+# Date: 29/12/21 18:18
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.request import AddPurpleairSensorRequest, AddAtmotubeMeasureRequest
-from airquality.response import Geolocation, Channel
-from airquality.response_builder import AddPurpleairSensorResponseBuilder, AddAtmotubeMeasureResponseBuilder
+from unittest.mock import patch
+from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation
+from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
+
+SQL_TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
 
 
 class TestResponseBuilder(TestCase):
 
-    def test_create_response_for_adding_purpleair_sensor(self):
-        test_request_model = AddPurpleairSensorRequest(
-            name="fakename",
-            sensor_index=9,
-            latitude=1.234,
-            longitude=5.666,
-            altitude=0,
-            primary_id_a=111,
-            primary_key_a="key1a",
-            primary_id_b=222,
-            primary_key_b="key1b",
-            secondary_id_a=333,
-            secondary_key_a="key2a",
-            secondary_id_b=444,
-            secondary_key_b="key2b",
-            date_created=1234567890
-        )
+    @patch('airquality.response_builder.datetime')
+    def test_create_response_to_request_of_adding_fixed_sensor(self, mocked_datetime):
+        mocked_now = datetime.strptime("2021-12-29 18:33:00", SQL_TIMESTAMP_FMT)
+        mocked_datetime.now.return_value = mocked_now
 
-        resp = AddPurpleairSensorResponseBuilder(request=test_request_model).build_response()
+        test_datetime = datetime.strptime("2021-10-11 09:44:00", SQL_TIMESTAMP_FMT)
 
-        expected_last_acquisition = datetime.fromtimestamp(1234567890)
-        expected_api_param = [
-            Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=expected_last_acquisition),
-            Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=expected_last_acquisition),
-            Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=expected_last_acquisition),
-            Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=expected_last_acquisition)
+        test_channels = [
+            Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=test_datetime),
+            Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=test_datetime),
+            Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=test_datetime),
+            Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=test_datetime)
         ]
-        expected_geolocation = Geolocation(latitude=1.234, longitude=5.666)
+        test_geolocation = Geolocation(latitude=1.234, longitude=5.666)
 
-        self.assertEqual(resp.type, "Purpleair/Thingspeak")
-        self.assertEqual(resp.name, "fakename (9)")
-        self.assertEqual(resp.channels, expected_api_param)
-        self.assertEqual(resp.geolocation, expected_geolocation)
-
-    def test_create_response_for_adding_atmotube_measure(self):
-        test_code2id = {'voc': 66, 'pm1': 48, 'pm25': 94, 'pm10': 2, 't': 4, 'h': 12, 'p': 39}
-
-        test_request_model = AddAtmotubeMeasureRequest(
-            time="2021-08-10T23:59:00.000Z",
-            voc=0.17,
-            pm1=8,
-            pm25=10,
-            pm10=11,
-            t=29,
-            h=42,
-            p=1004.68,
-            coords={'lat': 45.765, 'lon': 9.897}
+        test_response = AddFixedSensorRequest(
+            type="faketype",
+            name="fakename",
+            channels=test_channels,
+            geolocation=test_geolocation
         )
 
-        resp = AddAtmotubeMeasureResponseBuilder(request=test_request_model, code2id=test_code2id).build_response()
+        record = AddFixedSensorResponseBuilder(response=test_response, sensor_id=12).build_response()
 
-        expected_timestamp = datetime.strptime("2021-08-10T23:59:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
-        expected_geolocation = Geolocation(latitude=45.765, longitude=9.897)
-        expected_measures = [(66, 0.17), (48, 8), (94, 10), (2, 11), (4, 29), (12, 42), (39, 1004.68)]
+        expected_datetime = "2021-10-11 09:44:00"
+        expected_apiparam_record = f"(12, 'key1a', '111', '1A', '{expected_datetime}')," \
+                                   f"(12, 'key1b', '222', '1B', '{expected_datetime}')," \
+                                   f"(12, 'key2a', '333', '2A', '{expected_datetime}')," \
+                                   f"(12, 'key2b', '444', '2B', '{expected_datetime}')"
 
-        self.assertEqual(resp.timestamp, expected_timestamp)
-        self.assertEqual(resp.geolocation, expected_geolocation)
-        self.assertEqual(resp.measures, expected_measures)
+        expected_geometry = "ST_GeomFromText('POINT(5.666 1.234)', 26918)"
+        expected_geolocation_record = f"(12, '{mocked_now}', NULL, {expected_geometry})"
+
+        self.assertEqual(record.sensor_record, "(12, 'faketype', 'fakename')")
+        self.assertEqual(record.apiparam_record, expected_apiparam_record)
+        self.assertEqual(record.geolocation_record, expected_geolocation_record)
+
+    def test_create_response_to_request_of_adding_mobile_measure(self):
+        test_timestamp = datetime.strptime("2021-12-29 18:33:00", SQL_TIMESTAMP_FMT)
+        test_geolocation = Geolocation(latitude=45.876, longitude=9.145)
+        test_measures = [(66, 0.17), (48, 8), (94, 10), (2, 11), (4, 29), (12, 42), (39, 1004.68)]
+
+        test_response = AddMobileMeasureRequest(
+            timestamp=test_timestamp,
+            geolocation=test_geolocation,
+            measures=test_measures
+        )
+
+        record = AddMobileMeasureResponseBuilder(response=test_response, packet_id=12399).build_response()
+
+        expected_timestamp = "2021-12-29 18:33:00"
+        expected_geom = "ST_GeomFromText('POINT(9.145 45.876)', 26918)"
+        expected_measure_record = f"(12399, 66, '0.17', '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 48, '8', '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 94, '10', '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 2, '11', '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 4, '29', '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 12, '42', '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 39, '1004.68', '{expected_timestamp}', {expected_geom})"
+
+        self.assertEqual(record.measure_record, expected_measure_record)
 
 
 if __name__ == '__main__':

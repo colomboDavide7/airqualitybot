@@ -1,80 +1,77 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 29/12/21 20:06
+# Date: 29/12/21 16:00
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+from datetime import datetime
 from unittest import TestCase, main
-from unittest.mock import MagicMock, patch
+from airquality.datamodel import PurpleairDatamodel, AtmotubeDatamodel
+from airquality.request import Geolocation, Channel
 from airquality.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder
 
 
 class TestRequestBuilder(TestCase):
 
-    ##################################### test_create_add_purpleair_sensor_request #####################################
-    @patch('airquality.request_builder.urlopen')
-    def test_create_add_purpleair_sensor_request(self, mocked_urlopen):
-        with open('test_resources/purpleair_response.json', 'r') as rf:
-            test_api_responses = rf.read()
+    def test_create_request_for_adding_purpleair_sensor(self):
+        test_request_model = PurpleairDatamodel(
+            name="fakename",
+            sensor_index=9,
+            latitude=1.234,
+            longitude=5.666,
+            altitude=0,
+            primary_id_a=111,
+            primary_key_a="key1a",
+            primary_id_b=222,
+            primary_key_b="key1b",
+            secondary_id_a=333,
+            secondary_key_a="key2a",
+            secondary_id_b=444,
+            secondary_key_b="key2b",
+            date_created=1234567890
+        )
 
-        mocked_resp = MagicMock()
-        mocked_resp.read.side_effect = [test_api_responses]
-        mocked_resp.__enter__.return_value = mocked_resp
-        mocked_urlopen.return_value = mocked_resp
+        resp = AddPurpleairSensorRequestBuilder(request=test_request_model).build_request()
 
-        requests = AddPurpleairSensorRequestBuilder(url="fake_url")
-        self.assertEqual(len(requests), 3)
-        req1 = requests[0]
-        self.assertEqual(req1.name, "n1")
-        self.assertEqual(req1.sensor_index, 1)
-        self.assertEqual(req1.latitude, 45.29)
-        self.assertEqual(req1.longitude, 9.13)
-        self.assertEqual(req1.altitude, 274)
-        self.assertEqual(req1.primary_id_a, 111)
-        self.assertEqual(req1.primary_key_a, "key1a1")
-        self.assertEqual(req1.primary_id_b, 112)
-        self.assertEqual(req1.primary_key_b, "key1b1")
-        self.assertEqual(req1.secondary_id_a, 113)
-        self.assertEqual(req1.secondary_key_a, "key2a1")
-        self.assertEqual(req1.secondary_id_b, 114)
-        self.assertEqual(req1.secondary_key_b, "key2b1")
-        self.assertEqual(req1.date_created, 1531432748)
+        expected_last_acquisition = datetime.fromtimestamp(1234567890)
+        expected_api_param = [
+            Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=expected_last_acquisition),
+            Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=expected_last_acquisition),
+            Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=expected_last_acquisition),
+            Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=expected_last_acquisition)
+        ]
+        expected_geolocation = Geolocation(latitude=1.234, longitude=5.666)
 
-        with self.assertRaises(IndexError):
-            print(requests[3])
+        self.assertEqual(resp.type, "Purpleair/Thingspeak")
+        self.assertEqual(resp.name, "fakename (9)")
+        self.assertEqual(resp.channels, expected_api_param)
+        self.assertEqual(resp.geolocation, expected_geolocation)
 
-        with self.assertRaises(IndexError):
-            print(requests[-4])
+    def test_create_request_for_adding_atmotube_measure(self):
+        test_code2id = {'voc': 66, 'pm1': 48, 'pm25': 94, 'pm10': 2, 't': 4, 'h': 12, 'p': 39}
 
-    ##################################### test_create_add_purpleair_sensor_request #####################################
-    @patch('airquality.request_builder.urlopen')
-    def test_create_add_atmotube_measure_request(self, mocked_urlopen):
-        with open('test_resources/atmotube_response.json', 'r') as rf:
-            test_api_responses = rf.read()
+        test_request_model = AtmotubeDatamodel(
+            time="2021-08-10T23:59:00.000Z",
+            voc=0.17,
+            pm1=8,
+            pm25=10,
+            pm10=11,
+            t=29,
+            h=42,
+            p=1004.68,
+            coords={'lat': 45.765, 'lon': 9.897}
+        )
 
-        mocked_resp = MagicMock()
-        mocked_resp.read.side_effect = [test_api_responses]
-        mocked_resp.__enter__.return_value = mocked_resp
-        mocked_urlopen.return_value = mocked_resp
+        resp = AddAtmotubeMeasureRequestBuilder(request=test_request_model, code2id=test_code2id).build_request()
 
-        requests = AddAtmotubeMeasureRequestBuilder(url="fake_url")
-        self.assertEqual(len(requests), 2)
-        req1 = requests[0]
-        self.assertEqual(req1.time, "2021-08-10T23:59:00.000Z")
-        self.assertEqual(req1.voc, 0.17)
-        self.assertEqual(req1.pm1, 8)
-        self.assertEqual(req1.pm25, 10)
-        self.assertEqual(req1.pm10, 11)
-        self.assertEqual(req1.t, 29)
-        self.assertEqual(req1.h, 42)
-        self.assertEqual(req1.p, 1004.68)
+        expected_timestamp = datetime.strptime("2021-08-10T23:59:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
+        expected_geolocation = Geolocation(latitude=45.765, longitude=9.897)
+        expected_measures = [(66, 0.17), (48, 8), (94, 10), (2, 11), (4, 29), (12, 42), (39, 1004.68)]
 
-        with self.assertRaises(IndexError):
-            print(requests[2])
-
-        with self.assertRaises(IndexError):
-            print(requests[-3])
+        self.assertEqual(resp.timestamp, expected_timestamp)
+        self.assertEqual(resp.geolocation, expected_geolocation)
+        self.assertEqual(resp.measures, expected_measures)
 
 
 if __name__ == '__main__':

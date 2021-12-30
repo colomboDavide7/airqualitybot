@@ -1,48 +1,61 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 29/12/21 15:29
+# Date: 29/12/21 16:13
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
 from dataclasses import dataclass
-from typing import Dict
+from datetime import datetime
+from typing import List, Tuple
 
 
 @dataclass
-class AddPurpleairSensorRequest(object):
+class Geolocation(object):
     """
-    A *dataclass* that represents the request to add a Purpleair sensor.
+    A *dataclass* that holds the sensor's localization point.
     """
 
-    name: str                           # The name assigned to a Purpleair sensor.
-    sensor_index: int                   # The unique number assigned to a Purpleair sensor.
-    latitude: float                     # The latitude position value for the sensor.
-    longitude: float                    # The longitude position value for the sensor.
-    altitude: float                     # The altitude for the sensor's location in feet.
-    primary_id_a: int                   # ThingSpeak channel ID for storing sensor values.
-    primary_key_a: str                  # ThingSpeak read key used for accessing data for the channel.
-    primary_id_b: int                   # ThingSpeak channel ID for storing sensor values.
-    primary_key_b: str                  # ThingSpeak read key used for accessing data for the channel.
-    secondary_id_a: int                 # ThingSpeak channel ID for storing sensor values.
-    secondary_key_a: str                # ThingSpeak read key used for accessing data for the channel.
-    secondary_id_b: int                 # ThingSpeak channel ID for storing sensor values.
-    secondary_key_b: str                # ThingSpeak read key used for accessing data for the channel.
-    date_created: int                   # The UNIX time stamp from when the device was created.
+    latitude: float                     # The sensor's latitude in decimal degrees (-90,+90)
+    longitude: float                    # The sensor's longitude in decimal degrees (-180,+180)
+
+    def __post_init__(self):
+        if self.latitude < -90.0 or self.latitude > 90.0:
+            raise ValueError(f"{type(self).__name__} expected *latitude* to be in range [-90.0 - +90.0]")
+        if self.longitude < -180.0 or self.longitude > 180.0:
+            raise ValueError(f"{type(self).__name__} expected *longitude* to be in range [-180.0 - +180.0]")
 
 
 @dataclass
-class AddAtmotubeMeasureRequest(object):
+class Channel(object):
     """
-    A *dataclass* that represents the request to add an Atmotube measure.
+    A *dataclass* that holds the values of the parameters of a sensor's acquisition channel.
     """
 
-    time: str                           # The acquisition timestamp (e.g., 2021-10-11T09:44:00.000Z)
-    voc: float = None                   # The Volatile Organic Compound concentration in the air in ppm.
-    pm1: int = None                     # The PM < 1.0 µm concentration in the air in µg/m^3.
-    pm25: int = None                    # The PM < 2.5 µm concentration in the air in µg/m^3.
-    pm10: int = None                    # The PM < 10.0 µm concentration in the air in µg/m^3.
-    t: int = None                       # The air temperature in Celsius degrees.
-    h: int = None                       # The relative humidity in the air in percentage.
-    p: float = None                     # The atmospheric pressure in the air in millibar.
-    coords: Dict[str, float] = None     # The sensor's *lat* and *lon* at acquisition time in decimal degrees.
+    api_key: str                        # The API key used to access the sensor's data.
+    api_id: str                         # The API identifier used to access the sensor's data.
+    channel_name: str                   # The channel name given by the system to identify a sensor's channel.
+    last_acquisition: datetime          # The time stamp of the last successful acquisition store in the database.
+
+
+@dataclass
+class AddFixedSensorRequest(object):
+    """
+    A *dataclass* that represents the request model for adding a new sensor.
+    """
+
+    name: str                           # The name assigned to the sensor.
+    type: str                           # The type assigned to the sensor.
+    channels: List[Channel]             # The API parameters of each channel associated to the sensor.
+    geolocation: Geolocation            # The sensor's geolocation in decimal degrees.
+
+
+@dataclass
+class AddMobileMeasureRequest(object):
+    """
+    A *dataclass* that represents the request model for adding a new measure of a mobile sensor.
+    """
+
+    timestamp: datetime                 # The datetime object that represents the acquisition time.
+    geolocation: Geolocation            # The sensor's geolocation at the moment of the acquisition in decimal degrees.
+    measures: List[Tuple[int, float]]   # The collection of (param_id, param_value) tuples for each parameter.

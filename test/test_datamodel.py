@@ -6,13 +6,13 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.request import AddPurpleairSensorRequest, AddAtmotubeMeasureRequest
+from airquality.datamodel import PurpleairDatamodel, AtmotubeDatamodel
 
 
-class TestRequestModel(TestCase):
+class TestDatamodel(TestCase):
 
-    def test_create_request_for_adding_purpleair_sensor(self):
-        req = AddPurpleairSensorRequest(
+    def test_purpleair_datamodel(self):
+        req = PurpleairDatamodel(
             name="fakename",
             sensor_index=9,
             latitude=1.234,
@@ -43,8 +43,8 @@ class TestRequestModel(TestCase):
         self.assertEqual(req.secondary_id_b, 444)
         self.assertEqual(req.secondary_key_b, "key2b")
 
-    def test_create_request_for_adding_atmotube_measure(self):
-        req = AddAtmotubeMeasureRequest(
+    def test_atmotube_datamodel(self):
+        req = AtmotubeDatamodel(
             time="2021-08-10T23:59:00.000Z",
             voc=0.17,
             pm1=8,

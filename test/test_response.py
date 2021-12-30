@@ -6,14 +6,14 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.sqlrecord import FixedSensorSQLRecord, MobileMeasureSQLRecord
+from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse
 
 
-class TestSQLRecordModel(TestCase):
+class TestResponseModel(TestCase):
 
-    def test_fixed_sensor_sql_record(self):
+    def test_add_fixed_sensor_response_model(self):
 
-        record = FixedSensorSQLRecord(
+        record = AddFixedSensorResponse(
             sensor_record="fake_sensor_record", apiparam_record="fake_apiparam_record", geolocation_record="fake_geo_record"
         )
 
@@ -21,9 +21,9 @@ class TestSQLRecordModel(TestCase):
         self.assertEqual(record.apiparam_record, "fake_apiparam_record")
         self.assertEqual(record.geolocation_record, "fake_geo_record")
 
-    def test_mobile_measure_sql_record(self):
+    def test_add_mobile_measure_response_model(self):
 
-        record = MobileMeasureSQLRecord(
+        record = AddMobileMeasureResponse(
             measure_record="fake_measure_record"
         )
 

@@ -1,65 +1,64 @@
 ######################################################
 #
 # Author: Davide Colombo
-# Date: 29/12/21 20:12
+# Date: 29/12/21 16:35
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from json import loads
-from typing import Generator
-from itertools import islice
-from abc import abstractmethod
-from urllib.request import urlopen
-from collections.abc import Iterable
-from airquality.request import AddPurpleairSensorRequest, AddAtmotubeMeasureRequest
+from airquality.datamodel import PurpleairDatamodel, AtmotubeDatamodel
+from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation
+from datetime import datetime
+from typing import Dict
 
 
-class InputBoundaryInterface(Iterable):
-    """
-    An *Iterable* that represents the input boundary interface for isolating the communication with *input_device(s)*
-    """
+class AddPurpleairSensorRequestBuilder(object):
 
-    @abstractmethod
-    def get_requests(self):
-        pass
+    def __init__(self, request: PurpleairDatamodel):
+        self.request = request
 
-    def __getitem__(self, index):
-        if index < 0:
-            index += len(self)
-        if index < 0 or index >= len(self):
-            raise IndexError(f"{type(self).__name__} expected '{index}' to be in [0 - {len(self)}]")
-        return next(islice(self, index, None))
+    def build_request(self) -> AddFixedSensorRequest:
+        last_acquisition = datetime.fromtimestamp(self.request.date_created)
+        channels = [
+            Channel(api_key=self.request.primary_key_a, api_id=str(self.request.primary_id_a), channel_name="1A",
+                    last_acquisition=last_acquisition),
+            Channel(api_key=self.request.primary_key_b, api_id=str(self.request.primary_id_b), channel_name="1B",
+                    last_acquisition=last_acquisition),
+            Channel(api_key=self.request.secondary_key_a, api_id=str(self.request.secondary_id_a), channel_name="2A",
+                    last_acquisition=last_acquisition),
+            Channel(api_key=self.request.secondary_key_b, api_id=str(self.request.secondary_id_b), channel_name="2B",
+                    last_acquisition=last_acquisition),
+        ]
 
-    def __iter__(self):
-        return self.get_requests()
+        geolocation = Geolocation(latitude=self.request.latitude, longitude=self.request.longitude)
+        name = f"{self.request.name} ({self.request.sensor_index})"
 
-    def __len__(self):
-        return sum(1 for _ in self.get_requests())
-
-
-class AddPurpleairSensorRequestBuilder(InputBoundaryInterface):
-    """
-    An *InputBoundaryInterface* that fetches data from Purpleair API and return a Generator of requests.
-    """
-
-    def __init__(self, url: str):
-        with urlopen(url) as http_response:
-            parsed = loads(http_response.read())
-            self.fields = parsed['fields']
-            self.data = parsed['data']
-
-    def get_requests(self) -> Generator[AddPurpleairSensorRequest, None, None]:
-        return (AddPurpleairSensorRequest(**(dict(zip(self.fields, data)))) for data in self.data)
+        return AddFixedSensorRequest(
+            type="Purpleair/Thingspeak", name=name, channels=channels, geolocation=geolocation
+        )
 
 
-class AddAtmotubeMeasureRequestBuilder(InputBoundaryInterface):
-    """
-    An *InputBoundaryInterface* that fetches data from Atmotube API and return a Generator o requests.
-    """
-    def __init__(self, url: str):
-        with urlopen(url) as http_response:
-            parsed = loads(http_response.read())
-            self.items = parsed['data']['items']
+class AddAtmotubeMeasureRequestBuilder(object):
+    ATMOTUBE_TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 
-    def get_requests(self) -> Generator[AddAtmotubeMeasureRequest, None, None]:
-        return (AddAtmotubeMeasureRequest(**item) for item in self.items)
+    def __init__(self, request: AtmotubeDatamodel, code2id: Dict[str, int]):
+        self.request = request
+        self.code2id = code2id
+
+    def build_request(self) -> AddMobileMeasureRequest:
+        coords = self.request.coords
+        geolocation = Geolocation(latitude=coords['lat'], longitude=coords['lon'])
+        timestamp = datetime.strptime(self.request.time, self.ATMOTUBE_TIMESTAMP_FMT)
+
+        measures = [
+            (self.code2id['voc'], self.request.voc),
+            (self.code2id['pm1'], self.request.pm1),
+            (self.code2id['pm25'], self.request.pm25),
+            (self.code2id['pm10'], self.request.pm10),
+            (self.code2id['t'], self.request.t),
+            (self.code2id['h'], self.request.h),
+            (self.code2id['p'], self.request.p)
+        ]
+
+        return AddMobileMeasureRequest(
+            timestamp=timestamp, geolocation=geolocation, measures=measures
+        )
