@@ -9,11 +9,22 @@ from itertools import count
 from typing import Generator
 from datetime import datetime
 from airquality.iteritems import IterableItemsABC
+from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest
 from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse
 
 SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
-POSTGIS_POINT = "POINT({lon} {lat})"
-ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
+
+
+def apiparam_record(sensor_id: int, request: AddFixedSensorRequest) -> str:
+    return ','.join(
+        f"({sensor_id}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')" for ch in request.channels
+    )
+
+
+def sensor_at_location_record(sensor_id: int, request: AddFixedSensorRequest) -> str:
+    valid_from = datetime.now().strftime(SQL_TIMESTAMP_FTM)
+    location = request.geolocation.geom_from_text()
+    return f"({sensor_id}, '{valid_from}', {location})"
 
 
 class AddFixedSensorResponseBuilder(IterableItemsABC):
@@ -28,21 +39,20 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
         self.start_sensor_id = start_sensor_id
 
     def items(self) -> Generator[AddFixedSensorResponse, None, None]:
-        sensor_id = count(self.start_sensor_id)
+        sensor_id_counter = count(self.start_sensor_id)
         for req in self.requests:
-            sid = next(sensor_id)
-            sensor_record = f"({sid}, '{req.type}', '{req.name}')"
-            apiparam_record = ','.join(
-                f"({sid}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')" for ch in req.channels
-            )
-
-            valid_from = datetime.now().strftime(SQL_TIMESTAMP_FTM)
-            geom = req.geolocation.geometry_as_text
-            geolocation_record = f"({sid}, '{valid_from}', {geom})"
-
+            sensor_id = next(sensor_id_counter)
             yield AddFixedSensorResponse(
-                sensor_record=sensor_record, apiparam_record=apiparam_record, geolocation_record=geolocation_record
+                sensor_record=f"({sensor_id}, '{req.type}', '{req.name}')",
+                apiparam_record=apiparam_record(sensor_id=sensor_id, request=req),
+                geolocation_record=sensor_at_location_record(sensor_id=sensor_id, request=req)
             )
+
+
+def measure_record(packet_id: int, request: AddMobileMeasureRequest) -> str:
+    timestamp = request.timestamp.strftime(SQL_TIMESTAMP_FTM)
+    geometry = request.geolocation.geom_from_text()
+    return ','.join(f"({packet_id}, {param_id}, '{param_val}', '{timestamp}', {geometry})" for param_id, param_val in request.measures)
 
 
 class AddMobileMeasureResponseBuilder(IterableItemsABC):
@@ -59,12 +69,6 @@ class AddMobileMeasureResponseBuilder(IterableItemsABC):
     def items(self) -> Generator[AddMobileMeasureResponse, None, None]:
         packet_id_counter = count(self.start_packet_id)
         for req in self.requests:
-            timestamp = req.timestamp.strftime(SQL_TIMESTAMP_FTM)
-            geometry = req.geolocation.geometry_as_text
-
-            packet_id = next(packet_id_counter)
-            measure_record = ','.join(
-                f"({packet_id}, {param_id}, '{param_val}', '{timestamp}', {geometry})" for param_id, param_val in req.measures
+            yield AddMobileMeasureResponse(
+                measure_record=measure_record(packet_id=next(packet_id_counter), request=req)
             )
-
-            yield AddMobileMeasureResponse(measure_record=measure_record)

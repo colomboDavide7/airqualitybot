@@ -9,8 +9,9 @@ from typing import List
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
+from airquality.geometry import PostgisPoint
+from airquality.request import AddFixedSensorRequest, Channel, AddMobileMeasureRequest
 from airquality.request_validator import AddFixedSensorRequestValidator, AddMobileMeasureRequestValidator
-from airquality.request import AddFixedSensorRequest, Channel, Geolocation, AddMobileMeasureRequest
 
 
 class TestRequestValidator(TestCase):
@@ -21,7 +22,7 @@ class TestRequestValidator(TestCase):
 
     @property
     def get_test_geolocation(self):
-        return Geolocation(latitude=11, longitude=-9)
+        return PostgisPoint(latitude=11, longitude=-9)
 
     @property
     def get_test_channels(self):

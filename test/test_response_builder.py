@@ -8,7 +8,8 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
-from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation
+from airquality.geometry import PostgisPoint
+from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
 from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
 
 SQL_TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
@@ -22,7 +23,7 @@ class TestResponseBuilder(TestCase):
 
     @property
     def get_test_geolocation(self):
-        return Geolocation(latitude=1.234, longitude=5.666)
+        return PostgisPoint(latitude=1.234, longitude=5.666)
 
     @property
     def get_test_channels(self):
@@ -74,7 +75,7 @@ class TestResponseBuilder(TestCase):
 
     @property
     def get_test_measure_request_geolocation(self):
-        return Geolocation(latitude=45.876, longitude=9.145)
+        return PostgisPoint(latitude=45.876, longitude=9.145)
 
     @property
     def get_test_measure_request_measures(self):

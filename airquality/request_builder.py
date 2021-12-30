@@ -5,7 +5,8 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel, Geolocation, NullGeolocation
+from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
+from airquality.geometry import PostgisPoint, NullGeometry
 from airquality.iteritems import IterableItemsABC
 from typing import Dict, Generator
 from datetime import datetime
@@ -33,7 +34,7 @@ class AddPurpleairSensorRequestBuilder(IterableItemsABC):
                 type="Purpleair/Thingspeak",
                 name=f"{dm.name} ({dm.sensor_index})",
                 channels=channels,
-                geolocation=Geolocation(latitude=dm.latitude, longitude=dm.longitude)
+                geolocation=PostgisPoint(latitude=dm.latitude, longitude=dm.longitude)
             )
 
 
@@ -52,20 +53,8 @@ class AddAtmotubeMeasureRequestBuilder(IterableItemsABC):
     def items(self) -> Generator[AddMobileMeasureRequest, None, None]:
         for dm in self.datamodel:
             pt = dm.coords
-            geolocation = NullGeolocation() if pt is None else Geolocation(latitude=pt['lat'], longitude=pt['lon'])
-
-            measures = [
-                (self.code2id['voc'], dm.voc),
-                (self.code2id['pm1'], dm.pm1),
-                (self.code2id['pm25'], dm.pm25),
-                (self.code2id['pm10'], dm.pm10),
-                (self.code2id['t'], dm.t),
-                (self.code2id['h'], dm.h),
-                (self.code2id['p'], dm.p)
-            ]
-
             yield AddMobileMeasureRequest(
                 timestamp=datetime.strptime(dm.time, self.TIMESTAMP_FMT),
-                geolocation=geolocation,
-                measures=measures
+                geolocation=NullGeometry() if pt is None else PostgisPoint(latitude=pt['lat'], longitude=pt['lon']),
+                measures=[(ident, getattr(dm, code)) for code, ident in self.code2id.items() if getattr(dm, code) is not None]
             )
