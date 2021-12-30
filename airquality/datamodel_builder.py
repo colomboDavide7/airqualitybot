@@ -20,7 +20,7 @@ class InputBoundaryInterface(Iterable):
     """
 
     @abstractmethod
-    def get_requests(self):
+    def get_datamodels(self):
         pass
 
     def __getitem__(self, index):
@@ -31,10 +31,10 @@ class InputBoundaryInterface(Iterable):
         return next(islice(self, index, None))
 
     def __iter__(self):
-        return self.get_requests()
+        return self.get_datamodels()
 
     def __len__(self):
-        return sum(1 for _ in self.get_requests())
+        return sum(1 for _ in self.get_datamodels())
 
 
 class PurpleairDatamodelBuilder(InputBoundaryInterface):
@@ -48,7 +48,7 @@ class PurpleairDatamodelBuilder(InputBoundaryInterface):
             self.fields = parsed['fields']
             self.data = parsed['data']
 
-    def get_requests(self) -> Generator[PurpleairDatamodel, None, None]:
+    def get_datamodels(self) -> Generator[PurpleairDatamodel, None, None]:
         return (PurpleairDatamodel(**(dict(zip(self.fields, data)))) for data in self.data)
 
 
@@ -62,5 +62,5 @@ class AtmotubeDatamodelBuilder(InputBoundaryInterface):
             parsed = loads(http_response.read())
             self.items = parsed['data']['items']
 
-    def get_requests(self) -> Generator[AtmotubeDatamodel, None, None]:
+    def get_datamodels(self) -> Generator[AtmotubeDatamodel, None, None]:
         return (AtmotubeDatamodel(**item) for item in self.items)
