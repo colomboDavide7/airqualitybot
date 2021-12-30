@@ -11,7 +11,7 @@ from itertools import islice
 from abc import abstractmethod
 from urllib.request import urlopen
 from collections.abc import Iterable
-from airquality.request import AddPurpleairSensorRequest
+from airquality.request import AddPurpleairSensorRequest, AddAtmotubeMeasureRequest
 
 
 class InputBoundaryInterface(Iterable):
@@ -50,3 +50,16 @@ class AddPurpleairSensorRequestBuilder(InputBoundaryInterface):
 
     def get_requests(self) -> Generator[AddPurpleairSensorRequest, None, None]:
         return (AddPurpleairSensorRequest(**(dict(zip(self.fields, data)))) for data in self.data)
+
+
+class AddAtmotubeMeasureRequestBuilder(InputBoundaryInterface):
+    """
+    An *InputBoundaryInterface* that fetches data from Atmotube API and return a Generator o requests.
+    """
+    def __init__(self, url: str):
+        with urlopen(url) as http_response:
+            parsed = loads(http_response.read())
+            self.items = parsed['data']['items']
+
+    def get_requests(self) -> Generator[AddAtmotubeMeasureRequest, None, None]:
+        return (AddAtmotubeMeasureRequest(**item) for item in self.items)

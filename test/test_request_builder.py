@@ -7,11 +7,12 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.request_builder import AddPurpleairSensorRequestBuilder
+from airquality.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder
 
 
 class TestRequestBuilder(TestCase):
 
+    ##################################### test_create_add_purpleair_sensor_request #####################################
     @patch('airquality.request_builder.urlopen')
     def test_create_add_purpleair_sensor_request(self, mocked_urlopen):
         with open('test_resources/purpleair_response.json', 'r') as rf:
@@ -45,6 +46,35 @@ class TestRequestBuilder(TestCase):
 
         with self.assertRaises(IndexError):
             print(requests[-4])
+
+    ##################################### test_create_add_purpleair_sensor_request #####################################
+    @patch('airquality.request_builder.urlopen')
+    def test_create_add_atmotube_measure_request(self, mocked_urlopen):
+        with open('test_resources/atmotube_response.json', 'r') as rf:
+            test_api_responses = rf.read()
+
+        mocked_resp = MagicMock()
+        mocked_resp.read.side_effect = [test_api_responses]
+        mocked_resp.__enter__.return_value = mocked_resp
+        mocked_urlopen.return_value = mocked_resp
+
+        requests = AddAtmotubeMeasureRequestBuilder(url="fake_url")
+        self.assertEqual(len(requests), 2)
+        req1 = requests[0]
+        self.assertEqual(req1.time, "2021-08-10T23:59:00.000Z")
+        self.assertEqual(req1.voc, 0.17)
+        self.assertEqual(req1.pm1, 8)
+        self.assertEqual(req1.pm25, 10)
+        self.assertEqual(req1.pm10, 11)
+        self.assertEqual(req1.t, 29)
+        self.assertEqual(req1.h, 42)
+        self.assertEqual(req1.p, 1004.68)
+
+        with self.assertRaises(IndexError):
+            print(requests[2])
+
+        with self.assertRaises(IndexError):
+            print(requests[-3])
 
 
 if __name__ == '__main__':

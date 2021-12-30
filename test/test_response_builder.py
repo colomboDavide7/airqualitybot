@@ -57,11 +57,10 @@ class TestResponseBuilder(TestCase):
             pm1=8,
             pm25=10,
             pm10=11,
-            temperature=29,
-            humidity=42,
-            pressure=1004.68,
-            latitude=45.765,
-            longitude=9.897
+            t=29,
+            h=42,
+            p=1004.68,
+            coords={'lat': 45.765, 'lon': 9.897}
         )
 
         resp = AddAtmotubeMeasureResponseBuilder(request=test_request_model, code2id=test_code2id).build_response()

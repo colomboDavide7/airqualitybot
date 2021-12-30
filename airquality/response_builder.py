@@ -44,16 +44,18 @@ class AddAtmotubeMeasureResponseBuilder(object):
         self.code2id = code2id
 
     def build_response(self) -> AddMobileMeasureResponse:
+        coords = self.request.coords
+        geolocation = Geolocation(latitude=coords['lat'], longitude=coords['lon'])
         timestamp = datetime.strptime(self.request.time, self.ATMOTUBE_TIMESTAMP_FMT)
-        geolocation = Geolocation(latitude=self.request.latitude, longitude=self.request.longitude)
+
         measures = [
             (self.code2id['voc'], self.request.voc),
             (self.code2id['pm1'], self.request.pm1),
             (self.code2id['pm25'], self.request.pm25),
             (self.code2id['pm10'], self.request.pm10),
-            (self.code2id['t'], self.request.temperature),
-            (self.code2id['h'], self.request.humidity),
-            (self.code2id['p'], self.request.pressure)
+            (self.code2id['t'], self.request.t),
+            (self.code2id['h'], self.request.h),
+            (self.code2id['p'], self.request.p)
         ]
 
         return AddMobileMeasureResponse(
