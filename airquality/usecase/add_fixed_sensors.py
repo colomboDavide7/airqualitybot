@@ -7,10 +7,10 @@
 ######################################################
 from typing import Set
 from airquality.database.gateway import DatabaseGateway
-from airquality.apidata_builder import PurpleairAPIDataBuilder
-from airquality.request_builder import AddPurpleairSensorRequestBuilder
-from airquality.request_validator import AddFixedSensorRequestValidator
-from airquality.response_builder import AddFixedSensorResponseBuilder
+from airquality.core.apidata_builder import PurpleairAPIDataBuilder
+from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
+from airquality.core.request_validator import AddFixedSensorRequestValidator
+from airquality.core.response_builder import AddFixedSensorResponseBuilder
 
 
 class AddFixedSensors(object):

@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
+from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
 from airquality.database.adapter import DatabaseAdapter
 from airquality.datamodel.apiparam import APIParam
 from typing import Set, Dict, List

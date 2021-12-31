@@ -7,13 +7,13 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder
+from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder
 
 
 class TestDatamodelBuilder(TestCase):
 
     ##################################### test_create_purpleair_datamodel #####################################
-    @patch('airquality.apidata_builder.urlopen')
+    @patch('airquality.core.apidata_builder.urlopen')
     def test_create_purpleair_datamodel(self, mocked_urlopen):
         with open('test_resources/purpleair_response.json', 'r') as rf:
             test_api_responses = rf.read()
@@ -48,7 +48,7 @@ class TestDatamodelBuilder(TestCase):
             print(requests[-4])
 
     ##################################### test_create_atmotube_datamodel #####################################
-    @patch('airquality.apidata_builder.urlopen')
+    @patch('airquality.core.apidata_builder.urlopen')
     def test_create_atmotube_datamodel(self, mocked_urlopen):
         with open('test_resources/atmotube_response.json', 'r') as rf:
             test_api_responses = rf.read()

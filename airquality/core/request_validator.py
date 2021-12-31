@@ -6,7 +6,7 @@
 #
 ######################################################
 from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest
-from airquality.iteritems import IterableItemsABC
+from airquality.core.iteritems import IterableItemsABC
 from typing import Generator, Set
 from datetime import datetime
 

@@ -10,7 +10,7 @@ from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
-from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
+from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
 
 SQL_TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
 
@@ -44,7 +44,7 @@ class TestResponseBuilder(TestCase):
         )
 
     ##################################### test_create_response_to_request_of_adding_fixed_sensor #####################################
-    @patch('airquality.response_builder.datetime')
+    @patch('airquality.core.response_builder.datetime')
     def test_create_response_to_request_of_adding_fixed_sensor(self, mocked_datetime):
         mocked_now = datetime.strptime("2021-12-29 18:33:00", SQL_TIMESTAMP_FMT)
         mocked_datetime.now.return_value = mocked_now

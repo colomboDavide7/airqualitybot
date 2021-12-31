@@ -11,7 +11,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.request import AddFixedSensorRequest, Channel, AddMobileMeasureRequest
-from airquality.request_validator import AddFixedSensorRequestValidator, AddMobileMeasureRequestValidator
+from airquality.core.request_validator import AddFixedSensorRequestValidator, AddMobileMeasureRequestValidator
 
 
 class TestRequestValidator(TestCase):

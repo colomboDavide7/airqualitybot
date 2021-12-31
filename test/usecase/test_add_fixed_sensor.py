@@ -38,7 +38,7 @@ class TestAddFixedSensor(TestCase):
         return "(1, 'key1a', '111', '1A', '2009-02-14 00:31:30'),(1, 'key1b', '222', '1B', '2009-02-14 00:31:30')," \
                "(1, 'key2a', '333', '2A', '2009-02-14 00:31:30'),(1, 'key2b', '444', '2B', '2009-02-14 00:31:30')"
 
-    @patch('airquality.response_builder.datetime')
+    @patch('airquality.core.response_builder.datetime')
     def test_add_fixed_sensor_use_case(self, mocked_datetime):
         mocked_now = datetime.strptime("2021-12-29 18:33:00", "%Y-%m-%d %H:%M:%S")
         mocked_datetime.now.return_value = mocked_now

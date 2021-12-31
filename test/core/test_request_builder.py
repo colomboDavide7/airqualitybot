@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 from airquality.datamodel.request import Channel
 from airquality.datamodel.geometry import NullGeometry, PostgisPoint
 from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData
-from airquality.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder
+from airquality.core.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder
 
 
 class TestRequestBuilder(TestCase):

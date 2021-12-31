@@ -8,10 +8,10 @@
 from typing import Dict
 from datetime import datetime
 from airquality.database.gateway import DatabaseGateway
-from airquality.apidata_builder import AtmotubeAPIDataBuilder
-from airquality.request_builder import AddAtmotubeMeasureRequestBuilder
-from airquality.request_validator import AddMobileMeasureRequestValidator
-from airquality.response_builder import AddMobileMeasureResponseBuilder
+from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
+from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
+from airquality.core.request_validator import AddMobileMeasureRequestValidator
+from airquality.core.response_builder import AddMobileMeasureResponseBuilder
 
 
 class AddMobileMeasures(object):

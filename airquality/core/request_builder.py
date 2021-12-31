@@ -7,7 +7,7 @@
 ######################################################
 from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
-from airquality.iteritems import IterableItemsABC
+from airquality.core.iteritems import IterableItemsABC
 from typing import Dict, Generator
 from datetime import datetime
 

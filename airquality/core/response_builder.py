@@ -8,7 +8,7 @@
 from itertools import count
 from typing import Generator
 from datetime import datetime
-from airquality.iteritems import IterableItemsABC
+from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse
 

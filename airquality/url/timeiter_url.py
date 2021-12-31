@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.iteritems import IterableItemsABC
+from airquality.core.iteritems import IterableItemsABC
 from datetime import datetime, timedelta
 from typing import Generator
 

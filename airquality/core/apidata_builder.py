@@ -8,7 +8,7 @@
 from json import loads
 from typing import Generator
 from urllib.request import urlopen
-from airquality.iteritems import IterableItemsABC
+from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData
 
 

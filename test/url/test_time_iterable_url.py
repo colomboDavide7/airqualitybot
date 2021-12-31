@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.timeiter_url import AtmotubeTimeIterableURL
+from airquality.url.timeiter_url import AtmotubeTimeIterableURL
 from unittest import TestCase, main
 from datetime import datetime
 
