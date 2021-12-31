@@ -47,3 +47,5 @@ class Runner(object):
 
         if not self.args:
             raise WrongUsageError("expected at least one argument!")
+        if self.args[0] not in self.env.valid_personalities:
+            raise WrongUsageError("invalid personality!")

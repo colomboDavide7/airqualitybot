@@ -26,6 +26,13 @@ class TestRunner(TestCase):
                 with self.assertRaises(WrongUsageError):
                     runner.main()
 
+    def test_WrongUsageError_on_invalid_personality(self):
+        test_args = ['program_name', 'bad_personality']
+        with patch.object(sys, 'argv', test_args):
+            with Runner(env=Environment()) as runner:
+                with self.assertRaises(WrongUsageError):
+                    runner.main()
+
 
 if __name__ == '__main__':
     main()
