@@ -15,15 +15,19 @@ from airquality.response_builder import AddMobileMeasureResponseBuilder
 
 
 class AddMobileMeasures(object):
+    """
+    An *object* that represents the UseCase of adding mobile measurements to the database
+    through the *output_gateway
+    """
 
     def __init__(
             self,
-            output_gateway: DatabaseGateway,
-            code2id: Dict[str, int],
-            filter_ts: datetime,
-            start_packet_id: int,
-            sensor_id: int,
-            ch_name: str
+            output_gateway: DatabaseGateway,            # The database output boundary.
+            code2id: Dict[str, int],                    # The map between measure param code and id.
+            filter_ts: datetime,                        # The timestamp used to validate the requests.
+            start_packet_id: int,                       # The id from where to start inserting all the packets.
+            sensor_id: int,                             # The unique id of the sensor that collects the measurements.
+            ch_name: str                                # The sensor's acquisition channel name.
     ):
         self.output_gateway = output_gateway
         self.code2id = code2id

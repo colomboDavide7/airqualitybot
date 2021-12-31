@@ -13,13 +13,26 @@ ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 
 
 class PostgisGeometry(object):
+    """
+    An *object* that defines the interface for every postGIS geometry object.
+    """
 
     @abstractmethod
     def as_text(self) -> str:
+        """
+        A method that return the result of applying the function *ST_AsText* to a postGIS geometry field.
+
+        i.e., POINT(longitude latitude)
+        """
         pass
 
     @abstractmethod
     def geom_from_text(self) -> str:
+        """
+        A method that return the result of applying the function *ST_GeomFromText* to a postGIS geometry field.
+
+        i.e., ST_GeomFromText('POINT(longitude latitude)', srid)
+        """
         pass
 
 

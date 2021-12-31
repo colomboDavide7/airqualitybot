@@ -15,10 +15,15 @@ from airquality.response_builder import AddFixedSensorResponseBuilder
 
 class AddFixedSensors(object):
     """
-    An *object* that represent the Use Case of adding a new fixed sensor (i.e., a station) to the database.
+    An *object* that represent the UseCase of adding new fixed sensors (i.e., a station) to the database.
     """
 
-    def __init__(self, output_gateway: DatabaseGateway, existing_names: Set[str], start_sensor_id: int):
+    def __init__(
+            self,
+            output_gateway: DatabaseGateway,            # The database output boundary.
+            existing_names: Set[str],                   # The set of names already present into the database.
+            start_sensor_id: int                        # The id from where to start insert all the sensors.
+    ):
         self.output_gateway = output_gateway
         self.existing_names = existing_names
         self.start_sensor_id = start_sensor_id
