@@ -6,7 +6,7 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.geometry import PostgisPoint, NullGeometry
+from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 
 
 class TestGeometry(TestCase):

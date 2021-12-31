@@ -6,7 +6,7 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse
 
 
 class TestResponseModel(TestCase):

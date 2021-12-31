@@ -7,8 +7,8 @@
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.geometry import PostgisPoint
-from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
+from airquality.datamodel.geometry import PostgisPoint
+from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
 
 
 class TestRequestModel(TestCase):

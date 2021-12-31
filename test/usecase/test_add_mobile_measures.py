@@ -8,15 +8,15 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.datamodel import AtmotubeDatamodel
-from airquality.add_mobile_measures import AddMobileMeasures
+from airquality.datamodel.apidata import AtmotubeAPIData
+from airquality.usecase.add_mobile_measures import AddMobileMeasures
 
 
 class TestAddMobileMeasuresUsecase(TestCase):
 
     @property
     def get_test_atmotube_datamodel(self):
-        return AtmotubeDatamodel(
+        return AtmotubeAPIData(
             time="2021-08-10T23:59:00.000Z",
             voc=0.17,
             pm1=8,

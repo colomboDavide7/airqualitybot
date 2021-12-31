@@ -7,7 +7,7 @@
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.apiparam import APIParam
+from airquality.datamodel.apiparam import APIParam
 
 
 class TestAPIParamDataclass(TestCase):

@@ -6,8 +6,8 @@
 #
 ######################################################
 from typing import Set
-from airquality.database_gateway import DatabaseGateway
-from airquality.datamodel_builder import PurpleairDatamodelBuilder
+from airquality.database.gateway import DatabaseGateway
+from airquality.apidata_builder import PurpleairAPIDataBuilder
 from airquality.request_builder import AddPurpleairSensorRequestBuilder
 from airquality.request_validator import AddFixedSensorRequestValidator
 from airquality.response_builder import AddFixedSensorResponseBuilder
@@ -28,7 +28,7 @@ class AddFixedSensors(object):
         self.existing_names = existing_names
         self.start_sensor_id = start_sensor_id
 
-    def process(self, datamodels: PurpleairDatamodelBuilder):
+    def process(self, datamodels: PurpleairAPIDataBuilder):
         print(f"found #{len(datamodels)} datamodels")
         requests = AddPurpleairSensorRequestBuilder(datamodel=datamodels)
         print(f"found #{len(requests)} requests")

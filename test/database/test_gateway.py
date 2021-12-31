@@ -8,9 +8,9 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.apiparam import APIParam
-from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse
-from airquality.database_gateway import DatabaseGateway
+from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse
+from airquality.database.gateway import DatabaseGateway
 
 
 class TestDatabaseGateway(TestCase):

@@ -7,8 +7,8 @@
 ######################################################
 from typing import Dict
 from datetime import datetime
-from airquality.database_gateway import DatabaseGateway
-from airquality.datamodel_builder import AtmotubeDatamodelBuilder
+from airquality.database.gateway import DatabaseGateway
+from airquality.apidata_builder import AtmotubeAPIDataBuilder
 from airquality.request_builder import AddAtmotubeMeasureRequestBuilder
 from airquality.request_validator import AddMobileMeasureRequestValidator
 from airquality.response_builder import AddMobileMeasureResponseBuilder
@@ -36,7 +36,7 @@ class AddMobileMeasures(object):
         self.sensor_id = sensor_id
         self.ch_name = ch_name
 
-    def process(self, datamodels: AtmotubeDatamodelBuilder):
+    def process(self, datamodels: AtmotubeAPIDataBuilder):
         print(f"found #{len(datamodels)} datamodels")
         requests = AddAtmotubeMeasureRequestBuilder(datamodel=datamodels, code2id=self.code2id)
         print(f"found #{len(requests)} requests")

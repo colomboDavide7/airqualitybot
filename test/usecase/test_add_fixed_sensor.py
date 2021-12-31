@@ -8,15 +8,15 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel import PurpleairDatamodel
-from airquality.add_fixed_sensors import AddFixedSensors
+from airquality.datamodel.apidata import PurpleairAPIData
+from airquality.usecase.add_fixed_sensors import AddFixedSensors
 
 
 class TestAddFixedSensor(TestCase):
 
     @property
     def get_test_purpleair_datamodel(self):
-        return PurpleairDatamodel(
+        return PurpleairAPIData(
             name="fakename",
             sensor_index=9,
             latitude=1.234,

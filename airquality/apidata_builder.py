@@ -9,10 +9,10 @@ from json import loads
 from typing import Generator
 from urllib.request import urlopen
 from airquality.iteritems import IterableItemsABC
-from airquality.datamodel import PurpleairDatamodel, AtmotubeDatamodel
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData
 
 
-class PurpleairDatamodelBuilder(IterableItemsABC):
+class PurpleairAPIDataBuilder(IterableItemsABC):
     """
     An *IterableItemsABC* that defines the business rules
     for fetching data from Purpleair API and build a *PurpleairDatamodel*.
@@ -24,11 +24,11 @@ class PurpleairDatamodelBuilder(IterableItemsABC):
             self.fields = parsed['fields']
             self.data = parsed['data']
 
-    def items(self) -> Generator[PurpleairDatamodel, None, None]:
-        return (PurpleairDatamodel(**(dict(zip(self.fields, data)))) for data in self.data)
+    def items(self) -> Generator[PurpleairAPIData, None, None]:
+        return (PurpleairAPIData(**(dict(zip(self.fields, data)))) for data in self.data)
 
 
-class AtmotubeDatamodelBuilder(IterableItemsABC):
+class AtmotubeAPIDataBuilder(IterableItemsABC):
     """
     An *IterableItemsABC* that defines the business rules
     for fetching data from Atmotube API and build an *AtmotubeDatamodel*.
@@ -39,5 +39,5 @@ class AtmotubeDatamodelBuilder(IterableItemsABC):
             parsed = loads(http_response.read())
             self.api_items = parsed['data']['items']
 
-    def items(self) -> Generator[AtmotubeDatamodel, None, None]:
-        return (AtmotubeDatamodel(**item) for item in self.api_items)
+    def items(self) -> Generator[AtmotubeAPIData, None, None]:
+        return (AtmotubeAPIData(**item) for item in self.api_items)

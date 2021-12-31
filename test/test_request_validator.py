@@ -9,8 +9,8 @@ from typing import List
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.geometry import PostgisPoint
-from airquality.request import AddFixedSensorRequest, Channel, AddMobileMeasureRequest
+from airquality.datamodel.geometry import PostgisPoint
+from airquality.datamodel.request import AddFixedSensorRequest, Channel, AddMobileMeasureRequest
 from airquality.request_validator import AddFixedSensorRequestValidator, AddMobileMeasureRequestValidator
 
 

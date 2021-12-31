@@ -5,11 +5,10 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import psycopg2.errors
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-import psycopg2.errors
-
-from airquality.database_adapter import Psycopg2Adapter
+from airquality.database.adapter import Psycopg2Adapter
 
 
 class TestDatabaseAdapter(TestCase):
@@ -19,7 +18,7 @@ class TestDatabaseAdapter(TestCase):
         return {'dbname': 'fakedbname', 'user': 'fakeuser', 'password': 'fakepassword', 'host': 'fakehost', 'port': 'fakeport'}
 
     ##################################### test_fetchone #####################################
-    @patch('airquality.database_adapter.connect')
+    @patch('airquality.database.adapter.connect')
     def test_fetchone(self, mocked_connect):
         mocked_cursor = MagicMock()
         mocked_cursor.__enter__.return_value = mocked_cursor
@@ -36,7 +35,7 @@ class TestDatabaseAdapter(TestCase):
         self.assertEqual(actual[0], "some value")
 
     ##################################### test_fetchall #####################################
-    @patch('airquality.database_adapter.connect')
+    @patch('airquality.database.adapter.connect')
     def test_fetchall(self, mocked_connect):
         mocked_cursor = MagicMock()
         mocked_cursor.__enter__.return_value = mocked_cursor
@@ -57,7 +56,7 @@ class TestDatabaseAdapter(TestCase):
         self.assertEqual(actual[1], ("row2", ))
 
     ##################################### test_execute #####################################
-    @patch('airquality.database_adapter.connect')
+    @patch('airquality.database.adapter.connect')
     def test_execute(self, mocked_connect):
         mocked_cursor = MagicMock()
         mocked_cursor.__enter__.return_value = mocked_cursor
@@ -74,7 +73,7 @@ class TestDatabaseAdapter(TestCase):
         mocked_cursor.execute.assert_called_with(test_query)
 
     ##################################### test_close_connection #####################################
-    @patch('airquality.database_adapter.connect')
+    @patch('airquality.database.adapter.connect')
     def test_close_connection(self, mocked_connect):
         mocked_cursor = MagicMock()
         mocked_cursor.__enter__.return_value = mocked_cursor

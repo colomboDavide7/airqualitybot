@@ -9,8 +9,8 @@ from itertools import count
 from typing import Generator
 from datetime import datetime
 from airquality.iteritems import IterableItemsABC
-from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest
-from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse
+from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse
 
 SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
 

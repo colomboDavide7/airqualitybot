@@ -7,13 +7,13 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel_builder import PurpleairDatamodelBuilder, AtmotubeDatamodelBuilder
+from airquality.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder
 
 
 class TestDatamodelBuilder(TestCase):
 
     ##################################### test_create_purpleair_datamodel #####################################
-    @patch('airquality.datamodel_builder.urlopen')
+    @patch('airquality.apidata_builder.urlopen')
     def test_create_purpleair_datamodel(self, mocked_urlopen):
         with open('test_resources/purpleair_response.json', 'r') as rf:
             test_api_responses = rf.read()
@@ -23,7 +23,7 @@ class TestDatamodelBuilder(TestCase):
         mocked_resp.__enter__.return_value = mocked_resp
         mocked_urlopen.return_value = mocked_resp
 
-        requests = PurpleairDatamodelBuilder(url="fake_url")
+        requests = PurpleairAPIDataBuilder(url="fake_url")
         self.assertEqual(len(requests), 3)
         req1 = requests[0]
         self.assertEqual(req1.name, "n1")
@@ -48,7 +48,7 @@ class TestDatamodelBuilder(TestCase):
             print(requests[-4])
 
     ##################################### test_create_atmotube_datamodel #####################################
-    @patch('airquality.datamodel_builder.urlopen')
+    @patch('airquality.apidata_builder.urlopen')
     def test_create_atmotube_datamodel(self, mocked_urlopen):
         with open('test_resources/atmotube_response.json', 'r') as rf:
             test_api_responses = rf.read()
@@ -58,7 +58,7 @@ class TestDatamodelBuilder(TestCase):
         mocked_resp.__enter__.return_value = mocked_resp
         mocked_urlopen.return_value = mocked_resp
 
-        requests = AtmotubeDatamodelBuilder(url="fake_url")
+        requests = AtmotubeAPIDataBuilder(url="fake_url")
         self.assertEqual(len(requests), 2)
         req1 = requests[0]
         self.assertEqual(req1.time, "2021-08-10T23:59:00.000Z")

@@ -6,8 +6,8 @@
 #
 ######################################################
 from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
-from airquality.database_adapter import DatabaseAdapter
-from airquality.apiparam import APIParam
+from airquality.database.adapter import DatabaseAdapter
+from airquality.datamodel.apiparam import APIParam
 from typing import Set, Dict, List
 from datetime import datetime
 

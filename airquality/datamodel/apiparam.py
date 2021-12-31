@@ -12,7 +12,7 @@ from datetime import datetime
 @dataclass
 class APIParam(object):
     """
-    An *object* that represents the database sensor's API parameters data.
+    An *object* that represents the sensor's API parameters data queried from the database.
     """
 
     sensor_id: int                      # The unique identifier of a sensor within the database.

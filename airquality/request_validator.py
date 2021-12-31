@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest
+from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest
 from airquality.iteritems import IterableItemsABC
 from typing import Generator, Set
 from datetime import datetime

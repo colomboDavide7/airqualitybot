@@ -8,9 +8,9 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.request import Channel
-from airquality.geometry import NullGeometry, PostgisPoint
-from airquality.datamodel import PurpleairDatamodel, AtmotubeDatamodel
+from airquality.datamodel.request import Channel
+from airquality.datamodel.geometry import NullGeometry, PostgisPoint
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData
 from airquality.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder
 
 
@@ -18,7 +18,7 @@ class TestRequestBuilder(TestCase):
 
     @property
     def get_test_purpleair_datamodel(self):
-        return PurpleairDatamodel(
+        return PurpleairAPIData(
             name="fakename",
             sensor_index=9,
             latitude=1.234,
@@ -60,7 +60,7 @@ class TestRequestBuilder(TestCase):
 
     @property
     def get_test_atmotube_datamodel(self):
-        return AtmotubeDatamodel(
+        return AtmotubeAPIData(
             time="2021-08-10T23:59:00.000Z",
             voc=0.17,
             pm1=8,
@@ -74,7 +74,7 @@ class TestRequestBuilder(TestCase):
 
     @property
     def get_test_atmotube_datamodel_without_coords(self):
-        return AtmotubeDatamodel(
+        return AtmotubeAPIData(
             time="2021-08-11T00:00:00.000Z",
             voc=0.19,
             pm1=7,

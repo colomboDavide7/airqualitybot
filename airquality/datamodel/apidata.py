@@ -10,7 +10,7 @@ from typing import Dict
 
 
 @dataclass
-class PurpleairDatamodel(object):
+class PurpleairAPIData(object):
     """
     A *dataclass* that represents the raw Purpleair API data of a single sensor.
     """
@@ -32,7 +32,7 @@ class PurpleairDatamodel(object):
 
 
 @dataclass
-class AtmotubeDatamodel(object):
+class AtmotubeAPIData(object):
     """
     A *dataclass* that represents the raw Atmotube API data of a single sensor.
     """

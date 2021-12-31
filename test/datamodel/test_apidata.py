@@ -6,13 +6,13 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.datamodel import PurpleairDatamodel, AtmotubeDatamodel
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData
 
 
 class TestDatamodel(TestCase):
 
     def test_purpleair_datamodel(self):
-        req = PurpleairDatamodel(
+        req = PurpleairAPIData(
             name="fakename",
             sensor_index=9,
             latitude=1.234,
@@ -44,7 +44,7 @@ class TestDatamodel(TestCase):
         self.assertEqual(req.secondary_key_b, "key2b")
 
     def test_atmotube_datamodel(self):
-        req = AtmotubeDatamodel(
+        req = AtmotubeAPIData(
             time="2021-08-10T23:59:00.000Z",
             voc=0.17,
             pm1=8,

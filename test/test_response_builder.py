@@ -8,8 +8,8 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
-from airquality.geometry import PostgisPoint
-from airquality.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
+from airquality.datamodel.geometry import PostgisPoint
+from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
 from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
 
 SQL_TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"

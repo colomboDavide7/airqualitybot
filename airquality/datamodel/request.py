@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.geometry import PostgisGeometry
+from airquality.datamodel.geometry import PostgisGeometry
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Tuple
