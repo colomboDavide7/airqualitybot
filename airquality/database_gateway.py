@@ -7,7 +7,8 @@
 ######################################################
 from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
 from airquality.database_adapter import DatabaseAdapter
-from typing import Set, Dict
+from airquality.apiparam import APIParam
+from typing import Set, Dict, List
 
 
 class DatabaseGateway(object):
@@ -55,6 +56,16 @@ class DatabaseGateway(object):
             f"UPDATE level0_raw.sensor_api_param SET last_acquisition = '{timestamp}' "
             f"WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
         )
+
+    def get_apiparam_of_type(self, sensor_type: str) -> List[APIParam]:
+        rows = self.dbadapter.fetchall(
+            "SELECT a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.last_acquisition FROM level0_raw.sensor_api_param AS a "
+            f"INNER JOIN level0_raw.sensor AS s ON s.id = a.sensor_id WHERE s.sensor_type ILIKE '%{sensor_type}%';"
+        )
+        return [
+            APIParam(sensor_id=sid, api_key=key, api_id=ident, ch_name=name, last_acquisition=last)
+            for sid, key, ident, name, last in rows
+        ]
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"

@@ -5,8 +5,10 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
+from airquality.apiparam import APIParam
 from airquality.response import AddFixedSensorResponse, AddMobileMeasureResponse
 from airquality.database_gateway import DatabaseGateway
 
@@ -132,6 +134,27 @@ class TestDatabaseGateway(TestCase):
                          "WHERE sensor_id = 12 AND ch_name = 'fakename';"
 
         mocked_database_adapter.execute.assert_called_with(expected_query)
+
+    ##################################### test_update_last_acquisition #####################################
+    def test_get_apiparam_of_type(self):
+        test_last_acquisition = datetime.strptime("2018-12-11 09:59:00", "%Y-%m-%d %H:%M:%S")
+        mocked_dbadapter = MagicMock()
+        mocked_dbadapter.fetchall.return_value = [
+            (1, 'k1', 'i1', 'n1', test_last_acquisition),
+            (1, 'k2', 'i2', 'n2', test_last_acquisition),
+            (2, 'z1', 'a1', 'm1', test_last_acquisition),
+        ]
+
+        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        actual = gateway.get_apiparam_of_type(sensor_type="atmotube")
+        self.assertEqual(len(actual), 3)
+
+        expected_apiparam = [
+            APIParam(sensor_id=1, api_key="k1", api_id="i1", ch_name="n1", last_acquisition=test_last_acquisition),
+            APIParam(sensor_id=1, api_key="k2", api_id="i2", ch_name="n2", last_acquisition=test_last_acquisition),
+            APIParam(sensor_id=2, api_key="z1", api_id="a1", ch_name="m1", last_acquisition=test_last_acquisition)
+        ]
+        self.assertEqual(actual, expected_apiparam)
 
 
 if __name__ == '__main__':
