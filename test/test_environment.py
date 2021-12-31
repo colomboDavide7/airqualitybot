@@ -28,11 +28,6 @@ class TestEnvironment(TestCase):
             'p3_url': 'url_template_of_p3'
         }
 
-    # def test_raise_ValueError_when_invalid_personality_is_passed(self):
-    #     with patch.dict(os.environ, self.get_test_environ):
-    #         with self.assertRaises(ValueError):
-    #             Environment()
-
     def test_get_valid_personalities(self):
         with patch.dict(os.environ, self.get_test_environ):
             actual = Environment().valid_personalities
@@ -56,11 +51,6 @@ class TestEnvironment(TestCase):
         with patch.dict(os.environ, self.get_test_environ):
             actual = Environment().url_template(personality="p1")
             self.assertEqual(actual, "url_template_of_p1")
-
-    def test_raise_ValueError_when_try_to_get_url_with_the_wrong_personality(self):
-        with patch.dict(os.environ, self.get_test_environ):
-            with self.assertRaises(ValueError):
-                Environment().url_template("bad_personality")
 
 
 if __name__ == '__main__':

@@ -8,11 +8,11 @@
 from dataclasses import dataclass
 from abc import abstractmethod
 
-POSTGIS_POINT = "POINT({lon} {lat})"
-ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
+# POSTGIS_POINT = "POINT({lon} {lat})"
+# ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 
 
-class PostgisGeometry(object):
+class PostgisGeometry:
     """
     An *object* that defines the interface for every postGIS geometry object.
     """
@@ -53,10 +53,10 @@ class PostgisPoint(PostgisGeometry):
             raise ValueError(f"{type(self).__name__} expected *longitude* to be in range [-180.0 - +180.0]")
 
     def as_text(self) -> str:
-        return POSTGIS_POINT.format(lon=self.longitude, lat=self.latitude)
+        return "POINT({lon} {lat})".format(lon=self.longitude, lat=self.latitude)
 
     def geom_from_text(self) -> str:
-        return ST_GEOM_FROM_TEXT.format(geom=self.as_text(), srid=self.srid)
+        return "ST_GeomFromText('{geom}', {srid})".format(geom=self.as_text(), srid=self.srid)
 
 
 class NullGeometry(PostgisGeometry):

@@ -11,17 +11,15 @@ from dotenv import load_dotenv
 
 
 class Environment(object):
+    """
+    An *object* class a boundary interface for interacting with the external '.env' file.
+    """
 
     def __init__(self):
-        self._valid_pers = ()
         load_dotenv(dotenv_path='.env')
-        # if personality not in self.valid_personalities:
-        #     raise ValueError(f"{type(self).__name__} expected '{personality}' to be one of {self.valid_personalities}")
-        # self.personality = personality
+        self._valid_pers = ()
 
-    def url_template(self, personality) -> str:
-        if personality not in self.valid_personalities:
-            raise ValueError(f"{type(self).__name__} expected '{personality}' to be one of {self.valid_personalities}")
+    def url_template(self, personality: str) -> str:
         return os.environ[f'{personality}_url']
 
     @property
