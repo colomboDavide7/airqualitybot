@@ -46,7 +46,6 @@ class Runner(object):
         if exc_type == WrongUsageError:
             print(repr(exc_val))
             print(self.env.program_usage_msg)
-
             sys.exit(1)
 
     def main(self):
@@ -60,46 +59,53 @@ class Runner(object):
             raise WrongUsageError("invalid personality!")
 
         personality = self.args[0]
+        print(f"RUNNING {personality}...")
         if personality == 'purpleair':
-            print("RUNNING Purpleair...")
-            # TODO: add context manager for database adapter
-
-            dbadapter = Psycopg2Adapter(
-                dbname=self.env.dbname, user=self.env.user, password=self.env.password, host=self.env.host, port=self.env.port
-            )
-
-            output_gateway = DatabaseGateway(dbadapter=dbadapter)
-            existing_names = output_gateway.get_existing_sensor_names_of_type(sensor_type=personality)
-            start_sensor_id = output_gateway.get_max_sensor_id_plus_one()
-            datamodels = PurpleairAPIDataBuilder(url=self.env.url_template(personality=personality))
-            AddFixedSensors(
-                output_gateway=output_gateway, existing_names=existing_names, start_sensor_id=start_sensor_id
-            ).process(datamodels=datamodels)
-            print("finish!")
-
+            self.run_purpleair(personality=personality)
         elif personality == 'atmotube':
-            print("RUNNING Atmotube...")
-            # TODO: add context manager for database adapter
+            self.run_atmotube(personality=personality)
+        print("finish!")
 
-            dbadapter = Psycopg2Adapter(
-                dbname=self.env.dbname, user=self.env.user, password=self.env.password, host=self.env.host, port=self.env.port
-            )
-            output_gateway = DatabaseGateway(dbadapter=dbadapter)
-            url_template = self.env.url_template(personality=personality)
-            code2id = output_gateway.get_measure_param_owned_by(owner=personality)
-            apiparam = output_gateway.get_apiparam_of_type(sensor_type=personality)
-            print(repr(apiparam))
+    @property
+    def dbadapter(self) -> Psycopg2Adapter:
+        return Psycopg2Adapter(
+            dbname=self.env.dbname,
+            user=self.env.user,
+            password=self.env.password,
+            host=self.env.host,
+            port=self.env.port
+        )
 
-            for param in apiparam:
-                url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
-                urls = AtmotubeTimeIterableURL(url=url, begin=param.last_acquisition)
+    def run_purpleair(self, personality: str):
+        gateway = DatabaseGateway(dbadapter=self.dbadapter)
+        start_sensor_id = gateway.get_max_sensor_id_plus_one()
+        existing_names = gateway.get_existing_sensor_names_of_type(sensor_type=personality)
+        datamodels = PurpleairAPIDataBuilder(url=self.env.url_template(personality=personality))
+        AddFixedSensors(
+            output_gateway=gateway,
+            existing_names=existing_names,
+            start_sensor_id=start_sensor_id
+        ).process(datamodels=datamodels)
 
-                for url in urls:
-                    start_packet_id = output_gateway.get_max_mobile_packet_id_plus_one()
-                    filter_ts = output_gateway.get_last_acquisition_of_sensor_channel(
-                        sensor_id=param.sensor_id, ch_name=param.ch_name
-                    )
-                    AddMobileMeasures(
-                        output_gateway=output_gateway, start_packet_id=start_packet_id, filter_ts=filter_ts,
-                        code2id=code2id, sensor_id=param.sensor_id, ch_name=param.ch_name
-                    ).process(datamodels=AtmotubeAPIDataBuilder(url=url))
+    def run_atmotube(self, personality: str):
+        gateway = DatabaseGateway(dbadapter=self.dbadapter)
+        url_template = self.env.url_template(personality=personality)
+        code2id = gateway.get_measure_param_owned_by(owner=personality)
+        apiparam = gateway.get_apiparam_of_type(sensor_type=personality)
+        for param in apiparam:
+            pre_formatted_url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
+            urls = AtmotubeTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition)
+            for url in urls:
+                start_packet_id = gateway.get_max_mobile_packet_id_plus_one()
+                filter_ts = gateway.get_last_acquisition_of_sensor_channel(
+                    sensor_id=param.sensor_id,
+                    ch_name=param.ch_name
+                )
+                AddMobileMeasures(
+                    output_gateway=gateway,
+                    start_packet_id=start_packet_id,
+                    sensor_id=param.sensor_id,
+                    ch_name=param.ch_name,
+                    filter_ts=filter_ts,
+                    code2id=code2id
+                ).process(datamodels=AtmotubeAPIDataBuilder(url=url))
