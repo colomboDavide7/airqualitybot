@@ -27,6 +27,10 @@ class DatabaseGateway(object):
         return 1 if row is None else row[0] + 1
 
     def insert_sensors(self, responses: AddFixedSensorResponseBuilder):
+        if len(responses) == 0:
+            print(f"{type(self).__name__} got empty responses!")
+            return
+
         sensor_query = "INSERT INTO level0_raw.sensor VALUES "
         apiparam_query = "INSERT INTO level0_raw.sensor_api_param (sensor_id, ch_key, ch_id, ch_name, last_acquisition) VALUES "
         geolocation_query = "INSERT INTO level0_raw.sensor_at_location (sensor_id, valid_from, geom) VALUES "

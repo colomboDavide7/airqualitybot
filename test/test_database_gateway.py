@@ -54,12 +54,23 @@ class TestDatabaseGateway(TestCase):
             geolocation_record=self.get_test_geolocation_record
         )
 
+    def test_insert_sensors_early_return_with_empty_responses(self):
+        mocked_database_adapter = MagicMock()
+        mocked_database_adapter.execute = MagicMock()
+
+        mocked_response_builder = MagicMock()
+        mocked_response_builder.__iter__.return_value = []
+        gateway = DatabaseGateway(dbadapter=mocked_database_adapter)
+        gateway.insert_sensors(responses=mocked_response_builder)
+        mocked_database_adapter.execute.assert_not_called()
+
     ##################################### test_insert_sensors #####################################
     def test_insert_sensors(self):
         mocked_database_adapter = MagicMock()
         mocked_database_adapter.execute = MagicMock()
 
         mocked_response_builder = MagicMock()
+        mocked_response_builder.__len__.return_value = 1
         mocked_response_builder.__iter__.return_value = [self.get_test_add_fixed_sensor_responses]
         gateway = DatabaseGateway(dbadapter=mocked_database_adapter)
         gateway.insert_sensors(responses=mocked_response_builder)
