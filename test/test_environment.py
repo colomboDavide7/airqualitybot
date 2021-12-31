@@ -28,24 +28,24 @@ class TestEnvironment(TestCase):
             'p3_url': 'url_template_of_p3'
         }
 
-    def test_raise_ValueError_when_invalid_personality_is_passed(self):
-        with patch.dict(os.environ, self.get_test_environ):
-            with self.assertRaises(ValueError):
-                Environment(personality="fakepers")
+    # def test_raise_ValueError_when_invalid_personality_is_passed(self):
+    #     with patch.dict(os.environ, self.get_test_environ):
+    #         with self.assertRaises(ValueError):
+    #             Environment()
 
     def test_get_valid_personalities(self):
         with patch.dict(os.environ, self.get_test_environ):
-            actual = Environment(personality="p2").valid_personalities
+            actual = Environment().valid_personalities
             self.assertEqual(actual, ('p1', 'p2', 'p3'))
 
     def test_get_program_usage_msg(self):
         with patch.dict(os.environ, self.get_test_environ):
-            actual = Environment(personality="p1").program_usage_msg
-            self.assertEqual(actual, "python(version) -m airquality [p1 | p2 | p3]")
+            actual = Environment().program_usage_msg
+            self.assertEqual(actual, "USAGE: python(version) -m airquality [p1 | p2 | p3]")
 
     def test_get_database_credentials(self):
         with patch.dict(os.environ, self.get_test_environ):
-            env = Environment(personality="p3")
+            env = Environment()
             self.assertEqual(env.dbname, "fakedbname")
             self.assertEqual(env.user, "fakeuser")
             self.assertEqual(env.password, "fakepassword")
@@ -54,8 +54,13 @@ class TestEnvironment(TestCase):
 
     def test_get_url_from_personality(self):
         with patch.dict(os.environ, self.get_test_environ):
-            actual = Environment(personality="p1").url_template
+            actual = Environment().url_template(personality="p1")
             self.assertEqual(actual, "url_template_of_p1")
+
+    def test_raise_ValueError_when_try_to_get_url_with_the_wrong_personality(self):
+        with patch.dict(os.environ, self.get_test_environ):
+            with self.assertRaises(ValueError):
+                Environment().url_template("bad_personality")
 
 
 if __name__ == '__main__':

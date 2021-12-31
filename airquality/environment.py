@@ -7,15 +7,22 @@
 ######################################################
 import os
 from typing import Tuple
+from dotenv import load_dotenv
 
 
 class Environment(object):
 
-    def __init__(self, personality: str):
+    def __init__(self):
         self._valid_pers = ()
+        load_dotenv(dotenv_path='.env')
+        # if personality not in self.valid_personalities:
+        #     raise ValueError(f"{type(self).__name__} expected '{personality}' to be one of {self.valid_personalities}")
+        # self.personality = personality
+
+    def url_template(self, personality) -> str:
         if personality not in self.valid_personalities:
             raise ValueError(f"{type(self).__name__} expected '{personality}' to be one of {self.valid_personalities}")
-        self.personality = personality
+        return os.environ[f'{personality}_url']
 
     @property
     def valid_personalities(self) -> Tuple[str]:
@@ -26,11 +33,7 @@ class Environment(object):
     @property
     def program_usage_msg(self) -> str:
         pers = ' | '.join(f"{p}" for p in self.valid_personalities)
-        return os.environ['program_usage_msg'].format(pers=pers)
-
-    @property
-    def url_template(self) -> str:
-        return os.environ[f'{self.personality}_url']
+        return f"USAGE: {os.environ['program_usage_msg'].format(pers=pers)}"
 
     @property
     def dbname(self) -> str:
