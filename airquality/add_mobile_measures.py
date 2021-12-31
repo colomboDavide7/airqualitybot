@@ -33,9 +33,15 @@ class AddMobileMeasures(object):
         self.ch_name = ch_name
 
     def process(self, datamodels: AtmotubeDatamodelBuilder):
+        print(f"found #{len(datamodels)} datamodels")
         requests = AddAtmotubeMeasureRequestBuilder(datamodel=datamodels, code2id=self.code2id)
+        print(f"found #{len(requests)} requests")
         valid_requests = AddMobileMeasureRequestValidator(request=requests, filter_ts=self.filter_ts)
+        print(f"found #{len(valid_requests)} valid requests")
         responses = AddMobileMeasureResponseBuilder(requests=valid_requests, start_packet_id=self.start_packet_id)
-        self.output_gateway.insert_mobile_sensor_measures(responses=responses)
-        last_acquisition = valid_requests[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
-        self.output_gateway.update_last_acquisition(timestamp=last_acquisition, sensor_id=self.sensor_id, ch_name=self.ch_name)
+
+        if responses:
+            print(f"found responses within [{valid_requests[0].timestamp!s} - {valid_requests[-1].timestamp!s}]")
+            self.output_gateway.insert_mobile_sensor_measures(responses=responses)
+            last_acquisition = valid_requests[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            self.output_gateway.update_last_acquisition(timestamp=last_acquisition, sensor_id=self.sensor_id, ch_name=self.ch_name)

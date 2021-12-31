@@ -25,15 +25,15 @@ class TestDatabaseGateway(TestCase):
         existing_sensor_names = gateway.get_existing_sensor_names_of_type(sensor_type="purpleair")
         self.assertEqual(existing_sensor_names, {"n1", "n2", "n3"})
 
-    ##################################### test_get_start_sensor_id #####################################
-    def test_get_start_sensor_id(self):
+    ##################################### test_get_max_sensor_id_plus_one #####################################
+    def test_get_max_sensor_id_plus_one(self):
         mocked_dbadapter = MagicMock()
-        mocked_dbadapter.fetchone.side_effect = [(12, ), None]
+        mocked_dbadapter.fetchone.side_effect = [(12, ), (None, )]
         gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
-        start_sensor_id = gateway.get_start_sensor_id()
+        start_sensor_id = gateway.get_max_sensor_id_plus_one()
         self.assertEqual(start_sensor_id, 13)
 
-        start_sensor_id = gateway.get_start_sensor_id()
+        start_sensor_id = gateway.get_max_sensor_id_plus_one()
         self.assertEqual(start_sensor_id, 1)
 
     @property
@@ -55,16 +55,6 @@ class TestDatabaseGateway(TestCase):
             apiparam_record=self.get_test_apiparam_record,
             geolocation_record=self.get_test_geolocation_record
         )
-
-    def test_insert_sensors_early_return_with_empty_responses(self):
-        mocked_database_adapter = MagicMock()
-        mocked_database_adapter.execute = MagicMock()
-
-        mocked_response_builder = MagicMock()
-        mocked_response_builder.__iter__.return_value = []
-        gateway = DatabaseGateway(dbadapter=mocked_database_adapter)
-        gateway.insert_sensors(responses=mocked_response_builder)
-        mocked_database_adapter.execute.assert_not_called()
 
     ##################################### test_insert_sensors #####################################
     def test_insert_sensors(self):
@@ -155,6 +145,23 @@ class TestDatabaseGateway(TestCase):
             APIParam(sensor_id=2, api_key="z1", api_id="a1", ch_name="m1", last_acquisition=test_last_acquisition)
         ]
         self.assertEqual(actual, expected_apiparam)
+
+    ##################################### test_get_max_mobile_packet_id_plus_one #####################################
+    def test_get_max_mobile_packet_id_plus_one(self):
+
+        mocked_dbadapter = MagicMock()
+        mocked_dbadapter.fetchone.return_value = (12399, )
+
+        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_max_mobile_packet_id_plus_one()
+        self.assertEqual(actual, 12400)
+
+    ##################################### test_get_max_mobile_packet_id_plus_one #####################################
+    def test_get_last_acquisition_timestamp_of_sensor_channel(self):
+        mocked_dbadapter = MagicMock()
+        mocked_dbadapter.fetchone.return_value = datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S")
+
+        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_last_acquisition_of_sensor_channel(sensor_id=12, ch_name="fakename")
+        self.assertEqual(actual, datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"))
 
 
 if __name__ == '__main__':

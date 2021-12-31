@@ -30,5 +30,6 @@ class AddFixedSensors(object):
         validated_requests = AddFixedSensorRequestValidator(request=requests, existing_names=self.existing_names)
         print(f"found #{len(validated_requests)} valid requests")
         responses = AddFixedSensorResponseBuilder(requests=validated_requests, start_sensor_id=self.start_sensor_id)
-        print(f"found #{len(responses)} responses")
-        self.output_gateway.insert_sensors(responses=responses)
+        if responses:
+            print(f"found #{len(responses)} responses")
+            self.output_gateway.insert_sensors(responses=responses)

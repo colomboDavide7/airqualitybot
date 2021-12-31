@@ -9,6 +9,7 @@ from airquality.response_builder import AddFixedSensorResponseBuilder, AddMobile
 from airquality.database_adapter import DatabaseAdapter
 from airquality.apiparam import APIParam
 from typing import Set, Dict, List
+from datetime import datetime
 
 
 class DatabaseGateway(object):
@@ -23,15 +24,11 @@ class DatabaseGateway(object):
         rows = self.dbadapter.fetchall(f"SELECT sensor_name FROM level0_raw.sensor WHERE sensor_type ILIKE '%{sensor_type}%';")
         return {row[0] for row in rows}
 
-    def get_start_sensor_id(self) -> int:
+    def get_max_sensor_id_plus_one(self) -> int:
         row = self.dbadapter.fetchone("SELECT MAX(id) FROM level0_raw.sensor;")
-        return 1 if row is None else row[0] + 1
+        return 1 if row[0] is None else row[0] + 1
 
     def insert_sensors(self, responses: AddFixedSensorResponseBuilder):
-        if len(responses) == 0:
-            print(f"{type(self).__name__} got empty responses!")
-            return
-
         sensor_query = "INSERT INTO level0_raw.sensor VALUES "
         apiparam_query = "INSERT INTO level0_raw.sensor_api_param (sensor_id, ch_key, ch_id, ch_name, last_acquisition) VALUES "
         geolocation_query = "INSERT INTO level0_raw.sensor_at_location (sensor_id, valid_from, geom) VALUES "
@@ -66,6 +63,15 @@ class DatabaseGateway(object):
             APIParam(sensor_id=sid, api_key=key, api_id=ident, ch_name=name, last_acquisition=last)
             for sid, key, ident, name, last in rows
         ]
+
+    def get_max_mobile_packet_id_plus_one(self) -> int:
+        row = self.dbadapter.fetchone("SELECT MAX(packet_id) FROM level0_raw.mobile_measurement;")
+        return 1 if row[0] is None else row[0] + 1
+
+    def get_last_acquisition_of_sensor_channel(self, sensor_id: int, ch_name: str) -> datetime:
+        return self.dbadapter.fetchone(
+            f"SELECT last_acquisition FROM level0_raw.sensor_api_param WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
+        )
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"
