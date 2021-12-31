@@ -59,7 +59,8 @@ class Runner(object):
         if self.args[0] not in self.env.valid_personalities:
             raise WrongUsageError("invalid personality!")
 
-        if self.args[0] == 'purpleair':
+        personality = self.args[0]
+        if personality == 'purpleair':
             print("RUNNING Purpleair...")
             # TODO: add context manager for database adapter
 
@@ -68,15 +69,15 @@ class Runner(object):
             )
 
             output_gateway = DatabaseGateway(dbadapter=dbadapter)
-            existing_names = output_gateway.get_existing_sensor_names_of_type(sensor_type=self.args[0])
+            existing_names = output_gateway.get_existing_sensor_names_of_type(sensor_type=personality)
             start_sensor_id = output_gateway.get_max_sensor_id_plus_one()
-            datamodels = PurpleairAPIDataBuilder(url=self.env.url_template(personality=self.args[0]))
+            datamodels = PurpleairAPIDataBuilder(url=self.env.url_template(personality=personality))
             AddFixedSensors(
                 output_gateway=output_gateway, existing_names=existing_names, start_sensor_id=start_sensor_id
             ).process(datamodels=datamodels)
             print("finish!")
 
-        elif self.args[0] == 'atmotube':
+        elif personality == 'atmotube':
             print("RUNNING Atmotube...")
             # TODO: add context manager for database adapter
 
@@ -84,9 +85,9 @@ class Runner(object):
                 dbname=self.env.dbname, user=self.env.user, password=self.env.password, host=self.env.host, port=self.env.port
             )
             output_gateway = DatabaseGateway(dbadapter=dbadapter)
-            url_template = self.env.url_template(personality=self.args[0])
-            code2id = output_gateway.get_measure_param_owned_by(owner=self.args[0])
-            apiparam = output_gateway.get_apiparam_of_type(sensor_type=self.args[0])
+            url_template = self.env.url_template(personality=personality)
+            code2id = output_gateway.get_measure_param_owned_by(owner=personality)
+            apiparam = output_gateway.get_apiparam_of_type(sensor_type=personality)
             print(repr(apiparam))
 
             for param in apiparam:
