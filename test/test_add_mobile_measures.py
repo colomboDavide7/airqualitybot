@@ -56,13 +56,13 @@ class TestAddMobileMeasuresUsecase(TestCase):
 
         expected_timestamp = "2021-08-10 23:59:00"
         expected_geom = "ST_GeomFromText('POINT(9.145 45.876)', 26918)"
-        expected_measure_record = f"(12399, 66, '0.17', '{expected_timestamp}', {expected_geom})," \
-                                  f"(12399, 48, '8', '{expected_timestamp}', {expected_geom})," \
-                                  f"(12399, 94, '10', '{expected_timestamp}', {expected_geom})," \
-                                  f"(12399, 2, '11', '{expected_timestamp}', {expected_geom})," \
-                                  f"(12399, 4, '29', '{expected_timestamp}', {expected_geom})," \
-                                  f"(12399, 12, '42', '{expected_timestamp}', {expected_geom})," \
-                                  f"(12399, 39, '1004.68', '{expected_timestamp}', {expected_geom})"
+        expected_measure_record = f"(12399, 66, 0.17, '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 48, 8, '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 94, 10, '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 2, 11, '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 4, 29, '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 12, 42, '{expected_timestamp}', {expected_geom})," \
+                                  f"(12399, 39, 1004.68, '{expected_timestamp}', {expected_geom})"
         self.assertEqual(resp.measure_record, expected_measure_record)
 
         mocked_database_gateway.update_last_acquisition.assert_called_with(

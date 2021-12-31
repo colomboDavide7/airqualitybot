@@ -52,7 +52,7 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
 def measure_record(packet_id: int, request: AddMobileMeasureRequest) -> str:
     timestamp = request.timestamp.strftime(SQL_TIMESTAMP_FTM)
     geometry = request.geolocation.geom_from_text()
-    return ','.join(f"({packet_id}, {param_id}, '{param_val}', '{timestamp}', {geometry})" for param_id, param_val in request.measures)
+    return ','.join(f"({packet_id}, {param_id}, {param_val}, '{timestamp}', {geometry})" for param_id, param_val in request.measures)
 
 
 class AddMobileMeasureResponseBuilder(IterableItemsABC):
