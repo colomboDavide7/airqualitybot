@@ -90,3 +90,20 @@ class AddMobileMeasuresRunner(UsecaseRunner):
                         filter_ts=filter_ts,
                         code2id=code2id
                     ).process(datamodels=AtmotubeAPIDataBuilder(url=url))
+
+
+class AddStationMeasuresRunner(UsecaseRunner):
+
+    def run(self):
+        with Psycopg2Adapter(dbname=self.env.dbname,
+                             user=self.env.user,
+                             password=self.env.password,
+                             host=self.env.host,
+                             port=self.env.port) as dbadapter:
+            gateway = DatabaseGateway(dbadapter=dbadapter)
+            url_template = self.env.url_template(personality=self.personality)
+            code2id = gateway.get_measure_param_owned_by(owner=self.personality)
+            apiparam = gateway.get_apiparam_of_type(sensor_type=self.personality)
+            for param in apiparam:
+                pre_formatted_url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
+

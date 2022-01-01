@@ -8,25 +8,62 @@
 from airquality.core.iteritems import IterableItemsABC
 from datetime import datetime, timedelta
 from typing import Generator
+from abc import abstractmethod
 
 
-class AtmotubeTimeIterableURL(IterableItemsABC):
+class TimeIterableURL(IterableItemsABC):
     """
-    An *IterableItemsABC* that defines the business rules for properly format an Atmotube URL by adding
-    the *date* parameter in the querystring.
-    The output is a Generator of formatted urls starting from *begin* to *until*.
+    An *IterableItemsABC* that defines the basic business rules for building and formatting a URL by adding time
+    optional parameters.
     """
+    TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self, url: str, begin: datetime, until=datetime.now(), step_size_in_days=1):
-        self.url = url + "&date={date}"
+        self.url = url
         self.begin = begin
         self.until = until
         self.step_size_in_days = step_size_in_days
+
+    def add_days_to(self, timestamp: datetime):
+        return timestamp + timedelta(days=self.step_size_in_days)
+
+    def datetime_to_string(self, timestamp: datetime):
+        return timestamp.strftime(self.TIMESTAMP_FMT).replace(" ", "%20")
+
+    def get_tmp_timest(self, tmp_end: datetime, until: datetime):
+        return until if tmp_end >= until else tmp_end
+
+    @abstractmethod
+    def format_url(self, begin: datetime, until: datetime) -> str:
+        pass
 
     def items(self) -> Generator[str, None, None]:
         tmp_begin = self.begin
         tmp_until = self.until
         while tmp_begin <= tmp_until:
-            tmp_date = tmp_until if tmp_begin >= tmp_until else tmp_begin
-            yield self.url.format(date=tmp_date.date().strftime("%Y-%m-%d"))
-            tmp_begin += timedelta(days=self.step_size_in_days)
+            yield self.format_url(begin=tmp_begin, until=tmp_until)
+            tmp_begin = self.add_days_to(tmp_begin)
+
+    def __repr__(self):
+        return f"{type(self).__name__}(url='{self.url}', begin='{self.begin}', until='{self.until}', " \
+               f"step_size_in_days='{self.step_size_in_days}')"
+
+
+class AtmotubeTimeIterableURL(TimeIterableURL):
+    """
+    A *TimeIterableURL* that implements the *format_url* method and defines the details of formatting an Atmotube URL.
+    """
+
+    def format_url(self, begin: datetime, until: datetime) -> str:
+        timest = self.get_tmp_timest(tmp_end=begin, until=until)
+        return f"{self.url}&date={timest.date().strftime('%Y-%m-%d')}"
+
+
+class ThingspeakTimeIterableURL(TimeIterableURL):
+    """
+    A *TimeIterableURL* that implements the *format_url* method and defines the details of formatting a Thingspeak URL.
+    """
+
+    def format_url(self, begin: datetime, until: datetime) -> str:
+        tmp_timest = self.get_tmp_timest(tmp_end=self.add_days_to(begin), until=until)
+        return f"{self.url}&start={self.datetime_to_string(begin)}&end={self.datetime_to_string(tmp_timest)}"
