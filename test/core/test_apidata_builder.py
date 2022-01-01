@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder, ThingspeakPrimaryChannelABuilder
+from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder, ThingspeakAPIDataBuilder
 
 
 class TestDatamodelBuilder(TestCase):
@@ -87,7 +87,7 @@ class TestDatamodelBuilder(TestCase):
         mocked_resp.__enter__.return_value = mocked_resp
         mocked_urlopen.return_value = mocked_resp
 
-        apidata = ThingspeakPrimaryChannelABuilder(url="fake_url")
+        apidata = ThingspeakAPIDataBuilder(url="fake_url")
         self.assertEqual(len(apidata), 3)
         data = apidata[0]
         self.assertEqual(data.field1, 20.50)

@@ -48,15 +48,48 @@ class AtmotubeAPIData(object):
     coords: Dict[str, float] = None     # The sensor's *lat* and *lon* at acquisition time in decimal degrees.
 
 
-class ThingspeakPrimaryChannelAData(object):
+class ThingspeakAPIData(object):
     """
-    A *dataclass* that represents the raw Thingspeak API primary data from channel A of a single sensor.
+    A *dataclass* that represents the raw Thingspeak API data of a single sensor.
+    This class is used as a template for all the channels of the sensor.
+
+    Primary Channel A:
+    *field1* => The atmospheric concentration of PM 1.0 (µg/m^3).
+    *field2* => The atmospheric concentration of PM 2.5 (µg/m^3).
+    *field3* => The atmospheric concentration of PM 1.0 (µg/m^3).
+    *field6* => Temperature inside the sensor housing (°F).
+    *field7* => Relative humidity inside the sensor housing (%).
+
+    Primary Channel B:
+    *field1* => The atmospheric concentration of PM 1.0 (µg/m^3).
+    *field2* => The atmospheric concentration of PM 2.5 (µg/m^3).
+    *field3* => The atmospheric concentration of PM 1.0 (µg/m^3).
+    *field6* => The current pressure in Millibars.
+
+    Secondary Channel A:
+    *field1* => Count concentration (particles/100ml) of all particles greater than 0.3 µm diameter.
+    *field2* => Count concentration (particles/100ml) of all particles greater than 0.5 µm diameter.
+    *field3* => Count concentration (particles/100ml) of all particles greater than 1.0 µm diameter.
+    *field4* => Count concentration (particles/100ml) of all particles greater than 2.5 µm diameter.
+    *field5* => Count concentration (particles/100ml) of all particles greater than 5.0 µm diameter.
+    *field6* => Count concentration (particles/100ml) of all particles greater than 10.0 µm diameter.
+
+    Secondary Channel B:
+    *field1* => Count concentration (particles/100ml) of all particles greater than 0.3 µm diameter.
+    *field2* => Count concentration (particles/100ml) of all particles greater than 0.5 µm diameter.
+    *field3* => Count concentration (particles/100ml) of all particles greater than 1.0 µm diameter.
+    *field4* => Count concentration (particles/100ml) of all particles greater than 2.5 µm diameter.
+    *field5* => Count concentration (particles/100ml) of all particles greater than 5.0 µm diameter.
+    *field6* => Count concentration (particles/100ml) of all particles greater than 10.0 µm diameter.
+
     """
 
     def __init__(self, **kwargs):
-        self.field1 = float(kwargs['field1'])       # The atmospheric concentration of PM 1.0 (µg/m^3).
-        self.field2 = float(kwargs['field2'])       # The atmospheric concentration of PM 2.5 (µg/m^3).
-        self.field3 = float(kwargs['field3'])       # The atmospheric concentration of PM 10.0 (µg/m^3).
-        self.field6 = float(kwargs['field6'])       # Temperature inside the sensor housing (°F).
-        self.field7 = float(kwargs['field7'])       # Relative humidity inside the sensor housing (%).
-        self.created_at = kwargs['created_at']      # The acquisition timestamp (e.g., 2021-12-20T11:18:40Z).
+        self.field1 = None if kwargs.get('field1') is None else float(kwargs.get('field1'))
+        self.field2 = None if kwargs.get('field2') is None else float(kwargs.get('field2'))
+        self.field3 = None if kwargs.get('field3') is None else float(kwargs.get('field3'))
+        self.field4 = None if kwargs.get('field4') is None else float(kwargs.get('field4'))
+        self.field5 = None if kwargs.get('field5') is None else float(kwargs.get('field5'))
+        self.field6 = None if kwargs.get('field6') is None else float(kwargs.get('field6'))
+        self.field7 = None if kwargs.get('field7') is None else float(kwargs.get('field7'))
+        self.created_at = kwargs['created_at']

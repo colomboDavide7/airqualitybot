@@ -10,8 +10,9 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.request import Channel
 from airquality.datamodel.geometry import NullGeometry, PostgisPoint
-from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData
-from airquality.core.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData
+from airquality.core.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder, \
+    AddThingspeakMeasuresRequestBuilder
 
 
 class TestRequestBuilder(TestCase):
@@ -105,6 +106,54 @@ class TestRequestBuilder(TestCase):
         self.assertEqual(req2.timestamp, expected_timestamp)
         self.assertEqual(req2.measures, expected_measures)
         self.assertIsInstance(req2.geolocation, NullGeometry)
+
+    @property
+    def get_test_thingspeak_primary_channel_a_datamodel(self):
+        return ThingspeakAPIData(
+            created_at="2021-12-20T11:18:40Z",
+            field1="20.50",
+            field2="35.53",
+            field3="37.43",
+            field6="55",
+            field7="60"
+        )
+
+    ############################## test_create_request_for_adding_thingspeak_primary_channel_a_data #############################
+    def test_create_request_for_adding_thingspeak_primary_channel_a_measures(self):
+
+        test_field_map = {'field1': 'p1', 'field2': 'p2', 'field3': 'p3', 'field6': 'p6', 'field7': 'p7'}
+        test_code2id = {'p1': 12, 'p2': 13, 'p3': 14, 'p6': 15, 'p7': 16}
+        mocked_datamodel_builder = MagicMock()
+        mocked_datamodel_builder.__iter__.return_value = [self.get_test_thingspeak_primary_channel_a_datamodel]
+
+        requests = AddThingspeakMeasuresRequestBuilder(
+            datamodel=mocked_datamodel_builder, code2id=test_code2id, field_map=test_field_map
+        )
+        self.assertEqual(len(requests), 1)
+        req = requests[0]
+
+        expected_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
+        expected_measures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55), (16, 60)]
+        self.assertEqual(req.timestamp, expected_timestamp)
+        self.assertEqual(req.measures, expected_measures)
+
+    ############################## test_create_request_for_adding_thingspeak_primary_channel_b_data #############################
+    def test_create_request_for_adding_thingspeak_primary_channel_b_measures(self):
+        test_field_map = {'field1': 'p1', 'field2': 'p2', 'field3': 'p3', 'field6': 'p6'}
+        test_code2id = {'p1': 12, 'p2': 13, 'p3': 14, 'p6': 15, 'p7': 16}
+        mocked_datamodel_builder = MagicMock()
+        mocked_datamodel_builder.__iter__.return_value = [self.get_test_thingspeak_primary_channel_a_datamodel]
+
+        requests = AddThingspeakMeasuresRequestBuilder(
+            datamodel=mocked_datamodel_builder, code2id=test_code2id, field_map=test_field_map
+        )
+        self.assertEqual(len(requests), 1)
+        req = requests[0]
+
+        expected_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
+        expected_measures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55.0)]
+        self.assertEqual(req.timestamp, expected_timestamp)
+        self.assertEqual(req.measures, expected_measures)
 
 
 if __name__ == '__main__':

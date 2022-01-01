@@ -9,7 +9,7 @@ from json import loads
 from typing import Generator
 from urllib.request import urlopen
 from airquality.core.iteritems import IterableItemsABC
-from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakPrimaryChannelAData
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData
 
 
 class PurpleairAPIDataBuilder(IterableItemsABC):
@@ -45,7 +45,7 @@ class AtmotubeAPIDataBuilder(IterableItemsABC):
         return (AtmotubeAPIData(**item) for item in self.api_items)
 
 
-class ThingspeakPrimaryChannelABuilder(IterableItemsABC):
+class ThingspeakAPIDataBuilder(IterableItemsABC):
     """
     An *IterableItemsABC* that defines the business rules
     for fetching data from Thingspeak API and build a
@@ -57,5 +57,5 @@ class ThingspeakPrimaryChannelABuilder(IterableItemsABC):
             parsed = loads(http_response.read())
             self.feeds = parsed['feeds']
 
-    def items(self) -> Generator[ThingspeakPrimaryChannelAData, None, None]:
-        return (ThingspeakPrimaryChannelAData(**item) for item in self.feeds)
+    def items(self) -> Generator[ThingspeakAPIData, None, None]:
+        return (ThingspeakAPIData(**item) for item in self.feeds)

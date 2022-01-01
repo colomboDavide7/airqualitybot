@@ -52,7 +52,7 @@ class TestRequestModel(TestCase):
         self.assertEqual(resp.measures, test_measures)
 
     ##################################### test_request_for_adding_mobile_sensor_measure #####################################
-    def test_request_for_adding_station_measures_from_primary_channel_a(self):
+    def test_request_for_adding_station_measures(self):
         test_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
         test_mesures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55), (16, 60)]
 
