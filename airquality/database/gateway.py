@@ -5,7 +5,8 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
+from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder, \
+    AddStationMeasuresResponseBuilder
 from airquality.database.adapter import DatabaseAdapter
 from airquality.datamodel.apiparam import APIParam
 from typing import Set, Dict, List
@@ -72,6 +73,15 @@ class DatabaseGateway(object):
         return self.dbadapter.fetchone(
             f"SELECT last_acquisition FROM level0_raw.sensor_api_param WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
         )
+
+    def insert_station_measures(self, responses: AddStationMeasuresResponseBuilder):
+        query = "INSERT INTO level0_raw.station_measurement (packet_id, sensor_id, param_id, param_value, timestamp) VALUES "
+        query += ','.join(resp.measure_record for resp in responses)
+        self.dbadapter.execute(f"{query};")
+
+    def get_max_station_packet_id_plus_one(self) -> int:
+        row = self.dbadapter.fetchone("SELECT MAX(packet_id) FROM level0_raw.station_measurement;")
+        return 1 if row[0] is None else row[0] + 1
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"

@@ -9,7 +9,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.apiparam import APIParam
-from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse
 from airquality.database.gateway import DatabaseGateway
 
 
@@ -170,6 +170,44 @@ class TestDatabaseGateway(TestCase):
 
         actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_last_acquisition_of_sensor_channel(sensor_id=12, ch_name="fakename")
         self.assertEqual(actual, datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"))
+
+    @property
+    def get_test_station_records(self):
+        return "(140, 99, 12, 20.5, '2021-12-20 11:18:40'),(140, 99, 13, 35.53, '2021-12-20 11:18:40')," \
+               "(140, 99, 14, 37.43, '2021-12-20 11:18:40'),(140, 99, 15, 55, '2021-12-20 11:18:40')," \
+               "(140, 99, 16, 60, '2021-12-20 11:18:40')"
+
+    @property
+    def get_test_add_station_measures_response(self):
+        return AddStationMeasuresResponse(
+            measure_record=self.get_test_station_records
+        )
+
+    ##################################### test_insert_station_measures #####################################
+    def test_insert_station_measures(self):
+
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.execute = MagicMock()
+
+        mocked_responses = MagicMock()
+        mocked_responses.__iter__.return_value = [self.get_test_add_station_measures_response]
+
+        DatabaseGateway(dbadapter=mocked_dbadapter).insert_station_measures(responses=mocked_responses)
+
+        expected_query = "INSERT INTO level0_raw.station_measurement (packet_id, sensor_id, param_id, param_value, timestamp) VALUES " \
+                         f"{self.get_test_station_records};"
+        mocked_dbadapter.execute.assert_called_with(expected_query)
+
+    def test_get_max_station_packet_id_plus_one(self):
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.fetchone.side_effect = [(149, ), (None, )]
+
+        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        actual = gateway.get_max_station_packet_id_plus_one()
+        self.assertEqual(actual, 150)
+
+        actual = gateway.get_max_station_packet_id_plus_one()
+        self.assertEqual(actual, 1)
 
 
 if __name__ == '__main__':
