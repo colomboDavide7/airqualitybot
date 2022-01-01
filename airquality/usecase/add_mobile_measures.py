@@ -10,7 +10,7 @@ from datetime import datetime
 from airquality.database.gateway import DatabaseGateway
 from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
 from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
-from airquality.core.request_validator import AddMobileMeasureRequestValidator
+from airquality.core.request_validator import AddSensorMeasuresRequestValidator
 from airquality.core.response_builder import AddMobileMeasureResponseBuilder
 
 
@@ -40,7 +40,7 @@ class AddMobileMeasures(object):
         print(f"found #{len(datamodels)} datamodels")
         requests = AddAtmotubeMeasureRequestBuilder(datamodel=datamodels, code2id=self.code2id)
         print(f"found #{len(requests)} requests")
-        valid_requests = AddMobileMeasureRequestValidator(request=requests, filter_ts=self.filter_ts)
+        valid_requests = AddSensorMeasuresRequestValidator(request=requests, filter_ts=self.filter_ts)
         print(f"found #{len(valid_requests)} valid requests")
         responses = AddMobileMeasureResponseBuilder(requests=valid_requests, start_packet_id=self.start_packet_id)
 

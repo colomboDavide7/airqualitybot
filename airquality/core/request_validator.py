@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest
+from airquality.datamodel.request import AddFixedSensorRequest
 from airquality.core.iteritems import IterableItemsABC
 from typing import Generator, Set
 from datetime import datetime
@@ -29,7 +29,7 @@ class AddFixedSensorRequestValidator(IterableItemsABC):
                 yield request
 
 
-class AddMobileMeasureRequestValidator(IterableItemsABC):
+class AddSensorMeasuresRequestValidator(IterableItemsABC):
     """
     An *IterableItemsABC* that defines the business rules for
     validating a set of *AddMobileMeasureRequest* items.
@@ -41,7 +41,7 @@ class AddMobileMeasureRequestValidator(IterableItemsABC):
         self.request = request
         self.filter_ts = filter_ts
 
-    def items(self) -> Generator[AddMobileMeasureRequest, None, None]:
+    def items(self) -> Generator[IterableItemsABC, None, None]:
         for request in self.request:
             if request.timestamp > self.filter_ts:
                 yield request

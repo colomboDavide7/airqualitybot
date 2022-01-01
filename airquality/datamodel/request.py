@@ -36,21 +36,19 @@ class AddFixedSensorRequest(object):
 
 
 @dataclass
-class AddMobileMeasureRequest(object):
-    """
-    A *dataclass* that represents the request model for adding a new measure of a mobile sensor.
-    """
-
-    timestamp: datetime                 # The datetime object that represents the acquisition time.
-    geolocation: PostgisGeometry        # The sensor's geolocation at the moment of the acquisition in decimal degrees.
-    measures: List[Tuple[int, float]]   # The collection of (param_id, param_value) tuples for each parameter.
-
-
-@dataclass
-class AddStationMeasuresRequest(object):
+class AddSensorMeasuresRequest(object):
     """
     A *dataclass* that represents the request model for adding a new measure of a fixed sensor (i.e., a station).
     """
 
     timestamp: datetime                 # The datetime object that represents the acquisition time.
     measures: List[Tuple[int, float]]   # The collection of (param_id, param_value) tuples for each parameter.
+
+
+@dataclass
+class AddMobileMeasureRequest(AddSensorMeasuresRequest):
+    """
+    A *dataclass* that represents the request model for adding a new measure of a mobile sensor.
+    """
+
+    geolocation: PostgisGeometry        # The sensor's geolocation at the moment of the acquisition in decimal degrees.

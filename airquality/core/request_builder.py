@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddStationMeasuresRequest, \
+from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddSensorMeasuresRequest, \
     Channel
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.core.iteritems import IterableItemsABC
@@ -81,7 +81,7 @@ class AddThingspeakMeasuresRequestBuilder(IterableItemsABC):
 
     def items(self):
         for dm in self.datamodel:
-            yield AddStationMeasuresRequest(
+            yield AddSensorMeasuresRequest(
                 timestamp=datetime.strptime(dm.created_at, self.TIMESTAMP_FMT),
                 measures=[(self.code2id[fcode], getattr(dm, fname)) for fname, fcode in self.field_map.items()]
             )

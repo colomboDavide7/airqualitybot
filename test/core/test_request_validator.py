@@ -11,7 +11,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.request import AddFixedSensorRequest, Channel, AddMobileMeasureRequest
-from airquality.core.request_validator import AddFixedSensorRequestValidator, AddMobileMeasureRequestValidator
+from airquality.core.request_validator import AddFixedSensorRequestValidator, AddSensorMeasuresRequestValidator
 
 
 class TestRequestValidator(TestCase):
@@ -75,7 +75,7 @@ class TestRequestValidator(TestCase):
         mocked_request_builder.__iter__.return_value = self.get_test_mobile_measure_request(timestamps=timestamps)
 
         test_filter_ts = datetime.strptime("2021-08-10T23:59:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
-        valid_requests = AddMobileMeasureRequestValidator(request=mocked_request_builder, filter_ts=test_filter_ts)
+        valid_requests = AddSensorMeasuresRequestValidator(request=mocked_request_builder, filter_ts=test_filter_ts)
 
         self.assertEqual(len(valid_requests), 1)
         req = valid_requests[0]
