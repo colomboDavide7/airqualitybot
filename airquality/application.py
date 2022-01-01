@@ -7,7 +7,7 @@
 ######################################################
 import sys
 from airquality.environment import Environment
-from airquality.usecase_runner import AddFixedSensorsRunner, AddMobileMeasuresRunner
+from airquality.usecase_runner import AddFixedSensorsRunner, AddMobileMeasuresRunner, AddStationMeasuresRunner
 
 
 class WrongUsageError(Exception):
@@ -58,4 +58,6 @@ class Application(object):
             AddFixedSensorsRunner(env=self.env, personality=personality).run()
         elif personality == 'atmotube':
             AddMobileMeasuresRunner(env=self.env, personality=personality).run()
+        elif personality == 'thingspeak':
+            AddStationMeasuresRunner(env=self.env, personality=personality).run()
         print("finish!")

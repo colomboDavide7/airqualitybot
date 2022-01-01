@@ -72,7 +72,7 @@ class DatabaseGateway(object):
     def get_last_acquisition_of_sensor_channel(self, sensor_id: int, ch_name: str) -> datetime:
         return self.dbadapter.fetchone(
             f"SELECT last_acquisition FROM level0_raw.sensor_api_param WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
-        )
+        )[0]
 
     def insert_station_measures(self, responses: AddStationMeasuresResponseBuilder):
         query = "INSERT INTO level0_raw.station_measurement (packet_id, sensor_id, param_id, param_value, timestamp) VALUES "
