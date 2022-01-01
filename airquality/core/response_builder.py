@@ -9,8 +9,8 @@ from itertools import count
 from typing import Generator
 from datetime import datetime
 from airquality.core.iteritems import IterableItemsABC
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest
-from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse
+from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddSensorMeasuresRequest
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse
 
 SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
 
@@ -49,7 +49,7 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
             )
 
 
-def measure_record(packet_id: int, request: AddMobileMeasureRequest) -> str:
+def mobile_measure_record(packet_id: int, request: AddMobileMeasureRequest) -> str:
     timestamp = request.timestamp.strftime(SQL_TIMESTAMP_FTM)
     geometry = request.geolocation.geom_from_text()
     return ','.join(f"({packet_id}, {param_id}, {param_val}, '{timestamp}', {geometry})" for param_id, param_val in request.measures)
@@ -70,5 +70,30 @@ class AddMobileMeasureResponseBuilder(IterableItemsABC):
         packet_id_counter = count(self.start_packet_id)
         for req in self.requests:
             yield AddMobileMeasureResponse(
-                measure_record=measure_record(packet_id=next(packet_id_counter), request=req)
+                measure_record=mobile_measure_record(packet_id=next(packet_id_counter), request=req)
+            )
+
+
+def station_measure_record(packet_id: int, sensor_id: int, request: AddSensorMeasuresRequest) -> str:
+    timestamp = request.timestamp.strftime(SQL_TIMESTAMP_FTM)
+    return ','.join(f"({packet_id}, {sensor_id}, {param_id}, {param_val}, '{timestamp}')" for param_id, param_val in request.measures)
+
+
+class AddStationMeasuresResponseBuilder(IterableItemsABC):
+    """
+    An *IterableItemsABC* that defines the business rules for
+    translating a set of *AddSensorMeasuresRequest* items into
+    an *AddStationMeasuresResponse* generator.
+    """
+
+    def __init__(self, requests: IterableItemsABC, start_packet_id: int, sensor_id: int):
+        self.requests = requests
+        self.start_packet_id = start_packet_id
+        self.sensor_id = sensor_id
+
+    def items(self) -> Generator[AddStationMeasuresResponse, None, None]:
+        packet_id_counter = count(self.start_packet_id)
+        for req in self.requests:
+            yield AddStationMeasuresResponse(
+                measure_record=station_measure_record(packet_id=next(packet_id_counter), sensor_id=self.sensor_id, request=req)
             )

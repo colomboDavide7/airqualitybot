@@ -22,7 +22,16 @@ class AddFixedSensorResponse(object):
 @dataclass
 class AddMobileMeasureResponse(object):
     """
-    A *dataclass* that represents the response to a request of adding a mobile sensor's measure.
+    A *dataclass* that represents the response to a request of adding a set of mobile sensor measures.
+    """
+
+    measure_record: str                 # The sensor's measurement SQL record.
+
+
+@dataclass
+class AddStationMeasuresResponse(object):
+    """
+    A *dataclass* that represents the response to a request of adding a set of fixed sensor measures.
     """
 
     measure_record: str                 # The sensor's measurement SQL record.

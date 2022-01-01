@@ -9,8 +9,9 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
-from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder
+from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddSensorMeasuresRequest, Channel
+from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder, \
+    AddStationMeasuresResponseBuilder
 
 SQL_TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
 
@@ -108,6 +109,29 @@ class TestResponseBuilder(TestCase):
                                   f"(12399, 39, 1004.68, '{expected_timestamp}', {expected_geom})"
 
         self.assertEqual(resp.measure_record, expected_measure_record)
+
+    @property
+    def get_test_add_sensor_measures_requests(self):
+        test_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
+        test_mesures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55), (16, 60)]
+
+        return AddSensorMeasuresRequest(
+            timestamp=test_timestamp,
+            measures=test_mesures
+        )
+
+    ##################################### test_create_response_to_request_of_adding_station_measures #####################################
+    def test_create_response_to_request_of_adding_station_measures(self):
+        mocked_valid_requests = MagicMock()
+        mocked_valid_requests.__iter__.return_value = [self.get_test_add_sensor_measures_requests]
+
+        responses = AddStationMeasuresResponseBuilder(requests=mocked_valid_requests, start_packet_id=140, sensor_id=99)
+        self.assertEqual(len(responses), 1)
+        resp = responses[0]
+        expected_record = "(140, 99, 12, 20.5, '2021-12-20 11:18:40'),(140, 99, 13, 35.53, '2021-12-20 11:18:40')," \
+                          "(140, 99, 14, 37.43, '2021-12-20 11:18:40'),(140, 99, 15, 55, '2021-12-20 11:18:40')," \
+                          "(140, 99, 16, 60, '2021-12-20 11:18:40')"
+        self.assertEqual(resp.measure_record, expected_record)
 
 
 if __name__ == '__main__':
