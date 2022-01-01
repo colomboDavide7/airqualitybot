@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder
+from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder, ThingspeakPrimaryChannelABuilder
 
 
 class TestDatamodelBuilder(TestCase):
@@ -75,6 +75,26 @@ class TestDatamodelBuilder(TestCase):
 
         with self.assertRaises(IndexError):
             print(requests[-3])
+
+    ##################################### test_create_atmotube_datamodel #####################################
+    @patch('airquality.core.apidata_builder.urlopen')
+    def test_create_thingspeak_primary_channel_a_data(self, mocked_urlopen):
+        with open('test_resources/thingspeak_response_1A.json', 'r') as rf:
+            api_responses = rf.read()
+
+        mocked_resp = MagicMock()
+        mocked_resp.read.side_effect = [api_responses]
+        mocked_resp.__enter__.return_value = mocked_resp
+        mocked_urlopen.return_value = mocked_resp
+
+        apidata = ThingspeakPrimaryChannelABuilder(url="fake_url")
+        self.assertEqual(len(apidata), 3)
+        data = apidata[0]
+        self.assertEqual(data.field1, 20.50)
+        self.assertEqual(data.field2, 35.53)
+        self.assertEqual(data.field3, 37.43)
+        self.assertEqual(data.field6, 55)
+        self.assertEqual(data.field7, 60)
 
 
 if __name__ == '__main__':

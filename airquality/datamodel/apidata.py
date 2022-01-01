@@ -37,7 +37,7 @@ class AtmotubeAPIData(object):
     A *dataclass* that represents the raw Atmotube API data of a single sensor.
     """
 
-    time: str                           # The acquisition timestamp (e.g., 2021-10-11T09:44:00.000Z)
+    time: str                           # The acquisition timestamp (e.g., 2021-10-11T09:44:00.000Z).
     voc: float = None                   # The Volatile Organic Compound concentration in the air in ppm.
     pm1: int = None                     # The PM < 1.0 µm concentration in the air in µg/m^3.
     pm25: int = None                    # The PM < 2.5 µm concentration in the air in µg/m^3.
@@ -46,3 +46,17 @@ class AtmotubeAPIData(object):
     h: int = None                       # The relative humidity in the air in percentage.
     p: float = None                     # The atmospheric pressure in the air in millibar.
     coords: Dict[str, float] = None     # The sensor's *lat* and *lon* at acquisition time in decimal degrees.
+
+
+class ThingspeakPrimaryChannelAData(object):
+    """
+    A *dataclass* that represents the raw Thingspeak API primary data from channel A of a single sensor.
+    """
+
+    def __init__(self, **kwargs):
+        self.field1 = float(kwargs['field1'])       # The atmospheric concentration of PM 1.0 (µg/m^3).
+        self.field2 = float(kwargs['field2'])       # The atmospheric concentration of PM 2.5 (µg/m^3).
+        self.field3 = float(kwargs['field3'])       # The atmospheric concentration of PM 10.0 (µg/m^3).
+        self.field6 = float(kwargs['field6'])       # Temperature inside the sensor housing (°F).
+        self.field7 = float(kwargs['field7'])       # Relative humidity inside the sensor housing (%).
+        self.created_at = kwargs['created_at']      # The acquisition timestamp (e.g., 2021-12-20T11:18:40Z).
