@@ -5,9 +5,9 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.runner import Runner
+from airquality.application import Application
 from airquality.environment import Environment
 
 if __name__ == '__main__':
-    with Runner(env=Environment()) as runner:
+    with Application(env=Environment()) as runner:
         runner.main()

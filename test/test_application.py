@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.runner import Runner, WrongUsageError
+from airquality.application import Application, WrongUsageError
 from airquality.environment import Environment
 from unittest import TestCase, main
 from unittest.mock import patch
@@ -13,7 +13,7 @@ import sys
 import os
 
 
-class TestRunner(TestCase):
+class TestApplication(TestCase):
 
     @property
     def get_test_environ(self):
@@ -39,7 +39,7 @@ class TestRunner(TestCase):
         test_args = ['program_name']
         with patch.object(sys, 'argv', test_args):
             with patch.dict(os.environ, self.get_test_environ):
-                with Runner(env=Environment()) as runner:
+                with Application(env=Environment()) as runner:
                     with self.assertRaises(WrongUsageError):
                         runner.main()
 
@@ -47,16 +47,9 @@ class TestRunner(TestCase):
         test_args = ['program_name', 'bad_personality']
         with patch.object(sys, 'argv', test_args):
             with patch.dict(os.environ, self.get_test_environ):
-                with Runner(env=Environment()) as runner:
+                with Application(env=Environment()) as runner:
                     with self.assertRaises(WrongUsageError):
                         runner.main()
-
-    # def test_purpleair_personality(self):
-    #     test_args = ['program_name', 'p1']
-    #     with patch.object(sys, 'argv', test_args):
-    #         with patch.dict(os.environ, self.get_test_environ):
-    #             with Runner(env=Environment()) as runner:
-    #                 runner.main()
 
 
 if __name__ == '__main__':

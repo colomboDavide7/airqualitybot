@@ -74,20 +74,20 @@ class TestDatabaseAdapter(TestCase):
 
     ##################################### test_close_connection #####################################
     @patch('airquality.database.adapter.connect')
-    def test_close_connection(self, mocked_connect):
+    def test_exit_on_psycopg2_Error(self, mocked_connect):
         mocked_cursor = MagicMock()
         mocked_cursor.__enter__.return_value = mocked_cursor
         mocked_cursor.execute.side_effect = [psycopg2.errors.Error("psycopg2 error")]
 
         mocked_conn = MagicMock()
+        mocked_conn.close = MagicMock()
         mocked_conn.cursor.return_value = mocked_cursor
         mocked_connect.return_value = mocked_conn
 
         with Psycopg2Adapter(**self.get_test_connection_properties) as adapter:
             with self.assertRaises(psycopg2.errors.Error):
                 adapter.execute(query="some query.")
-
-        self.assertTrue(adapter.conn.closed)
+        mocked_conn.close.assert_called_once()
 
 
 if __name__ == '__main__':
