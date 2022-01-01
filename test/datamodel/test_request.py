@@ -8,7 +8,7 @@
 from datetime import datetime
 from unittest import TestCase, main
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, Channel
+from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddStationMeasuresRequest, Channel
 
 
 class TestRequestModel(TestCase):
@@ -50,6 +50,15 @@ class TestRequestModel(TestCase):
         self.assertEqual(resp.timestamp, test_timestamp)
         self.assertEqual(resp.geolocation, test_geolocation)
         self.assertEqual(resp.measures, test_measures)
+
+    ##################################### test_request_for_adding_mobile_sensor_measure #####################################
+    def test_request_for_adding_station_measures_from_primary_channel_a(self):
+        test_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
+        test_mesures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55), (16, 60)]
+
+        request = AddStationMeasuresRequest(timestamp=test_timestamp, measures=test_mesures)
+        self.assertEqual(request.timestamp, test_timestamp)
+        self.assertEqual(request.measures, test_mesures)
 
 
 if __name__ == '__main__':
