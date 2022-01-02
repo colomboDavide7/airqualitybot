@@ -9,7 +9,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddSensorMeasuresRequest, Channel
+from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest, Channel
 from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder, \
     AddStationMeasuresResponseBuilder
 
@@ -37,7 +37,7 @@ class TestResponseBuilder(TestCase):
 
     @property
     def get_test_validated_requests(self):
-        return AddFixedSensorRequest(
+        return AddFixedSensorsRequest(
             type="faketype",
             name="fakename",
             channels=self.get_test_channels,
@@ -84,7 +84,7 @@ class TestResponseBuilder(TestCase):
 
     @property
     def get_test_add_mobile_measure_request(self):
-        return AddMobileMeasureRequest(
+        return AddMobileMeasuresRequest(
             timestamp=self.get_test_measure_request_timestamp,
             geolocation=self.get_test_measure_request_geolocation,
             measures=self.get_test_measure_request_measures

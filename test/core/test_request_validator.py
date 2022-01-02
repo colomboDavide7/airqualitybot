@@ -10,7 +10,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorRequest, Channel, AddMobileMeasureRequest
+from airquality.datamodel.request import AddFixedSensorsRequest, Channel, AddMobileMeasuresRequest
 from airquality.core.request_validator import AddFixedSensorRequestValidator, AddSensorMeasuresRequestValidator
 
 
@@ -31,7 +31,7 @@ class TestRequestValidator(TestCase):
     def get_test_add_fixed_sensor_request(self, names: List[str]):
         requests = []
         for name in names:
-            requests.append(AddFixedSensorRequest(
+            requests.append(AddFixedSensorsRequest(
                 type="faketype", name=name, channels=self.get_test_channels, geolocation=self.get_test_geolocation
             ))
         return requests
@@ -60,7 +60,7 @@ class TestRequestValidator(TestCase):
     def get_test_mobile_measure_request(self, timestamps: List[datetime]):
         requests = []
         for ts in timestamps:
-            requests.append(AddMobileMeasureRequest(
+            requests.append(AddMobileMeasuresRequest(
                 measures=self.get_test_mobile_measures, timestamp=ts, geolocation=self.get_test_geolocation)
             )
         return requests

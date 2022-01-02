@@ -8,7 +8,7 @@
 from datetime import datetime
 from unittest import TestCase, main
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddSensorMeasuresRequest, Channel
+from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest, Channel
 
 
 class TestRequestModel(TestCase):
@@ -24,7 +24,7 @@ class TestRequestModel(TestCase):
         ]
         test_geolocation = PostgisPoint(latitude=10.99, longitude=-36.88)
 
-        resp = AddFixedSensorRequest(
+        resp = AddFixedSensorsRequest(
             type="faketype",
             name="fakename",
             channels=test_channels,
@@ -41,7 +41,7 @@ class TestRequestModel(TestCase):
         test_geolocation = PostgisPoint(latitude=44.98, longitude=-9.23)
         test_measures = [(1, 0.17), (2, 24), (3, 32)]
 
-        resp = AddMobileMeasureRequest(
+        resp = AddMobileMeasuresRequest(
             timestamp=test_timestamp, geolocation=test_geolocation, measures=test_measures
         )
         self.assertEqual(resp.timestamp, test_timestamp)

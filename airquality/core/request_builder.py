@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddSensorMeasuresRequest, \
+from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest, \
     Channel
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.core.iteritems import IterableItemsABC
@@ -22,7 +22,7 @@ class AddPurpleairSensorRequestBuilder(IterableItemsABC):
     def __init__(self, datamodel: IterableItemsABC):
         self.datamodel = datamodel
 
-    def items(self) -> Generator[AddFixedSensorRequest, None, None]:
+    def items(self) -> Generator[AddFixedSensorsRequest, None, None]:
         for dm in self.datamodel:
             created_at = datetime.fromtimestamp(dm.date_created)
             channels = [
@@ -35,7 +35,7 @@ class AddPurpleairSensorRequestBuilder(IterableItemsABC):
                 Channel(api_key=dm.secondary_key_b, api_id=str(dm.secondary_id_b), channel_name="2B",
                         last_acquisition=created_at)
             ]
-            yield AddFixedSensorRequest(
+            yield AddFixedSensorsRequest(
                 type="Purpleair/Thingspeak",
                 name=f"{dm.name} ({dm.sensor_index})",
                 channels=channels,
@@ -55,10 +55,10 @@ class AddAtmotubeMeasureRequestBuilder(IterableItemsABC):
         self.datamodel = datamodel
         self.code2id = code2id
 
-    def items(self) -> Generator[AddMobileMeasureRequest, None, None]:
+    def items(self) -> Generator[AddMobileMeasuresRequest, None, None]:
         for dm in self.datamodel:
             pt = dm.coords
-            yield AddMobileMeasureRequest(
+            yield AddMobileMeasuresRequest(
                 timestamp=datetime.strptime(dm.time, self.TIMESTAMP_FMT),
                 geolocation=NullGeometry() if pt is None else PostgisPoint(latitude=pt['lat'], longitude=pt['lon']),
                 measures=[(ident, getattr(dm, code)) for code, ident in self.code2id.items() if

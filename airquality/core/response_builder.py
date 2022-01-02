@@ -9,19 +9,19 @@ from itertools import count
 from typing import Generator
 from datetime import datetime
 from airquality.core.iteritems import IterableItemsABC
-from airquality.datamodel.request import AddFixedSensorRequest, AddMobileMeasureRequest, AddSensorMeasuresRequest
+from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse
 
 SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
 
 
-def apiparam_record(sensor_id: int, request: AddFixedSensorRequest) -> str:
+def apiparam_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
     return ','.join(
         f"({sensor_id}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')" for ch in request.channels
     )
 
 
-def sensor_at_location_record(sensor_id: int, request: AddFixedSensorRequest) -> str:
+def sensor_at_location_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
     valid_from = datetime.now().strftime(SQL_TIMESTAMP_FTM)
     location = request.geolocation.geom_from_text()
     return f"({sensor_id}, '{valid_from}', {location})"
@@ -49,7 +49,7 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
             )
 
 
-def mobile_measure_record(packet_id: int, request: AddMobileMeasureRequest) -> str:
+def mobile_measure_record(packet_id: int, request: AddMobileMeasuresRequest) -> str:
     timestamp = request.timestamp.strftime(SQL_TIMESTAMP_FTM)
     geometry = request.geolocation.geom_from_text()
     return ','.join(f"({packet_id}, {param_id}, {param_val}, '{timestamp}', {geometry})" for param_id, param_val in request.measures)

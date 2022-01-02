@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+from typing import Dict
 from abc import abstractmethod
 from airquality.datamodel.apiparam import APIParam
 from airquality.environment import Environment
@@ -56,6 +57,7 @@ class AddFixedSensorsRunner(UsecaseRunner):
 
 from airquality.url.timeiter_url import AtmotubeTimeIterableURL
 from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
+from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
 from airquality.usecase.add_mobile_measures import AddMobileMeasures
 
 
@@ -74,18 +76,17 @@ class AddAtmotubeMeasuresRunner(UsecaseRunner):
                 filter_ts = gateway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
                 print(f"url='{url}', packet_id='{start_packet_id}', filter_ts='{filter_ts}'")
                 AddMobileMeasures(
-                    output_gateway=gateway,
-                    start_packet_id=start_packet_id,
-                    sensor_id=param.sensor_id,
-                    ch_name=param.ch_name,
-                    filter_ts=filter_ts,
-                    code2id=code2id
-                ).process(datamodels=AtmotubeAPIDataBuilder(url=url))
+                    apiparam=param, filter_ts=filter_ts, gateway=gateway, start_packet_id=start_packet_id
+                ).process(requests=self.requests_of(url=url, code2id=code2id))
 
     def urls_of(self, param: APIParam) -> AtmotubeTimeIterableURL:
         url_template = self.env.url_template(self.personality)
         pre_formatted_url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
         return AtmotubeTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition)
+
+    def requests_of(self, url: str, code2id: Dict[str, int]) -> AddAtmotubeMeasureRequestBuilder:
+        datamodels = AtmotubeAPIDataBuilder(url=url)
+        return AddAtmotubeMeasureRequestBuilder(datamodel=datamodels, code2id=code2id)
 
 
 from airquality.url.timeiter_url import ThingspeakTimeIterableURL

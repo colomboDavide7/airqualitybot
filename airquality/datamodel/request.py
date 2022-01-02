@@ -24,7 +24,7 @@ class Channel(object):
 
 
 @dataclass
-class AddFixedSensorRequest(object):
+class AddFixedSensorsRequest(object):
     """
     A *dataclass* that represents the request model for adding a new sensor.
     """
@@ -46,7 +46,7 @@ class AddSensorMeasuresRequest(object):
 
 
 @dataclass
-class AddMobileMeasureRequest(AddSensorMeasuresRequest):
+class AddMobileMeasuresRequest(AddSensorMeasuresRequest):
     """
     A *dataclass* that represents the request model for adding a new measure of a mobile sensor.
     """
