@@ -9,7 +9,7 @@ from json import loads
 from typing import Generator
 from urllib.request import urlopen
 from airquality.core.iteritems import IterableItemsABC
-from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData
 
 
 class PurpleairAPIDataBuilder(IterableItemsABC):
@@ -59,3 +59,16 @@ class ThingspeakAPIDataBuilder(IterableItemsABC):
 
     def items(self) -> Generator[ThingspeakAPIData, None, None]:
         return (ThingspeakAPIData(**item) for item in self.feeds)
+
+
+class GeonamesDataBuilder(IterableItemsABC):
+    """
+
+    """
+    def __init__(self, filename: str):
+        with open(filename, "r") as f:
+            lines = f.read().split('\n')
+            self.tokenized = [line.split('\t') for line in lines if line]
+
+    def items(self):
+        return (GeonamesData(*line) for line in self.tokenized)

@@ -7,7 +7,8 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder, ThingspeakAPIDataBuilder
+from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder, ThingspeakAPIDataBuilder, \
+    GeonamesDataBuilder
 
 
 class TestDatamodelBuilder(TestCase):
@@ -95,6 +96,28 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(data.field3, 37.43)
         self.assertEqual(data.field6, 55)
         self.assertEqual(data.field7, 60)
+
+    @patch('airquality.core.apidata_builder.open')
+    def test_create_geonames_spain_data(self, mocked_open):
+        with open('test_resources/ES.txt') as rf:
+            spain_data = rf.read()
+
+        mocked_responses = MagicMock()
+        mocked_responses.read.side_effect = [spain_data]
+        mocked_responses.__enter__.return_value = mocked_responses
+        mocked_open.return_value = mocked_responses
+
+        datamodels = GeonamesDataBuilder(filename="fake_filename")
+        self.assertEqual(len(datamodels), 3)
+
+        data = datamodels[0]
+        self.assertEqual(data.place_name, "Almeria")
+        self.assertEqual(data.postal_code, "04001")
+        self.assertEqual(data.country_code, "ES")
+        self.assertEqual(data.state, "Andalucia")
+        self.assertEqual(data.province, "Almeria")
+        self.assertEqual(data.latitude, 36.8381)
+        self.assertEqual(data.longitude, -2.4597)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,3 @@
-ES	04001	Almeria	Andalucia	AN	Almería	AL	Almería	04013	36.8381	-2.4597	4
-ES	04002	Almeria	Andalucia	AN	Almería	AL	Almería	04013	36.8381	-2.4597	4
-ES	04002	El Palmer	Andalucia	AN	Almería	AL	Almería	04013	36.8381	-2.4597	3
+ES	04001	Almeria	Andalucia	AN	Almeria	AL	Almeria	04013	36.8381	-2.4597	4
+ES	04002	Almeria	Andalucia	AN	Almeria	AL	Almeria	04013	36.8381	-2.4597	4
+ES	04002	El Palmer	Andalucia	AN	Almeria	AL	Almería	04013	36.8381	-2.4597	3

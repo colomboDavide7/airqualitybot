@@ -141,15 +141,8 @@ class TestDatamodel(TestCase):
         self.assertIsNone(data.field7)
 
     def test_geonames_country_data(self):
-        data = GeonamesData(
-            postal_code="27100",
-            place_name="Pavia'",
-            country_code="IT",
-            state = "Lombardia'",
-            province="Pavia'",
-            latitude=45,
-            longitude=9
-        )
+        line = ["IT", "27100", "Pavia'", "Lombardia'", "statecode", "Pavia'", "PV", "community", "communitycode", "45", "9", "4"]
+        data = GeonamesData(*line)
 
         self.assertEqual(data.postal_code, "27100")
         self.assertEqual(data.place_name, "Pavia")

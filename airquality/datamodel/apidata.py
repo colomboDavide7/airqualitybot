@@ -97,15 +97,12 @@ class ThingspeakAPIData(object):
 
 @dataclass
 class GeonamesData(object):
-    postal_code: str
-    country_code: str
-    place_name: str
-    state: str
-    province: str
-    latitude: float
-    longitude: float
 
-    def __post_init__(self):
-        self.place_name = self.place_name.replace("'", "")
-        self.state = self.state.replace("'", "")
-        self.province = self.province.replace("'", "")
+    def __init__(self, *args):
+        self.country_code = args[0]
+        self.postal_code = args[1]
+        self.place_name = args[2].replace("'", "")
+        self.state = args[3].replace("'", "")
+        self.province = args[5].replace("'", "")
+        self.latitude = float(args[9])
+        self.longitude = float(args[10])
