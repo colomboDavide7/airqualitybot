@@ -64,7 +64,7 @@ class TestResponseBuilder(TestCase):
                                    f"(12, 'key2a', '333', '2A', '{expected_datetime}')," \
                                    f"(12, 'key2b', '444', '2B', '{expected_datetime}')"
 
-        expected_geometry = "ST_GeomFromText('POINT(5.666 1.234)', 26918)"
+        expected_geometry = "ST_GeomFromText('POINT(5.666 1.234)', 4326)"
         expected_geolocation_record = f"(12, '{mocked_now}', {expected_geometry})"
 
         self.assertEqual(record.sensor_record, "(12, 'faketype', 'fakename')")
@@ -100,7 +100,7 @@ class TestResponseBuilder(TestCase):
         resp = responses[0]
 
         expected_timestamp = "2021-12-29 18:33:00"
-        expected_geom = "ST_GeomFromText('POINT(9.145 45.876)', 26918)"
+        expected_geom = "ST_GeomFromText('POINT(9.145 45.876)', 4326)"
         expected_measure_record = f"(12399, 66, 0.17, '{expected_timestamp}', {expected_geom})," \
                                   f"(12399, 48, 8, '{expected_timestamp}', {expected_geom})," \
                                   f"(12399, 94, 10, '{expected_timestamp}', {expected_geom})," \

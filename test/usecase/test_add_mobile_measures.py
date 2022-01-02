@@ -57,7 +57,7 @@ class TestAddMobileMeasuresUsecase(TestCase):
         resp = responses[0]
 
         expected_timestamp = "2021-08-10 23:59:00"
-        expected_geom = "ST_GeomFromText('POINT(9.897 45.765)', 26918)"
+        expected_geom = "ST_GeomFromText('POINT(9.897 45.765)', 4326)"
         expected_measure_record = f"(12399, 66, 0.17, '{expected_timestamp}', {expected_geom})," \
                                   f"(12399, 48, 8, '{expected_timestamp}', {expected_geom})," \
                                   f"(12399, 94, 10, '{expected_timestamp}', {expected_geom})," \

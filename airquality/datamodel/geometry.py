@@ -44,7 +44,7 @@ class PostgisPoint(PostgisGeometry):
 
     latitude: float                     # The sensor's latitude in decimal degrees (-90,+90)
     longitude: float                    # The sensor's longitude in decimal degrees (-180,+180)
-    srid: int = 26918                   # The Spatial Reference Identifier associated to the coordinate system.
+    srid: int = 4326                    # The Spatial Reference System Identifier (WGS84)
 
     def __post_init__(self):
         if self.latitude < -90.0 or self.latitude > 90.0:

@@ -65,7 +65,7 @@ class TestAddFixedSensor(TestCase):
         resp = responses[0]
         self.assertEqual(resp.sensor_record, "(1, 'Purpleair/Thingspeak', 'fakename (9)')")
         self.assertEqual(resp.apiparam_record, self.get_expected_apiparam)
-        self.assertEqual(resp.geolocation_record, "(1, '2021-12-29 18:33:00', ST_GeomFromText('POINT(5.666 1.234)', 26918))")
+        self.assertEqual(resp.geolocation_record, "(1, '2021-12-29 18:33:00', ST_GeomFromText('POINT(5.666 1.234)', 4326))")
 
 
 if __name__ == '__main__':
