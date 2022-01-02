@@ -7,8 +7,9 @@
 ######################################################
 import sys
 from airquality.environment import Environment
+from airquality.usecase.add_places import AddPlaces
 from airquality.usecase_runner import AddFixedSensorsRunner, AddAtmotubeMeasuresRunner, \
-    AddThingspeakMeasuresRunner, AddPlacesRunner
+    AddThingspeakMeasuresRunner
 from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
 
@@ -71,7 +72,7 @@ class Application(object):
                     host=self.env.host,
                     port=self.env.port
             ) as dbadapter:
-                AddPlacesRunner(
+                AddPlaces(
                     output_gateway=DatabaseGateway(dbadapter=dbadapter),
                     input_dir_path=self.env.input_dir_of(personality)
                 ).run()

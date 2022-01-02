@@ -7,13 +7,13 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.usecase_runner import AddPlacesRunner
+from airquality.usecase.add_places import AddPlaces
 
 
-class TestAddPlacesRunner(TestCase):
+class TestAddPlaces(TestCase):
 
-    @patch('airquality.usecase_runner.listdir')
-    @patch('airquality.usecase_runner.isfile')
+    @patch('airquality.usecase.add_places.listdir')
+    @patch('airquality.usecase.add_places.isfile')
     @patch('airquality.core.apidata_builder.open')
     def test_run_add_fixed_sensors_usecase(self, mocked_open, mocked_isfile, mocked_listdir):
         mocked_listdir.return_value = {"fakefile1.txt", ".ignored_file"}
@@ -32,7 +32,7 @@ class TestAddPlacesRunner(TestCase):
         mocked_responses.__enter__.return_value = mocked_responses
         mocked_open.return_value = mocked_responses
 
-        runner = AddPlacesRunner(output_gateway=mocked_gateway, input_dir_path="fake_path")
+        runner = AddPlaces(output_gateway=mocked_gateway, input_dir_path="fake_path")
         self.assertIn('fakefile1.txt', runner.filenames)
         self.assertNotIn('.ignored_file', runner.filenames)
 
