@@ -6,7 +6,7 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData
 
 
 class TestDatamodel(TestCase):
@@ -139,6 +139,25 @@ class TestDatamodel(TestCase):
         self.assertEqual(data.field5, 28.51)
         self.assertEqual(data.field6, 2.25)
         self.assertIsNone(data.field7)
+
+    def test_geonames_country_data(self):
+        data = GeonamesData(
+            postal_code="27100",
+            place_name="Pavia'",
+            country_code="IT",
+            state = "Lombardia'",
+            province="Pavia'",
+            latitude=45,
+            longitude=9
+        )
+
+        self.assertEqual(data.postal_code, "27100")
+        self.assertEqual(data.place_name, "Pavia")
+        self.assertEqual(data.country_code, "IT")
+        self.assertEqual(data.state, "Lombardia")
+        self.assertEqual(data.province, "Pavia")
+        self.assertEqual(data.latitude, 45)
+        self.assertEqual(data.longitude, 9)
 
 
 if __name__ == '__main__':

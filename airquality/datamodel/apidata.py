@@ -93,3 +93,19 @@ class ThingspeakAPIData(object):
         self.field6 = None if kwargs.get('field6') is None else float(kwargs.get('field6'))
         self.field7 = None if kwargs.get('field7') is None else float(kwargs.get('field7'))
         self.created_at = kwargs['created_at']
+
+
+@dataclass
+class GeonamesData(object):
+    postal_code: str
+    country_code: str
+    place_name: str
+    state: str
+    province: str
+    latitude: float
+    longitude: float
+
+    def __post_init__(self):
+        self.place_name = self.place_name.replace("'", "")
+        self.state = self.state.replace("'", "")
+        self.province = self.province.replace("'", "")
