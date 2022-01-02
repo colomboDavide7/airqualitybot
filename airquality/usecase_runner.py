@@ -92,6 +92,7 @@ class AddAtmotubeMeasuresRunner(UsecaseRunner):
 from airquality.url.timeiter_url import ThingspeakTimeIterableURL
 from airquality.usecase.add_station_measures import AddStationMeasures
 from airquality.core.apidata_builder import ThingspeakAPIDataBuilder
+from airquality.core.request_builder import AddThingspeakMeasuresRequestBuilder
 
 
 class AddThingspeakMeasuresRunner(UsecaseRunner):
@@ -118,16 +119,14 @@ class AddThingspeakMeasuresRunner(UsecaseRunner):
                 filter_ts = gateway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
                 print(f"url='{url}', packet_id='{start_packet_id}', filter_ts='{filter_ts}'")
                 AddStationMeasures(
-                    output_gateway=gateway,
-                    filter_ts=filter_ts,
-                    code2id=code2id,
-                    field_map=self.FIELD_MAP[param.ch_name],
-                    start_packet_id=start_packet_id,
-                    sensor_id=param.sensor_id,
-                    ch_name=param.ch_name
-                ).process(datamodels=ThingspeakAPIDataBuilder(url=url))
+                    apiparam=param, filter_ts=filter_ts, output_gateway=gateway, start_packet_id=start_packet_id
+                ).process(requests=self.requests_of(url=url, code2id=code2id, field_map=self.FIELD_MAP[param.ch_name]))
 
     def urls_of(self, param: APIParam) -> ThingspeakTimeIterableURL:
         url_template = self.env.url_template(self.personality)
         pre_formatted_url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
         return ThingspeakTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition, step_size_in_days=7)
+
+    def requests_of(self, url: str, code2id: Dict[str, int], field_map: Dict[str, str]):
+        datamodels = ThingspeakAPIDataBuilder(url=url)
+        return AddThingspeakMeasuresRequestBuilder(datamodel=datamodels, code2id=code2id, field_map=field_map)
