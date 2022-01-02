@@ -6,6 +6,7 @@
 #
 ######################################################
 from abc import abstractmethod
+from airquality.datamodel.apiparam import APIParam
 from airquality.environment import Environment
 from airquality.database.adapter import Psycopg2Adapter
 from airquality.database.gateway import DatabaseGateway
@@ -58,20 +59,17 @@ from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
 from airquality.usecase.add_mobile_measures import AddMobileMeasures
 
 
-class AddMobileMeasuresRunner(UsecaseRunner):
+class AddAtmotubeMeasuresRunner(UsecaseRunner):
     """
     A *UsecaseRunner* that defines how to run the *AddMobileMeasures* UseCase.
     """
 
     def process_usecases(self, gateway: DatabaseGateway) -> None:
-        url_template = self.env.url_template(personality=self.personality)
         code2id = gateway.get_measure_param_owned_by(owner=self.personality)
         apiparam = gateway.get_apiparam_of_type(sensor_type=self.personality)
         for param in apiparam:
             print(repr(param))
-            pre_formatted_url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
-            urls = AtmotubeTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition)
-            for url in urls:
+            for url in self.urls_of(param):
                 start_packet_id = gateway.get_max_mobile_packet_id_plus_one()
                 filter_ts = gateway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
                 print(f"url='{url}', packet_id='{start_packet_id}', filter_ts='{filter_ts}'")
@@ -84,13 +82,18 @@ class AddMobileMeasuresRunner(UsecaseRunner):
                     code2id=code2id
                 ).process(datamodels=AtmotubeAPIDataBuilder(url=url))
 
+    def urls_of(self, param: APIParam) -> AtmotubeTimeIterableURL:
+        url_template = self.env.url_template(self.personality)
+        pre_formatted_url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
+        return AtmotubeTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition)
+
 
 from airquality.url.timeiter_url import ThingspeakTimeIterableURL
 from airquality.usecase.add_station_measures import AddStationMeasures
 from airquality.core.apidata_builder import ThingspeakAPIDataBuilder
 
 
-class AddStationMeasuresRunner(UsecaseRunner):
+class AddThingspeakMeasuresRunner(UsecaseRunner):
     """
     A *UsecaseRunner* that defines how to run the *AddStationMeasures* UseCase.
     """
@@ -105,14 +108,11 @@ class AddStationMeasuresRunner(UsecaseRunner):
     FIELD_MAP = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B': MAPPING_2B}
 
     def process_usecases(self, gateway: DatabaseGateway) -> None:
-        url_template = self.env.url_template(personality=self.personality)
         code2id = gateway.get_measure_param_owned_by(owner=self.personality)
         apiparam = gateway.get_apiparam_of_type(sensor_type=self.personality)
         for param in apiparam:
             print(repr(param))
-            pre_formatted_url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
-            urls = ThingspeakTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition, step_size_in_days=7)
-            for url in urls:
+            for url in self.urls_of(param):
                 start_packet_id = gateway.get_max_station_packet_id_plus_one()
                 filter_ts = gateway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
                 print(f"url='{url}', packet_id='{start_packet_id}', filter_ts='{filter_ts}'")
@@ -125,3 +125,8 @@ class AddStationMeasuresRunner(UsecaseRunner):
                     sensor_id=param.sensor_id,
                     ch_name=param.ch_name
                 ).process(datamodels=ThingspeakAPIDataBuilder(url=url))
+
+    def urls_of(self, param: APIParam) -> ThingspeakTimeIterableURL:
+        url_template = self.env.url_template(self.personality)
+        pre_formatted_url = url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
+        return ThingspeakTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition, step_size_in_days=7)
