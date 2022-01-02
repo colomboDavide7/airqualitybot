@@ -10,8 +10,9 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorsRequest, Channel, AddMobileMeasuresRequest
-from airquality.core.request_validator import AddFixedSensorRequestValidator, AddSensorMeasuresRequestValidator
+from airquality.datamodel.request import AddFixedSensorsRequest, Channel, AddMobileMeasuresRequest, AddPlacesRequest
+from airquality.core.request_validator import AddFixedSensorRequestValidator, AddSensorMeasuresRequestValidator, \
+    AddPlacesRequestValidator
 
 
 class TestRequestValidator(TestCase):
@@ -80,6 +81,35 @@ class TestRequestValidator(TestCase):
         self.assertEqual(len(valid_requests), 1)
         req = valid_requests[0]
         self.assertEqual(req.timestamp, datetime.strptime("2021-08-11T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z"))
+
+    @property
+    def get_test_place_geolocation(self):
+        return PostgisPoint(latitude=45, longitude=9, srid=4326)
+
+    @property
+    def get_test_add_places_request(self):
+        return AddPlacesRequest(
+            placename="fakename",
+            poscode="fakecode",
+            state="fakestate",
+            geolocation=self.get_test_place_geolocation,
+            countrycode="fakecode",
+            province="fake_province"
+        )
+
+    ##################################### test_validate_add_places_request #####################################
+    def test_validate_add_places_request(self):
+        mocked_request_builder = MagicMock()
+        mocked_request_builder.__len__.return_value = 1
+        mocked_request_builder.__iter__.return_value = [self.get_test_add_places_request]
+
+        valid_requests = AddPlacesRequestValidator(requests=mocked_request_builder, existing_poscodes={"fakecode", })
+        self.assertEqual(len(valid_requests), 0)
+
+        valid_requests = AddPlacesRequestValidator(requests=mocked_request_builder, existing_poscodes={"fakecode1", })
+        self.assertEqual(len(valid_requests), 1)
+        vr = valid_requests[0]
+        self.assertEqual(vr.poscode, "fakecode")
 
 
 if __name__ == '__main__':

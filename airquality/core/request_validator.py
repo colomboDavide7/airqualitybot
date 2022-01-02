@@ -45,3 +45,21 @@ class AddSensorMeasuresRequestValidator(IterableItemsABC):
         for request in self.request:
             if request.timestamp > self.filter_ts:
                 yield request
+
+
+class AddPlacesRequestValidator(IterableItemsABC):
+    """
+    An *IterableItemsABC* that defines the business rules for
+    validating a set of *AddPlacesRequest* items.
+
+    Only the requests whose *poscode* is not in *existing_poscodes* are kept.
+    """
+
+    def __init__(self, requests: IterableItemsABC, existing_poscodes: Set[str]):
+        self.requests = requests
+        self.existing_poscodes = existing_poscodes
+
+    def items(self):
+        for request in self.requests:
+            if request.poscode not in self.existing_poscodes:
+                yield request
