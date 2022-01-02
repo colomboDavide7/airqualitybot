@@ -95,8 +95,10 @@ class ThingspeakAPIData(object):
         self.created_at = kwargs['created_at']
 
 
-@dataclass
 class GeonamesData(object):
+    """
+    An *object* class that defines the raw datastructure of a geonames country file.
+    """
 
     def __init__(self, *args):
         self.country_code = args[0]

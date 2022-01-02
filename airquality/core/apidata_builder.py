@@ -63,12 +63,14 @@ class ThingspeakAPIDataBuilder(IterableItemsABC):
 
 class GeonamesDataBuilder(IterableItemsABC):
     """
-
+    An *IterableItemsABC* that defines the business rules
+    for reading geonames data from *filename* and build a
+    generator of *GeonamesData*.
     """
     def __init__(self, filename: str):
         with open(filename, "r") as f:
             lines = f.read().split('\n')
             self.tokenized = [line.split('\t') for line in lines if line]
 
-    def items(self):
+    def items(self) -> Generator[GeonamesData, None, None]:
         return (GeonamesData(*line) for line in self.tokenized)
