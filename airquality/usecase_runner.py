@@ -36,6 +36,7 @@ class UsecaseRunner(object):
 
 
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
+from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
 from airquality.usecase.add_fixed_sensors import AddFixedSensors
 
 
@@ -48,11 +49,10 @@ class AddFixedSensorsRunner(UsecaseRunner):
         start_sensor_id = gateway.get_max_sensor_id_plus_one()
         existing_names = gateway.get_existing_sensor_names_of_type(sensor_type=self.personality)
         datamodels = PurpleairAPIDataBuilder(url=self.env.url_template(personality=self.personality))
+        requests = AddPurpleairSensorRequestBuilder(datamodel=datamodels)
         AddFixedSensors(
-            output_gateway=gateway,
-            existing_names=existing_names,
-            start_sensor_id=start_sensor_id
-        ).process(datamodels=datamodels)
+            output_gateway=gateway, existing_names=existing_names, start_sensor_id=start_sensor_id
+        ).process(requests=requests)
 
 
 from airquality.url.timeiter_url import AtmotubeTimeIterableURL

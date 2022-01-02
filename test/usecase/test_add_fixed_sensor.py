@@ -8,29 +8,34 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.apidata import PurpleairAPIData
+from airquality.datamodel.geometry import PostgisPoint
+from airquality.datamodel.request import AddFixedSensorsRequest, Channel
 from airquality.usecase.add_fixed_sensors import AddFixedSensors
 
 
 class TestAddFixedSensor(TestCase):
 
     @property
-    def get_test_purpleair_datamodel(self):
-        return PurpleairAPIData(
-            name="fakename",
-            sensor_index=9,
-            latitude=1.234,
-            longitude=5.666,
-            altitude=0,
-            primary_id_a=111,
-            primary_key_a="key1a",
-            primary_id_b=222,
-            primary_key_b="key1b",
-            secondary_id_a=333,
-            secondary_key_a="key2a",
-            secondary_id_b=444,
-            secondary_key_b="key2b",
-            date_created=1234567890
+    def get_test_geolocation(self):
+        return PostgisPoint(latitude=1.234, longitude=5.666)
+
+    @property
+    def get_test_channels(self):
+        test_last_acquisition = datetime.fromtimestamp(1234567890)
+        return [
+            Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=test_last_acquisition),
+            Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=test_last_acquisition),
+            Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=test_last_acquisition),
+            Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=test_last_acquisition)
+        ]
+
+    @property
+    def get_test_purpleair_request(self):
+        return AddFixedSensorsRequest(
+            name="fakename (9)",
+            type="Purpleair/Thingspeak",
+            channels=self.get_test_channels,
+            geolocation=self.get_test_geolocation
         )
 
     @property
@@ -43,14 +48,16 @@ class TestAddFixedSensor(TestCase):
         mocked_now = datetime.strptime("2021-12-29 18:33:00", "%Y-%m-%d %H:%M:%S")
         mocked_datetime.now.return_value = mocked_now
 
-        mocked_datamodel = MagicMock()
-        mocked_datamodel.__len__.return_value = 1
-        mocked_datamodel.__iter__.return_value = [self.get_test_purpleair_datamodel]
+        mocked_request_builder = MagicMock()
+        mocked_request_builder.__len__.return_value = 1
+        mocked_request_builder.__iter__.return_value = [self.get_test_purpleair_request]
 
         mocked_database_gateway = MagicMock()
         mocked_database_gateway.insert_sensors = MagicMock()
 
-        AddFixedSensors(output_gateway=mocked_database_gateway, existing_names=set(), start_sensor_id=1).process(datamodels=mocked_datamodel)
+        AddFixedSensors(
+            output_gateway=mocked_database_gateway, existing_names=set(), start_sensor_id=1
+        ).process(requests=mocked_request_builder)
 
         responses = mocked_database_gateway.insert_sensors.call_args[1]['responses']
         self.assertEqual(len(responses), 1)
