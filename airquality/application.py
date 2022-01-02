@@ -9,7 +9,7 @@ import sys
 from airquality.environment import Environment
 from airquality.usecase.add_places import AddPlaces
 from airquality.usecase.add_station_measures import AddThingspeakMeasures
-from airquality.usecase_runner import AddFixedSensorsRunner, AddAtmotubeMeasuresRunner
+from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
 
@@ -59,9 +59,22 @@ class Application(object):
 
         print(f"RUNNING {personality}...")
         if personality == 'purpleair':
-            AddFixedSensorsRunner(env=self.env, personality=personality).run()
+            with Psycopg2Adapter(
+                    dbname=self.env.dbname,
+                    user=self.env.user,
+                    password=self.env.password,
+                    host=self.env.host,
+                    port=self.env.port
+            ) as dbadapter:
+                AddPurpleairFixedSensors(
+                    output_gateway=DatabaseGateway(dbadapter=dbadapter),
+                    input_url_template=self.env.url_template(personality)
+                ).run()
+
         elif personality == 'atmotube':
-            AddAtmotubeMeasuresRunner(env=self.env, personality=personality).run()
+            print("not implemented....")
+            # AddAtmotubeMeasuresRunner(env=self.env, personality=personality).run()
+
         elif personality == 'thingspeak':
             with Psycopg2Adapter(
                     dbname=self.env.dbname,

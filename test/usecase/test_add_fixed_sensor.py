@@ -8,64 +8,50 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorsRequest, Channel
-from airquality.usecase.add_fixed_sensors import AddFixedSensors
+from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 
 
 class TestAddFixedSensor(TestCase):
 
-    @property
-    def get_test_geolocation(self):
-        return PostgisPoint(latitude=1.234, longitude=5.666)
-
-    @property
-    def get_test_channels(self):
-        test_last_acquisition = datetime.fromtimestamp(1234567890)
-        return [
-            Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=test_last_acquisition),
-            Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=test_last_acquisition),
-            Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=test_last_acquisition),
-            Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=test_last_acquisition)
-        ]
-
-    @property
-    def get_test_purpleair_request(self):
-        return AddFixedSensorsRequest(
-            name="fakename (9)",
-            type="Purpleair/Thingspeak",
-            channels=self.get_test_channels,
-            geolocation=self.get_test_geolocation
-        )
-
-    @property
-    def get_expected_apiparam(self):
-        return "(1, 'key1a', '111', '1A', '2009-02-14 00:31:30'),(1, 'key1b', '222', '1B', '2009-02-14 00:31:30')," \
-               "(1, 'key2a', '333', '2A', '2009-02-14 00:31:30'),(1, 'key2b', '444', '2B', '2009-02-14 00:31:30')"
-
     @patch('airquality.core.response_builder.datetime')
-    def test_add_fixed_sensor_use_case(self, mocked_datetime):
+    @patch('airquality.core.apidata_builder.urlopen')
+    def test_add_fixed_sensors_usecase(self, mocked_urlopen, mocked_datetime):
         mocked_now = datetime.strptime("2021-12-29 18:33:00", "%Y-%m-%d %H:%M:%S")
         mocked_datetime.now.return_value = mocked_now
 
-        mocked_request_builder = MagicMock()
-        mocked_request_builder.__len__.return_value = 1
-        mocked_request_builder.__iter__.return_value = [self.get_test_purpleair_request]
+        with open('test_resources/purpleair_response.json', 'r') as f:
+            api_resp = f.read()
 
-        mocked_database_gateway = MagicMock()
-        mocked_database_gateway.insert_sensors = MagicMock()
+        mocked_api_resp = MagicMock()
+        mocked_api_resp.read.return_value = api_resp
+        mocked_api_resp.__enter__.return_value = mocked_api_resp
+        mocked_urlopen.return_value = mocked_api_resp
 
-        AddFixedSensors(
-            output_gateway=mocked_database_gateway, existing_names=set(), start_sensor_id=1
-        ).process(requests=mocked_request_builder)
+        mocked_gateway = MagicMock()
+        mocked_gateway.get_max_sensor_id_plus_one.return_value = 1
+        mocked_gateway.get_existing_sensor_names_of_type.return_value = {'n1 (1)', 'n2 (2)'}
+        mocked_gateway.insert_sensors = MagicMock()
 
-        responses = mocked_database_gateway.insert_sensors.call_args[1]['responses']
+        use_case = AddPurpleairFixedSensors(output_gateway=mocked_gateway, input_url_template="fake_url")
+
+        self.assertEqual(use_case.start_sensor_id, 1)
+        self.assertEqual(len(use_case.names_of), 2)
+        self.assertIn('n1 (1)', use_case.names_of)
+        self.assertIn('n2 (2)', use_case.names_of)
+
+        use_case.run()
+        responses = mocked_gateway.insert_sensors.call_args[1]['responses']
         self.assertEqual(len(responses), 1)
-
         resp = responses[0]
-        self.assertEqual(resp.sensor_record, "(1, 'Purpleair/Thingspeak', 'fakename (9)')")
+        self.assertEqual(resp.sensor_record, "(1, 'Purpleair/Thingspeak', 'n3 (3)')")
         self.assertEqual(resp.apiparam_record, self.get_expected_apiparam)
-        self.assertEqual(resp.geolocation_record, "(1, '2021-12-29 18:33:00', ST_GeomFromText('POINT(5.666 1.234)', 4326))")
+        self.assertEqual(resp.geolocation_record,
+                         "(1, '2021-12-29 18:33:00', ST_GeomFromText('POINT(9.12 45.24)', 4326))")
+
+    @property
+    def get_expected_apiparam(self):
+        return "(1, 'key1a3', '119', '1A', '2018-09-29 23:10:23'),(1, 'key1b3', '120', '1B', '2018-09-29 23:10:23')," \
+               "(1, 'key2a3', '121', '2A', '2018-09-29 23:10:23'),(1, 'key2b3', '122', '2B', '2018-09-29 23:10:23')"
 
 
 if __name__ == '__main__':

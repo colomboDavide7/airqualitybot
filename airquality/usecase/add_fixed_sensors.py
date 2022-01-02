@@ -5,7 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from typing import Set
 from airquality.database.gateway import DatabaseGateway
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
@@ -13,26 +12,40 @@ from airquality.core.request_validator import AddFixedSensorRequestValidator
 from airquality.core.response_builder import AddFixedSensorResponseBuilder
 
 
-class AddFixedSensors(object):
+class AddPurpleairFixedSensors(object):
     """
-    An *object* that represent the UseCase of adding new fixed sensors (i.e., a station) to the database.
+    An *object* that defines the UseCase of adding Purpleair sensors.
+
+    The sensor information are fetched from the Purpleair API.
+    Only the sensors that are not present into the database at the moment the application is run are inserted.
+    The goal of this class is to transform a set of Purpleair API data into valid SQL for inserting them.
     """
 
-    def __init__(
-            self,
-            output_gateway: DatabaseGateway,            # The database output boundary.
-            existing_names: Set[str],                   # The set of names already present into the database.
-            start_sensor_id: int                        # The id from where to start insert all the sensors.
-    ):
+    def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
         self.output_gateway = output_gateway
-        self.existing_names = existing_names
-        self.start_sensor_id = start_sensor_id
+        self.input_url_template = input_url_template
 
-    def process(self, requests):
-        print(f"found #{len(requests)} requests")
-        validated_requests = AddFixedSensorRequestValidator(request=requests, existing_names=self.existing_names)
-        print(f"found #{len(validated_requests)} valid requests")
-        responses = AddFixedSensorResponseBuilder(requests=validated_requests, start_sensor_id=self.start_sensor_id)
-        if responses:
-            print(f"found #{len(responses)} responses")
+    @property
+    def start_sensor_id(self) -> int:
+        return self.output_gateway.get_max_sensor_id_plus_one()
+
+    @property
+    def names_of(self):
+        return self.output_gateway.get_existing_sensor_names_of_type(sensor_type='purpleair')
+
+    def run(self) -> None:
+        datamodel_builder = PurpleairAPIDataBuilder(url=self.input_url_template)
+        print(f"found #{len(datamodel_builder)} API data")
+
+        request_builder = AddPurpleairSensorRequestBuilder(datamodel=datamodel_builder)
+        print(f"found #{len(request_builder)} requests")
+
+        validator = AddFixedSensorRequestValidator(request=request_builder, existing_names=self.names_of)
+        print(f"found #{len(validator)} valid requests")
+
+        responses = AddFixedSensorResponseBuilder(requests=validator, start_sensor_id=self.start_sensor_id)
+        print(f"found #{len(responses)} responses")
+
+        if len(responses) > 0:
+            print(f"insert new sensors!")
             self.output_gateway.insert_sensors(responses=responses)
