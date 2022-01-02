@@ -107,7 +107,7 @@ class TestDatamodelBuilder(TestCase):
         mocked_responses.__enter__.return_value = mocked_responses
         mocked_open.return_value = mocked_responses
 
-        datamodels = GeonamesDataBuilder(filename="fake_filename")
+        datamodels = GeonamesDataBuilder(filepath="fake_filename")
         self.assertEqual(len(datamodels), 3)
 
         data = datamodels[0]

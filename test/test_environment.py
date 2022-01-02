@@ -25,7 +25,10 @@ class TestEnvironment(TestCase):
             'password': "fakepassword",
             'p1_url': 'url_template_of_p1',
             'p2_url': 'url_template_of_p2',
-            'p3_url': 'url_template_of_p3'
+            'p3_url': 'url_template_of_p3',
+            'resource_dir': 'fakeroot',
+            'p1_dir': 'fakep1dir',
+            'p1_data_dir': 'fakep1datadir'
         }
 
     def test_get_valid_personalities(self):
@@ -51,6 +54,11 @@ class TestEnvironment(TestCase):
         with patch.dict(os.environ, self.get_test_environ):
             actual = Environment().url_template(personality="p1")
             self.assertEqual(actual, "url_template_of_p1")
+
+    def test_input_dir_of(self):
+        with patch.dict(os.environ, self.get_test_environ):
+            actual = Environment().input_dir_of(personality="p1")
+            self.assertEqual(actual, "fakeroot/fakep1dir/fakep1datadir")
 
 
 if __name__ == '__main__':

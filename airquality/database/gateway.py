@@ -6,7 +6,7 @@
 #
 ######################################################
 from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder, \
-    AddStationMeasuresResponseBuilder
+    AddStationMeasuresResponseBuilder, AddPlacesResponseBuilder
 from airquality.database.adapter import DatabaseAdapter
 from airquality.datamodel.apiparam import APIParam
 from typing import Set, Dict, List
@@ -82,6 +82,23 @@ class DatabaseGateway(object):
     def get_max_station_packet_id_plus_one(self) -> int:
         row = self.dbadapter.fetchone("SELECT MAX(packet_id) FROM level0_raw.station_measurement;")
         return 1 if row[0] is None else row[0] + 1
+
+    def get_service_id_from_name(self, service_name: str) -> int:
+        return self.dbadapter.fetchone(
+            f"SELECT id FROM level0_raw.service WHERE service_name ILIKE '%{service_name}%';"
+        )[0]
+
+    def get_poscodes_of_country(self, country_code) -> Set[str]:
+        rows = self.dbadapter.fetchall(
+            f"SELECT postal_code FROM level0_raw.geographical_area WHERE country_code = '{country_code}';"
+        )
+        return {row[0] for row in rows}
+
+    def insert_places(self, responses: AddPlacesResponseBuilder):
+        query = "INSERT INTO level0_raw.geographical_area " \
+                "(service_id, postal_code, country_code, place_name, province, state, geom) VALUES "
+        query += ','.join(resp.place_record for resp in responses)
+        self.dbadapter.execute(f"{query};")
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"

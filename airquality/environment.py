@@ -22,6 +22,9 @@ class Environment(object):
     def url_template(self, personality: str) -> str:
         return os.environ[f'{personality}_url']
 
+    def input_dir_of(self, personality: str) -> str:
+        return f"{os.environ['resource_dir']}/{os.environ[f'{personality}_dir']}/{os.environ[f'{personality}_data_dir']}"
+
     @property
     def valid_personalities(self) -> Tuple[str]:
         if not self._valid_pers:

@@ -9,7 +9,8 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.apiparam import APIParam
-from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse, \
+    AddPlacesResponse
 from airquality.database.gateway import DatabaseGateway
 
 
@@ -198,6 +199,7 @@ class TestDatabaseGateway(TestCase):
                          f"{self.get_test_station_records};"
         mocked_dbadapter.execute.assert_called_with(expected_query)
 
+    ##################################### test_get_max_station_packet_id_plus_one #####################################
     def test_get_max_station_packet_id_plus_one(self):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchone.side_effect = [(149, ), (None, )]
@@ -208,6 +210,49 @@ class TestDatabaseGateway(TestCase):
 
         actual = gateway.get_max_station_packet_id_plus_one()
         self.assertEqual(actual, 1)
+
+    ##################################### test_get_max_station_packet_id_plus_one #####################################
+    def test_get_service_id_from_service_name(self):
+
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.fetchone.side_effect = [(1, )]
+
+        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_service_id_from_name(service_name="fakename")
+        self.assertEqual(actual, 1)
+
+    ##################################### test_get_max_station_packet_id_plus_one #####################################
+    def test_get_existing_poscodes_of_country(self):
+
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.fetchall.return_value = [("p1",), ("p2", ), ("p3", )]
+
+        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_poscodes_of_country(country_code="fakecode")
+        self.assertEqual(len(actual), 3)
+        self.assertIn("p1", actual)
+        self.assertIn("p2", actual)
+        self.assertIn("p3", actual)
+
+    @property
+    def get_test_add_places_response(self):
+        place_record = "(1, '27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', ST_GeomFromText('POINT(9 45)', 4326))"
+        return AddPlacesResponse(place_record=place_record)
+
+    ##################################### test_insert_places #####################################
+    def test_insert_places(self):
+
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.execute = MagicMock()
+
+        mocked_response_builder = MagicMock()
+        mocked_response_builder.__len__.return_value = 1
+        mocked_response_builder.__iter__.return_value = [self.get_test_add_places_response]
+
+        DatabaseGateway(dbadapter=mocked_dbadapter).insert_places(responses=mocked_response_builder)
+
+        expected_query = "INSERT INTO level0_raw.geographical_area " \
+                         "(service_id, postal_code, country_code, place_name, province, state, geom) VALUES " \
+                         "(1, '27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', ST_GeomFromText('POINT(9 45)', 4326));"
+        mocked_dbadapter.execute.assert_called_with(expected_query)
 
 
 if __name__ == '__main__':

@@ -67,8 +67,8 @@ class GeonamesDataBuilder(IterableItemsABC):
     for reading geonames data from *filename* and build a
     generator of *GeonamesData*.
     """
-    def __init__(self, filename: str):
-        with open(filename, "r") as f:
+    def __init__(self, filepath: str):
+        with open(filepath, "r") as f:
             lines = f.read().split('\n')
             self.tokenized = [line.split('\t') for line in lines if line]
 

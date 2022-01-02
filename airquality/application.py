@@ -7,7 +7,10 @@
 ######################################################
 import sys
 from airquality.environment import Environment
-from airquality.usecase_runner import AddFixedSensorsRunner, AddAtmotubeMeasuresRunner, AddThingspeakMeasuresRunner
+from airquality.usecase_runner import AddFixedSensorsRunner, AddAtmotubeMeasuresRunner, \
+    AddThingspeakMeasuresRunner, AddPlacesRunner
+from airquality.database.gateway import DatabaseGateway
+from airquality.database.adapter import Psycopg2Adapter
 
 
 class WrongUsageError(Exception):
@@ -60,4 +63,17 @@ class Application(object):
             AddAtmotubeMeasuresRunner(env=self.env, personality=personality).run()
         elif personality == 'thingspeak':
             AddThingspeakMeasuresRunner(env=self.env, personality=personality).run()
+        elif personality == 'geonames':
+            with Psycopg2Adapter(
+                    dbname=self.env.dbname,
+                    user=self.env.user,
+                    password=self.env.password,
+                    host=self.env.host,
+                    port=self.env.port
+            ) as dbadapter:
+                AddPlacesRunner(
+                    output_gateway=DatabaseGateway(dbadapter=dbadapter),
+                    input_dir_path=self.env.input_dir_of(personality)
+                ).run()
+
         print("finish!")
