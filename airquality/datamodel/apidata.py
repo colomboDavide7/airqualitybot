@@ -101,10 +101,10 @@ class GeonamesData(object):
     """
 
     def __init__(self, *args):
-        self.country_code = args[0]
-        self.postal_code = args[1]
-        self.place_name = args[2].replace("'", "")
-        self.state = args[3].replace("'", "")
-        self.province = args[5].replace("'", "")
-        self.latitude = float(args[9])
-        self.longitude = float(args[10])
+        self.country_code = args[0]                     # The place's 2-alpha ISO country code.
+        self.postal_code = args[1]                      # The place's postal code.
+        self.place_name = args[2].replace("'", "")      # The place's name.
+        self.state = args[3].replace("'", "")           # The place's state extended name.
+        self.province = args[5].replace("'", "")        # The place's province extended name.
+        self.latitude = float(args[9])                  # The place's latitude in WGS84 System Reference.
+        self.longitude = float(args[10])                # The place's longitude in WGS84 System Reference.

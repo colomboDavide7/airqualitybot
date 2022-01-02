@@ -8,7 +8,8 @@
 from datetime import datetime
 from unittest import TestCase, main
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest, Channel
+from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
+    AddSensorMeasuresRequest, Channel, AddPlacesRequest
 
 
 class TestRequestModel(TestCase):
@@ -56,6 +57,26 @@ class TestRequestModel(TestCase):
         request = AddSensorMeasuresRequest(timestamp=test_timestamp, measures=test_mesures)
         self.assertEqual(request.timestamp, test_timestamp)
         self.assertEqual(request.measures, test_mesures)
+
+    ##################################### test_request_model_for_adding_geonames_country_data #####################################
+    def test_request_model_for_adding_geonames_country_data(self):
+        wgs84_srid = 4326
+        test_geolocation = PostgisPoint(latitude=45, longitude=9, srid=wgs84_srid)
+
+        request = AddPlacesRequest(
+            placename="fakename",
+            poscode="fakecode",
+            state="fakestate",
+            geolocation=test_geolocation,
+            countrycode="fakecode",
+            province="fake_province"
+        )
+        self.assertEqual(request.placename, "fakename")
+        self.assertEqual(request.poscode, "fakecode")
+        self.assertEqual(request.state, "fakestate")
+        self.assertEqual(request.geolocation, test_geolocation)
+        self.assertEqual(request.countrycode, "fakecode")
+        self.assertEqual(request.province, "fake_province")
 
 
 if __name__ == '__main__':

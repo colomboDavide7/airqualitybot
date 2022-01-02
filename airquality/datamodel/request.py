@@ -52,3 +52,17 @@ class AddMobileMeasuresRequest(AddSensorMeasuresRequest):
     """
 
     geolocation: PostgisGeometry        # The sensor's geolocation at the moment of the acquisition in decimal degrees.
+
+
+@dataclass
+class AddPlacesRequest(object):
+    """
+    A *dataclass* that represents the datastructure of a request for adding a new place of a given country.
+    """
+
+    countrycode: str                    # The place's 2-alpha ISO country code.
+    placename: str                      # The place's name.
+    province: str                       # The place's province name.
+    poscode: str                        # The place's postal code.
+    state: str                          # The place's state name.
+    geolocation: PostgisGeometry        # The place's estimated geolocation
