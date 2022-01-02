@@ -22,7 +22,8 @@ class DatabaseGateway(object):
         self.dbadapter = dbadapter
 
     def get_existing_sensor_names_of_type(self, sensor_type: str) -> Set[str]:
-        rows = self.dbadapter.fetchall(f"SELECT sensor_name FROM level0_raw.sensor WHERE sensor_type ILIKE '%{sensor_type}%';")
+        rows = self.dbadapter.fetchall(
+            f"SELECT sensor_name FROM level0_raw.sensor WHERE sensor_type ILIKE '%{sensor_type}%';")
         return {row[0] for row in rows}
 
     def get_max_sensor_id_plus_one(self) -> int:
@@ -38,10 +39,12 @@ class DatabaseGateway(object):
             apiparam_query += response.apiparam_record + ','
             geolocation_query += response.geolocation_record + ','
 
-        self.dbadapter.execute(f"{sensor_query.strip(',')}; {apiparam_query.strip(',')}; {geolocation_query.strip(',')};")
+        self.dbadapter.execute(
+            f"{sensor_query.strip(',')}; {apiparam_query.strip(',')}; {geolocation_query.strip(',')};")
 
     def get_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
-        rows = self.dbadapter.fetchall(f"SELECT id, param_code FROM level0_raw.measure_param WHERE param_owner ILIKE '%{owner}%';")
+        rows = self.dbadapter.fetchall(
+            f"SELECT id, param_code FROM level0_raw.measure_param WHERE param_owner ILIKE '%{owner}%';")
         return {code: ident for ident, code in rows}
 
     def insert_mobile_sensor_measures(self, responses: AddMobileMeasureResponseBuilder):
@@ -60,10 +63,8 @@ class DatabaseGateway(object):
             "SELECT a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.last_acquisition FROM level0_raw.sensor_api_param AS a "
             f"INNER JOIN level0_raw.sensor AS s ON s.id = a.sensor_id WHERE s.sensor_type ILIKE '%{sensor_type}%';"
         )
-        return [
-            APIParam(sensor_id=sid, api_key=key, api_id=ident, ch_name=name, last_acquisition=last)
-            for sid, key, ident, name, last in rows
-        ]
+        return [APIParam(sensor_id=sid, api_key=key, api_id=ident, ch_name=name, last_acquisition=last)
+                for sid, key, ident, name, last in rows]
 
     def get_max_mobile_packet_id_plus_one(self) -> int:
         row = self.dbadapter.fetchone("SELECT MAX(packet_id) FROM level0_raw.mobile_measurement;")

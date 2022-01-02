@@ -7,43 +7,50 @@
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
-from airquality.datamodel.request import AddSensorMeasuresRequest
-from airquality.usecase.add_station_measures import AddStationMeasures
+from airquality.usecase.add_station_measures import AddThingspeakMeasures
 
 
-class TestAddStationMeasuresUsecase(TestCase):
-
-    @property
-    def get_test_thingspeak_request(self):
-        return AddSensorMeasuresRequest(
-            timestamp=datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ"),
-            measures=[(12, 20.50), (13, 35.53), (14, 37.43), (15, 55.0), (16, 60.0)]
-        )
+class TestAddStationMeasures(TestCase):
 
     @property
-    def get_test_filter_timestamp(self):
-        return datetime.strptime("2021-12-09T15:52:34Z", "%Y-%m-%dT%H:%M:%SZ")
+    def get_test_measure_param(self):
+        return {'pm1.0_atm_a': 12, 'pm2.5_atm_a': 13, 'pm10.0_atm_a': 14, 'temperature_a': 15, 'humidity_a': 16}
 
-    def test_add_station_measures(self):
-        mocked_request_builder = MagicMock()
-        mocked_request_builder.__len__.return_value = 1
-        mocked_request_builder.__iter__.return_value = [self.get_test_thingspeak_request]
+    @property
+    def get_test_apiparam(self):
+        test_last_acquisition = datetime.strptime('2021-12-20 10:38:00', '%Y-%m-%d %H:%M:%S')
+        return APIParam(sensor_id=99, api_key="fakekey", api_id="fakeid", ch_name="1A", last_acquisition=test_last_acquisition)
+
+    @patch('airquality.core.apidata_builder.urlopen')
+    @patch('airquality.url.timeiter_url.datetime')
+    def test_add_station_measures(self, mocked_datetime, mocked_urlopen):
+        mocked_datetime.now.return_value = datetime.strptime('2021-12-20 17:12:00', '%Y-%m-%d %H:%M:%S')
+
+        with open('test_resources/thingspeak_response_1A.json', 'r') as f:
+            apiresp = f.read()
+
+        mocked_apiresp = MagicMock()
+        mocked_apiresp.read.return_value = apiresp
+        mocked_apiresp.__enter__.return_value = mocked_apiresp
+        mocked_urlopen.return_value = mocked_apiresp
 
         mocked_gateway = MagicMock()
         mocked_gateway.insert_station_measures = MagicMock()
-        mocked_gateway.update_last_acquisition = MagicMock()
+        mocked_gateway.get_max_station_packet_id_plus_one.return_value = 140
+        mocked_gateway.get_apiparam_of_type.return_value = [self.get_test_apiparam]
+        mocked_gateway.get_measure_param_owned_by.return_value = self.get_test_measure_param
+        mocked_gateway.get_last_acquisition_of_sensor_channel.return_value = datetime.strptime('2021-12-20 11:17:40', '%Y-%m-%d %H:%M:%S')
 
-        AddStationMeasures(
-            output_gateway=mocked_gateway,
-            filter_ts=self.get_test_filter_timestamp,
-            start_packet_id=140,
-            apiparam=APIParam(sensor_id=99, api_key="fakekey", api_id="fakeid", ch_name="fakename", last_acquisition=None)
-        ).process(requests=mocked_request_builder)
+        use_case = AddThingspeakMeasures(output_gateway=mocked_gateway, input_url_template="fakeurl")
+        self.assertEqual(use_case.api_param, [self.get_test_apiparam])
+        self.assertEqual(use_case.start_packet_id, 140)
+        self.assertEqual(use_case.measure_param, self.get_test_measure_param)
 
+        use_case.run()
         responses = mocked_gateway.insert_station_measures.call_args[1]['responses']
-        self.assertEqual(len(responses), 1)
+        self.assertEqual(len(responses), 3)
 
         resp = responses[0]
         expected_measure_record = "(140, 99, 12, 20.5, '2021-12-20 11:18:40'),(140, 99, 13, 35.53, '2021-12-20 11:18:40')," \
