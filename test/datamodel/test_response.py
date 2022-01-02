@@ -6,7 +6,8 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, \
+    AddStationMeasuresResponse, AddPlacesResponse
 
 
 class TestResponseModel(TestCase):
@@ -32,6 +33,12 @@ class TestResponseModel(TestCase):
             measure_record="fake_measure_records"
         )
         self.assertEqual(response.measure_record, "fake_measure_records")
+
+    def test_add_places_response(self):
+        response = AddPlacesResponse(
+            place_record="fake_place_record"
+        )
+        self.assertEqual(response.place_record, "fake_place_record")
 
 
 if __name__ == '__main__':

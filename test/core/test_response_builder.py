@@ -9,9 +9,10 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest, Channel
+from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
+    AddSensorMeasuresRequest, Channel, AddPlacesRequest
 from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder, \
-    AddStationMeasuresResponseBuilder
+    AddStationMeasuresResponseBuilder, AddPlacesResponseBuilder
 
 SQL_TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
 
@@ -132,6 +133,30 @@ class TestResponseBuilder(TestCase):
                           "(140, 99, 14, 37.43, '2021-12-20 11:18:40'),(140, 99, 15, 55, '2021-12-20 11:18:40')," \
                           "(140, 99, 16, 60, '2021-12-20 11:18:40')"
         self.assertEqual(resp.measure_record, expected_record)
+
+    @property
+    def get_test_add_places_requests(self):
+        geolocation = PostgisPoint(latitude=45, longitude=9, srid=4326)
+        return AddPlacesRequest(
+            placename="Pavia",
+            poscode="27100",
+            state="Lombardia",
+            geolocation=geolocation,
+            countrycode="IT",
+            province="Pavia"
+        )
+
+    def test_create_response_to_request_of_adding_places(self):
+        mocked_valid_requests = MagicMock()
+        mocked_valid_requests.__len__.return_value = 1
+        mocked_valid_requests.__iter__.return_value = [self.get_test_add_places_requests]
+
+        responses = AddPlacesResponseBuilder(requests=mocked_valid_requests, service_id=1)
+        self.assertEqual(len(responses), 1)
+
+        resp = responses[0]
+        expected_place_record = "(1, '27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', ST_GeomFromText('POINT(9 45)', 4326))"
+        self.assertEqual(resp.place_record, expected_place_record)
 
 
 if __name__ == '__main__':

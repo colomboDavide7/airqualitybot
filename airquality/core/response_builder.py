@@ -10,7 +10,8 @@ from typing import Generator
 from datetime import datetime
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest
-from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse, \
+    AddPlacesResponse
 
 SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
 
@@ -34,7 +35,11 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
     an *AddFixedSensorResponse* Generator.
     """
 
-    def __init__(self, requests: IterableItemsABC, start_sensor_id: int):
+    def __init__(
+            self,
+            requests: IterableItemsABC,         # The class that holds the requests items.
+            start_sensor_id: int                # The database sensor id from where start to count the sensors.
+    ):
         self.requests = requests
         self.start_sensor_id = start_sensor_id
 
@@ -62,7 +67,11 @@ class AddMobileMeasureResponseBuilder(IterableItemsABC):
         an *AddMobileMeasureResponse* Generator.
         """
 
-    def __init__(self, requests: IterableItemsABC, start_packet_id: int):
+    def __init__(
+            self,
+            requests: IterableItemsABC,         # The class that holds the requests items.
+            start_packet_id: int                # The database id from where to start counting the measure packets.
+    ):
         self.requests = requests
         self.start_packet_id = start_packet_id
 
@@ -86,7 +95,12 @@ class AddStationMeasuresResponseBuilder(IterableItemsABC):
     an *AddStationMeasuresResponse* generator.
     """
 
-    def __init__(self, requests: IterableItemsABC, start_packet_id: int, sensor_id: int):
+    def __init__(
+            self,
+            requests: IterableItemsABC,         # The class that holds the requests items.
+            start_packet_id: int,               # The database id from where to start counting the measure packets.
+            sensor_id: int                      # The sensor's database id from which the data derives from.
+    ):
         self.requests = requests
         self.start_packet_id = start_packet_id
         self.sensor_id = sensor_id
@@ -96,4 +110,27 @@ class AddStationMeasuresResponseBuilder(IterableItemsABC):
         for req in self.requests:
             yield AddStationMeasuresResponse(
                 measure_record=station_measure_record(packet_id=next(packet_id_counter), sensor_id=self.sensor_id, request=req)
+            )
+
+
+class AddPlacesResponseBuilder(IterableItemsABC):
+    """
+    An *IterableItemsABC* that defines the business rules for
+    translating a set of *AddPlacesRequests* items into
+    an *AddPlacesResponse* generator.
+    """
+
+    def __init__(
+            self,
+            requests: IterableItemsABC,         # The class that holds the requests items.
+            service_id: int                     # The service's database id from which the data derives from.
+    ):
+        self.requests = requests
+        self.service_id = service_id
+
+    def items(self):
+        for req in self.requests:
+            yield AddPlacesResponse(
+                place_record=f"({self.service_id}, '{req.poscode}', '{req.countrycode}', "
+                             f"'{req.placename}', '{req.province}', '{req.state}', {req.geolocation.geom_from_text()})"
             )

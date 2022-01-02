@@ -35,3 +35,12 @@ class AddStationMeasuresResponse(object):
     """
 
     measure_record: str                 # The sensor's measurement SQL record.
+
+
+@dataclass
+class AddPlacesResponse(object):
+    """
+    A *dataclass* that defines the datastructure for the response to an *AddPlacesRequest* request.
+    """
+
+    place_record: str                   # The place's SQL record.
