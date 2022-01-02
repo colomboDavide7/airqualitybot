@@ -5,8 +5,8 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest, \
-    Channel
+from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
+    AddSensorMeasuresRequest, Channel, AddPlacesRequest
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.core.iteritems import IterableItemsABC
 from typing import Dict, Generator
@@ -69,7 +69,7 @@ class AddAtmotubeMeasureRequestBuilder(IterableItemsABC):
 class AddThingspeakMeasuresRequestBuilder(IterableItemsABC):
     """
     An *IterableItemsABC* that defines the business rules for translating
-    a set of *ThingspeakPrimaryChannelAData* items into an *AddStationMeasuresRequest* generator.
+    a set of *ThingspeakAPIData* items into an *AddStationMeasuresRequest* generator.
     """
 
     TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%SZ"
@@ -84,4 +84,27 @@ class AddThingspeakMeasuresRequestBuilder(IterableItemsABC):
             yield AddSensorMeasuresRequest(
                 timestamp=datetime.strptime(dm.created_at, self.TIMESTAMP_FMT),
                 measures=[(self.code2id[fcode], getattr(dm, fname)) for fname, fcode in self.field_map.items()]
+            )
+
+
+class AddPlacesRequestBuilder(IterableItemsABC):
+    """
+    An *IterableItemsABC* that defines the business rules for translating
+    a set of *GeonamesData* into an *AddPlacesRequest* generator.
+    """
+
+    WGS84_SRID = 4326
+
+    def __init__(self, datamodels: IterableItemsABC):
+        self.datamodels = datamodels
+
+    def items(self):
+        for dm in self.datamodels:
+            yield AddPlacesRequest(
+                placename=dm.place_name,
+                poscode=dm.postal_code,
+                countrycode=dm.country_code,
+                state=dm.state,
+                province=dm.province,
+                geolocation=PostgisPoint(latitude=dm.latitude, longitude=dm.longitude, srid=self.WGS84_SRID)
             )

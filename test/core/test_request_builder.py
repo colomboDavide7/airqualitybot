@@ -10,9 +10,9 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.request import Channel
 from airquality.datamodel.geometry import NullGeometry, PostgisPoint
-from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder, \
-    AddThingspeakMeasuresRequestBuilder
+    AddThingspeakMeasuresRequestBuilder, AddPlacesRequestBuilder
 
 
 class TestRequestBuilder(TestCase):
@@ -154,6 +154,29 @@ class TestRequestBuilder(TestCase):
         expected_measures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55.0)]
         self.assertEqual(req.timestamp, expected_timestamp)
         self.assertEqual(req.measures, expected_measures)
+
+    @property
+    def get_test_geonames_data(self):
+        line = ["IT", "27100", "Pavia'", "Lombardia'", "statecode", "Pavia'", "PV", "community", "communitycode", "45", "9", "4"]
+        return GeonamesData(*line)
+
+    ############################## test_create_requests_for_adding_places #############################
+    def test_create_requests_for_adding_places(self):
+        mocked_datamodel_builder = MagicMock()
+        mocked_datamodel_builder.__len__.return_value = 1
+        mocked_datamodel_builder.__iter__.return_value = [self.get_test_geonames_data]
+
+        requests = AddPlacesRequestBuilder(datamodels=mocked_datamodel_builder)
+        self.assertEqual(len(requests), 1)
+        req = requests[0]
+
+        expected_geolocation = PostgisPoint(latitude=45, longitude=9, srid=4326)
+        self.assertEqual(req.poscode, "27100")
+        self.assertEqual(req.geolocation, expected_geolocation)
+        self.assertEqual(req.placename, "Pavia")
+        self.assertEqual(req.state, "Lombardia")
+        self.assertEqual(req.province, "Pavia")
+        self.assertEqual(req.countrycode, "IT")
 
 
 if __name__ == '__main__':
