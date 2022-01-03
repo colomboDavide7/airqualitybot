@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData, \
-    Weather, Temperature, WeatherForecast, OpenWeatherMapAPIData
+    Weather, WeatherForecast, OpenWeatherMapAPIData
 
 
 class TestDatamodel(TestCase):
@@ -162,7 +162,7 @@ class TestDatamodel(TestCase):
 
         test_current = WeatherForecast(
             dt=1641217631,
-            temp=Temperature(day=8.84),
+            temp=8.84,
             pressure=1018,
             humidity=81,
             wind_speed=0.59,
@@ -177,7 +177,7 @@ class TestDatamodel(TestCase):
 
         test_hourly_forecast = WeatherForecast(
             dt=1641214800,
-            temp=Temperature(day=9.21),
+            temp=9.21,
             pressure=1018,
             humidity=80,
             wind_speed=0.33,
@@ -192,7 +192,9 @@ class TestDatamodel(TestCase):
 
         test_daily_forecast = WeatherForecast(
             dt=1641207600,
-            temp=Temperature(day=9.25, min=5.81, max=9.4),
+            temp=9.25,
+            temp_min=5.81,
+            temp_max=9.4,
             pressure=1019,
             humidity=83,
             wind_speed=2.72,

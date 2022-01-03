@@ -6,11 +6,11 @@
 #
 ######################################################
 from json import loads
-from typing import Generator
+from typing import Generator, Dict, List, Any
 from urllib.request import urlopen
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData, \
-    Weather, Temperature, WeatherForecast, OpenWeatherMapAPIData
+    Weather, WeatherForecast, OpenWeatherMapAPIData
 
 
 class PurpleairAPIDataBuilder(IterableItemsABC):
@@ -88,78 +88,48 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
             self.daily = parsed['daily']
 
     def items(self) -> Generator[OpenWeatherMapAPIData, None, None]:
-        current_weather = self.current.get('weather')
-        if current_weather is not None:
-            current_weather = [Weather(main=w['main'], description=w['description']) for w in current_weather]
-
-        current_rain = self.current.get('rain')
-        if current_rain is not None:
-            current_rain = current_rain['1h']
-
-        current_snow = self.current.get('snow')
-        if current_snow is not None:
-            current_snow = current_snow['1h']
 
         current = WeatherForecast(
-            dt=self.current['dt'] + self.tz_offset,
-            temp=Temperature(day=self.current.get('temp')),
+            dt=self.timestamp_of(source=self.current),
+            temp=self.current.get('temp'),
             pressure=self.current.get('pressure'),
             humidity=self.current.get('humidity'),
             wind_speed=self.current.get('wind_speed'),
             wind_deg=self.current.get('wind_deg'),
-            weather=current_weather,
-            rain=current_rain,
-            snow=current_snow
+            weather=self.weather(source=self.current),
+            rain=self.recursive_search(source=self.current, keywords=['rain', '1h']),
+            snow=self.recursive_search(source=self.current, keywords=['snow', '1h'])
         )
 
         hourly_forecast = []
         for hf in self.hourly:
-            weather = hf.get('weather')
-            if weather is not None:
-                weather = [Weather(main=w['main'], description=w['description']) for w in weather]
-
-            rain = hf.get('rain')
-            if rain is not None:
-                rain = rain['1h']
-
-            snow = hf.get('snow')
-            if snow is not None:
-                snow = snow['1h']
-
             hourly_forecast.append(
                 WeatherForecast(
-                    dt=hf['dt'] + self.tz_offset,
-                    temp=Temperature(day=hf.get('temp')),
+                    dt=self.timestamp_of(source=hf),
+                    temp=hf.get('temp'),
                     pressure=hf.get('pressure'),
                     humidity=hf.get('humidity'),
                     wind_speed=hf.get('wind_speed'),
                     wind_deg=hf.get('wind_deg'),
-                    weather=weather,
-                    rain=rain,
-                    snow=snow
+                    weather=self.weather(source=hf),
+                    rain=self.recursive_search(source=hf, keywords=['rain', '1h']),
+                    snow=self.recursive_search(source=hf, keywords=['snow', '1h']),
                 )
             )
 
         daily_forecast = []
         for day in self.daily:
-
-            temp = day.get('temp')
-            if temp is not None:
-                temp = Temperature(day=temp['day'], min=temp['min'], max=temp['max'])
-
-            weather = day.get('weather')
-            if weather is not None:
-                weather = [Weather(main=w['main'], description=w['description']) for w in weather]
-
             daily_forecast.append(
                 WeatherForecast(
-                    dt=day['dt'] + self.tz_offset,
-                    temp=temp,
+                    dt=self.timestamp_of(source=day),
+                    temp=self.recursive_search(source=day, keywords=['temp', 'day']),
+                    temp_min=self.recursive_search(source=day, keywords=['temp', 'min']),
+                    temp_max=self.recursive_search(source=day, keywords=['temp', 'max']),
                     pressure=day.get('pressure'),
                     humidity=day.get('humidity'),
                     wind_speed=day.get('wind_speed'),
                     wind_deg=day.get('wind_deg'),
-                    weather=weather,
+                    weather=self.weather(source=day),
                     rain=day.get('rain'),
                     snow=day.get('snow')
                 )
@@ -170,3 +140,17 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
             hourly_forecast=hourly_forecast,
             daily_forecast=daily_forecast
         )
+
+    def timestamp_of(self, source: Dict[str, Any]):
+        return source['dt'] + self.tz_offset
+
+    def weather(self, source: Dict[str, Any]) -> List[Weather]:
+        weather = source.get('weather')
+        if weather is not None:
+            weather = [Weather(main=w['main'], description=w['description']) for w in weather]
+        return weather
+
+    def recursive_search(self, source: Dict[str, Any], keywords: List[str]):
+        if type(source) != dict:
+            return source
+        return self.recursive_search(source=source.get(keywords.pop(0)), keywords=keywords)

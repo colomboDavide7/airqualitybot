@@ -120,15 +120,15 @@ class Weather(object):
     description: str                                # The description of the weather condition above.
 
 
-@dataclass
-class Temperature(object):
-    """
-    A *dataclass* that defines the raw datastructure of the temperature conditions in a *WeatherForecast* object.
-    """
-
-    day: float                                      # The temperature of the day (°C).
-    min: float = None                               # The minimum temperature of the day (°C).
-    max: float = None                               # The maximum temperature of the day (°C).
+# @dataclass
+# class Temperature(object):
+#     """
+#     A *dataclass* that defines the raw datastructure of the temperature conditions in a *WeatherForecast* object.
+#     """
+#
+#     day: float                                      # The temperature of the day (°C).
+#     min: float = None                               # The minimum temperature of the day (°C).
+#     max: float = None                               # The maximum temperature of the day (°C).
 
 
 @dataclass
@@ -138,7 +138,7 @@ class WeatherForecast(object):
     """
 
     dt: int                                         # The UNIX time stamp that defines the validity of the measures.
-    temp: Temperature                               # The temperature conditions for this forecast.
+    temp: float                                     # The daily temperature conditions for this forecast.
     pressure: float                                 # The pressure conditions for this forecast (mbar).
     humidity: float                                 # The humidity conditions for this forecast (%).
     wind_speed: float                               # The wind's speed in for this forecast (m/s).
@@ -146,6 +146,8 @@ class WeatherForecast(object):
     weather: List[Weather]                          # The list of weather conditions for this forecast.
     rain: float = None                              # The rain volume for last hour (mm).
     snow: float = None                              # The snow volume for last hour (mm).
+    temp_min: float = None                          # The minimum temperature of the day (°C)
+    temp_max: float = None                          # The maximum temperature of the day (°C)
 
 
 @dataclass
