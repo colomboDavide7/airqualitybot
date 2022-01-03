@@ -10,9 +10,9 @@ from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
-    AddSensorMeasuresRequest, Channel, AddPlacesRequest
+    AddSensorMeasuresRequest, Channel, AddPlacesRequest, AddWeatherForecastRequest, AddOpenWeatherMapDataRequest
 from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder, \
-    AddStationMeasuresResponseBuilder, AddPlacesResponseBuilder
+    AddStationMeasuresResponseBuilder, AddPlacesResponseBuilder, AddOpenWeatherMapDataResponseBuilder
 
 SQL_TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
 
@@ -158,6 +158,78 @@ class TestResponseBuilder(TestCase):
         resp = responses[0]
         expected_place_record = "(1, '27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', ST_GeomFromText('POINT(9 45)', 4326))"
         self.assertEqual(resp.place_record, expected_place_record)
+
+    @property
+    def get_test_current_weather_request(self):
+        return AddWeatherForecastRequest(
+            timestamp=datetime.utcfromtimestamp(1641217631+3600),
+            measures=[(1, 8.84), (4, 1018), (5, 81), (6, 0.59), (7, 106)],
+            weather="Clouds",
+            description="overcast clouds"
+        )
+
+    @property
+    def get_test_hourly_forecast_request(self):
+        return AddWeatherForecastRequest(
+            timestamp=datetime.utcfromtimestamp(1641214800+3600),
+            measures=[(1, 9.21), (4, 1018), (5, 80), (6, 0.33), (7, 186), (8, 0.21)],
+            weather="Clouds",
+            description="overcast clouds"
+        )
+
+    @property
+    def get_test_daily_forecast_request(self):
+        return AddWeatherForecastRequest(
+            timestamp=datetime.utcfromtimestamp(1641207600+3600),
+            measures=[(1, 9.25), (2, 5.81), (3, 9.4), (4, 1019), (5, 83), (6, 2.72), (7, 79)],
+            weather="Clouds",
+            description="overcast clouds"
+        )
+
+    @property
+    def get_test_add_openweathermap_data_request(self):
+        return AddOpenWeatherMapDataRequest(
+            current=self.get_test_current_weather_request,
+            hourly=[self.get_test_hourly_forecast_request],
+            daily=[self.get_test_daily_forecast_request]
+        )
+
+    ##################################### test_create_response_to_request_of_adding_openweathermap_data #####################################
+    def test_create_response_to_request_of_adding_openweathermap_data(self):
+
+        mocked_request_builder = MagicMock()
+        mocked_request_builder.__len__.return_value = 1
+        mocked_request_builder.__iter__.return_value = [self.get_test_add_openweathermap_data_request]
+
+        response_builder = AddOpenWeatherMapDataResponseBuilder(
+            requests=mocked_request_builder, service_id=1, geoarea_id=14400
+        )
+        self.assertEqual(len(response_builder), 1)
+
+        resp = response_builder[0]
+        expected_current_record = "(1, 14400, 1, 8.84, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')," \
+                                  "(1, 14400, 4, 1018, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')," \
+                                  "(1, 14400, 5, 81, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')," \
+                                  "(1, 14400, 6, 0.59, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')," \
+                                  "(1, 14400, 7, 106, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')"
+        self.assertEqual(resp.current_weather_record, expected_current_record)
+
+        expected_hourly_record = "(1, 14400, 1, 9.21, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
+                                 "(1, 14400, 4, 1018, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
+                                 "(1, 14400, 5, 80, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
+                                 "(1, 14400, 6, 0.33, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
+                                 "(1, 14400, 7, 186, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
+                                 "(1, 14400, 8, 0.21, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')"
+        self.assertEqual(resp.hourly_forecast_record, expected_hourly_record)
+
+        expected_daily_record = "(1, 14400, 1, 9.25, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
+                                "(1, 14400, 2, 5.81, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
+                                "(1, 14400, 3, 9.4, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
+                                "(1, 14400, 4, 1019, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
+                                "(1, 14400, 5, 83, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
+                                "(1, 14400, 6, 2.72, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
+                                "(1, 14400, 7, 79, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')"
+        self.assertEqual(resp.daily_forecast_record, expected_daily_record)
 
 
 if __name__ == '__main__':

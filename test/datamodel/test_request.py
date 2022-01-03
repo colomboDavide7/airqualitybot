@@ -83,21 +83,21 @@ class TestRequestModel(TestCase):
 
         current_weather_request = AddWeatherForecastRequest(
             timestamp=datetime.fromtimestamp(1641217631+3600),
-            measures=[(1, 8.84), (2, 1018), (3, 81), (4, 0.59), (5, 106), (6, None), (7, None)],
+            measures=[(1, 8.84), (4, 1018), (5, 81), (6, 0.59), (7, 106)],
             weather="Clouds",
             description="overcast clouds"
         )
 
         hourly_forecast_request = AddWeatherForecastRequest(
             timestamp=datetime.fromtimestamp(1641214800+3600),
-            measures=[(8, 9.21), (9, 1018), (10, 80), (11, 0.33), (12, 186), (13, 0.21), (14, None)],
+            measures=[(1, 9.21), (4, 1018), (5, 80), (6, 0.33), (7, 186), (8, 0.21)],
             weather="Clouds",
             description="overcast clouds"
         )
 
         daily_forecast_request = AddWeatherForecastRequest(
             timestamp=datetime.fromtimestamp(1641207600+3600),
-            measures=[(15, 9.25), (16, 5.81), (17, 9.4), (18, 1019), (19, 83), (20, 2.72), (21, 79), (22, None), (23, None)],
+            measures=[(1, 9.25), (2, 5.81), (3, 9.4), (4, 1019), (5, 83), (6, 2.72), (7, 79)],
             weather="Clouds",
             description="overcast clouds"
         )

@@ -44,3 +44,14 @@ class AddPlacesResponse(object):
     """
 
     place_record: str                   # The place's SQL record.
+
+
+@dataclass
+class AddOpenWeatherMapDataResponse(object):
+    """
+    A *dataclass* that defines the raw datastructure for the response to a request of adding OpenWeatherMap data.
+    """
+
+    current_weather_record: str         # The current weather SQL record.
+    hourly_forecast_record: str         # The next 48 hours weather forecast SQL record.
+    daily_forecast_record: str          # The next 7 days weather forecast SQL record.

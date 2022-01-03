@@ -127,7 +127,7 @@ class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
 
     def request_of(self, source) -> AddWeatherForecastRequest:
         return AddWeatherForecastRequest(
-            timestamp=datetime.fromtimestamp(source.dt),
+            timestamp=datetime.utcfromtimestamp(source.dt),
             measures=[(ident, getattr(source, code)) for code, ident in self.code2id.items() if getattr(source, code) is not None],
             weather=','.join(f"{w.main}" for w in source.weather),
             description=','.join(f"{w.description}" for w in source.weather)

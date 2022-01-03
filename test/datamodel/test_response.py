@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, \
-    AddStationMeasuresResponse, AddPlacesResponse
+    AddStationMeasuresResponse, AddPlacesResponse, AddOpenWeatherMapDataResponse
 
 
 class TestResponseModel(TestCase):
@@ -39,6 +39,16 @@ class TestResponseModel(TestCase):
             place_record="fake_place_record"
         )
         self.assertEqual(response.place_record, "fake_place_record")
+
+    def test_add_openweathermap_data_response(self):
+        response = AddOpenWeatherMapDataResponse(
+            current_weather_record="fake_current",
+            hourly_forecast_record="fake_hourly",
+            daily_forecast_record="fake_daily"
+        )
+        self.assertEqual(response.current_weather_record, "fake_current")
+        self.assertEqual(response.hourly_forecast_record, "fake_hourly")
+        self.assertEqual(response.daily_forecast_record, "fake_daily")
 
 
 if __name__ == '__main__':

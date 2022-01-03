@@ -11,7 +11,7 @@ from datetime import datetime
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse, \
-    AddPlacesResponse
+    AddPlacesResponse, AddOpenWeatherMapDataResponse
 
 SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
 
@@ -134,3 +134,33 @@ class AddPlacesResponseBuilder(IterableItemsABC):
                 place_record=f"({self.service_id}, '{req.poscode}', '{req.countrycode}', "
                              f"'{req.placename}', '{req.province}', '{req.state}', {req.geolocation.geom_from_text()})"
             )
+
+
+class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
+
+    def __init__(
+            self,
+            requests: IterableItemsABC,
+            service_id: int,
+            geoarea_id: int
+    ):
+        self.requests = requests
+        self.service_id = service_id
+        self.geoarea_id = geoarea_id
+
+    def items(self) -> Generator[AddOpenWeatherMapDataResponse, None, None]:
+        for req in self.requests:
+            yield AddOpenWeatherMapDataResponse(
+                current_weather_record=self.record_of(source=req.current),
+                hourly_forecast_record=','.join(self.record_of(source=item) for item in req.hourly),
+                daily_forecast_record=','.join(self.record_of(source=item) for item in req.daily)
+            )
+
+    def record_of(self, source) -> str:
+        ts = source.timestamp.strftime(SQL_TIMESTAMP_FTM)
+        weather = source.weather
+        desc = source.description
+        return ','.join(
+            f"({self.service_id}, {self.geoarea_id}, {param_id}, {param_val}, '{weather}', '{desc}', '{ts}')"
+            for param_id, param_val in source.measures
+        )

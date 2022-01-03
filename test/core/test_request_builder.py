@@ -243,14 +243,14 @@ class TestRequestBuilder(TestCase):
         self.assertEqual(len(requests), 1)
 
         req = requests[0]
-        self.assertEqual(req.current.timestamp, datetime.fromtimestamp(1641217631+3600))
+        self.assertEqual(req.current.timestamp, datetime.utcfromtimestamp(1641217631+3600))
         self.assertEqual(req.current.weather, "Clouds")
         self.assertEqual(req.current.description, "overcast clouds")
         expected_current_measures = [(1, 8.84), (4, 1018), (5, 81), (6, 0.59), (7, 106)]
         self.assertEqual(req.current.measures, expected_current_measures)
 
         hourly1 = req.hourly[0]
-        self.assertEqual(hourly1.timestamp, datetime.fromtimestamp(1641214800+3600))
+        self.assertEqual(hourly1.timestamp, datetime.utcfromtimestamp(1641214800+3600))
         self.assertEqual(hourly1.weather, "Clouds")
         self.assertEqual(hourly1.description, "overcast clouds")
 
@@ -258,7 +258,7 @@ class TestRequestBuilder(TestCase):
         self.assertEqual(hourly1.measures, expected_hourly_measures)
 
         daily1 = req.daily[0]
-        self.assertEqual(daily1.timestamp, datetime.fromtimestamp(1641207600+3600))
+        self.assertEqual(daily1.timestamp, datetime.utcfromtimestamp(1641207600+3600))
         self.assertEqual(daily1.weather, "Clouds")
         self.assertEqual(daily1.description, "overcast clouds")
         expected_daily_measures = [(1, 9.25), (2, 5.81), (3, 9.4), (4, 1019), (5, 83), (6, 2.72), (7, 79)]
