@@ -6,7 +6,7 @@
 #
 ######################################################
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
-    AddSensorMeasuresRequest, Channel, AddPlacesRequest
+    AddSensorMeasuresRequest, Channel, AddPlacesRequest, AddWeatherForecastRequest, AddOpenWeatherMapDataRequest
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.core.iteritems import IterableItemsABC
 from typing import Dict, Generator
@@ -109,3 +109,26 @@ class AddPlacesRequestBuilder(IterableItemsABC):
                 province=dm.province,
                 geolocation=PostgisPoint(latitude=dm.latitude, longitude=dm.longitude, srid=self.WGS84_SRID)
             )
+
+
+class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
+
+    def __init__(self, datamodels: IterableItemsABC, code2id: Dict[str, int]):
+        self.datamodels = datamodels
+        self.code2id = code2id
+
+    def items(self):
+        for dm in self.datamodels:
+            yield AddOpenWeatherMapDataRequest(
+                current=self.request_of(source=dm.current),
+                hourly=[self.request_of(source=item) for item in dm.hourly_forecast],
+                daily=[self.request_of(source=item) for item in dm.daily_forecast]
+            )
+
+    def request_of(self, source) -> AddWeatherForecastRequest:
+        return AddWeatherForecastRequest(
+            timestamp=datetime.fromtimestamp(source.dt),
+            measures=[(ident, getattr(source, code)) for code, ident in self.code2id.items() if getattr(source, code) is not None],
+            weather=','.join(f"{w.main}" for w in source.weather),
+            description=','.join(f"{w.description}" for w in source.weather)
+        )

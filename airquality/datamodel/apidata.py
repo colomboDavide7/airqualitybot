@@ -120,17 +120,6 @@ class Weather(object):
     description: str                                # The description of the weather condition above.
 
 
-# @dataclass
-# class Temperature(object):
-#     """
-#     A *dataclass* that defines the raw datastructure of the temperature conditions in a *WeatherForecast* object.
-#     """
-#
-#     day: float                                      # The temperature of the day (°C).
-#     min: float = None                               # The minimum temperature of the day (°C).
-#     max: float = None                               # The maximum temperature of the day (°C).
-
-
 @dataclass
 class WeatherForecast(object):
     """

@@ -10,9 +10,10 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.request import Channel
 from airquality.datamodel.geometry import NullGeometry, PostgisPoint
-from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData, \
+    Weather, WeatherForecast, OpenWeatherMapAPIData
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder, AddAtmotubeMeasureRequestBuilder, \
-    AddThingspeakMeasuresRequestBuilder, AddPlacesRequestBuilder
+    AddThingspeakMeasuresRequestBuilder, AddPlacesRequestBuilder, AddOpenWeatherMapDataRequestBuilder
 
 
 class TestRequestBuilder(TestCase):
@@ -177,6 +178,91 @@ class TestRequestBuilder(TestCase):
         self.assertEqual(req.state, "Lombardia")
         self.assertEqual(req.province, "Pavia")
         self.assertEqual(req.countrycode, "IT")
+
+    @property
+    def get_test_current_weather_data(self):
+        return WeatherForecast(
+            dt=1641217631+3600,
+            temp=8.84,
+            pressure=1018,
+            humidity=81,
+            wind_speed=0.59,
+            wind_deg=106,
+            weather=[Weather(main="Clouds", description="overcast clouds")]
+        )
+
+    @property
+    def get_test_hourly_forecast_data(self):
+        return WeatherForecast(
+            dt=1641214800+3600,
+            temp=9.21,
+            pressure=1018,
+            humidity=80,
+            wind_speed=0.33,
+            wind_deg=186,
+            weather=[Weather(main="Clouds", description="overcast clouds")],
+            rain=0.21
+        )
+
+    @property
+    def get_test_daily_forecast_data(self):
+        return WeatherForecast(
+            dt=1641207600+3600,
+            temp=9.25,
+            temp_min=5.81,
+            temp_max=9.4,
+            pressure=1019,
+            humidity=83,
+            wind_speed=2.72,
+            wind_deg=79,
+            weather=[Weather(main="Clouds", description="overcast clouds")]
+        )
+
+    @property
+    def get_test_openweathermap_apidata(self):
+        return OpenWeatherMapAPIData(
+            current=self.get_test_current_weather_data,
+            hourly_forecast=[self.get_test_hourly_forecast_data],
+            daily_forecast=[self.get_test_daily_forecast_data]
+        )
+
+    ############################## test_create_request_for_adding_openweathermap_data #############################
+    def test_create_request_for_adding_openweathermap_data(self):
+        mocked_datamodel_builder = MagicMock()
+        mocked_datamodel_builder.__len__.return_value = 1
+        mocked_datamodel_builder.__iter__.return_value = [self.get_test_openweathermap_apidata]
+
+        test_code2id = {
+            'temp': 1, 'temp_min': 2, 'temp_max': 3, 'pressure': 4, 'humidity': 5, 'wind_speed': 6,
+            'wind_deg': 7, 'rain': 8, 'snow': 9
+        }
+
+        requests = AddOpenWeatherMapDataRequestBuilder(
+            datamodels=mocked_datamodel_builder, code2id=test_code2id
+        )
+        self.assertEqual(len(requests), 1)
+
+        req = requests[0]
+        self.assertEqual(req.current.timestamp, datetime.fromtimestamp(1641217631+3600))
+        self.assertEqual(req.current.weather, "Clouds")
+        self.assertEqual(req.current.description, "overcast clouds")
+        expected_current_measures = [(1, 8.84), (4, 1018), (5, 81), (6, 0.59), (7, 106)]
+        self.assertEqual(req.current.measures, expected_current_measures)
+
+        hourly1 = req.hourly[0]
+        self.assertEqual(hourly1.timestamp, datetime.fromtimestamp(1641214800+3600))
+        self.assertEqual(hourly1.weather, "Clouds")
+        self.assertEqual(hourly1.description, "overcast clouds")
+
+        expected_hourly_measures = [(1, 9.21), (4, 1018), (5, 80), (6, 0.33), (7, 186), (8, 0.21)]
+        self.assertEqual(hourly1.measures, expected_hourly_measures)
+
+        daily1 = req.daily[0]
+        self.assertEqual(daily1.timestamp, datetime.fromtimestamp(1641207600+3600))
+        self.assertEqual(daily1.weather, "Clouds")
+        self.assertEqual(daily1.description, "overcast clouds")
+        expected_daily_measures = [(1, 9.25), (2, 5.81), (3, 9.4), (4, 1019), (5, 83), (6, 2.72), (7, 79)]
+        self.assertEqual(daily1.measures, expected_daily_measures)
 
 
 if __name__ == '__main__':

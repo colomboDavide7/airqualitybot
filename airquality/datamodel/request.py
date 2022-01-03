@@ -66,3 +66,27 @@ class AddPlacesRequest(object):
     poscode: str                        # The place's postal code.
     state: str                          # The place's state name.
     geolocation: PostgisGeometry        # The place's estimated geolocation
+
+
+@dataclass
+class AddWeatherForecastRequest(object):
+    """
+    A *dataclass* that defines the raw datastructure for a request of adding new weather forecast data.
+    This class is used both for current weather, hourly forecast and daily forecast data.
+    """
+
+    timestamp: datetime                         # The datetime object that represents the forecast time.
+    measures: List[Tuple[int, float]]           # The collection of (param_id, param_val) tuples for each parameter.
+    weather: str                                # The string representation of weather condition.
+    description: str                            # The extended description of the weather condition.
+
+
+@dataclass
+class AddOpenWeatherMapDataRequest(object):
+    """
+    A *dataclass* that defines the raw data structure for a request of adding new data fetched from OpenWeatherMap API.
+    """
+
+    current: AddWeatherForecastRequest          # The request for the current weather.
+    hourly: List[AddWeatherForecastRequest]     # The list of requests for the hourly forecast weather (next 48 hours).
+    daily: List[AddWeatherForecastRequest]      # The list of requests for the daily forecast weather (next 7 days).

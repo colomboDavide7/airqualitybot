@@ -9,7 +9,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
-    AddSensorMeasuresRequest, Channel, AddPlacesRequest
+    AddSensorMeasuresRequest, Channel, AddPlacesRequest, AddWeatherForecastRequest, AddOpenWeatherMapDataRequest
 
 
 class TestRequestModel(TestCase):
@@ -77,6 +77,40 @@ class TestRequestModel(TestCase):
         self.assertEqual(request.geolocation, test_geolocation)
         self.assertEqual(request.countrycode, "fakecode")
         self.assertEqual(request.province, "fake_province")
+
+    ##################################### test_request_model_for_adding_geonames_country_data #####################################
+    def test_request_model_for_adding_openweathermap_data(self):
+
+        current_weather_request = AddWeatherForecastRequest(
+            timestamp=datetime.fromtimestamp(1641217631+3600),
+            measures=[(1, 8.84), (2, 1018), (3, 81), (4, 0.59), (5, 106), (6, None), (7, None)],
+            weather="Clouds",
+            description="overcast clouds"
+        )
+
+        hourly_forecast_request = AddWeatherForecastRequest(
+            timestamp=datetime.fromtimestamp(1641214800+3600),
+            measures=[(8, 9.21), (9, 1018), (10, 80), (11, 0.33), (12, 186), (13, 0.21), (14, None)],
+            weather="Clouds",
+            description="overcast clouds"
+        )
+
+        daily_forecast_request = AddWeatherForecastRequest(
+            timestamp=datetime.fromtimestamp(1641207600+3600),
+            measures=[(15, 9.25), (16, 5.81), (17, 9.4), (18, 1019), (19, 83), (20, 2.72), (21, 79), (22, None), (23, None)],
+            weather="Clouds",
+            description="overcast clouds"
+        )
+
+        request = AddOpenWeatherMapDataRequest(
+            current=current_weather_request,
+            hourly=[hourly_forecast_request],
+            daily=[daily_forecast_request]
+        )
+
+        self.assertEqual(request.current, current_weather_request)
+        self.assertEqual(request.hourly[0], hourly_forecast_request)
+        self.assertEqual(request.daily[0], daily_forecast_request)
 
 
 if __name__ == '__main__':
