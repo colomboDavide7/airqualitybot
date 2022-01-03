@@ -114,7 +114,7 @@ class TestResponseBuilder(TestCase):
     @property
     def get_test_add_sensor_measures_requests(self):
         test_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
-        test_mesures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55), (16, 60)]
+        test_mesures = [(12, 20.50), (14, 37.43), (15, 55), (16, 60)]
 
         return AddSensorMeasuresRequest(
             timestamp=test_timestamp,
@@ -129,7 +129,7 @@ class TestResponseBuilder(TestCase):
         responses = AddStationMeasuresResponseBuilder(requests=mocked_valid_requests, start_packet_id=140, sensor_id=99)
         self.assertEqual(len(responses), 1)
         resp = responses[0]
-        expected_record = "(140, 99, 12, 20.5, '2021-12-20 11:18:40'),(140, 99, 13, 35.53, '2021-12-20 11:18:40')," \
+        expected_record = "(140, 99, 12, 20.5, '2021-12-20 11:18:40')," \
                           "(140, 99, 14, 37.43, '2021-12-20 11:18:40'),(140, 99, 15, 55, '2021-12-20 11:18:40')," \
                           "(140, 99, 16, 60, '2021-12-20 11:18:40')"
         self.assertEqual(resp.measure_record, expected_record)
@@ -146,6 +146,7 @@ class TestResponseBuilder(TestCase):
             province="Pavia"
         )
 
+    ##################################### test_create_response_to_request_of_adding_places #####################################
     def test_create_response_to_request_of_adding_places(self):
         mocked_valid_requests = MagicMock()
         mocked_valid_requests.__len__.return_value = 1

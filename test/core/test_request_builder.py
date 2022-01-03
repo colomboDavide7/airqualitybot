@@ -112,7 +112,7 @@ class TestRequestBuilder(TestCase):
         return ThingspeakAPIData(
             created_at="2021-12-20T11:18:40Z",
             field1="20.50",
-            field2="35.53",
+            field2=None,
             field3="37.43",
             field6="55",
             field7="60"
@@ -133,7 +133,7 @@ class TestRequestBuilder(TestCase):
         req = requests[0]
 
         expected_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
-        expected_measures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55), (16, 60)]
+        expected_measures = [(12, 20.50), (14, 37.43), (15, 55), (16, 60)]
         self.assertEqual(req.timestamp, expected_timestamp)
         self.assertEqual(req.measures, expected_measures)
 
@@ -151,7 +151,7 @@ class TestRequestBuilder(TestCase):
         req = requests[0]
 
         expected_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
-        expected_measures = [(12, 20.50), (13, 35.53), (14, 37.43), (15, 55.0)]
+        expected_measures = [(12, 20.50), (14, 37.43), (15, 55.0)]
         self.assertEqual(req.timestamp, expected_timestamp)
         self.assertEqual(req.measures, expected_measures)
 

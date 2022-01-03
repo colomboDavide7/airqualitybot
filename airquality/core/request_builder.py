@@ -83,7 +83,8 @@ class AddThingspeakMeasuresRequestBuilder(IterableItemsABC):
         for dm in self.datamodel:
             yield AddSensorMeasuresRequest(
                 timestamp=datetime.strptime(dm.created_at, self.TIMESTAMP_FMT),
-                measures=[(self.code2id[fcode], getattr(dm, fname)) for fname, fcode in self.field_map.items()]
+                measures=[(self.code2id[fcode], getattr(dm, fname)) for fname, fcode in self.field_map.items() if
+                          getattr(dm, fname) is not None]
             )
 
 
