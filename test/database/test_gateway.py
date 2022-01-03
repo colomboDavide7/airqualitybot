@@ -254,6 +254,18 @@ class TestDatabaseGateway(TestCase):
                          "(1, '27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', ST_GeomFromText('POINT(9 45)', 4326));"
         mocked_dbadapter.execute.assert_called_with(expected_query)
 
+    ##################################### test_get_service_apiparam #####################################
+    def test_get_service_apiparam(self):
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.fetchall.return_value = [('key1', 0), ('key2', 12)]
+
+        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_service_apiparam_of(service_name="fakename")
+        self.assertEqual(len(actual), 2)
+        self.assertEqual(actual[0].api_key, "key1")
+        self.assertEqual(actual[0].n_requests, 0)
+        self.assertEqual(actual[1].api_key, "key2")
+        self.assertEqual(actual[1].n_requests, 12)
+
 
 if __name__ == '__main__':
     main()

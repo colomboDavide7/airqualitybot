@@ -11,6 +11,7 @@ from airquality.usecase.add_places import AddPlaces
 from airquality.usecase.add_station_measures import AddThingspeakMeasures
 from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
+from airquality.usecase.add_weather_data import AddWeatherData
 from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
 
@@ -84,5 +85,10 @@ class Application(object):
                     AddPlaces(
                         output_gateway=DatabaseGateway(dbadapter=dbadapter),
                         input_dir_path=self.env.input_dir_of(personality)
+                    ).run()
+                elif personality == 'openweathermap':
+                    AddWeatherData(
+                        output_gateway=DatabaseGateway(dbadapter=dbadapter),
+                        input_url_template=self.env.url_template(personality)
                     ).run()
                 print("finish!")

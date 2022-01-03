@@ -9,6 +9,7 @@ from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddM
     AddStationMeasuresResponseBuilder, AddPlacesResponseBuilder
 from airquality.database.adapter import DatabaseAdapter
 from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.service_param import ServiceParam
 from typing import Set, Dict, List
 from datetime import datetime
 
@@ -100,6 +101,13 @@ class DatabaseGateway(object):
                 "(service_id, postal_code, country_code, place_name, province, state, geom) VALUES "
         query += ','.join(resp.place_record for resp in responses)
         self.dbadapter.execute(f"{query};")
+
+    def get_service_apiparam_of(self, service_name: str) -> List[ServiceParam]:
+        rows = self.dbadapter.fetchall(
+            "SELECT p.api_key, p.n_requests FROM level0_raw.service_api_param AS p INNER JOIN level0_raw.service AS s "
+            f"ON s.id = p.service_id WHERE s.service_name ILIKE '%{service_name}%';"
+        )
+        return [ServiceParam(api_key=api_key, n_requests=nreq) for api_key, nreq in rows]
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"
