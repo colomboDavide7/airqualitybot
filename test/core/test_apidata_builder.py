@@ -97,6 +97,7 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(data.field6, 55)
         self.assertEqual(data.field7, 60)
 
+    ##################################### test_create_atmotube_datamodel #####################################
     @patch('airquality.core.apidata_builder.open')
     def test_create_geonames_spain_data(self, mocked_open):
         with open('test_resources/ES.txt') as rf:
@@ -118,6 +119,10 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(data.province, "Almeria")
         self.assertEqual(data.latitude, 36.8381)
         self.assertEqual(data.longitude, -2.4597)
+    #
+    # ##################################### test_create_atmotube_datamodel #####################################
+    # def create_one_call_apidata(self):
+    #     pass
 
 
 if __name__ == '__main__':

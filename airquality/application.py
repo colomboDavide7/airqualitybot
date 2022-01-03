@@ -58,13 +58,10 @@ class Application(object):
             if personality not in self.env.valid_personalities:
                 raise WrongUsageError("invalid personality!")
 
-            with Psycopg2Adapter(
-                    dbname=self.env.dbname,
-                    user=self.env.user,
-                    password=self.env.password,
-                    host=self.env.host,
-                    port=self.env.port
-            ) as dbadapter:
+            dbadapter = Psycopg2Adapter(
+                dbname=self.env.dbname, user=self.env.user, password=self.env.password, host=self.env.host, port=self.env.port
+            )
+            with dbadapter:
                 print(f"RUNNING {personality}...")
                 if personality == 'purpleair':
                     AddPurpleairFixedSensors(

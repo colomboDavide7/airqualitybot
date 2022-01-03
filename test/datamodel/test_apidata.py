@@ -6,7 +6,8 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData
+from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData, \
+    Weather, Temperature, WeatherForecast, OpenWeatherMapAPIData
 
 
 class TestDatamodel(TestCase):
@@ -151,6 +152,65 @@ class TestDatamodel(TestCase):
         self.assertEqual(data.province, "Pavia")
         self.assertEqual(data.latitude, 45)
         self.assertEqual(data.longitude, 9)
+
+    ########################################## test_onecall_apidata ##########################################
+    def test_onecall_apidata(self):
+        test_current_weather_data = Weather(
+            main="Clouds",
+            description="overcast clouds"
+        )
+
+        test_current = WeatherForecast(
+            dt=1641217631,
+            temp=Temperature(day=8.84),
+            pressure=1018,
+            humidity=81,
+            wind_speed=0.59,
+            wind_deg=106,
+            weather=test_current_weather_data
+        )
+
+        test_hourly_forecast_weather = Weather(
+            main="Clouds",
+            description="overcast clouds"
+        )
+
+        test_hourly_forecast = WeatherForecast(
+            dt=1641214800,
+            temp=Temperature(day=9.21),
+            pressure=1018,
+            humidity=80,
+            wind_speed=0.33,
+            wind_deg=186,
+            weather=test_hourly_forecast_weather
+        )
+
+        test_daily_forecast_weather = Weather(
+            main="Clouds",
+            description="overcast clouds"
+        )
+
+        test_daily_forecast = WeatherForecast(
+            dt=1641207600,
+            temp=Temperature(day=9.25, min=5.81, max=9.4),
+            pressure=1019,
+            humidity=83,
+            wind_speed=2.72,
+            wind_deg=79,
+            weather=test_daily_forecast_weather
+        )
+
+        data = OpenWeatherMapAPIData(
+            timezone_offset=3600,
+            current=test_current,
+            hourly_forecast=[test_hourly_forecast],
+            daily_forecast=[test_daily_forecast]
+        )
+
+        self.assertEqual(data.timezone_offset, 3600)
+        self.assertEqual(data.current, test_current)
+        self.assertEqual(data.hourly_forecast[0], test_hourly_forecast)
+        self.assertEqual(data.daily_forecast[0], test_daily_forecast)
 
 
 if __name__ == '__main__':
