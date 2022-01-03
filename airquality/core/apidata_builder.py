@@ -88,63 +88,44 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
             self.daily = parsed['daily']
 
     def items(self) -> Generator[OpenWeatherMapAPIData, None, None]:
-
-        current = WeatherForecast(
-            dt=self.timestamp_of(source=self.current),
-            temp=self.current.get('temp'),
-            pressure=self.current.get('pressure'),
-            humidity=self.current.get('humidity'),
-            wind_speed=self.current.get('wind_speed'),
-            wind_deg=self.current.get('wind_deg'),
-            weather=self.weather(source=self.current),
-            rain=self.recursive_search(source=self.current, keywords=['rain', '1h']),
-            snow=self.recursive_search(source=self.current, keywords=['snow', '1h'])
+        yield OpenWeatherMapAPIData(
+            current=self.forecast_of(source=self.current),
+            hourly_forecast=[self.forecast_of(source=item) for item in self.hourly],
+            daily_forecast=[self.daily_forecast_of(source=item) for item in self.daily]
         )
 
-        hourly_forecast = []
-        for hf in self.hourly:
-            hourly_forecast.append(
-                WeatherForecast(
-                    dt=self.timestamp_of(source=hf),
-                    temp=hf.get('temp'),
-                    pressure=hf.get('pressure'),
-                    humidity=hf.get('humidity'),
-                    wind_speed=hf.get('wind_speed'),
-                    wind_deg=hf.get('wind_deg'),
-                    weather=self.weather(source=hf),
-                    rain=self.recursive_search(source=hf, keywords=['rain', '1h']),
-                    snow=self.recursive_search(source=hf, keywords=['snow', '1h']),
-                )
-            )
+    def forecast_of(self, source: Dict[str, Any]) -> WeatherForecast:
+        return WeatherForecast(
+            dt=self.timestamp_of(source=source),
+            temp=source.get('temp'),
+            pressure=source.get('pressure'),
+            humidity=source.get('humidity'),
+            wind_speed=source.get('wind_speed'),
+            wind_deg=source.get('wind_deg'),
+            weather=self.weather_of(source=source),
+            rain=self.recursive_search(source=source, keywords=['rain', '1h']),
+            snow=self.recursive_search(source=source, keywords=['snow', '1h']),
+        )
 
-        daily_forecast = []
-        for day in self.daily:
-            daily_forecast.append(
-                WeatherForecast(
-                    dt=self.timestamp_of(source=day),
-                    temp=self.recursive_search(source=day, keywords=['temp', 'day']),
-                    temp_min=self.recursive_search(source=day, keywords=['temp', 'min']),
-                    temp_max=self.recursive_search(source=day, keywords=['temp', 'max']),
-                    pressure=day.get('pressure'),
-                    humidity=day.get('humidity'),
-                    wind_speed=day.get('wind_speed'),
-                    wind_deg=day.get('wind_deg'),
-                    weather=self.weather(source=day),
-                    rain=day.get('rain'),
-                    snow=day.get('snow')
-                )
-            )
-
-        yield OpenWeatherMapAPIData(
-            current=current,
-            hourly_forecast=hourly_forecast,
-            daily_forecast=daily_forecast
+    def daily_forecast_of(self, source: Dict[str, Any]) -> WeatherForecast:
+        return WeatherForecast(
+            dt=self.timestamp_of(source=source),
+            temp=self.recursive_search(source=source, keywords=['temp', 'day']),
+            temp_min=self.recursive_search(source=source, keywords=['temp', 'min']),
+            temp_max=self.recursive_search(source=source, keywords=['temp', 'max']),
+            pressure=source.get('pressure'),
+            humidity=source.get('humidity'),
+            wind_speed=source.get('wind_speed'),
+            wind_deg=source.get('wind_deg'),
+            weather=self.weather_of(source=source),
+            rain=source.get('rain'),
+            snow=source.get('snow')
         )
 
     def timestamp_of(self, source: Dict[str, Any]):
         return source['dt'] + self.tz_offset
 
-    def weather(self, source: Dict[str, Any]) -> List[Weather]:
+    def weather_of(self, source: Dict[str, Any]) -> List[Weather]:
         weather = source.get('weather')
         if weather is not None:
             weather = [Weather(main=w['main'], description=w['description']) for w in weather]
