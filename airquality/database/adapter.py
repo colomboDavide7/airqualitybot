@@ -5,9 +5,21 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import psycopg2.errors
+import psycopg2
 from psycopg2 import connect
 from abc import abstractmethod
+
+
+class DatabaseError(Exception):
+    """
+    An *Exception* that defines is raise when a database-side error occur.
+    """
+
+    def __init__(self, cause: str):
+        self.cause = cause
+
+    def __repr__(self):
+        return f"{type(self).__name__}(cause={self.cause})"
 
 
 class DatabaseAdapter(object):
@@ -26,9 +38,10 @@ class DatabaseAdapter(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if issubclass(exc_type.__class__, psycopg2.errors.Error):
-            print(f"{type(self).__name__} in __exit__(): {exc_tb!r}")
         self.close()
+        if exc_type is not None:
+            if issubclass(exc_type, psycopg2.Error):
+                raise DatabaseError(cause=exc_val)
 
     @abstractmethod
     def fetchone(self, query: str):

@@ -10,6 +10,15 @@ from typing import Tuple
 from dotenv import load_dotenv
 
 
+class AppEnvironError(Exception):
+
+    def __init__(self, cause: str):
+        self.cause = cause
+
+    def __repr__(self):
+        return f"{type(self).__name__}(cause={self.cause})"
+
+
 class Environment(object):
     """
     An *object* class a boundary interface for interacting with the external '.env' file.
@@ -18,6 +27,13 @@ class Environment(object):
     def __init__(self):
         load_dotenv(dotenv_path='.env')
         self._valid_pers = ()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type == KeyError:
+            raise AppEnvironError(cause=f"missing environment field {exc_val}")
 
     def url_template(self, personality: str) -> str:
         return os.environ[f'{personality}_url']

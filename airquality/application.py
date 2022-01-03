@@ -41,51 +41,51 @@ class Application(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type == WrongUsageError:
+        if exc_type is not None:
             print(repr(exc_val))
-            print(self.env.program_usage_msg)
-            sys.exit(1)
+            if exc_type == WrongUsageError:
+                print(self.env.program_usage_msg)
 
     def main(self):
         """
         The application entry point method.
         """
+        with self.env:
+            if not self.args:
+                raise WrongUsageError("expected at least one argument!")
 
-        if not self.args:
-            raise WrongUsageError("expected at least one argument!")
+            personality = self.args[0]
+            if personality not in self.env.valid_personalities:
+                raise WrongUsageError("invalid personality!")
 
-        personality = self.args[0]
-        if personality not in self.env.valid_personalities:
-            raise WrongUsageError("invalid personality!")
-
-        with Psycopg2Adapter(
-                dbname=self.env.dbname,
-                user=self.env.user,
-                password=self.env.password,
-                host=self.env.host,
-                port=self.env.port
-        ) as dbadapter:
-            print(f"RUNNING {personality}...")
-            if personality == 'purpleair':
-                AddPurpleairFixedSensors(
-                    output_gateway=DatabaseGateway(dbadapter=dbadapter),
-                    input_url_template=self.env.url_template(personality)
-                ).run()
-
-            elif personality == 'atmotube':
-                AddAtmotubeMeasures(
-                    output_gateway=DatabaseGateway(dbadapter=dbadapter),
-                    input_url_template=self.env.url_template(personality)
+            with Psycopg2Adapter(
+                    dbname=self.env.dbname,
+                    user=self.env.user,
+                    password=self.env.password,
+                    host=self.env.host,
+                    port=self.env.port
+            ) as dbadapter:
+                print(f"RUNNING {personality}...")
+                if personality == 'purpleair':
+                    AddPurpleairFixedSensors(
+                        output_gateway=DatabaseGateway(dbadapter=dbadapter),
+                        input_url_template=self.env.url_template(personality)
                     ).run()
 
-            elif personality == 'thingspeak':
-                AddThingspeakMeasures(
-                    output_gateway=DatabaseGateway(dbadapter=dbadapter),
-                    input_url_template=self.env.url_template(personality)
-                ).run()
-            elif personality == 'geonames':
-                AddPlaces(
-                    output_gateway=DatabaseGateway(dbadapter=dbadapter),
-                    input_dir_path=self.env.input_dir_of(personality)
-                ).run()
-            print("finish!")
+                elif personality == 'atmotube':
+                    AddAtmotubeMeasures(
+                        output_gateway=DatabaseGateway(dbadapter=dbadapter),
+                        input_url_template=self.env.url_template(personality)
+                        ).run()
+
+                elif personality == 'thingspeak':
+                    AddThingspeakMeasures(
+                        output_gateway=DatabaseGateway(dbadapter=dbadapter),
+                        input_url_template=self.env.url_template(personality)
+                    ).run()
+                elif personality == 'geonames':
+                    AddPlaces(
+                        output_gateway=DatabaseGateway(dbadapter=dbadapter),
+                        input_dir_path=self.env.input_dir_of(personality)
+                    ).run()
+                print("finish!")
