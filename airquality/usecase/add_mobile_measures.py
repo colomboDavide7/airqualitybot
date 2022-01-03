@@ -62,8 +62,7 @@ class AddAtmotubeMeasures(object):
                 response_builder = AddMobileMeasureResponseBuilder(requests=validator, start_packet_id=self.start_packet_id)
                 print(f"found #{len(response_builder)} responses")
 
-                # TODO: prove that is good using 'response_builder' and not 'len(response_builder) > 0'
-                if response_builder:
+                if len(response_builder) > 0:
                     print(f"found responses within [{validator[0].timestamp!s} - {validator[-1].timestamp!s}]")
                     self.output_gateway.insert_mobile_sensor_measures(responses=response_builder)
                     last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")

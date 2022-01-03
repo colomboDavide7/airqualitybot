@@ -83,7 +83,7 @@ class AddThingspeakMeasures(object):
                 )
                 print(f"found #{len(response_builder)} responses")
 
-                if response_builder:
+                if len(response_builder) > 0:
                     print(f"found responses within [{validator[0].timestamp!s} - {validator[-1].timestamp!s}]")
                     self.output_gateway.insert_station_measures(responses=response_builder)
                     last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")

@@ -58,56 +58,34 @@ class Application(object):
         if personality not in self.env.valid_personalities:
             raise WrongUsageError("invalid personality!")
 
-        print(f"RUNNING {personality}...")
-        if personality == 'purpleair':
-            with Psycopg2Adapter(
-                    dbname=self.env.dbname,
-                    user=self.env.user,
-                    password=self.env.password,
-                    host=self.env.host,
-                    port=self.env.port
-            ) as dbadapter:
+        with Psycopg2Adapter(
+                dbname=self.env.dbname,
+                user=self.env.user,
+                password=self.env.password,
+                host=self.env.host,
+                port=self.env.port
+        ) as dbadapter:
+            print(f"RUNNING {personality}...")
+            if personality == 'purpleair':
                 AddPurpleairFixedSensors(
                     output_gateway=DatabaseGateway(dbadapter=dbadapter),
                     input_url_template=self.env.url_template(personality)
                 ).run()
 
-        elif personality == 'atmotube':
-            with Psycopg2Adapter(
-                    dbname=self.env.dbname,
-                    user=self.env.user,
-                    password=self.env.password,
-                    host=self.env.host,
-                    port=self.env.port
-            ) as dbadapter:
+            elif personality == 'atmotube':
                 AddAtmotubeMeasures(
                     output_gateway=DatabaseGateway(dbadapter=dbadapter),
                     input_url_template=self.env.url_template(personality)
-                ).run()
+                    ).run()
 
-        elif personality == 'thingspeak':
-            with Psycopg2Adapter(
-                    dbname=self.env.dbname,
-                    user=self.env.user,
-                    password=self.env.password,
-                    host=self.env.host,
-                    port=self.env.port
-            ) as dbadapter:
+            elif personality == 'thingspeak':
                 AddThingspeakMeasures(
                     output_gateway=DatabaseGateway(dbadapter=dbadapter),
                     input_url_template=self.env.url_template(personality)
                 ).run()
-        elif personality == 'geonames':
-            with Psycopg2Adapter(
-                    dbname=self.env.dbname,
-                    user=self.env.user,
-                    password=self.env.password,
-                    host=self.env.host,
-                    port=self.env.port
-            ) as dbadapter:
+            elif personality == 'geonames':
                 AddPlaces(
                     output_gateway=DatabaseGateway(dbadapter=dbadapter),
                     input_dir_path=self.env.input_dir_of(personality)
                 ).run()
-
-        print("finish!")
+            print("finish!")
