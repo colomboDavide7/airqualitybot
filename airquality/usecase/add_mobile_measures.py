@@ -6,40 +6,67 @@
 #
 ######################################################
 from datetime import datetime
+from typing import Dict, List
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
+from airquality.url.timeiter_url import AtmotubeTimeIterableURL
+from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
+from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
 from airquality.core.request_validator import AddSensorMeasuresRequestValidator
 from airquality.core.response_builder import AddMobileMeasureResponseBuilder
 
 
-class AddMobileMeasures(object):
+class AddAtmotubeMeasures(object):
     """
-    An *object* that represents the UseCase of adding mobile measurements to the database
-    through the *output_gateway*.
+    A *UsecaseRunner* that defines how to run the *AddMobileMeasures* UseCase.
     """
 
-    def __init__(
-            self,
-            gateway: DatabaseGateway,           # A *DatabaseGateway* for committing the changes to database.
-            filter_ts: datetime,                # The timestamp used to validate the requests.
-            start_packet_id: int,               # The id from where to start inserting all the packets.
-            apiparam: APIParam                  # The API param corresponding to the sensor that collects the measures.
-    ):
-        self.param = apiparam
-        self.filter_ts = filter_ts
-        self.output_gateway = gateway
-        self.start_packet_id = start_packet_id
+    def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
+        self.output_gateway = output_gateway
+        self.input_url_template = input_url_template
 
-    def process(self, requests):
-        print(f"found #{len(requests)} requests")
-        valid_requests = AddSensorMeasuresRequestValidator(request=requests, filter_ts=self.filter_ts)
-        print(f"found #{len(valid_requests)} valid requests")
-        responses = AddMobileMeasureResponseBuilder(requests=valid_requests, start_packet_id=self.start_packet_id)
+    @property
+    def measure_param(self) -> Dict[str, int]:
+        return self.output_gateway.get_measure_param_owned_by(owner="atmotube")
 
-        if responses:
-            print(f"found responses within [{valid_requests[0].timestamp!s} - {valid_requests[-1].timestamp!s}]")
-            self.output_gateway.insert_mobile_sensor_measures(responses=responses)
-            last_acquisition = valid_requests[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
-            self.output_gateway.update_last_acquisition(
-                timestamp=last_acquisition, sensor_id=self.param.sensor_id, ch_name=self.param.ch_name
-            )
+    @property
+    def api_param(self) -> List[APIParam]:
+        return self.output_gateway.get_apiparam_of_type(sensor_type="atmotube")
+
+    @property
+    def start_packet_id(self) -> int:
+        return self.output_gateway.get_max_mobile_packet_id_plus_one()
+
+    def filter_ts_of(self, param: APIParam) -> datetime:
+        return self.output_gateway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
+
+    def urls_of(self, param: APIParam) -> AtmotubeTimeIterableURL:
+        pre_formatted_url = self.input_url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
+        return AtmotubeTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition, step_size_in_days=1)
+
+    def run(self):
+        measure_param = self.measure_param
+        for param in self.api_param:
+            print(repr(param))
+            for url in self.urls_of(param):
+                print(url)
+                datamodel_builder = AtmotubeAPIDataBuilder(url=url)
+                print(f"found #{len(datamodel_builder)} API data")
+
+                request_builder = AddAtmotubeMeasureRequestBuilder(datamodel=datamodel_builder, code2id=measure_param)
+                print(f"found #{len(request_builder)} requests")
+
+                validator = AddSensorMeasuresRequestValidator(request=request_builder, filter_ts=self.filter_ts_of(param))
+                print(f"found #{len(validator)} valid requests")
+
+                response_builder = AddMobileMeasureResponseBuilder(requests=validator, start_packet_id=self.start_packet_id)
+                print(f"found #{len(response_builder)} responses")
+
+                # TODO: prove that is good using 'response_builder' and not 'len(response_builder) > 0'
+                if response_builder:
+                    print(f"found responses within [{validator[0].timestamp!s} - {validator[-1].timestamp!s}]")
+                    self.output_gateway.insert_mobile_sensor_measures(responses=response_builder)
+                    last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
+                    self.output_gateway.update_last_acquisition(
+                        timestamp=last_acquisition, sensor_id=param.sensor_id, ch_name=param.ch_name
+                    )
