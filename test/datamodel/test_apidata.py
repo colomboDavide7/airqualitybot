@@ -167,7 +167,7 @@ class TestDatamodel(TestCase):
             humidity=81,
             wind_speed=0.59,
             wind_deg=106,
-            weather=test_current_weather_data
+            weather=[test_current_weather_data]
         )
 
         test_hourly_forecast_weather = Weather(
@@ -182,7 +182,7 @@ class TestDatamodel(TestCase):
             humidity=80,
             wind_speed=0.33,
             wind_deg=186,
-            weather=test_hourly_forecast_weather
+            weather=[test_hourly_forecast_weather]
         )
 
         test_daily_forecast_weather = Weather(
@@ -197,17 +197,15 @@ class TestDatamodel(TestCase):
             humidity=83,
             wind_speed=2.72,
             wind_deg=79,
-            weather=test_daily_forecast_weather
+            weather=[test_daily_forecast_weather]
         )
 
         data = OpenWeatherMapAPIData(
-            timezone_offset=3600,
             current=test_current,
             hourly_forecast=[test_hourly_forecast],
             daily_forecast=[test_daily_forecast]
         )
 
-        self.assertEqual(data.timezone_offset, 3600)
         self.assertEqual(data.current, test_current)
         self.assertEqual(data.hourly_forecast[0], test_hourly_forecast)
         self.assertEqual(data.daily_forecast[0], test_daily_forecast)

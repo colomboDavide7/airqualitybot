@@ -8,7 +8,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder, ThingspeakAPIDataBuilder, \
-    GeonamesDataBuilder
+    GeonamesDataBuilder, OpenWeatherMapAPIDataBuilder
 
 
 class TestDatamodelBuilder(TestCase):
@@ -119,10 +119,73 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(data.province, "Almeria")
         self.assertEqual(data.latitude, 36.8381)
         self.assertEqual(data.longitude, -2.4597)
-    #
-    # ##################################### test_create_atmotube_datamodel #####################################
-    # def create_one_call_apidata(self):
-    #     pass
+
+    ##################################### test_create_openweathermap_data #####################################
+    @patch('airquality.core.apidata_builder.urlopen')
+    def test_create_openweathermap_data(self, mocked_urlopen):
+        with open('test_resources/openweather_data.json', 'r') as f:
+            api_resp = f.read()
+
+        mocked_resp = MagicMock()
+        mocked_resp.read.return_value = api_resp
+        mocked_resp.__enter__.return_value = mocked_resp
+        mocked_urlopen.return_value = mocked_resp
+
+        datamodel_builder = OpenWeatherMapAPIDataBuilder(url="fake_url")
+        self.assertEqual(len(datamodel_builder), 1)
+
+        resp = datamodel_builder[0]
+
+        # Test current weather
+        current = resp.current
+        self.assertEqual(current.dt, 1641217631+3600)
+        self.assertEqual(current.temp.day, 8.84)
+        self.assertIsNone(current.temp.min)
+        self.assertIsNone(current.temp.max)
+        self.assertEqual(current.pressure, 1018)
+        self.assertEqual(current.humidity, 81)
+        self.assertEqual(current.wind_speed, 0.59)
+        self.assertEqual(current.wind_deg, 106)
+        self.assertIsNone(current.rain)
+        self.assertIsNone(current.snow)
+
+        weather1 = current.weather[0]
+        self.assertEqual(weather1.main, "Clouds")
+        self.assertEqual(weather1.description, "overcast clouds")
+
+        self.assertEqual(len(resp.hourly_forecast), 48)
+
+        # Test hourly forecast responses
+        hourly1 = resp.hourly_forecast[0]
+        self.assertEqual(hourly1.dt, 1641214800+3600)
+        self.assertEqual(hourly1.temp.day, 9.21)
+        self.assertIsNone(hourly1.temp.min)
+        self.assertIsNone(hourly1.temp.max)
+        self.assertEqual(hourly1.pressure, 1018)
+        self.assertEqual(hourly1.humidity, 80)
+        self.assertEqual(hourly1.wind_speed, 0.33)
+        self.assertEqual(hourly1.wind_deg, 186)
+
+        weather1 = hourly1.weather[0]
+        self.assertEqual(weather1.main, "Clouds")
+        self.assertEqual(weather1.description, "overcast clouds")
+
+        # Test daily forecast responses
+        self.assertEqual(len(resp.daily_forecast), 8)
+        daily1 = resp.daily_forecast[0]
+        self.assertEqual(daily1.dt, 1641207600+3600)
+        self.assertEqual(daily1.temp.day, 9.25)
+        self.assertEqual(daily1.temp.min, 5.81)
+        self.assertEqual(daily1.temp.max, 9.4)
+        self.assertEqual(daily1.pressure, 1019)
+        self.assertEqual(daily1.humidity, 83)
+        self.assertEqual(daily1.wind_speed, 2.72)
+        self.assertEqual(daily1.wind_deg, 79)
+        weather1 = daily1.weather[0]
+        self.assertEqual(weather1.main, "Clouds")
+        self.assertEqual(weather1.description, "overcast clouds")
+        self.assertIsNone(daily1.rain)
+        self.assertIsNone(daily1.snow)
 
 
 if __name__ == '__main__':

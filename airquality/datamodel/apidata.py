@@ -143,7 +143,7 @@ class WeatherForecast(object):
     humidity: float                                 # The humidity conditions for this forecast (%).
     wind_speed: float                               # The wind's speed in for this forecast (m/s).
     wind_deg: float                                 # The wind's direction for this forecast (degrees, °).
-    weather: Weather                                # The weather conditions for this forecast.
+    weather: List[Weather]                          # The list of weather conditions for this forecast.
     rain: float = None                              # The rain volume for last hour (mm).
     snow: float = None                              # The snow volume for last hour (mm).
 
@@ -154,7 +154,6 @@ class OpenWeatherMapAPIData(object):
     A *dataclass* that defines the raw datastructure of a One Call API response available on OpenWeatherMap service.
     """
 
-    timezone_offset: int                            # The shift in second from UTC.
     current: WeatherForecast                        # The current weather conditions.
     hourly_forecast: List[WeatherForecast]          # The weather conditions forecast for the next 48 hours (hourly).
     daily_forecast: List[WeatherForecast]           # The weather conditions forecast for the next 7 days (daily).
