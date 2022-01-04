@@ -188,7 +188,7 @@ class TestRequestBuilder(TestCase):
             humidity=81,
             wind_speed=0.59,
             wind_deg=106,
-            weather=[Weather(main="Clouds", description="overcast clouds")]
+            weather=[Weather(id=804, icon="04d", main="Clouds", description="overcast clouds")]
         )
 
     @property
@@ -200,7 +200,7 @@ class TestRequestBuilder(TestCase):
             humidity=80,
             wind_speed=0.33,
             wind_deg=186,
-            weather=[Weather(main="Clouds", description="overcast clouds")],
+            weather=[Weather(id=804, icon="04d", main="Clouds", description="overcast clouds")],
             rain=0.21
         )
 
@@ -215,7 +215,7 @@ class TestRequestBuilder(TestCase):
             humidity=83,
             wind_speed=2.72,
             wind_deg=79,
-            weather=[Weather(main="Clouds", description="overcast clouds")]
+            weather=[Weather(id=804, icon="04d", main="Clouds", description="overcast clouds")]
         )
 
     @property
@@ -232,37 +232,51 @@ class TestRequestBuilder(TestCase):
         mocked_datamodel_builder.__len__.return_value = 1
         mocked_datamodel_builder.__iter__.return_value = [self.get_test_openweathermap_apidata]
 
-        test_code2id = {
-            'temp': 1, 'temp_min': 2, 'temp_max': 3, 'pressure': 4, 'humidity': 5, 'wind_speed': 6,
-            'wind_deg': 7, 'rain': 8, 'snow': 9
-        }
+        test_weather_map = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
 
         requests = AddOpenWeatherMapDataRequestBuilder(
-            datamodels=mocked_datamodel_builder, code2id=test_code2id
+            datamodels=mocked_datamodel_builder, weather_map=test_weather_map
         )
         self.assertEqual(len(requests), 1)
 
         req = requests[0]
         self.assertEqual(req.current.timestamp, datetime.utcfromtimestamp(1641217631+3600))
-        self.assertEqual(req.current.weather, "Clouds")
-        self.assertEqual(req.current.description, "overcast clouds")
-        expected_current_measures = [(1, 8.84), (4, 1018), (5, 81), (6, 0.59), (7, 106)]
-        self.assertEqual(req.current.measures, expected_current_measures)
+        self.assertEqual(req.current.weather_id, 55)
+        self.assertEqual(req.current.temperature, 8.84)
+        self.assertEqual(req.current.pressure, 1018)
+        self.assertEqual(req.current.humidity, 81)
+        self.assertEqual(req.current.wind_speed, 0.59)
+        self.assertEqual(req.current.wind_direction, 106)
+        self.assertIsNone(req.current.rain)
+        self.assertIsNone(req.current.snow)
+        self.assertIsNone(req.current.min_temp)
+        self.assertIsNone(req.current.max_temp)
 
         hourly1 = req.hourly[0]
         self.assertEqual(hourly1.timestamp, datetime.utcfromtimestamp(1641214800+3600))
-        self.assertEqual(hourly1.weather, "Clouds")
-        self.assertEqual(hourly1.description, "overcast clouds")
-
-        expected_hourly_measures = [(1, 9.21), (4, 1018), (5, 80), (6, 0.33), (7, 186), (8, 0.21)]
-        self.assertEqual(hourly1.measures, expected_hourly_measures)
+        self.assertEqual(hourly1.weather_id, 55)
+        self.assertEqual(hourly1.temperature, 9.21)
+        self.assertEqual(hourly1.pressure, 1018)
+        self.assertEqual(hourly1.humidity, 80)
+        self.assertEqual(hourly1.wind_speed, 0.33)
+        self.assertEqual(hourly1.wind_direction, 186)
+        self.assertEqual(hourly1.rain, 0.21)
+        self.assertIsNone(hourly1.snow)
+        self.assertIsNone(hourly1.min_temp)
+        self.assertIsNone(hourly1.max_temp)
 
         daily1 = req.daily[0]
         self.assertEqual(daily1.timestamp, datetime.utcfromtimestamp(1641207600+3600))
-        self.assertEqual(daily1.weather, "Clouds")
-        self.assertEqual(daily1.description, "overcast clouds")
-        expected_daily_measures = [(1, 9.25), (2, 5.81), (3, 9.4), (4, 1019), (5, 83), (6, 2.72), (7, 79)]
-        self.assertEqual(daily1.measures, expected_daily_measures)
+        self.assertEqual(daily1.weather_id, 55)
+        self.assertEqual(daily1.temperature, 9.25)
+        self.assertEqual(daily1.pressure, 1019)
+        self.assertEqual(daily1.humidity, 83)
+        self.assertEqual(daily1.wind_speed, 2.72)
+        self.assertEqual(daily1.wind_direction, 79)
+        self.assertIsNone(daily1.rain)
+        self.assertIsNone(daily1.snow)
+        self.assertEqual(daily1.min_temp, 5.81)
+        self.assertEqual(daily1.max_temp, 9.4)
 
 
 if __name__ == '__main__':

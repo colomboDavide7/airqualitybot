@@ -163,27 +163,39 @@ class TestResponseBuilder(TestCase):
     def get_test_current_weather_request(self):
         return AddWeatherForecastRequest(
             timestamp=datetime.utcfromtimestamp(1641217631+3600),
-            measures=[(1, 8.84), (4, 1018), (5, 81), (6, 0.59), (7, 106)],
-            weather="Clouds",
-            description="overcast clouds"
+            temperature=8.84,
+            pressure=1018,
+            humidity=81,
+            wind_speed=0.59,
+            wind_direction=106,
+            weather_id=55
         )
 
     @property
     def get_test_hourly_forecast_request(self):
         return AddWeatherForecastRequest(
             timestamp=datetime.utcfromtimestamp(1641214800+3600),
-            measures=[(1, 9.21), (4, 1018), (5, 80), (6, 0.33), (7, 186), (8, 0.21)],
-            weather="Clouds",
-            description="overcast clouds"
+            temperature=9.21,
+            pressure=1018,
+            humidity=80,
+            wind_speed=0.33,
+            wind_direction=186,
+            rain=0.21,
+            weather_id=55
         )
 
     @property
     def get_test_daily_forecast_request(self):
         return AddWeatherForecastRequest(
             timestamp=datetime.utcfromtimestamp(1641207600+3600),
-            measures=[(1, 9.25), (2, 5.81), (3, 9.4), (4, 1019), (5, 83), (6, 2.72), (7, 79)],
-            weather="Clouds",
-            description="overcast clouds"
+            temperature=9.25,
+            min_temp=5.81,
+            max_temp=9.4,
+            pressure=1019,
+            humidity=83,
+            wind_speed=2.72,
+            wind_direction=79,
+            weather_id=55
         )
 
     @property
@@ -207,28 +219,13 @@ class TestResponseBuilder(TestCase):
         self.assertEqual(len(response_builder), 1)
 
         resp = response_builder[0]
-        expected_current_record = "(1, 14400, 1, 8.84, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')," \
-                                  "(1, 14400, 4, 1018, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')," \
-                                  "(1, 14400, 5, 81, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')," \
-                                  "(1, 14400, 6, 0.59, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')," \
-                                  "(1, 14400, 7, 106, 'Clouds', 'overcast clouds', '2022-01-03 14:47:11')"
+        expected_current_record = "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
         self.assertEqual(resp.current_weather_record, expected_current_record)
 
-        expected_hourly_record = "(1, 14400, 1, 9.21, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
-                                 "(1, 14400, 4, 1018, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
-                                 "(1, 14400, 5, 80, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
-                                 "(1, 14400, 6, 0.33, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
-                                 "(1, 14400, 7, 186, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')," \
-                                 "(1, 14400, 8, 0.21, 'Clouds', 'overcast clouds', '2022-01-03 14:00:00')"
+        expected_hourly_record = "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
         self.assertEqual(resp.hourly_forecast_record, expected_hourly_record)
 
-        expected_daily_record = "(1, 14400, 1, 9.25, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
-                                "(1, 14400, 2, 5.81, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
-                                "(1, 14400, 3, 9.4, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
-                                "(1, 14400, 4, 1019, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
-                                "(1, 14400, 5, 83, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
-                                "(1, 14400, 6, 2.72, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')," \
-                                "(1, 14400, 7, 79, 'Clouds', 'overcast clouds', '2022-01-03 12:00:00')"
+        expected_daily_record = "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
         self.assertEqual(resp.daily_forecast_record, expected_daily_record)
 
 

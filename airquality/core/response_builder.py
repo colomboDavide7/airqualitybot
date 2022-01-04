@@ -6,7 +6,7 @@
 #
 ######################################################
 from itertools import count
-from typing import Generator
+from typing import Generator, List
 from datetime import datetime
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest
@@ -136,7 +136,14 @@ class AddPlacesResponseBuilder(IterableItemsABC):
             )
 
 
+def value_of(val) -> str:
+    return val if val is not None else "NULL"
+
+
 class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
+
+    DAILY_ATTRIBUTES = ['temperature', 'min_temp', 'max_temp', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'snow']
+    CURRENT_ATTRIBUTES = ['temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'snow']
 
     def __init__(
             self,
@@ -151,16 +158,12 @@ class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
     def items(self) -> Generator[AddOpenWeatherMapDataResponse, None, None]:
         for req in self.requests:
             yield AddOpenWeatherMapDataResponse(
-                current_weather_record=self.record_of(source=req.current),
-                hourly_forecast_record=','.join(self.record_of(source=item) for item in req.hourly),
-                daily_forecast_record=','.join(self.record_of(source=item) for item in req.daily)
+                current_weather_record=self.record_of(source=req.current, attributes=self.CURRENT_ATTRIBUTES),
+                hourly_forecast_record=','.join(self.record_of(source=item, attributes=self.CURRENT_ATTRIBUTES) for item in req.hourly),
+                daily_forecast_record=','.join(self.record_of(source=item, attributes=self.DAILY_ATTRIBUTES) for item in req.daily)
             )
 
-    def record_of(self, source) -> str:
-        ts = source.timestamp.strftime(SQL_TIMESTAMP_FTM)
-        weather = source.weather
-        desc = source.description
-        return ','.join(
-            f"({self.service_id}, {self.geoarea_id}, {param_id}, {param_val}, '{weather}', '{desc}', '{ts}')"
-            for param_id, param_val in source.measures
-        )
+    def record_of(self, source, attributes: List[str]) -> str:
+        return f"({self.service_id}, {self.geoarea_id}, {source.weather_id}, " + \
+               ', '.join(f"{value_of(getattr(source, attr))}" for attr in attributes) + \
+               f", '{source.timestamp.strftime(SQL_TIMESTAMP_FTM)}')"

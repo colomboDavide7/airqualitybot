@@ -266,6 +266,22 @@ class TestDatabaseGateway(TestCase):
         self.assertEqual(actual[1].api_key, "key2")
         self.assertEqual(actual[1].n_requests, 12)
 
+    ##################################### test_get_weather_condition #####################################
+    def test_get_weather_condition(self):
+
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.fetchall.return_value = [
+            (55, 804, "04d"),
+            (37, 500, "13d"),
+            (56, 804, "04n")
+        ]
+
+        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_weather_conditions()
+        self.assertEqual(len(actual), 2)
+
+        expected_output = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
+        self.assertEqual(actual, expected_output)
+
 
 if __name__ == '__main__':
     main()

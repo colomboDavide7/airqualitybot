@@ -83,23 +83,35 @@ class TestRequestModel(TestCase):
 
         current_weather_request = AddWeatherForecastRequest(
             timestamp=datetime.fromtimestamp(1641217631+3600),
-            measures=[(1, 8.84), (4, 1018), (5, 81), (6, 0.59), (7, 106)],
-            weather="Clouds",
-            description="overcast clouds"
+            temperature=8.84,
+            pressure=1018,
+            humidity=81,
+            wind_speed=0.59,
+            wind_direction=106,
+            weather_id=55
         )
 
         hourly_forecast_request = AddWeatherForecastRequest(
             timestamp=datetime.fromtimestamp(1641214800+3600),
-            measures=[(1, 9.21), (4, 1018), (5, 80), (6, 0.33), (7, 186), (8, 0.21)],
-            weather="Clouds",
-            description="overcast clouds"
+            temperature=9.21,
+            pressure=1018,
+            humidity=80,
+            wind_speed=0.33,
+            wind_direction=186,
+            rain=0.21,
+            weather_id=55
         )
 
         daily_forecast_request = AddWeatherForecastRequest(
             timestamp=datetime.fromtimestamp(1641207600+3600),
-            measures=[(1, 9.25), (2, 5.81), (3, 9.4), (4, 1019), (5, 83), (6, 2.72), (7, 79)],
-            weather="Clouds",
-            description="overcast clouds"
+            temperature=9.25,
+            min_temp=5.81,
+            max_temp=9.4,
+            pressure=1019,
+            humidity=83,
+            wind_speed=2.72,
+            wind_direction=79,
+            weather_id=55
         )
 
         request = AddOpenWeatherMapDataRequest(

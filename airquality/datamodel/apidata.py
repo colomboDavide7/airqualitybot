@@ -116,6 +116,8 @@ class Weather(object):
     A *dataclass* that defines the raw datastructure of the weather conditions in a *WeatherForecast* object.
     """
 
+    id: int                                       # The weather condition code.
+    icon: str                                       # The weather condition icon name.
     main: str                                       # The weather condition name.
     description: str                                # The description of the weather condition above.
 

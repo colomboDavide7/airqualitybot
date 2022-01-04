@@ -150,6 +150,8 @@ class TestDatamodelBuilder(TestCase):
         self.assertIsNone(current.snow)
 
         weather1 = current.weather[0]
+        self.assertEqual(weather1.id, 804)
+        self.assertEqual(weather1.icon, "04d")
         self.assertEqual(weather1.main, "Clouds")
         self.assertEqual(weather1.description, "overcast clouds")
 
@@ -168,6 +170,8 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(hourly1.rain, 0.21)
         self.assertIsNone(hourly1.snow)
         weather1 = hourly1.weather[0]
+        self.assertEqual(weather1.id, 804)
+        self.assertEqual(weather1.icon, "04d")
         self.assertEqual(weather1.main, "Clouds")
         self.assertEqual(weather1.description, "overcast clouds")
 
@@ -183,6 +187,8 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(daily1.wind_speed, 2.72)
         self.assertEqual(daily1.wind_deg, 79)
         weather1 = daily1.weather[0]
+        self.assertEqual(weather1.id, 804)
+        self.assertEqual(weather1.icon, "04d")
         self.assertEqual(weather1.main, "Clouds")
         self.assertEqual(weather1.description, "overcast clouds")
         self.assertIsNone(daily1.rain)

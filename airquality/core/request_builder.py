@@ -113,9 +113,9 @@ class AddPlacesRequestBuilder(IterableItemsABC):
 
 class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
 
-    def __init__(self, datamodels: IterableItemsABC, code2id: Dict[str, int]):
+    def __init__(self, datamodels: IterableItemsABC, weather_map: Dict[int, Dict[str, int]]):
         self.datamodels = datamodels
-        self.code2id = code2id
+        self.weather_map = weather_map
 
     def items(self):
         for dm in self.datamodels:
@@ -126,9 +126,17 @@ class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
             )
 
     def request_of(self, source) -> AddWeatherForecastRequest:
+        weather = source.weather[0]
         return AddWeatherForecastRequest(
             timestamp=datetime.utcfromtimestamp(source.dt),
-            measures=[(ident, getattr(source, code)) for code, ident in self.code2id.items() if getattr(source, code) is not None],
-            weather=','.join(f"{w.main}" for w in source.weather),
-            description=','.join(f"{w.description}" for w in source.weather)
+            temperature=source.temp,
+            min_temp=source.temp_min,
+            max_temp=source.temp_max,
+            pressure=source.pressure,
+            humidity=source.humidity,
+            wind_speed=source.wind_speed,
+            wind_direction=source.wind_deg,
+            rain=source.rain,
+            snow=source.snow,
+            weather_id=self.weather_map[weather.id][weather.icon]
         )

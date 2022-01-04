@@ -128,7 +128,7 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
     def weather_of(self, source: Dict[str, Any]) -> List[Weather]:
         weather = source.get('weather')
         if weather is not None:
-            weather = [Weather(main=w['main'], description=w['description']) for w in weather]
+            weather = [Weather(**w) for w in weather]
         return weather
 
     def recursive_search(self, source: Dict[str, Any], keywords: List[str]):

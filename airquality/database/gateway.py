@@ -109,5 +109,14 @@ class DatabaseGateway(object):
         )
         return [ServiceParam(api_key=api_key, n_requests=nreq) for api_key, nreq in rows]
 
+    def get_weather_conditions(self) -> Dict[int, Dict[str, int]]:
+        rows = self.dbadapter.fetchall(
+            "SELECT id, code, icon FROM level0_raw.weather_condition;"
+        )
+        weather_map = {code: {} for id_, code, icon in rows}
+        for id_, code, icon in rows:
+            weather_map[code][icon] = id_
+        return weather_map
+
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"

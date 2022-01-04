@@ -156,6 +156,8 @@ class TestDatamodel(TestCase):
     ########################################## test_onecall_apidata ##########################################
     def test_onecall_apidata(self):
         test_current_weather_data = Weather(
+            id=804,
+            icon="04d",
             main="Clouds",
             description="overcast clouds"
         )
@@ -171,6 +173,8 @@ class TestDatamodel(TestCase):
         )
 
         test_hourly_forecast_weather = Weather(
+            id=804,
+            icon="04d",
             main="Clouds",
             description="overcast clouds"
         )
@@ -186,6 +190,8 @@ class TestDatamodel(TestCase):
         )
 
         test_daily_forecast_weather = Weather(
+            id=804,
+            icon="04d",
             main="Clouds",
             description="overcast clouds"
         )
