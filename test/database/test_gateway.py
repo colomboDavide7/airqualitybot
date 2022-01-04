@@ -7,7 +7,7 @@
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse, \
     AddPlacesResponse
@@ -281,6 +281,22 @@ class TestDatabaseGateway(TestCase):
 
         expected_output = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
         self.assertEqual(actual, expected_output)
+
+    # ##################################### test_get_geolocation_of #####################################
+    # @patch('airquality.database.gateway.open')
+    # def test_get_geolocation_of(self, mocked_open):
+    #     with open('test_resources/weather_cities.json', 'r') as f:
+    #         cities = f.read()
+    #
+    #     mocked_resp = MagicMock()
+    #     mocked_resp.__enter__.return_value = mocked_resp
+    #     mocked_resp.read.return_value = cities
+    #     mocked_open.return_value = mocked_resp
+    #
+    #     mocked_dbadapter = MockedDatabaseAdapter()
+    #     mocked_dbadapter.fetchone = MagicMock()
+    #
+    #     actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_geolocation_of()
 
 
 if __name__ == '__main__':

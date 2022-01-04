@@ -150,3 +150,13 @@ class OpenWeatherMapAPIData(object):
     current: WeatherForecast                        # The current weather conditions.
     hourly_forecast: List[WeatherForecast]          # The weather conditions forecast for the next 48 hours (hourly).
     daily_forecast: List[WeatherForecast]           # The weather conditions forecast for the next 7 days (daily).
+
+
+@dataclass
+class WeatherCityData(object):
+    """
+    A *dataclass* that defines the raw datastructure for the data of a city to collect weather data.
+    """
+
+    country_code: str                               # The 2-alpha ISO city's country code.
+    place_name: str                                 # The city's name.

@@ -10,7 +10,7 @@ from typing import Generator, Dict, List, Any
 from urllib.request import urlopen
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData, \
-    Weather, WeatherForecast, OpenWeatherMapAPIData
+    Weather, WeatherForecast, OpenWeatherMapAPIData, WeatherCityData
 
 
 class PurpleairAPIDataBuilder(IterableItemsABC):
@@ -135,3 +135,14 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
         if type(source) != dict:
             return source
         return self.recursive_search(source=source.get(keywords.pop(0)), keywords=keywords)
+
+
+class WeatherCityDataBuilder(IterableItemsABC):
+
+    def __init__(self, filepath: str):
+        with open(filepath, 'r') as f:
+            parsed = loads(f.read())
+            self.cities = parsed['cities']
+
+    def items(self) -> Generator[WeatherCityData, None, None]:
+        return (WeatherCityData(**city) for city in self.cities)

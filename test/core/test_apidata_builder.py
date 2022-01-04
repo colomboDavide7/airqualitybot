@@ -8,7 +8,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder, ThingspeakAPIDataBuilder, \
-    GeonamesDataBuilder, OpenWeatherMapAPIDataBuilder
+    GeonamesDataBuilder, OpenWeatherMapAPIDataBuilder, WeatherCityDataBuilder
 
 
 class TestDatamodelBuilder(TestCase):
@@ -193,6 +193,24 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(weather1.description, "overcast clouds")
         self.assertIsNone(daily1.rain)
         self.assertIsNone(daily1.snow)
+
+    ##################################### test_create_openweathermap_data #####################################
+    @patch('airquality.core.apidata_builder.open')
+    def test_create_weather_city_data(self, mocked_open):
+        with open('test_resources/weather_cities.json', 'r') as f:
+            cities = f.read()
+
+        mocked_resp = MagicMock()
+        mocked_resp.__enter__.return_value = mocked_resp
+        mocked_resp.read.return_value = cities
+        mocked_open.return_value = mocked_resp
+
+        datamodel = WeatherCityDataBuilder(filepath="fakepath")
+        self.assertEqual(len(datamodel), 1)
+
+        city = datamodel[0]
+        self.assertEqual(city.country_code, "IT")
+        self.assertEqual(city.place_name, "Pavia")
 
 
 if __name__ == '__main__':

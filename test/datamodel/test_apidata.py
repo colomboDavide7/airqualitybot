@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData, \
-    Weather, WeatherForecast, OpenWeatherMapAPIData
+    Weather, WeatherForecast, OpenWeatherMapAPIData, WeatherCityData
 
 
 class TestDatamodel(TestCase):
@@ -217,6 +217,15 @@ class TestDatamodel(TestCase):
         self.assertEqual(data.current, test_current)
         self.assertEqual(data.hourly_forecast[0], test_hourly_forecast)
         self.assertEqual(data.daily_forecast[0], test_daily_forecast)
+
+    ########################################## test_onecall_apidata #########################################
+    def test_weather_city_data(self):
+        data = WeatherCityData(
+            country_code="fakecode",
+            place_name="fakename"
+        )
+        self.assertEqual(data.country_code, "fakecode")
+        self.assertEqual(data.place_name, "fakename")
 
 
 if __name__ == '__main__':
