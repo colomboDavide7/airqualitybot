@@ -8,6 +8,7 @@
 from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder, \
     AddStationMeasuresResponseBuilder, AddPlacesResponseBuilder
 from airquality.database.adapter import DatabaseAdapter
+from airquality.datamodel.apidata import WeatherCityData, CityOfGeoarea
 from airquality.datamodel.apiparam import APIParam
 from airquality.datamodel.service_param import ServiceParam
 from typing import Set, Dict, List
@@ -117,6 +118,15 @@ class DatabaseGateway(object):
         for id_, code, icon in rows:
             weather_map[code][icon] = id_
         return weather_map
+
+    def get_geolocation_of(self, city: WeatherCityData):
+        row = self.dbadapter.fetchone(
+            f"SELECT id, ST_X(geom), ST_Y(geom) FROM level0_raw.geographical_area "
+            f"WHERE country_code = '{city.country_code}' AND place_name = '{city.place_name}';"
+        )
+        if row is None:
+            raise ValueError(f"{type(self).__name__} missing row in 'geographical_area' table corresponding to {city!r}")
+        return CityOfGeoarea(geoarea_id=row[0], longitude=row[1], latitude=row[2])
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"

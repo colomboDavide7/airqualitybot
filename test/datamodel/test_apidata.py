@@ -226,6 +226,7 @@ class TestDatamodel(TestCase):
         )
         self.assertEqual(data.country_code, "fakecode")
         self.assertEqual(data.place_name, "fakename")
+        self.assertEqual(repr(data), "WeatherCityData(country_code=fakecode, place_name=fakename)")
 
 
 if __name__ == '__main__':

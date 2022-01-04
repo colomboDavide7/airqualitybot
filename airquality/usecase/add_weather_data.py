@@ -8,7 +8,7 @@
 from typing import Dict, List
 from airquality.database.gateway import DatabaseGateway
 from airquality.datamodel.service_param import ServiceParam
-from airquality.core.apidata_builder import OpenWeatherMapAPIDataBuilder
+from airquality.core.apidata_builder import OpenWeatherMapAPIDataBuilder, WeatherCityDataBuilder
 from airquality.core.request_builder import AddOpenWeatherMapDataRequestBuilder
 from airquality.core.response_builder import AddOpenWeatherMapDataResponseBuilder
 
@@ -35,19 +35,28 @@ class AddWeatherData(object):
         for param in self.service_param:
             print(repr(param))
 
-            pre_formatted_url = self.input_url_template.format(api_key=param.api_key, lat=45.1845, lon=9.1615)
-            datamodel_builder = OpenWeatherMapAPIDataBuilder(url=pre_formatted_url)
-            print(f"found #{len(datamodel_builder)} API data")
+            cities = WeatherCityDataBuilder(filepath="resources/weather_cities.json")
+            for city in cities:
+                print(repr(city))
+                geoarea_info = self.output_gateway.get_geolocation_of(city=city)
 
-            request_builder = AddOpenWeatherMapDataRequestBuilder(datamodels=datamodel_builder, weather_map=self.weather_map)
-            print(f"found #{len(request_builder)} requests")
+                pre_formatted_url = self.input_url_template.format(
+                    api_key=param.api_key, lat=geoarea_info.latitude, lon=geoarea_info.longitude
+                )
+                datamodel_builder = OpenWeatherMapAPIDataBuilder(url=pre_formatted_url)
+                print(f"found #{len(datamodel_builder)} API data")
 
-            validator = request_builder
+                request_builder = AddOpenWeatherMapDataRequestBuilder(datamodels=datamodel_builder, weather_map=self.weather_map)
+                print(f"found #{len(request_builder)} requests")
 
-            response_builder = AddOpenWeatherMapDataResponseBuilder(requests=validator, service_id=self.service_id, geoarea_id=8692)
-            print(f"found #{len(response_builder)} responses")
+                validator = request_builder
 
-            # if response_builder:
-            #     self.output_gateway.insert_weather_data(response_builder)
+                response_builder = AddOpenWeatherMapDataResponseBuilder(
+                    requests=validator, service_id=self.service_id, geoarea_id=geoarea_info.geoarea_id
+                )
+                print(f"found #{len(response_builder)} responses")
 
-                # TODO: update number_of_requests associated to the APIKEY
+                # if response_builder:
+                #     self.output_gateway.insert_weather_data(response_builder)
+
+                    # TODO: update number_of_requests associated to the APIKEY

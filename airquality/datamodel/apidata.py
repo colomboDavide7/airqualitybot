@@ -160,3 +160,17 @@ class WeatherCityData(object):
 
     country_code: str                               # The 2-alpha ISO city's country code.
     place_name: str                                 # The city's name.
+
+    def __repr__(self):
+        return f"{type(self).__name__}(country_code={self.country_code}, place_name={self.place_name})"
+
+
+@dataclass
+class CityOfGeoarea(object):
+    """
+    A *dataclass* that defines the raw datastructure for the database information of a city.
+    """
+
+    geoarea_id: int                                 # The database unique id that identifies a city.
+    longitude: float                                # The city's longitude.
+    latitude: float                                 # The city's latitude.

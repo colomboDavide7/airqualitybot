@@ -138,6 +138,11 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
 
 
 class WeatherCityDataBuilder(IterableItemsABC):
+    """
+    An *IterableItemsABC* that defines the business rules for reading the city data from a file and
+    translate them into a Generator of *WeatherCityData* objects that are used for querying city's information
+    from the *geographical_area* table in the database.
+    """
 
     def __init__(self, filepath: str):
         with open(filepath, 'r') as f:

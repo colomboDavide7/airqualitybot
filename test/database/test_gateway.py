@@ -7,7 +7,8 @@
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+from airquality.datamodel.apidata import WeatherCityData
 from airquality.datamodel.apiparam import APIParam
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse, \
     AddPlacesResponse
@@ -282,21 +283,21 @@ class TestDatabaseGateway(TestCase):
         expected_output = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
         self.assertEqual(actual, expected_output)
 
-    # ##################################### test_get_geolocation_of #####################################
-    # @patch('airquality.database.gateway.open')
-    # def test_get_geolocation_of(self, mocked_open):
-    #     with open('test_resources/weather_cities.json', 'r') as f:
-    #         cities = f.read()
-    #
-    #     mocked_resp = MagicMock()
-    #     mocked_resp.__enter__.return_value = mocked_resp
-    #     mocked_resp.read.return_value = cities
-    #     mocked_open.return_value = mocked_resp
-    #
-    #     mocked_dbadapter = MockedDatabaseAdapter()
-    #     mocked_dbadapter.fetchone = MagicMock()
-    #
-    #     actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_geolocation_of()
+    ##################################### test_get_geolocation_of #####################################
+    def test_get_geolocation_of(self):
+
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.fetchone.side_effect = [(14400, 9, 45), None]
+
+        test_city = WeatherCityData(country_code="fakecode", place_name="fakename")
+        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        actual = gateway.get_geolocation_of(city=test_city)
+        self.assertEqual(actual.geoarea_id, 14400)
+        self.assertEqual(actual.longitude, 9)
+        self.assertEqual(actual.latitude, 45)
+
+        with self.assertRaises(ValueError):
+            gateway.get_geolocation_of(city=test_city)
 
 
 if __name__ == '__main__':
