@@ -129,13 +129,16 @@ class DatabaseGateway(object):
                 f"{type(self).__name__} missing row in 'geographical_area' table corresponding to {city!r}")
         return CityOfGeoarea(geoarea_id=row[0], longitude=row[1], latitude=row[2])
 
+    def delete_all_from_hourly_weather_forecast(self):
+        self.dbadapter.execute("DELETE FROM level0_raw.hourly_forecast;")
+
+    def delete_all_from_daily_weather_forecast(self):
+        self.dbadapter.execute("DELETE FROM level0_raw.daily_forecast;")
+
     def insert_weather_data(self, responses: AddOpenWeatherMapDataResponseBuilder):
         current_weather_data_query = \
             "INSERT INTO level0_raw.current_weather (service_id, geoarea_id, weather_id, temperature, pressure, " \
             "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES "
-
-        delete_previous_hourly_forecast_query = "DELETE FROM level0_raw.hourly_forecast;"
-        delete_previous_daily_forecast_query = "DELETE FROM level0_raw.daily_forecast;"
 
         hourly_weather_data_query = \
             "INSERT INTO level0_raw.hourly_forecast (service_id, geoarea_id, weather_id, temperature, pressure, " \
@@ -151,8 +154,8 @@ class DatabaseGateway(object):
             daily_weather_data_query += resp.daily_forecast_record + ','
 
         self.dbadapter.execute(f"{current_weather_data_query.strip(',')}; "
-                               f"{delete_previous_hourly_forecast_query} {hourly_weather_data_query.strip(',')}; "
-                               f"{delete_previous_daily_forecast_query} {daily_weather_data_query.strip(',')};")
+                               f"{hourly_weather_data_query.strip(',')}; "
+                               f"{daily_weather_data_query.strip(',')};")
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"

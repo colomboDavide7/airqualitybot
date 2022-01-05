@@ -322,15 +322,29 @@ class TestDatabaseGateway(TestCase):
             "INSERT INTO level0_raw.current_weather (service_id, geoarea_id, weather_id, temperature, pressure, " \
             "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES " \
             "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11'); " \
-            "DELETE FROM level0_raw.hourly_forecast; " \
             "INSERT INTO level0_raw.hourly_forecast (service_id, geoarea_id, weather_id, temperature, pressure, " \
             "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES " \
             "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00'); " \
-            "DELETE FROM level0_raw.daily_forecast; " \
             "INSERT INTO level0_raw.daily_forecast (service_id, geoarea_id, weather_id, temperature, min_temp, max_temp, " \
             "pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES " \
             "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00');"
 
+        mocked_dbadapter.execute.assert_called_with(expected_query)
+
+    def test_delete_all_from_hourly_weather_forecast(self):
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.execute = MagicMock()
+
+        DatabaseGateway(dbadapter=mocked_dbadapter).delete_all_from_hourly_weather_forecast()
+        expected_query = "DELETE FROM level0_raw.hourly_forecast;"
+        mocked_dbadapter.execute.assert_called_with(expected_query)
+
+    def test_delete_all_from_daily_weather_forecast(self):
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.execute = MagicMock()
+
+        DatabaseGateway(dbadapter=mocked_dbadapter).delete_all_from_daily_weather_forecast()
+        expected_query = "DELETE FROM level0_raw.daily_forecast;"
         mocked_dbadapter.execute.assert_called_with(expected_query)
 
 

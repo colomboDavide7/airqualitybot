@@ -5,7 +5,9 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import json
 import sys
+import logging.config
 from airquality.environment import Environment
 from airquality.usecase.add_places import AddPlaces
 from airquality.usecase.add_station_measures import AddThingspeakMeasures
@@ -37,15 +39,21 @@ class Application(object):
     def __init__(self, env: Environment):
         self.args = sys.argv[1:]
         self.env = env
+        with open('config.json', 'r') as fconf:
+            config = json.load(fconf)
+            logging.config.dictConfig(config)
+        self.app_logger = logging.getLogger(__name__)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
-            print(repr(exc_val))
+            self.app_logger.exception(repr(exc_val))
             if exc_type == WrongUsageError:
                 print(self.env.program_usage_msg)
+            logging.shutdown()
+            sys.exit(1)
 
     def main(self):
         """
@@ -63,7 +71,7 @@ class Application(object):
                 dbname=self.env.dbname, user=self.env.user, password=self.env.password, host=self.env.host, port=self.env.port
             )
             with dbadapter:
-                print(f"RUNNING {personality}...")
+                self.app_logger.info("running %s" % personality)
                 if personality == 'purpleair':
                     AddPurpleairFixedSensors(
                         output_gateway=DatabaseGateway(dbadapter=dbadapter),
@@ -91,4 +99,4 @@ class Application(object):
                         output_gateway=DatabaseGateway(dbadapter=dbadapter),
                         input_url_template=self.env.url_template(personality)
                     ).run()
-                print("finish!")
+                self.app_logger.info("finish!")

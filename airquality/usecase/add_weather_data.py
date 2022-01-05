@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import logging
 from typing import Dict, List
 from airquality.database.gateway import DatabaseGateway
 from airquality.datamodel.service_param import ServiceParam
@@ -38,6 +39,7 @@ class AddWeatherData(object):
     def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
         self.output_gateway = output_gateway
         self.input_url_template = input_url_template
+        self.app_logger = logging.getLogger(__name__)
 
     @property
     def service_param(self) -> List[ServiceParam]:
@@ -52,28 +54,37 @@ class AddWeatherData(object):
         return self.output_gateway.get_service_id_from_name(service_name="openweathermap")
 
     def run(self):
+
+        self.app_logger.warning("deleting all the hourly weather forecast data")
+        self.app_logger.warning("deleting all the daily weather forecast data")
+
+        self.output_gateway.delete_all_from_hourly_weather_forecast()
+        self.output_gateway.delete_all_from_daily_weather_forecast()
+
         for param in self.service_param:
-            print(repr(param))
+            self.app_logger.info("service => %s" % repr(param))
 
             cities = WeatherCityDataBuilder(filepath="resources/weather_cities.json")
             for city in cities:
-                print(repr(city))
+                self.app_logger.info("city => %s" % repr(city))
+
                 geoarea_info = self.output_gateway.get_geolocation_of(city=city)
+                self.app_logger.info("geoarea_info => %s" % repr(geoarea_info))
 
                 pre_formatted_url = self.input_url_template.format(
                     api_key=param.api_key, lat=geoarea_info.latitude, lon=geoarea_info.longitude
                 )
                 datamodel_builder = OpenWeatherMapAPIDataBuilder(url=pre_formatted_url)
-                print(f"found #{len(datamodel_builder)} API data")
+                self.app_logger.info("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddOpenWeatherMapDataRequestBuilder(datamodels=datamodel_builder, weather_map=self.weather_map)
-                print(f"found #{len(request_builder)} requests")
+                self.app_logger.info("found #%d requests" % len(request_builder))
 
                 response_builder = AddOpenWeatherMapDataResponseBuilder(
                     requests=request_builder, service_id=self.service_id, geoarea_id=geoarea_info.geoarea_id
                 )
-                print(f"found #{len(response_builder)} responses")
+                self.app_logger.info("found #%d responses" % len(response_builder))
 
                 if response_builder:
-                    print("inserting new weather data!")
+                    self.app_logger.info("inserting new weather data!")
                     self.output_gateway.insert_weather_data(responses=response_builder)

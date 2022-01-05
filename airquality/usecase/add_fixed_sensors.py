@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import logging
 from airquality.database.gateway import DatabaseGateway
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
@@ -24,6 +25,7 @@ class AddPurpleairFixedSensors(object):
     def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
         self.output_gateway = output_gateway
         self.input_url_template = input_url_template
+        self.app_logger = logging.getLogger(__name__)
 
     @property
     def start_sensor_id(self) -> int:
@@ -35,17 +37,17 @@ class AddPurpleairFixedSensors(object):
 
     def run(self) -> None:
         datamodel_builder = PurpleairAPIDataBuilder(url=self.input_url_template)
-        print(f"found #{len(datamodel_builder)} API data")
+        self.app_logger.info("found #%d API data" % len(datamodel_builder))
 
         request_builder = AddPurpleairSensorRequestBuilder(datamodel=datamodel_builder)
-        print(f"found #{len(request_builder)} requests")
+        self.app_logger.info("found #%d requests" % len(request_builder))
 
         validator = AddFixedSensorRequestValidator(request=request_builder, existing_names=self.names_of)
-        print(f"found #{len(validator)} valid requests")
+        self.app_logger.info("found #%d valid requests" % len(validator))
 
-        responses = AddFixedSensorResponseBuilder(requests=validator, start_sensor_id=self.start_sensor_id)
-        print(f"found #{len(responses)} responses")
+        response_builder = AddFixedSensorResponseBuilder(requests=validator, start_sensor_id=self.start_sensor_id)
+        self.app_logger.info("found #%d responses" % len(response_builder))
 
-        if len(responses) > 0:
-            print(f"insert new sensors!")
-            self.output_gateway.insert_sensors(responses=responses)
+        if response_builder:
+            self.app_logger.info("inserting new sensors!")
+            self.output_gateway.insert_sensors(responses=response_builder)

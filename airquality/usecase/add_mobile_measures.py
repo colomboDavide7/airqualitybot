@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import logging
 from datetime import datetime
 from typing import Dict, List
 from airquality.datamodel.apiparam import APIParam
@@ -24,6 +25,7 @@ class AddAtmotubeMeasures(object):
     def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
         self.output_gateway = output_gateway
         self.input_url_template = input_url_template
+        self.app_logger = logging.getLogger(__name__)
 
     @property
     def measure_param(self) -> Dict[str, int]:
@@ -47,23 +49,23 @@ class AddAtmotubeMeasures(object):
     def run(self):
         measure_param = self.measure_param
         for param in self.api_param:
-            print(repr(param))
+            self.app_logger.info("sensor => %s" % repr(param))
             for url in self.urls_of(param):
-                print(url)
+                self.app_logger.info("url => %s" % url)
                 datamodel_builder = AtmotubeAPIDataBuilder(url=url)
-                print(f"found #{len(datamodel_builder)} API data")
+                self.app_logger.info("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddAtmotubeMeasureRequestBuilder(datamodel=datamodel_builder, code2id=measure_param)
-                print(f"found #{len(request_builder)} requests")
+                self.app_logger.info("found #%d requests" % len(request_builder))
 
                 validator = AddSensorMeasuresRequestValidator(request=request_builder, filter_ts=self.filter_ts_of(param))
-                print(f"found #{len(validator)} valid requests")
+                self.app_logger.info("found #%d valid requests" % len(validator))
 
                 response_builder = AddMobileMeasureResponseBuilder(requests=validator, start_packet_id=self.start_packet_id)
-                print(f"found #{len(response_builder)} responses")
+                self.app_logger.info("found #%d responses" % len(response_builder))
 
-                if len(response_builder) > 0:
-                    print(f"found responses within [{validator[0].timestamp!s} - {validator[-1].timestamp!s}]")
+                if response_builder:
+                    self.app_logger.info("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
                     self.output_gateway.insert_mobile_sensor_measures(responses=response_builder)
                     last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
                     self.output_gateway.update_last_acquisition(

@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import logging
 from os import listdir
 from typing import Set
 from os.path import isfile, join
@@ -20,6 +21,7 @@ class AddPlaces(object):
     def __init__(self, input_dir_path: str, output_gateway: DatabaseGateway):
         self.input_dir_path = input_dir_path
         self.output_gateway = output_gateway
+        self.app_logger = logging.getLogger(__name__)
 
     @property
     def filenames(self) -> Set[str]:
@@ -37,21 +39,23 @@ class AddPlaces(object):
 
     def run(self) -> None:
         for f in self.filenames:
-            print(f"looking at {f}")
+            self.app_logger.info("filename => %s" % f)
 
             datamodel_builder = GeonamesDataBuilder(filepath=self.fullpath(f))
-            print(f"found #{len(datamodel_builder)} file lines")
+            self.app_logger.info("found #%d file lines" % len(datamodel_builder))
 
             request_builder = AddPlacesRequestBuilder(datamodels=datamodel_builder)
-            print(f"found #{len(request_builder)} requests")
+            self.app_logger.info("found #%d requests" % len(request_builder))
 
             existing_poscodes = self.existing_poscodes(country_code=f.split('.')[0])
+            self.app_logger.info("found #%d unique database poscodes for country='%s'" % (len(existing_poscodes), f.split('.')[0]))
+
             validator = AddPlacesRequestValidator(requests=request_builder, existing_poscodes=existing_poscodes)
-            print(f"found #{len(validator)} valid requests")
+            self.app_logger.info("found #%d valid requests" % len(validator))
 
             response_builder = AddPlacesResponseBuilder(requests=validator, service_id=self.service_id)
-            print(f"found #{len(response_builder)} responses")
+            self.app_logger.info("found #%d responses" % len(response_builder))
 
-            if len(response_builder) > 0:
-                print(f"commit responses into {self.output_gateway!r}")
+            if response_builder:
+                self.app_logger.info("inserting new places!")
                 self.output_gateway.insert_places(response_builder)
