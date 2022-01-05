@@ -47,6 +47,8 @@ class DatabaseGateway(object):
     def get_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
         rows = self.dbadapter.fetchall(
             f"SELECT id, param_code FROM level0_raw.measure_param WHERE param_owner ILIKE '%{owner}%';")
+        if not rows:
+            raise ValueError(f"{type(self).__name__} cannot found measure parameters of owner='{owner}'")
         return {code: ident for ident, code in rows}
 
     def insert_mobile_sensor_measures(self, responses: AddMobileMeasureResponseBuilder):
@@ -65,6 +67,9 @@ class DatabaseGateway(object):
             "SELECT a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.last_acquisition FROM level0_raw.sensor_api_param AS a "
             f"INNER JOIN level0_raw.sensor AS s ON s.id = a.sensor_id WHERE s.sensor_type ILIKE '%{sensor_type}%';"
         )
+        if not rows:
+            raise ValueError(f"{type(self).__name__} cannot found sensor API parameters of type='{sensor_type}'!")
+
         return [APIParam(sensor_id=sid, api_key=key, api_id=ident, ch_name=name, last_acquisition=last)
                 for sid, key, ident, name, last in rows]
 
@@ -73,9 +78,10 @@ class DatabaseGateway(object):
         return 1 if row[0] is None else row[0] + 1
 
     def get_last_acquisition_of_sensor_channel(self, sensor_id: int, ch_name: str) -> datetime:
-        return self.dbadapter.fetchone(
+        row = self.dbadapter.fetchone(
             f"SELECT last_acquisition FROM level0_raw.sensor_api_param WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
-        )[0]
+        )
+        return row[0]
 
     def insert_station_measures(self, responses: AddStationMeasuresResponseBuilder):
         query = "INSERT INTO level0_raw.station_measurement (packet_id, sensor_id, param_id, param_value, timestamp) VALUES "
@@ -87,9 +93,12 @@ class DatabaseGateway(object):
         return 1 if row[0] is None else row[0] + 1
 
     def get_service_id_from_name(self, service_name: str) -> int:
-        return self.dbadapter.fetchone(
+        row = self.dbadapter.fetchone(
             f"SELECT id FROM level0_raw.service WHERE service_name ILIKE '%{service_name}%';"
-        )[0]
+        )
+        if row is None:
+            raise ValueError(f"{type(self).__name__} cannot found id of name='{service_name}'")
+        return row[0]
 
     def get_poscodes_of_country(self, country_code) -> Set[str]:
         rows = self.dbadapter.fetchall(
@@ -108,16 +117,15 @@ class DatabaseGateway(object):
             "SELECT p.api_key, p.n_requests FROM level0_raw.service_api_param AS p INNER JOIN level0_raw.service AS s "
             f"ON s.id = p.service_id WHERE s.service_name ILIKE '%{service_name}%';"
         )
+        if not rows:
+            raise ValueError(f"{type(self).__name__} cannot found service API param for name='{service_name}'!")
         return [ServiceParam(api_key=api_key, n_requests=nreq) for api_key, nreq in rows]
 
-    def get_weather_conditions(self) -> Dict[int, Dict[str, int]]:
-        rows = self.dbadapter.fetchall(
-            "SELECT id, code, icon FROM level0_raw.weather_condition;"
-        )
-        weather_map = {code: {} for id_, code, icon in rows}
-        for id_, code, icon in rows:
-            weather_map[code][icon] = id_
-        return weather_map
+    def get_weather_conditions(self):
+        rows = self.dbadapter.fetchall("SELECT id, code, icon FROM level0_raw.weather_condition;")
+        if not rows:
+            raise ValueError(f"{type(self).__name__} found #0 weather conditions!")
+        return rows
 
     def get_geolocation_of(self, city: WeatherCityData) -> CityOfGeoarea:
         row = self.dbadapter.fetchone(
@@ -125,8 +133,7 @@ class DatabaseGateway(object):
             f"WHERE country_code = '{city.country_code}' AND place_name = '{city.place_name}';"
         )
         if row is None:
-            raise ValueError(
-                f"{type(self).__name__} missing row in 'geographical_area' table corresponding to {city!r}")
+            raise ValueError(f"{type(self).__name__} cannot found '{city!r}' into the database!")
         return CityOfGeoarea(geoarea_id=row[0], longitude=row[1], latitude=row[2])
 
     def delete_all_from_hourly_weather_forecast(self):

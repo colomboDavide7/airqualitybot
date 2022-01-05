@@ -31,13 +31,14 @@ class AddPlaces(object):
     def service_id(self) -> int:
         return self.output_gateway.get_service_id_from_name(service_name='geonames')
 
-    def existing_poscodes(self, country_code: str) -> Set[str]:
+    def poscodes_of(self, country_code: str) -> Set[str]:
         return self.output_gateway.get_poscodes_of_country(country_code=country_code)
 
     def fullpath(self, filename: str) -> str:
         return join(self.input_dir_path, filename)
 
     def run(self) -> None:
+        service_id = self.service_id
         for f in self.filenames:
             self.app_logger.info("filename => %s" % f)
 
@@ -47,13 +48,13 @@ class AddPlaces(object):
             request_builder = AddPlacesRequestBuilder(datamodels=datamodel_builder)
             self.app_logger.info("found #%d requests" % len(request_builder))
 
-            existing_poscodes = self.existing_poscodes(country_code=f.split('.')[0])
-            self.app_logger.info("found #%d unique database poscodes for country='%s'" % (len(existing_poscodes), f.split('.')[0]))
+            dbposcodes = self.poscodes_of(country_code=f.split('.')[0])
+            self.app_logger.info("found #%d unique database poscodes of country='%s'" % (len(dbposcodes), f.split('.')[0]))
 
-            validator = AddPlacesRequestValidator(requests=request_builder, existing_poscodes=existing_poscodes)
+            validator = AddPlacesRequestValidator(requests=request_builder, existing_poscodes=dbposcodes)
             self.app_logger.info("found #%d valid requests" % len(validator))
 
-            response_builder = AddPlacesResponseBuilder(requests=validator, service_id=self.service_id)
+            response_builder = AddPlacesResponseBuilder(requests=validator, service_id=service_id)
             self.app_logger.info("found #%d responses" % len(response_builder))
 
             if response_builder:

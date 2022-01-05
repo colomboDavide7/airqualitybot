@@ -33,7 +33,8 @@ class TestAddWeatherDataUsecase(TestCase):
         mocked_file_resp.__enter__.return_value = mocked_file_resp
         mocked_open.return_value = mocked_file_resp
 
-        test_weather_conditions = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
+        test_weather_conditions = [(55, 804, "04d"), (37, 500, "13d"), (56, 804, "04n")]
+        expected_weather_conditions = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
         mocked_gateway = MagicMock()
         mocked_gateway.get_service_apiparam_of.return_value = [ServiceParam(api_key="fakekey", n_requests=0)]
         mocked_gateway.get_weather_conditions.return_value = test_weather_conditions
@@ -42,6 +43,7 @@ class TestAddWeatherDataUsecase(TestCase):
         mocked_gateway.insert_weather_data = MagicMock()
 
         usecase = AddWeatherData(output_gateway=mocked_gateway, input_url_template="fakeurl")
+        self.assertEqual(usecase.weather_map, expected_weather_conditions)
 
         usecase.run()
         responses = mocked_gateway.insert_weather_data.call_args[1]['responses']

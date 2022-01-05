@@ -39,6 +39,7 @@ class AddWeatherData(object):
     def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
         self.output_gateway = output_gateway
         self.input_url_template = input_url_template
+        self._cached_weather_map = {}
         self.app_logger = logging.getLogger(__name__)
 
     @property
@@ -47,7 +48,13 @@ class AddWeatherData(object):
 
     @property
     def weather_map(self) -> Dict[int, Dict[str, int]]:
-        return self.output_gateway.get_weather_conditions()
+        if not self._cached_weather_map:
+            rows = self.output_gateway.get_weather_conditions()
+            weather_map = {code: {} for id_, code, icon in rows}
+            for id_, code, icon in rows:
+                weather_map[code][icon] = id_
+            self._cached_weather_map = weather_map
+        return self._cached_weather_map
 
     @property
     def service_id(self):

@@ -26,7 +26,7 @@ class TestDatabaseGateway(TestCase):
     ##################################### test_get_existing_sensor_names #####################################
     def test_get_existing_sensor_names(self):
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchall.return_value = [("n1", ), ("n2", ), ("n3", )]
+        mocked_dbadapter.fetchall.return_value = [("n1",), ("n2",), ("n3",)]
 
         gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
         self.assertEqual(repr(gateway), "DatabaseGateway(dbadapter=mocked database adapter)")
@@ -37,7 +37,7 @@ class TestDatabaseGateway(TestCase):
     ##################################### test_get_max_sensor_id_plus_one #####################################
     def test_get_max_sensor_id_plus_one(self):
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchone.side_effect = [(12, ), (None, )]
+        mocked_dbadapter.fetchone.side_effect = [(12,), (None,)]
 
         gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
         start_sensor_id = gateway.get_max_sensor_id_plus_one()
@@ -89,12 +89,15 @@ class TestDatabaseGateway(TestCase):
     ##################################### test_get_measure_param #####################################
     def test_get_measure_param(self):
         mocked_database_adapter = MockedDatabaseAdapter()
-        mocked_database_adapter.fetchall.return_value = [(1, 'c1'), (2, 'c2')]
+        mocked_database_adapter.fetchall.side_effect = [[(1, 'c1'), (2, 'c2')], []]
 
         gateway = DatabaseGateway(dbadapter=mocked_database_adapter)
-        actual = gateway.get_measure_param_owned_by(owner="atmotube")
+        actual = gateway.get_measure_param_owned_by(owner="fakeowner")
         expected = {'c1': 1, 'c2': 2}
         self.assertEqual(actual, expected)
+
+        with self.assertRaises(ValueError):
+            gateway.get_measure_param_owned_by(owner="fakeowner")
 
     @property
     def get_test_mobile_records(self):
@@ -139,14 +142,14 @@ class TestDatabaseGateway(TestCase):
     def test_get_apiparam_of_type(self):
         test_last_acquisition = datetime.strptime("2018-12-11 09:59:00", "%Y-%m-%d %H:%M:%S")
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchall.return_value = [
-            (1, 'k1', 'i1', 'n1', test_last_acquisition),
-            (1, 'k2', 'i2', 'n2', test_last_acquisition),
-            (2, 'z1', 'a1', 'm1', test_last_acquisition),
-        ]
+        mocked_dbadapter.fetchall.side_effect = [
+            [(1, 'k1', 'i1', 'n1', test_last_acquisition),
+             (1, 'k2', 'i2', 'n2', test_last_acquisition),
+             (2, 'z1', 'a1', 'm1', test_last_acquisition)],
+            []]
 
         gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
-        actual = gateway.get_apiparam_of_type(sensor_type="atmotube")
+        actual = gateway.get_apiparam_of_type(sensor_type="faketype")
         self.assertEqual(len(actual), 3)
 
         expected_apiparam = [
@@ -156,11 +159,13 @@ class TestDatabaseGateway(TestCase):
         ]
         self.assertEqual(actual, expected_apiparam)
 
+        with self.assertRaises(ValueError):
+            gateway.get_apiparam_of_type(sensor_type="faketype")
+
     ##################################### test_get_max_mobile_packet_id_plus_one #####################################
     def test_get_max_mobile_packet_id_plus_one(self):
-
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchone.return_value = (12399, )
+        mocked_dbadapter.fetchone.return_value = (12399,)
 
         actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_max_mobile_packet_id_plus_one()
         self.assertEqual(actual, 12400)
@@ -168,9 +173,10 @@ class TestDatabaseGateway(TestCase):
     ##################################### test_get_max_mobile_packet_id_plus_one #####################################
     def test_get_last_acquisition_timestamp_of_sensor_channel(self):
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchone.return_value = (datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"), )
+        mocked_dbadapter.fetchone.return_value = (datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"),)
 
-        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_last_acquisition_of_sensor_channel(sensor_id=12, ch_name="fakename")
+        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_last_acquisition_of_sensor_channel(sensor_id=12,
+                                                                                                    ch_name="fakename")
         self.assertEqual(actual, datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"))
 
     @property
@@ -187,7 +193,6 @@ class TestDatabaseGateway(TestCase):
 
     ##################################### test_insert_station_measures #####################################
     def test_insert_station_measures(self):
-
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.execute = MagicMock()
 
@@ -203,7 +208,7 @@ class TestDatabaseGateway(TestCase):
     ##################################### test_get_max_station_packet_id_plus_one #####################################
     def test_get_max_station_packet_id_plus_one(self):
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchone.side_effect = [(149, ), (None, )]
+        mocked_dbadapter.fetchone.side_effect = [(149,), (None,)]
 
         gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
         actual = gateway.get_max_station_packet_id_plus_one()
@@ -214,18 +219,20 @@ class TestDatabaseGateway(TestCase):
 
     ##################################### test_get_max_station_packet_id_plus_one #####################################
     def test_get_service_id_from_service_name(self):
-
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchone.side_effect = [(1, )]
+        mocked_dbadapter.fetchone.side_effect = [(1,), None]
 
-        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_service_id_from_name(service_name="fakename")
+        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        actual = gateway.get_service_id_from_name(service_name="fakename")
         self.assertEqual(actual, 1)
+
+        with self.assertRaises(ValueError):
+            gateway.get_service_id_from_name(service_name="fakename")
 
     ##################################### test_get_max_station_packet_id_plus_one #####################################
     def test_get_existing_poscodes_of_country(self):
-
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchall.return_value = [("p1",), ("p2", ), ("p3", )]
+        mocked_dbadapter.fetchall.return_value = [("p1",), ("p2",), ("p3",)]
 
         actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_poscodes_of_country(country_code="fakecode")
         self.assertEqual(len(actual), 3)
@@ -240,7 +247,6 @@ class TestDatabaseGateway(TestCase):
 
     ##################################### test_insert_places #####################################
     def test_insert_places(self):
-
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.execute = MagicMock()
 
@@ -258,34 +264,42 @@ class TestDatabaseGateway(TestCase):
     ##################################### test_get_service_apiparam #####################################
     def test_get_service_apiparam(self):
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchall.return_value = [('key1', 0), ('key2', 12)]
+        mocked_dbadapter.fetchall.side_effect = [[('key1', 0), ('key2', 12)], []]
 
-        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_service_apiparam_of(service_name="fakename")
+        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        actual = gateway.get_service_apiparam_of(service_name="fakename")
         self.assertEqual(len(actual), 2)
         self.assertEqual(actual[0].api_key, "key1")
         self.assertEqual(actual[0].n_requests, 0)
         self.assertEqual(actual[1].api_key, "key2")
         self.assertEqual(actual[1].n_requests, 12)
 
+        with self.assertRaises(ValueError):
+            gateway.get_service_apiparam_of(service_name="fakename")
+
     ##################################### test_get_weather_condition #####################################
     def test_get_weather_condition(self):
-
         mocked_dbadapter = MockedDatabaseAdapter()
-        mocked_dbadapter.fetchall.return_value = [
-            (55, 804, "04d"),
-            (37, 500, "13d"),
-            (56, 804, "04n")
-        ]
+        mocked_dbadapter.fetchall.side_effect = [
+            [(55, 804, "04d"),
+             (37, 500, "13d"),
+             (56, 804, "04n")],
+            []]
 
-        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_weather_conditions()
-        self.assertEqual(len(actual), 2)
+        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        actual = gateway.get_weather_conditions()
+        self.assertEqual(len(actual), 3)
 
-        expected_output = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
+        expected_output = [(55, 804, "04d"),
+                           (37, 500, "13d"),
+                           (56, 804, "04n")]
         self.assertEqual(actual, expected_output)
+
+        with self.assertRaises(ValueError):
+            gateway.get_weather_conditions()
 
     ##################################### test_get_geolocation_of #####################################
     def test_get_geolocation_of(self):
-
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchone.side_effect = [(14400, 9, 45), None]
 

@@ -38,9 +38,9 @@ class TestAddPlaces(TestCase):
 
         self.assertEqual(runner.service_id, 133)
 
-        self.assertIn('p1', runner.existing_poscodes("fakecountry"))
-        self.assertIn('p2', runner.existing_poscodes("fakecountry"))
-        self.assertIn('p3', runner.existing_poscodes("fakecountry"))
+        self.assertIn('p1', runner.poscodes_of("fakecountry"))
+        self.assertIn('p2', runner.poscodes_of("fakecountry"))
+        self.assertIn('p3', runner.poscodes_of("fakecountry"))
 
         self.assertEqual(runner.fullpath("fakefile.txt"), "fake_path/fakefile.txt")
 
