@@ -14,6 +14,26 @@ from airquality.core.response_builder import AddOpenWeatherMapDataResponseBuilde
 
 
 class AddWeatherData(object):
+    """
+    An *object* that defines the application UseCase flow of adding weather data from OpenWeatherMap service.
+
+    The data are downloaded from the site by using the OneCallAPI service whose documentation is linked at:
+    https://openweathermap.org/api/one-call-api#data
+
+    The data are uploaded by-city. The cities one is interested of must be inserted into the
+    *weather_cities.json* file provided into the resources directory of this project.
+
+    The task accomplished by this class is to retrieve the data for each city present into the file cited above
+    using the API cited above.
+
+    The data are of three types:
+
+    - current weather data,
+    - hourly forecast data for the next 48 hours,
+    - daily forecast data for the next 7 days.
+
+    If the API has provided some data, those are inserted into the database.
+    """
 
     def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
         self.output_gateway = output_gateway
@@ -49,10 +69,8 @@ class AddWeatherData(object):
                 request_builder = AddOpenWeatherMapDataRequestBuilder(datamodels=datamodel_builder, weather_map=self.weather_map)
                 print(f"found #{len(request_builder)} requests")
 
-                validator = request_builder
-
                 response_builder = AddOpenWeatherMapDataResponseBuilder(
-                    requests=validator, service_id=self.service_id, geoarea_id=geoarea_info.geoarea_id
+                    requests=request_builder, service_id=self.service_id, geoarea_id=geoarea_info.geoarea_id
                 )
                 print(f"found #{len(response_builder)} responses")
 
