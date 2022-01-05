@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 from airquality.datamodel.apidata import WeatherCityData
 from airquality.datamodel.apiparam import APIParam
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse, \
-    AddPlacesResponse
+    AddPlacesResponse, AddOpenWeatherMapDataResponse
 from airquality.database.gateway import DatabaseGateway
 
 
@@ -298,6 +298,40 @@ class TestDatabaseGateway(TestCase):
 
         with self.assertRaises(ValueError):
             gateway.get_geolocation_of(city=test_city)
+
+    @property
+    def get_test_add_weather_data_response(self):
+        return AddOpenWeatherMapDataResponse(
+            current_weather_record="(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')",
+            hourly_forecast_record="(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')",
+            daily_forecast_record="(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
+        )
+
+    ##################################### test_insert_weather_data #####################################
+    def test_insert_weather_data(self):
+        mocked_dbadapter = MockedDatabaseAdapter()
+        mocked_dbadapter.execute = MagicMock()
+
+        mocked_response_builder = MagicMock()
+        mocked_response_builder.__len__.return_value = 1
+        mocked_response_builder.__iter__.return_value = [self.get_test_add_weather_data_response]
+
+        DatabaseGateway(dbadapter=mocked_dbadapter).insert_weather_data(responses=mocked_response_builder)
+
+        expected_query = \
+            "INSERT INTO level0_raw.current_weather (service_id, geoarea_id, weather_id, temperature, pressure, " \
+            "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES " \
+            "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11'); " \
+            "DELETE FROM level0_raw.hourly_forecast; " \
+            "INSERT INTO level0_raw.hourly_forecast (service_id, geoarea_id, weather_id, temperature, pressure, " \
+            "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES " \
+            "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00'); " \
+            "DELETE FROM level0_raw.daily_forecast; " \
+            "INSERT INTO level0_raw.daily_forecast (service_id, geoarea_id, weather_id, temperature, min_temp, max_temp, " \
+            "pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES " \
+            "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00');"
+
+        mocked_dbadapter.execute.assert_called_with(expected_query)
 
 
 if __name__ == '__main__':

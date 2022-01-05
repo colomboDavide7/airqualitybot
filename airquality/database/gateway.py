@@ -6,7 +6,7 @@
 #
 ######################################################
 from airquality.core.response_builder import AddFixedSensorResponseBuilder, AddMobileMeasureResponseBuilder, \
-    AddStationMeasuresResponseBuilder, AddPlacesResponseBuilder
+    AddStationMeasuresResponseBuilder, AddPlacesResponseBuilder, AddOpenWeatherMapDataResponseBuilder
 from airquality.database.adapter import DatabaseAdapter
 from airquality.datamodel.apidata import WeatherCityData, CityOfGeoarea
 from airquality.datamodel.apiparam import APIParam
@@ -125,8 +125,34 @@ class DatabaseGateway(object):
             f"WHERE country_code = '{city.country_code}' AND place_name = '{city.place_name}';"
         )
         if row is None:
-            raise ValueError(f"{type(self).__name__} missing row in 'geographical_area' table corresponding to {city!r}")
+            raise ValueError(
+                f"{type(self).__name__} missing row in 'geographical_area' table corresponding to {city!r}")
         return CityOfGeoarea(geoarea_id=row[0], longitude=row[1], latitude=row[2])
+
+    def insert_weather_data(self, responses: AddOpenWeatherMapDataResponseBuilder):
+        current_weather_data_query = \
+            "INSERT INTO level0_raw.current_weather (service_id, geoarea_id, weather_id, temperature, pressure, " \
+            "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES "
+
+        delete_previous_hourly_forecast_query = "DELETE FROM level0_raw.hourly_forecast;"
+        delete_previous_daily_forecast_query = "DELETE FROM level0_raw.daily_forecast;"
+
+        hourly_weather_data_query = \
+            "INSERT INTO level0_raw.hourly_forecast (service_id, geoarea_id, weather_id, temperature, pressure, " \
+            "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES "
+
+        daily_weather_data_query = \
+            "INSERT INTO level0_raw.daily_forecast (service_id, geoarea_id, weather_id, temperature, min_temp, max_temp, " \
+            "pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES "
+
+        for resp in responses:
+            current_weather_data_query += resp.current_weather_record + ','
+            hourly_weather_data_query += resp.hourly_forecast_record + ','
+            daily_weather_data_query += resp.daily_forecast_record + ','
+
+        self.dbadapter.execute(f"{current_weather_data_query.strip(',')}; "
+                               f"{delete_previous_hourly_forecast_query} {hourly_weather_data_query.strip(',')}; "
+                               f"{delete_previous_daily_forecast_query} {daily_weather_data_query.strip(',')};")
 
     def __repr__(self):
         return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"

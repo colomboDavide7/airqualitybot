@@ -56,7 +56,6 @@ class AddWeatherData(object):
                 )
                 print(f"found #{len(response_builder)} responses")
 
-                # if response_builder:
-                #     self.output_gateway.insert_weather_data(response_builder)
-
-                    # TODO: update number_of_requests associated to the APIKEY
+                if response_builder:
+                    print("inserting new weather data!")
+                    self.output_gateway.insert_weather_data(responses=response_builder)
