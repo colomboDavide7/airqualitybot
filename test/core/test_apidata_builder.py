@@ -155,7 +155,7 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(weather1.main, "Clouds")
         self.assertEqual(weather1.description, "overcast clouds")
 
-        self.assertEqual(len(resp.hourly_forecast), 48)
+        self.assertEqual(len(resp.hourly_forecast), 1)
 
         # Test hourly forecast responses
         hourly1 = resp.hourly_forecast[0]
@@ -176,7 +176,7 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(weather1.description, "overcast clouds")
 
         # Test daily forecast responses
-        self.assertEqual(len(resp.daily_forecast), 8)
+        self.assertEqual(len(resp.daily_forecast), 1)
         daily1 = resp.daily_forecast[0]
         self.assertEqual(daily1.dt, 1641207600+3600)
         self.assertEqual(daily1.temp, 9.25)

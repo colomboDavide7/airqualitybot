@@ -119,7 +119,7 @@ class DatabaseGateway(object):
             weather_map[code][icon] = id_
         return weather_map
 
-    def get_geolocation_of(self, city: WeatherCityData):
+    def get_geolocation_of(self, city: WeatherCityData) -> CityOfGeoarea:
         row = self.dbadapter.fetchone(
             f"SELECT id, ST_X(geom), ST_Y(geom) FROM level0_raw.geographical_area "
             f"WHERE country_code = '{city.country_code}' AND place_name = '{city.place_name}';"
