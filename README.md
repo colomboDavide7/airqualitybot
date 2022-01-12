@@ -1,70 +1,183 @@
-\"Air pollution is a major cause of premature death and disease, 
-and is the single largest environmental health risk in Europe. 
-Latest estimates by the European Environment Agency (EEA) show 
-that fine particulate matter (PM2.5) continues to cause the most
- substantial health impacts.\" - EEA, 2021/12/01
- 
- Learn more at https://www.eea.europa.eu/themes/air/health-impacts-of-air-pollution.
- 
- This program is entirely developed by Davide Colombo for University of Pavia.
- The program follows the workflow below:
- 
- get data from a source -> do some manipulation -> store data to database
- 
- The source can be local or remote. 
- A local source can be an entire directory or a single file.
- The remote source can be an API.
- 
- The \"manipulation\" step consists of filtering data to avoid duplicates and database inconsistencies.
- 
- ------------------------------ COMMANDS DESCRIPTION ------------------------------
- The program gives you three commands for doing the work: [ init | update | fetch ]
- 
- The \"init\" command is the one you can use to initialize something into the database.
-                    - No DELETE operation is performed by this command. -
- Data that are already present into the database are ignored.
- 
- The \"update\" command can be used to keep data up-to-date.
-                    - No DELETE operation is performed by this command. -
-Data that are consistent with the current state are ignored.
+# airquality
 
-The \"fetch\" command can be used to download sensor measurements.
-The program starts from last acquisition and continue until the moment the program is run.
-                   - No DELETE operation is performed by this command. -
-Data that are already present into the database are filtered out.
+> Download and store air pollution sensor's data for making analysis. And more...
 
------------------------------- TARGETS DESCRIPTION ------------------------------
-The program works by using one of the above command on a TARGET.
+![Airquality Version][air-version]
+![Airquality Tests][test-out]
 
-The targets defined in this program are: [ purpleair | atmotube | thingspeak | geonames ]
+**The code in this repository is entirely written by Me during
+my master thesis activity at University of Pavia.**
 
-The \"purpleair\" target is used for hitting the PurpleAir API and storing the sensor data into the database.
+The purpose of this project is to fetch the **air quality** data from sensors
+through the API services of the corresponding manufacturer and collects,
+process and persistently store them into a SQL database.
 
-This target can be used on commands: [ init | update ]
-The \"init purpleair\" command hits three tables: [ sensor | api_param | sensor_at_location ]
-The \"update purpleair\" command hits one table: [ sensor_at_location ]
+Moreover, this project was extended to **weather** and **geographical**
+data.
 
-The \"atmotube\" target is used for hitting the Atmotube API and storing the sensor measurements in a time range.
+###### Supported sensors are:
+* [Atmotube](https://atmotube.com)
+* [PurpleAir](https://www2.purpleair.com)
 
-This target can be used on command: [ fetch ]
-The \"fetch atmotube\" command hits two table: [ mobile_measurements | api_param ]
+###### Supported services are:
+* [Thingspeak](https://thingspeak.com)
+* [Geonames](http://www.geonames.org)
+* [OpenWeatherMap](https://openweathermap.org)
 
-The \"thingspeak\" target is used for hitting the Thingspeak API and storing the sensor measurements in a time range.
+## General workflow
 
-This target can be used on command: [ fetch ]
-The \"fetch thingspeak\" command hits two table: [ station_measurements | api_param ]
+The main workflow consists of four steps:
 
------------------------------- RECAP ------------------------------
+1. _fetching_ the data from a **source**, (a _file_ or a _URL_)
+2. _parsing_ and _reshape_ the data, (coherently with the expected **datamodel**)
+3. **(optional)** _validating_ the data, (basically a **filtering** operation)
+4. and _inserting_ the data into the **database**.
 
-init purpleair:     insert sensors and information into the database
-init geonames:      insert places information into the database
-update purpleair:   check if a sensor has a different location and if it is, change it
-fetch atmotube:     insert atmotube measurements into the database in time range: [ last_acquisition - now ]
-fetch thingspeak:   insert thingspeak measurements into the database in time range: [ last_acquisition - now ]
+## Installation
 
------------------------------- PROGRAM USAGE ------------------------------
+To install and use the **airquality** project in this repository, simply clone
+this repository on your local machine.
 
-python(version) -m airquality command target
+This operation requires having [git](https://git-scm.com) installed
+locally on your machine.
 
-Have fun, 
-Davide.
+## Requirements
+
+The external dependencies required by the **airquality** project are:
+
+* python 3+
+* [psycopg2](https://pypi.org/project/psycopg2/)
+* [dotenv](https://pypi.org/project/python-dotenv/)
+
+Follow the instructions provided in the package documentation linked above
+to install them correctly.
+
+## Environment Setup
+
+The **airquality** project uses a **'.env'** file to load all the environment
+variables. In the **sample** directory that you can find at project level, there is a file
+called _sample_dot_env_. Please, follow the instructions in that file for the
+environment file setup.
+
+## Tests
+
+The **airquality** project is tested by using [unittest](https://docs.python.org/3/library/unittest.html)
+framework implementation from the standard library.
+
+Run all tests at once:
+
+```sh
+python3 -m unittest discover -s test -p 'test_*.py'
+```
+
+Run a single test:
+
+```sh
+python3 -m test.path.to.test.file
+```
+
+by replacing 'path.to.test.file' with the path of the file of interest.
+
+Note that to run the tests no internet connection is required neither a database.
+
+Citing Uncle Bob,
+
+> you can run your tests a 30.000 meters in an airplane drinking
+a Martini
+
+or something similar, but you get the point.
+
+## Coverage
+
+Together with unit testing it is good practice to run unit tests with a coverage tool that inform you about _how much your application is tested_.
+
+I have used [coverage](https://coverage.readthedocs.io/en/6.2/) package to accomplish this goal.
+
+Running coverage is easy as running the command:
+
+```sh
+coverage run --source airquality -m unittest discover && coverage report --skip-covered
+```
+
+## Usage
+
+The **airquality** project supports five different personalities, i.e., atmotube,
+purpleair, thingspeak, geonames and openweathermap.
+
+##### downloading Atmotube data and storing into the database
+
+```sh
+python3 -m airquality atmotube
+```
+
+##### downloading PurpleAir data and storing into the database
+
+```sh
+python3 -m airquality thingspeak
+```
+
+This command can be counterintuitive but the reason is that PurpleAir offers
+the possibility to fetch sensor's data (from creation time up to now) by
+Thingspeak API.
+
+##### inserting new PurpleAir sensors into the database
+
+```sh
+python3 -m airquality purpleair
+```
+
+##### loading Geonames country data into the database
+
+```sh
+python3 -m airquality geonames
+```
+
+This command requires you have properly filled the **resources/geonames/country_data/** directory with the '.txt' files of your country of interest
+downloaded at [this link](http://download.geonames.org/export/zip/).
+
+Unzip the downloaded file and put only the '.txt' file named with the uppercase
+2-alpha ISO code of the country (e.g., ES.txt for Spain, IT.txt for Italy, and so on)
+into the directory.
+
+##### loading weather city data into the database
+
+```sh
+python3 -m airquality openweathermap
+```
+
+This command requires you have properly setup the **weather_cities.json** file
+you can find in the sample directory at the project level.
+
+Copy that file and fill in with your cities of interest.
+
+Be careful because the country's and city's name specified in this file **MUST MATCH** the respective geonames names **AND ALSO** you must pre-load into the database those data taken from geonames service by running the _geonames command_
+explained above.
+
+## Logging
+
+Create a log directory at the project level called **log** for logging errors
+and other useful events.
+
+Run the following command from the command line inside the project directory to
+make it:
+
+```sh
+mkdir log
+```
+
+This directory will be filled with two files:
+
+* errors.log: collects all the errors occurred with a longer format,
+* infos.log: collects all the useful events and also errors.
+
+## Author
+
+Davide Colombo - email: davide.colombo@icloud.com
+
+This project was entirely develop by Me during my master thesis activity at
+University of Pavia.
+
+<!-- Useful variable references (not displayed) -->
+
+[air-version]: https://img.shields.io/badge/airquality-v1.0.0-orange
+[test-out]: https://img.shields.io/badge/tests-passing-brightgreen

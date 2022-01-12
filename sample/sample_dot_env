@@ -1,0 +1,65 @@
+
+# !!!
+# NOTE: RENAME THIS FILE TO '.env' AND PUT IN THE TOP LEVEL DIRECTORY (THE PROJECT DIRECTORY)
+# !!!
+
+
+# !!!
+# NOTE: DO NOT CHANGE THE NAMES OF THE VARIABLE (left side of the '=' symbol)
+# !!!
+
+
+
+
+################### APPLICATION PROPERTIES ###################
+
+valid_personalities="purpleair,atmotube,thingspeak,geonames,openweathermap"
+program_usage_msg="python(version) -m airquality [{pers}]"
+
+################### DATABASE CONNECTION PROPERTIES ###################
+
+# !!!
+# PLEASE, replace the X in the connection properties with your database properties.
+# !!!
+
+dbname="XXX"
+host="XXX"
+port="XXX"
+user="XXX"
+password="XXX"
+
+################### API CONNECTION PROPERTIES ###################
+
+# !!!
+# NOTE: be sure you have a valid API key for the given service you want to use.
+# !!!
+
+atmotube_url="https://api.atmotube.com/api/v1/data?api_key={api_key}&mac={api_id}&order=asc&format={api_fmt}"
+
+thingspeak_url="https://api.thingspeak.com/channels/{api_id}/feeds.{api_fmt}?api_key={api_key}"
+
+# !!!
+# PLEASE, in the URL below replace 'your_api_key' with your actual API key.
+# PLEASE, in the URL below replace 'your_fields_of_interest' with the fields you are interested in, accordingly to PurpleAir API documentation (https://api.purpleair.com/#api-sensors-get-sensors-data).
+# You can add as many optional parameters as you want.
+# !!!
+
+purpleair_url="https://api.purpleair.com/v1/sensors?api_key=your_api_key&fields=your_fields_of_interest"
+
+openweathermap_url=https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude=alerts,minutely&appid={api_key}&units=metric
+
+################### FILE SYSTEM RESOURCES ###################
+
+# !!!
+# NOTE: this section is about 'geonames.org' service.
+Create a directory called 'resources' at project level.
+Inside of this directory create a directory called 'geonames'. 
+Inside of this directory create a directory called 'country_data'.
+ONLY PUT the '.txt' files from the zip compressed data downloaded at: 'http://download.geonames.org/export/zip/'.
+PUT HERE (resources/geonames/country_data/) the text files for each country you are interested in.
+# !!!
+
+resource_dir="resources"
+geonames_dir="geonames"
+geonames_data_dir="country_data"
+

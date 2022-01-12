@@ -1,0 +1,12 @@
+{
+    "cities": [
+        {
+            "country_code": "IT",
+            "place_name": "Milano"
+        },
+        {
+            "country_code": "some_ISO_2_alpha_country_code",
+            "place_name": "some_city_name"
+        }
+    ]
+}
