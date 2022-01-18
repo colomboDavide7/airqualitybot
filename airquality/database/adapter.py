@@ -5,43 +5,22 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import psycopg2
+import logging
 from psycopg2 import connect
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 
 class DatabaseError(Exception):
     """
-    An *Exception* that defines is raise when a database-side error occur.
+    A subclass of Exception that is raised to signal a database side issue.
     """
-
-    def __init__(self, cause: str):
-        self.cause = cause
-
-    def __repr__(self):
-        return f"{type(self).__name__}(cause={self.cause})"
+    pass
 
 
-class DatabaseAdapter(object):
+class DatabaseAdapter(ABC):
     """
-    An *object* interface that implements the context manager interface methods and defines four methods
-    for database interaction:
-
-    - fetchone: asks the database for the first response among all the responses.
-    - fetchall: asks the database all the found responses.
-    - execute:  execute a query that change the database status without return anything.
-    - close:    close the database connection.
-
+    AbstractBaseClass that defines the basic interface for interacting with a database.
     """
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-        if exc_type is not None:
-            if issubclass(exc_type, psycopg2.Error):
-                raise DatabaseError(cause=exc_val)
 
     @abstractmethod
     def fetchone(self, query: str):
@@ -62,28 +41,50 @@ class DatabaseAdapter(object):
 
 class Psycopg2Adapter(DatabaseAdapter):
     """
-    A *DatabaseAdapter* that knows how to open a database connection using *psycopg2* module.
+    A class that implements the *DatabaseAdapter* interface by using psycopg2 module.
+
+    Keyword arguments:
+        *dbname*            the database name to connect.
+        *user*              the username to log in the database as.
+        *password*          the username's password for database login.
+        *host*              the database's connection host.
+        *port*              the database's connection port.
+
+    Raises:
+        *DatabaseError*     to signal that a database side error occurs.
+
     """
 
     def __init__(self, dbname: str, user: str, password: str, host: str, port: str):
         self.conn = connect(dbname=dbname, user=user, password=password, host=host, port=port)
+        self._logger = logging.getLogger(__name__)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._logger.debug('closing database connection')
+        self.close()
+        if exc_type is not None:
+            self._logger.exception(exc_val)
+            raise DatabaseError(exc_val)
 
     def fetchone(self, query: str):
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            self.conn.commit()
-            return cur.fetchone()
+        return self._fetch(query, exec_name='fetchone')
 
     def fetchall(self, query: str):
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            self.conn.commit()
-            return cur.fetchall()
+        return self._fetch(query, exec_name='fetchall')
 
     def execute(self, query: str):
         with self.conn.cursor() as cur:
             cur.execute(query)
             self.conn.commit()
+
+    def _fetch(self, query: str, exec_name: str):
+        with self.conn.cursor() as cur:
+            cur.execute(query)
+            self.conn.commit()
+            return getattr(cur, exec_name)()
 
     def close(self):
         self.conn.close()

@@ -15,7 +15,8 @@ class TestDatabaseAdapter(TestCase):
 
     @property
     def get_test_connection_properties(self):
-        return {'dbname': 'fakedbname', 'user': 'fakeuser', 'password': 'fakepassword', 'host': 'fakehost', 'port': 'fakeport'}
+        return {'dbname': 'fakedbname', 'user': 'fakeuser', 'password': 'fakepassword', 'host': 'fakehost',
+                'port': 'fakeport'}
 
     ##################################### test_fetchone #####################################
     @patch('airquality.database.adapter.connect')
@@ -23,7 +24,7 @@ class TestDatabaseAdapter(TestCase):
         mocked_cursor = MagicMock()
         mocked_cursor.__enter__.return_value = mocked_cursor
         mocked_cursor.execute = MagicMock()
-        mocked_cursor.fetchone.return_value = ("some value", )
+        mocked_cursor.fetchone.return_value = ("some value",)
         mocked_conn = MagicMock()
         mocked_conn.cursor.return_value = mocked_cursor
         mocked_connect.return_value = mocked_conn
@@ -40,7 +41,7 @@ class TestDatabaseAdapter(TestCase):
         mocked_cursor = MagicMock()
         mocked_cursor.__enter__.return_value = mocked_cursor
         mocked_cursor.execute = MagicMock()
-        mocked_cursor.fetchall.return_value = [("row1",), ("row2", )]
+        mocked_cursor.fetchall.return_value = [("row1",), ("row2",)]
 
         mocked_conn = MagicMock()
         mocked_conn.cursor.return_value = mocked_cursor
@@ -52,8 +53,8 @@ class TestDatabaseAdapter(TestCase):
 
         mocked_cursor.execute.assert_called_with(test_query)
         self.assertEqual(len(actual), 2)
-        self.assertEqual(actual[0], ("row1", ))
-        self.assertEqual(actual[1], ("row2", ))
+        self.assertEqual(actual[0], ("row1",))
+        self.assertEqual(actual[1], ("row2",))
 
     ##################################### test_execute #####################################
     @patch('airquality.database.adapter.connect')
@@ -89,7 +90,7 @@ class TestDatabaseAdapter(TestCase):
         with self.assertRaises(DatabaseError):
             with Psycopg2Adapter(**self.get_test_connection_properties) as adapter:
                 adapter.execute(query="some query.")
-        mocked_conn.close.assert_called_once()
+            mocked_conn.close.assert_called_once()
 
 
 if __name__ == '__main__':
