@@ -40,17 +40,17 @@ class TestAddMobileMeasuresUsecase(TestCase):
         mocked_gateway = MagicMock()
         mocked_gateway.get_measure_param_owned_by.return_value = self.get_test_measure_param
         mocked_gateway.get_max_mobile_packet_id_plus_one.return_value = 12399
-        mocked_gateway.get_apiparam_of_type.return_value = [self.get_test_apiparam]
+        mocked_gateway.get_sensor_apiparam_of_type.return_value = [self.get_test_apiparam]
         test_filter_timestamp = datetime.strptime("2021-08-10T23:59:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
         mocked_gateway.get_last_acquisition_of_sensor_channel.return_value = test_filter_timestamp
-        mocked_gateway.insert_mobile_sensor_measures = MagicMock()
+        mocked_gateway.insert_mobile_measures = MagicMock()
 
         use_case = AddAtmotubeMeasures(output_gateway=mocked_gateway, input_url_template="fakeurl")
         self.assertEqual(use_case.measure_param, self.get_test_measure_param)
         self.assertEqual(use_case.api_param, [self.get_test_apiparam])
 
         use_case.run()
-        responses = mocked_gateway.insert_mobile_sensor_measures.call_args[1]['responses']
+        responses = mocked_gateway.insert_mobile_measures.call_args[1]['responses']
         self.assertEqual(len(responses), 1)
 
         resp = responses[0]

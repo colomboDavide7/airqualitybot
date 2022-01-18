@@ -28,8 +28,8 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchall.return_value = [("n1",), ("n2",), ("n3",)]
 
-        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
-        self.assertEqual(repr(gateway), "DatabaseGateway(dbadapter=mocked database adapter)")
+        gateway = DatabaseGateway(database_adapt=mocked_dbadapter)
+        self.assertEqual(repr(gateway), "DatabaseGateway(database_adapt=mocked database adapter)")
 
         existing_sensor_names = gateway.get_existing_sensor_names_of_type(sensor_type="purpleair")
         self.assertEqual(existing_sensor_names, {"n1", "n2", "n3"})
@@ -39,7 +39,7 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchone.side_effect = [(12,), (None,)]
 
-        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        gateway = DatabaseGateway(database_adapt=mocked_dbadapter)
         start_sensor_id = gateway.get_max_sensor_id_plus_one()
         self.assertEqual(start_sensor_id, 13)
 
@@ -74,7 +74,7 @@ class TestDatabaseGateway(TestCase):
         mocked_response_builder = MagicMock()
         mocked_response_builder.__len__.return_value = 1
         mocked_response_builder.__iter__.return_value = [self.get_test_add_fixed_sensor_responses]
-        gateway = DatabaseGateway(dbadapter=mocked_database_adapter)
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapter)
         gateway.insert_sensors(responses=mocked_response_builder)
 
         expected_query = \
@@ -91,7 +91,7 @@ class TestDatabaseGateway(TestCase):
         mocked_database_adapter = MockedDatabaseAdapter()
         mocked_database_adapter.fetchall.side_effect = [[(1, 'c1'), (2, 'c2')], []]
 
-        gateway = DatabaseGateway(dbadapter=mocked_database_adapter)
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapter)
         actual = gateway.get_measure_param_owned_by(owner="fakeowner")
         expected = {'c1': 1, 'c2': 2}
         self.assertEqual(actual, expected)
@@ -117,8 +117,8 @@ class TestDatabaseGateway(TestCase):
         mocked_response_builder = MagicMock()
         mocked_response_builder.__iter__.return_value = [self.get_test_add_mobile_sensor_responses]
 
-        gateway = DatabaseGateway(dbadapter=mocked_database_adapter)
-        gateway.insert_mobile_sensor_measures(responses=mocked_response_builder)
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapter)
+        gateway.insert_mobile_measures(responses=mocked_response_builder)
 
         expected_query = "INSERT INTO level0_raw.mobile_measurement (packet_id, param_id, param_value, timestamp, geom) VALUES " \
                          f"{self.get_test_mobile_records};"
@@ -130,8 +130,8 @@ class TestDatabaseGateway(TestCase):
         mocked_database_adapter = MockedDatabaseAdapter()
         mocked_database_adapter.execute = MagicMock()
 
-        gateway = DatabaseGateway(dbadapter=mocked_database_adapter)
-        gateway.update_last_acquisition(timestamp="faketimestamp", sensor_id=12, ch_name="fakename")
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapter)
+        gateway.update_last_acquisition_of(timestamp="faketimestamp", sensor_id=12, ch_name="fakename")
 
         expected_query = "UPDATE level0_raw.sensor_api_param SET last_acquisition = 'faketimestamp' " \
                          "WHERE sensor_id = 12 AND ch_name = 'fakename';"
@@ -148,8 +148,8 @@ class TestDatabaseGateway(TestCase):
              (2, 'z1', 'a1', 'm1', test_last_acquisition)],
             []]
 
-        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
-        actual = gateway.get_apiparam_of_type(sensor_type="faketype")
+        gateway = DatabaseGateway(database_adapt=mocked_dbadapter)
+        actual = gateway.get_sensor_apiparam_of_type(sensor_type="faketype")
         self.assertEqual(len(actual), 3)
 
         expected_apiparam = [
@@ -160,14 +160,14 @@ class TestDatabaseGateway(TestCase):
         self.assertEqual(actual, expected_apiparam)
 
         with self.assertRaises(ValueError):
-            gateway.get_apiparam_of_type(sensor_type="faketype")
+            gateway.get_sensor_apiparam_of_type(sensor_type="faketype")
 
     ##################################### test_get_max_mobile_packet_id_plus_one #####################################
     def test_get_max_mobile_packet_id_plus_one(self):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchone.return_value = (12399,)
 
-        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_max_mobile_packet_id_plus_one()
+        actual = DatabaseGateway(database_adapt=mocked_dbadapter).get_max_mobile_packet_id_plus_one()
         self.assertEqual(actual, 12400)
 
     ##################################### test_get_max_mobile_packet_id_plus_one #####################################
@@ -175,8 +175,8 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchone.return_value = (datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"),)
 
-        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_last_acquisition_of_sensor_channel(sensor_id=12,
-                                                                                                    ch_name="fakename")
+        actual = DatabaseGateway(database_adapt=mocked_dbadapter).get_last_acquisition_of_sensor_channel(sensor_id=12,
+                                                                                                         ch_name="fakename")
         self.assertEqual(actual, datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"))
 
     @property
@@ -199,7 +199,7 @@ class TestDatabaseGateway(TestCase):
         mocked_responses = MagicMock()
         mocked_responses.__iter__.return_value = [self.get_test_add_station_measures_response]
 
-        DatabaseGateway(dbadapter=mocked_dbadapter).insert_station_measures(responses=mocked_responses)
+        DatabaseGateway(database_adapt=mocked_dbadapter).insert_station_measures(responses=mocked_responses)
 
         expected_query = "INSERT INTO level0_raw.station_measurement (packet_id, sensor_id, param_id, param_value, timestamp) VALUES " \
                          f"{self.get_test_station_records};"
@@ -210,7 +210,7 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchone.side_effect = [(149,), (None,)]
 
-        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        gateway = DatabaseGateway(database_adapt=mocked_dbadapter)
         actual = gateway.get_max_station_packet_id_plus_one()
         self.assertEqual(actual, 150)
 
@@ -222,7 +222,7 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchone.side_effect = [(1,), None]
 
-        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        gateway = DatabaseGateway(database_adapt=mocked_dbadapter)
         actual = gateway.get_service_id_from_name(service_name="fakename")
         self.assertEqual(actual, 1)
 
@@ -234,7 +234,7 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchall.return_value = [("p1",), ("p2",), ("p3",)]
 
-        actual = DatabaseGateway(dbadapter=mocked_dbadapter).get_poscodes_of_country(country_code="fakecode")
+        actual = DatabaseGateway(database_adapt=mocked_dbadapter).get_poscodes_of_country(country_code="fakecode")
         self.assertEqual(len(actual), 3)
         self.assertIn("p1", actual)
         self.assertIn("p2", actual)
@@ -254,7 +254,7 @@ class TestDatabaseGateway(TestCase):
         mocked_response_builder.__len__.return_value = 1
         mocked_response_builder.__iter__.return_value = [self.get_test_add_places_response]
 
-        DatabaseGateway(dbadapter=mocked_dbadapter).insert_places(responses=mocked_response_builder)
+        DatabaseGateway(database_adapt=mocked_dbadapter).insert_places(responses=mocked_response_builder)
 
         expected_query = "INSERT INTO level0_raw.geographical_area " \
                          "(service_id, postal_code, country_code, place_name, province, state, geom) VALUES " \
@@ -266,7 +266,7 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchall.side_effect = [[('key1', 0), ('key2', 12)], []]
 
-        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        gateway = DatabaseGateway(database_adapt=mocked_dbadapter)
         actual = gateway.get_service_apiparam_of(service_name="fakename")
         self.assertEqual(len(actual), 2)
         self.assertEqual(actual[0].api_key, "key1")
@@ -286,7 +286,7 @@ class TestDatabaseGateway(TestCase):
              (56, 804, "04n")],
             []]
 
-        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        gateway = DatabaseGateway(database_adapt=mocked_dbadapter)
         actual = gateway.get_weather_conditions()
         self.assertEqual(len(actual), 3)
 
@@ -304,7 +304,7 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter.fetchone.side_effect = [(14400, 9, 45), None]
 
         test_city = WeatherCityData(country_code="fakecode", place_name="fakename")
-        gateway = DatabaseGateway(dbadapter=mocked_dbadapter)
+        gateway = DatabaseGateway(database_adapt=mocked_dbadapter)
         actual = gateway.get_geolocation_of(city=test_city)
         self.assertEqual(actual.geoarea_id, 14400)
         self.assertEqual(actual.longitude, 9)
@@ -330,7 +330,7 @@ class TestDatabaseGateway(TestCase):
         mocked_response_builder.__len__.return_value = 1
         mocked_response_builder.__iter__.return_value = [self.get_test_add_weather_data_response]
 
-        DatabaseGateway(dbadapter=mocked_dbadapter).insert_weather_data(responses=mocked_response_builder)
+        DatabaseGateway(database_adapt=mocked_dbadapter).insert_weather_data(responses=mocked_response_builder)
 
         expected_query = \
             "INSERT INTO level0_raw.current_weather (service_id, geoarea_id, weather_id, temperature, pressure, " \
@@ -349,7 +349,7 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.execute = MagicMock()
 
-        DatabaseGateway(dbadapter=mocked_dbadapter).delete_all_from_hourly_weather_forecast()
+        DatabaseGateway(database_adapt=mocked_dbadapter).delete_all_from_hourly_weather_forecast()
         expected_query = "DELETE FROM level0_raw.hourly_forecast;"
         mocked_dbadapter.execute.assert_called_with(expected_query)
 
@@ -357,7 +357,7 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.execute = MagicMock()
 
-        DatabaseGateway(dbadapter=mocked_dbadapter).delete_all_from_daily_weather_forecast()
+        DatabaseGateway(database_adapt=mocked_dbadapter).delete_all_from_daily_weather_forecast()
         expected_query = "DELETE FROM level0_raw.daily_forecast;"
         mocked_dbadapter.execute.assert_called_with(expected_query)
 

@@ -48,7 +48,7 @@ class AddThingspeakMeasures(object):
 
     @property
     def api_param(self) -> List[APIParam]:
-        return self.output_gateway.get_apiparam_of_type(sensor_type="thingspeak")
+        return self.output_gateway.get_sensor_apiparam_of_type(sensor_type="thingspeak")
 
     @property
     def start_packet_id(self) -> int:
@@ -91,6 +91,6 @@ class AddThingspeakMeasures(object):
                     self.app_logger.info("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
                     self.output_gateway.insert_station_measures(responses=response_builder)
                     last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
-                    self.output_gateway.update_last_acquisition(
+                    self.output_gateway.update_last_acquisition_of(
                         timestamp=last_acquisition, sensor_id=param.sensor_id, ch_name=param.ch_name
                     )

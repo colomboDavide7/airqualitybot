@@ -39,7 +39,7 @@ class TestAddStationMeasures(TestCase):
         mocked_gateway = MagicMock()
         mocked_gateway.insert_station_measures = MagicMock()
         mocked_gateway.get_max_station_packet_id_plus_one.return_value = 140
-        mocked_gateway.get_apiparam_of_type.return_value = [self.get_test_apiparam]
+        mocked_gateway.get_sensor_apiparam_of_type.return_value = [self.get_test_apiparam]
         mocked_gateway.get_measure_param_owned_by.return_value = self.get_test_measure_param
         mocked_gateway.get_last_acquisition_of_sensor_channel.return_value = datetime.strptime('2021-12-20 11:17:40', '%Y-%m-%d %H:%M:%S')
 

@@ -89,28 +89,28 @@ class Application(object):
             self._logger.debug("running %s" % personality)
             if personality == 'purpleair':
                 AddPurpleairFixedSensors(
-                    output_gateway=DatabaseGateway(dbadapter=database_wrap),
+                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
                     input_url_template=self._env.url_template(personality)
                 ).run()
 
             elif personality == 'atmotube':
                 AddAtmotubeMeasures(
-                    output_gateway=DatabaseGateway(dbadapter=database_wrap),
+                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
                     input_url_template=self._env.url_template(personality)
                 ).run()
 
             elif personality == 'thingspeak':
                 AddThingspeakMeasures(
-                    output_gateway=DatabaseGateway(dbadapter=database_wrap),
+                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
                     input_url_template=self._env.url_template(personality)
                 ).run()
             elif personality == 'geonames':
                 AddPlaces(
-                    output_gateway=DatabaseGateway(dbadapter=database_wrap),
+                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
                     input_dir_path=self._env.input_dir_of(personality)
                 ).run()
             elif personality == 'openweathermap':
                 AddWeatherData(
-                    output_gateway=DatabaseGateway(dbadapter=database_wrap),
+                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
                     input_url_template=self._env.url_template(personality)
                 ).run()

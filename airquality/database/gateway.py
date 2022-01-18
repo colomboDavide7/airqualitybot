@@ -13,156 +13,198 @@ from airquality.datamodel.apiparam import APIParam
 from airquality.datamodel.service_param import ServiceParam
 from typing import Set, Dict, List
 from datetime import datetime
+import airquality.database as const
+import logging
 
 
 class DatabaseGateway(object):
     """
-    An *object* class that moderates the interaction between the system and the database.
+    A class that defines how the application can interact with the database.
+
+    Every single query that can be executed must be defined here within a method.
+
+    Keyword arguments:
+        *database_adapt*            the concrete implementation of DatabaseAdapter interface for executing actions
+                                    agains the database.
+
     """
 
-    def __init__(self, dbadapter: DatabaseAdapter):
-        self.dbadapter = dbadapter
+    def __init__(self, database_adapt: DatabaseAdapter):
+        self.database_adapt = database_adapt
+        self._logger = logging.getLogger(__name__)
 
+    def _raise(self, cause: str):
+        self._logger.exception(cause)
+        raise ValueError(cause)
+
+# ================================= #
+#                                   #
+# MEASURE PARAM TABLE
+#                                   #
+# ================================= #
+    def get_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
+        rows = self.database_adapt.fetchall(const.SELECT_MEASURE_PARAM.format(owner=owner))
+        if not rows:
+            self._raise(f"[FATAL]: database does not contain 'measure_param' owned by '{owner}'!!!")
+        return {code: ident for ident, code in rows}
+
+# ================================= #
+#                                   #
+# SENSOR TABLE
+#                                   #
+# ================================= #
     def get_existing_sensor_names_of_type(self, sensor_type: str) -> Set[str]:
-        rows = self.dbadapter.fetchall(
-            f"SELECT sensor_name FROM level0_raw.sensor WHERE sensor_type ILIKE '%{sensor_type}%';")
-        return {row[0] for row in rows}
+        return {row[0] for row in self.database_adapt.fetchall(const.SELECT_SENSOR_NAMES.format(type=sensor_type))}
 
     def get_max_sensor_id_plus_one(self) -> int:
-        row = self.dbadapter.fetchone("SELECT MAX(id) FROM level0_raw.sensor;")
+        row = self.database_adapt.fetchone(const.SELECT_MAX_SENS_ID)
         return 1 if row[0] is None else row[0] + 1
 
     def insert_sensors(self, responses: AddFixedSensorResponseBuilder):
-        sensor_query = "INSERT INTO level0_raw.sensor VALUES "
-        apiparam_query = "INSERT INTO level0_raw.sensor_api_param (sensor_id, ch_key, ch_id, ch_name, last_acquisition) VALUES "
-        geolocation_query = "INSERT INTO level0_raw.sensor_at_location (sensor_id, valid_from, geom) VALUES "
-        for response in responses:
-            sensor_query += response.sensor_record + ','
-            apiparam_query += response.apiparam_record + ','
-            geolocation_query += response.geolocation_record + ','
+        sval = pval = gval = ""
+        for r in responses:
+            sval += f"{r.sensor_record},"
+            pval += f"{r.apiparam_record},"
+            gval += f"{r.geolocation_record},"
+        sensor_query = const.INSERT_SENSORS.format(val=sval.strip(','))
+        apiparam_query = const.INSERT_SENSOR_API_PARAM.format(val=pval.strip(','))
+        geolocation_query = const.INSERT_SENSOR_LOCATION.format(val=gval.strip(','))
+        self.database_adapt.execute(f"{sensor_query} {apiparam_query} {geolocation_query}")
 
-        self.dbadapter.execute(
-            f"{sensor_query.strip(',')}; {apiparam_query.strip(',')}; {geolocation_query.strip(',')};")
+# ================================= #
+#                                   #
+# SENSOR API PARAM TABLE
+#                                   #
+# ================================= #
+    def get_last_acquisition_of_sensor_channel(self, sensor_id: int, ch_name: str) -> datetime:
+        return self.database_adapt.fetchone(const.SELECT_LAST_ACQUISITION_OF.format(sid=sensor_id, ch=ch_name))[0]
 
-    def get_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
-        rows = self.dbadapter.fetchall(
-            f"SELECT id, param_code FROM level0_raw.measure_param WHERE param_owner ILIKE '%{owner}%';")
+    def get_sensor_apiparam_of_type(self, sensor_type: str) -> List[APIParam]:
+        rows = self.database_adapt.fetchall(const.SELECT_SENS_API_PARAM_OF.format(type=sensor_type))
         if not rows:
-            raise ValueError(f"{type(self).__name__} cannot found measure parameters of owner='{owner}'")
-        return {code: ident for ident, code in rows}
+            self._raise(f"[FATAL]: database does not contain 'sensor_api_param' of type '{sensor_type}'")
+        return [APIParam(sensor_id=sid,
+                         api_key=key,
+                         api_id=ident,
+                         ch_name=name,
+                         last_acquisition=last) for sid, key, ident, name, last in rows]
 
-    def insert_mobile_sensor_measures(self, responses: AddMobileMeasureResponseBuilder):
-        measure_query = "INSERT INTO level0_raw.mobile_measurement (packet_id, param_id, param_value, timestamp, geom) VALUES "
-        measure_query += ','.join(resp.measure_record for resp in responses)
-        self.dbadapter.execute(f"{measure_query};")
+    def update_last_acquisition_of(self, timestamp: str, sensor_id: int, ch_name: str):
+        self.database_adapt.execute(const.UPDATE_SENS_API_PARAM_LAST.format(time=timestamp, sid=sensor_id, ch=ch_name))
 
-    def update_last_acquisition(self, timestamp: str, sensor_id: int, ch_name: str):
-        self.dbadapter.execute(
-            f"UPDATE level0_raw.sensor_api_param SET last_acquisition = '{timestamp}' "
-            f"WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
-        )
-
-    def get_apiparam_of_type(self, sensor_type: str) -> List[APIParam]:
-        rows = self.dbadapter.fetchall(
-            "SELECT a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.last_acquisition FROM level0_raw.sensor_api_param AS a "
-            f"INNER JOIN level0_raw.sensor AS s ON s.id = a.sensor_id WHERE s.sensor_type ILIKE '%{sensor_type}%';"
-        )
-        if not rows:
-            raise ValueError(f"{type(self).__name__} cannot found sensor API parameters of type='{sensor_type}'!")
-
-        return [APIParam(sensor_id=sid, api_key=key, api_id=ident, ch_name=name, last_acquisition=last)
-                for sid, key, ident, name, last in rows]
-
+# ================================= #
+#                                   #
+# MOBILE MEASUREMENTS TABLE
+#                                   #
+# ================================= #
     def get_max_mobile_packet_id_plus_one(self) -> int:
-        row = self.dbadapter.fetchone("SELECT MAX(packet_id) FROM level0_raw.mobile_measurement;")
+        row = self.database_adapt.fetchone(const.SELECT_MAX_MOBILE_PACK_ID)
         return 1 if row[0] is None else row[0] + 1
 
-    def get_last_acquisition_of_sensor_channel(self, sensor_id: int, ch_name: str) -> datetime:
-        row = self.dbadapter.fetchone(
-            f"SELECT last_acquisition FROM level0_raw.sensor_api_param WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
-        )
-        return row[0]
+    def insert_mobile_measures(self, responses: AddMobileMeasureResponseBuilder):
+        values = ','.join(resp.measure_record for resp in responses)
+        measure_query = const.INSERT_MOBILE_MEASURES.format(val=values)
+        self.database_adapt.execute(measure_query)
+
+# ================================= #
+#                                   #
+# STATION MEASUREMENT TABLE
+#                                   #
+# ================================= #
+    def get_max_station_packet_id_plus_one(self) -> int:
+        row = self.database_adapt.fetchone(const.SELECT_MAX_STATION_PACK_ID)
+        return 1 if row[0] is None else row[0] + 1
 
     def insert_station_measures(self, responses: AddStationMeasuresResponseBuilder):
-        query = "INSERT INTO level0_raw.station_measurement (packet_id, sensor_id, param_id, param_value, timestamp) VALUES "
-        query += ','.join(resp.measure_record for resp in responses)
-        self.dbadapter.execute(f"{query};")
+        values = ','.join(resp.measure_record for resp in responses)
+        query = const.INSERT_STATION_MEASURES.format(val=values)
+        self.database_adapt.execute(query)
 
-    def get_max_station_packet_id_plus_one(self) -> int:
-        row = self.dbadapter.fetchone("SELECT MAX(packet_id) FROM level0_raw.station_measurement;")
-        return 1 if row[0] is None else row[0] + 1
-
+# ================================= #
+#                                   #
+# SERVICE TABLE
+#                                   #
+# ================================= #
     def get_service_id_from_name(self, service_name: str) -> int:
-        row = self.dbadapter.fetchone(
-            f"SELECT id FROM level0_raw.service WHERE service_name ILIKE '%{service_name}%';"
-        )
+        row = self.database_adapt.fetchone(const.SELECT_SERVICE_ID_FROM.format(sn=service_name))
         if row is None:
-            raise ValueError(f"{type(self).__name__} cannot found id of name='{service_name}'")
+            self._raise(f"[FATAL]: database does not contain 'service' named '{service_name}'!!!")
         return row[0]
 
-    def get_poscodes_of_country(self, country_code) -> Set[str]:
-        rows = self.dbadapter.fetchall(
-            f"SELECT postal_code FROM level0_raw.geographical_area WHERE country_code = '{country_code}';"
-        )
-        return {row[0] for row in rows}
-
-    def insert_places(self, responses: AddPlacesResponseBuilder):
-        query = "INSERT INTO level0_raw.geographical_area " \
-                "(service_id, postal_code, country_code, place_name, province, state, geom) VALUES "
-        query += ','.join(resp.place_record for resp in responses)
-        self.dbadapter.execute(f"{query};")
-
+# ================================= #
+#                                   #
+# SERVICE API PARAM TABLE
+#                                   #
+# ================================= #
     def get_service_apiparam_of(self, service_name: str) -> List[ServiceParam]:
-        rows = self.dbadapter.fetchall(
-            "SELECT p.api_key, p.n_requests FROM level0_raw.service_api_param AS p INNER JOIN level0_raw.service AS s "
-            f"ON s.id = p.service_id WHERE s.service_name ILIKE '%{service_name}%';"
-        )
+        rows = self.database_adapt.fetchall(const.SELECT_SERVICE_API_PARAM_OF.format(sn=service_name))
         if not rows:
-            raise ValueError(f"{type(self).__name__} cannot found service API param for name='{service_name}'!")
+            self._raise(f"[FATAL]: database does not contain 'service_api_param' of service named '{service_name}'")
         return [ServiceParam(api_key=api_key, n_requests=nreq) for api_key, nreq in rows]
 
-    def get_weather_conditions(self):
-        rows = self.dbadapter.fetchall("SELECT id, code, icon FROM level0_raw.weather_condition;")
-        if not rows:
-            raise ValueError(f"{type(self).__name__} found #0 weather conditions!")
-        return rows
+# ================================= #
+#                                   #
+# GEOGRAPHICAL AREA TABLE
+#                                   #
+# ================================= #
+    def get_poscodes_of_country(self, country_code: str) -> Set[str]:
+        return {row[0] for row in self.database_adapt.fetchall(const.SELECT_POSCODES_OF.format(code=country_code))}
+
+    def insert_places(self, responses: AddPlacesResponseBuilder):
+        values = ','.join(resp.place_record for resp in responses)
+        query = const.INSERT_PLACES.format(val=values)
+        self.database_adapt.execute(query)
 
     def get_geolocation_of(self, city: WeatherCityData) -> CityOfGeoarea:
-        row = self.dbadapter.fetchone(
-            f"SELECT id, ST_X(geom), ST_Y(geom) FROM level0_raw.geographical_area "
-            f"WHERE country_code = '{city.country_code}' AND place_name = '{city.place_name}';"
+        row = self.database_adapt.fetchone(
+            const.SELECT_GEOLOCATION_OF.format(country=city.country_code, place=city.place_name)
         )
         if row is None:
-            raise ValueError(f"{type(self).__name__} cannot found '{city!r}' into the database!")
+            self._raise(f"[FATAL]: database failed to query 'geographical_area' from {city!r}!!!")
         return CityOfGeoarea(geoarea_id=row[0], longitude=row[1], latitude=row[2])
 
+# ================================= #
+#                                   #
+# WEATHER CONDITION TABLE
+#                                   #
+# ================================= #
+    def get_weather_conditions(self):
+        rows = self.database_adapt.fetchall(const.SELECT_WEATHER_COND)
+        if not rows:
+            self._raise(f"[FATAL]: database failed to query 'weather_condition'!!!")
+        return rows
+
+# ================================= #
+#                                   #
+# HOURLY FORECAST TABLE
+#                                   #
+# ================================= #
     def delete_all_from_hourly_weather_forecast(self):
-        self.dbadapter.execute("DELETE FROM level0_raw.hourly_forecast;")
+        self.database_adapt.execute(const.DELETE_ALL_HOURLY_FORECAST)
 
+# ================================= #
+#                                   #
+# DAILY FORECAST TABLE
+#                                   #
+# ================================= #
     def delete_all_from_daily_weather_forecast(self):
-        self.dbadapter.execute("DELETE FROM level0_raw.daily_forecast;")
+        self.database_adapt.execute(const.DELETE_ALL_DAILY_FORECAST)
 
+# ================================= #
+#                                   #
+# CURRENT WEATHER TABLE
+#                                   #
+# ================================= #
     def insert_weather_data(self, responses: AddOpenWeatherMapDataResponseBuilder):
-        current_weather_data_query = \
-            "INSERT INTO level0_raw.current_weather (service_id, geoarea_id, weather_id, temperature, pressure, " \
-            "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES "
-
-        hourly_weather_data_query = \
-            "INSERT INTO level0_raw.hourly_forecast (service_id, geoarea_id, weather_id, temperature, pressure, " \
-            "humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES "
-
-        daily_weather_data_query = \
-            "INSERT INTO level0_raw.daily_forecast (service_id, geoarea_id, weather_id, temperature, min_temp, max_temp, " \
-            "pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES "
-
-        for resp in responses:
-            current_weather_data_query += resp.current_weather_record + ','
-            hourly_weather_data_query += resp.hourly_forecast_record + ','
-            daily_weather_data_query += resp.daily_forecast_record + ','
-
-        self.dbadapter.execute(f"{current_weather_data_query.strip(',')}; "
-                               f"{hourly_weather_data_query.strip(',')}; "
-                               f"{daily_weather_data_query.strip(',')};")
+        cval = hval = dval = ""
+        for r in responses:
+            cval += f"{r.current_weather_record},"
+            hval += f"{r.hourly_forecast_record},"
+            dval += f"{r.daily_forecast_record},"
+        current_weather_query = const.INSERT_CURRENT_WEATHER_DATA.format(val=cval.strip(','))
+        hourly_forecast_query = const.INSERT_HOURLY_FORECAST_DATA.format(val=hval.strip(','))
+        daily_forecast_query = const.INSERT_DAILY_FORECAST_DATA.format(val=dval.strip(','))
+        self.database_adapt.execute(f"{current_weather_query} {hourly_forecast_query} {daily_forecast_query}")
 
     def __repr__(self):
-        return f"{type(self).__name__}(dbadapter={self.dbadapter!r})"
+        return f"{type(self).__name__}(database_adapt={self.database_adapt!r})"
