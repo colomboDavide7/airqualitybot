@@ -45,7 +45,7 @@ class DatabaseGateway(object):
     def get_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
         rows = self.database_adapt.fetchall(const.SELECT_MEASURE_PARAM.format(owner=owner))
         if not rows:
-            self._raise(f"[FATAL]: database does not contain 'measure_param' owned by '{owner}'!!!")
+            self._raise(f"[FATAL]: database failed to query 'measure_param' owned by '{owner}'!!!")
         return {code: ident for ident, code in rows}
 
 # ================================= #
@@ -82,7 +82,7 @@ class DatabaseGateway(object):
     def get_sensor_apiparam_of_type(self, sensor_type: str) -> List[APIParam]:
         rows = self.database_adapt.fetchall(const.SELECT_SENS_API_PARAM_OF.format(type=sensor_type))
         if not rows:
-            self._raise(f"[FATAL]: database does not contain 'sensor_api_param' of type '{sensor_type}'")
+            self._raise(f"[FATAL]: database failed to query 'sensor_api_param' of sensor type '{sensor_type}'!!!")
         return [APIParam(sensor_id=sid,
                          api_key=key,
                          api_id=ident,
@@ -90,7 +90,7 @@ class DatabaseGateway(object):
                          last_acquisition=last) for sid, key, ident, name, last in rows]
 
     def update_last_acquisition_of(self, timestamp: str, sensor_id: int, ch_name: str):
-        self.database_adapt.execute(const.UPDATE_SENS_API_PARAM_LAST.format(time=timestamp, sid=sensor_id, ch=ch_name))
+        self.database_adapt.execute(const.UPDATE_LAST_CH_TIMEST.format(time=timestamp, sid=sensor_id, ch=ch_name))
 
 # ================================= #
 #                                   #
@@ -128,7 +128,7 @@ class DatabaseGateway(object):
     def get_service_id_from_name(self, service_name: str) -> int:
         row = self.database_adapt.fetchone(const.SELECT_SERVICE_ID_FROM.format(sn=service_name))
         if row is None:
-            self._raise(f"[FATAL]: database does not contain 'service' named '{service_name}'!!!")
+            self._raise(f"[FATAL]: database failed to query 'service_id' for service '{service_name}'!!!")
         return row[0]
 
 # ================================= #
@@ -139,7 +139,7 @@ class DatabaseGateway(object):
     def get_service_apiparam_of(self, service_name: str) -> List[ServiceParam]:
         rows = self.database_adapt.fetchall(const.SELECT_SERVICE_API_PARAM_OF.format(sn=service_name))
         if not rows:
-            self._raise(f"[FATAL]: database does not contain 'service_api_param' of service named '{service_name}'")
+            self._raise(f"[FATAL]: database failed to query 'service_api_param' for service '{service_name}'!!!")
         return [ServiceParam(api_key=api_key, n_requests=nreq) for api_key, nreq in rows]
 
 # ================================= #

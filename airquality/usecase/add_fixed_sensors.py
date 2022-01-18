@@ -25,7 +25,7 @@ class AddPurpleairFixedSensors(object):
     def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
         self.output_gateway = output_gateway
         self.input_url_template = input_url_template
-        self.app_logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     @property
     def start_sensor_id(self) -> int:
@@ -37,17 +37,17 @@ class AddPurpleairFixedSensors(object):
 
     def run(self) -> None:
         datamodel_builder = PurpleairAPIDataBuilder(url=self.input_url_template)
-        self.app_logger.info("found #%d API data" % len(datamodel_builder))
+        self._logger.debug("found #%d API data" % len(datamodel_builder))
 
         request_builder = AddPurpleairSensorRequestBuilder(datamodel=datamodel_builder)
-        self.app_logger.info("found #%d requests" % len(request_builder))
+        self._logger.debug("found #%d requests" % len(request_builder))
 
         validator = AddFixedSensorRequestValidator(request=request_builder, existing_names=self.names_of)
-        self.app_logger.info("found #%d valid requests" % len(validator))
+        self._logger.debug("found #%d valid requests" % len(validator))
 
         response_builder = AddFixedSensorResponseBuilder(requests=validator, start_sensor_id=self.start_sensor_id)
-        self.app_logger.info("found #%d responses" % len(response_builder))
+        self._logger.debug("found #%d responses" % len(response_builder))
 
         if response_builder:
-            self.app_logger.info("inserting new sensors!")
+            self._logger.debug("inserting new sensors!")
             self.output_gateway.insert_sensors(responses=response_builder)

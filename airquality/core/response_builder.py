@@ -17,9 +17,8 @@ SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
 
 
 def apiparam_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
-    return ','.join(
-        f"({sensor_id}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')" for ch in request.channels
-    )
+    return ','.join(f"({sensor_id}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')"
+                    for ch in request.channels)
 
 
 def sensor_at_location_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:

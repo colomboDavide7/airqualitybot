@@ -40,7 +40,7 @@ SELECT_SENS_API_PARAM_OF = "SELECT a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.
 SELECT_LAST_ACQUISITION_OF = "SELECT last_acquisition FROM level0_raw.sensor_api_param " \
                              "WHERE sensor_id = {sid} AND ch_name = '{ch}';"
 
-UPDATE_SENS_API_PARAM_LAST = "UPDATE level0_raw.sensor_api_param SET last_acquisition = '{time}' " \
+UPDATE_LAST_CH_TIMEST      = "UPDATE level0_raw.sensor_api_param SET last_acquisition = '{time}' " \
                              "WHERE sensor_id = {sid} AND ch_name = '{ch}';"
 
 INSERT_SENSOR_API_PARAM = "INSERT INTO level0_raw.sensor_api_param " \

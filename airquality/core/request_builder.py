@@ -15,7 +15,7 @@ from datetime import datetime
 
 class AddPurpleairSensorRequestBuilder(IterableItemsABC):
     """
-    An *IterableItemsABC* that defines the business rules for translating
+    A subclass of *IterableItemsABC* that defines the business rules for translating
     a set of *PurpleairDatamodel* items into an *AddFixedSensorRequest* Generator.
     """
 
@@ -25,16 +25,22 @@ class AddPurpleairSensorRequestBuilder(IterableItemsABC):
     def items(self) -> Generator[AddFixedSensorsRequest, None, None]:
         for dm in self.datamodel:
             created_at = datetime.fromtimestamp(dm.date_created)
-            channels = [
-                Channel(api_key=dm.primary_key_a, api_id=str(dm.primary_id_a), channel_name="1A",
-                        last_acquisition=created_at),
-                Channel(api_key=dm.primary_key_b, api_id=str(dm.primary_id_b), channel_name="1B",
-                        last_acquisition=created_at),
-                Channel(api_key=dm.secondary_key_a, api_id=str(dm.secondary_id_a), channel_name="2A",
-                        last_acquisition=created_at),
-                Channel(api_key=dm.secondary_key_b, api_id=str(dm.secondary_id_b), channel_name="2B",
-                        last_acquisition=created_at)
-            ]
+            channels = [Channel(api_key=dm.primary_key_a,
+                                api_id=str(dm.primary_id_a),
+                                channel_name="1A",
+                                last_acquisition=created_at),
+                        Channel(api_key=dm.primary_key_b,
+                                api_id=str(dm.primary_id_b),
+                                channel_name="1B",
+                                last_acquisition=created_at),
+                        Channel(api_key=dm.secondary_key_a,
+                                api_id=str(dm.secondary_id_a),
+                                channel_name="2A",
+                                last_acquisition=created_at),
+                        Channel(api_key=dm.secondary_key_b,
+                                api_id=str(dm.secondary_id_b),
+                                channel_name="2B",
+                                last_acquisition=created_at)]
             yield AddFixedSensorsRequest(
                 type="Purpleair/Thingspeak",
                 name=f"{dm.name} ({dm.sensor_index})",
