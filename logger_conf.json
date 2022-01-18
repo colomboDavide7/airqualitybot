@@ -1,0 +1,37 @@
+{
+    "version": 1,
+    "formatters": {
+		"short": {
+			"format": "[TIME]: %(asctime)s - [LEVEL]: %(levelname)s - [DESCRIPTION]: %(message)s"
+		},
+		"detailed": {
+			"format": "[TIME]: %(asctime)s - [LEVEL]: %(levelname)s - [PROC_ID]: %(process)d - [PATH]: %(pathname)s - [MODULE]: %(module)s - [LINE]: %(lineno)d - [DESCRIPTION]: %(message)s"
+		}
+	},
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "formatter": "short",
+            "class": "logging.StreamHandler"
+        },
+        "report": {
+            "level": "DEBUG",
+            "formatter": "short",
+            "filename": "./log/report.log",
+            "class": "logging.FileHandler"
+        },
+        "issues": {
+            "level": "ERROR",
+            "formatter": "detailed",
+            "filename": "./log/issues.log",
+            "class": "logging.FileHandler"
+        }
+    },
+    "loggers": {
+        "": {
+            "level": "DEBUG",
+            "handlers": ["console", "report", "issues"],
+            "propate": false
+        }
+    }
+}

@@ -30,26 +30,25 @@ class TestApplication(TestCase):
             'p3_url': 'url_template_of_p3'
         }
 
-    def test_create_WrongUsageError(self):
-        err = WrongUsageError(cause="some cause")
-        self.assertEqual(err.cause, "some cause")
-        self.assertEqual(repr(err), "WrongUsageError(cause=some cause)")
-
     def test_WrongUsageError_on_missing_personality(self):
         test_args = ['program_name']
         with patch.object(sys, 'argv', test_args):
             with patch.dict(os.environ, self.get_test_environ):
-                with Application(env=Environment()) as runner:
-                    with self.assertRaises(WrongUsageError):
-                        runner.main()
+                with self.assertRaises(SystemExit):
+                    with Application(env=Environment()) as runner:
+                        with self.assertRaises(WrongUsageError):
+                            runner.main()
+                    self.assertEqual(runner._exit_code, 1)
 
-    def test_WrongUsageError_on_invalid_personality(self):
+    def test_raise_wrong_usage_error_on_invalid_personality(self):
         test_args = ['program_name', 'bad_personality']
         with patch.object(sys, 'argv', test_args):
             with patch.dict(os.environ, self.get_test_environ):
-                with Application(env=Environment()) as runner:
-                    with self.assertRaises(WrongUsageError):
-                        runner.main()
+                with self.assertRaises(SystemExit):
+                    with Application(env=Environment()) as runner:
+                        with self.assertRaises(WrongUsageError):
+                            runner.main()
+                    self.assertEqual(runner._exit_code, 1)
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@
 import os
 from unittest.mock import patch
 from unittest import TestCase, main
-from airquality.environment import Environment, AppEnvironError
+from airquality.environment import Environment, MissingEnvironPropertyError
 
 
 class TestEnvironment(TestCase):
@@ -33,9 +33,9 @@ class TestEnvironment(TestCase):
 
     def test_get_valid_personalities(self):
         with patch.dict(os.environ, self.get_test_environ):
-            with Environment() as env:
-                actual = env.valid_personalities
-                self.assertEqual(actual, ('p1', 'p2', 'p3'))
+            env = Environment()
+            actual = env.valid_personalities
+            self.assertEqual(actual, ('p1', 'p2', 'p3'))
 
     def test_get_program_usage_msg(self):
         with patch.dict(os.environ, self.get_test_environ):
@@ -45,31 +45,29 @@ class TestEnvironment(TestCase):
     def test_get_database_credentials(self):
         with patch.dict(os.environ, self.get_test_environ):
             env = Environment()
-            with env as context_manager:
-                self.assertEqual(context_manager, env)
-                self.assertEqual(context_manager.dbname, "fakedbname")
-                self.assertEqual(context_manager.user, "fakeuser")
-                self.assertEqual(context_manager.password, "fakepassword")
-                self.assertEqual(context_manager.host, "fakehost")
-                self.assertEqual(context_manager.port, "fakeport")
+            self.assertEqual(env.dbname, "fakedbname")
+            self.assertEqual(env.dbuser, "fakeuser")
+            self.assertEqual(env.dbpwd, "fakepassword")
+            self.assertEqual(env.dbhost, "fakehost")
+            self.assertEqual(env.dbport, "fakeport")
 
     def test_get_url_from_personality(self):
         with patch.dict(os.environ, self.get_test_environ):
-            with Environment() as env:
-                actual = env.url_template(personality="p1")
-                self.assertEqual(actual, "url_template_of_p1")
+            env = Environment()
+            actual = env.url_template(personality="p1")
+            self.assertEqual(actual, "url_template_of_p1")
 
     def test_input_dir_of(self):
         with patch.dict(os.environ, self.get_test_environ):
-            with Environment() as env:
-                actual = env.input_dir_of(personality="p1")
-                self.assertEqual(actual, "fakeroot/fakep1dir/fakep1datadir")
+            env = Environment()
+            actual = env.input_dir_of(personality="p1")
+            self.assertEqual(actual, "fakeroot/fakep1dir/fakep1datadir")
 
     def test_EnvironmentError_when_KeyError_is_raised(self):
         with patch.dict(os.environ, self.get_test_environ):
-            with self.assertRaises(AppEnvironError):
-                with Environment() as env:
-                    env.url_template('p4')
+            with self.assertRaises(MissingEnvironPropertyError):
+                env = Environment()
+                env.url_template('p4')
 
 
 if __name__ == '__main__':
