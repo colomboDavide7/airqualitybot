@@ -63,13 +63,6 @@ class AddWeatherData(object):
         return self._database_gway.get_service_id_from_name(service_name="openweathermap")
 
     def run(self):
-
-        # self._logger.warning("deleting all the hourly weather forecast data")
-        # self._database_gway.delete_all_from_hourly_weather_forecast()
-        #
-        # self._logger.warning("deleting all the daily weather forecast data")
-        # self._database_gway.delete_all_from_daily_weather_forecast()
-
         for param in self.service_param:
             self._logger.debug("service => %s" % repr(param))
 
