@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Dict, List
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
+from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.url.timeiter_url import AtmotubeTimeIterableURL
 from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
 from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
@@ -25,7 +26,7 @@ class AddAtmotubeMeasures(object):
     def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
         self.output_gateway = output_gateway
         self.input_url_template = input_url_template
-        self.app_logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     @property
     def measure_param(self) -> Dict[str, int]:
@@ -49,23 +50,27 @@ class AddAtmotubeMeasures(object):
     def run(self):
         measure_param = self.measure_param
         for param in self.api_param:
-            self.app_logger.info("sensor => %s" % repr(param))
+            self._logger.info("sensor => %s" % repr(param))
             for url in self.urls_of(param):
-                self.app_logger.info("url => %s" % url)
-                datamodel_builder = AtmotubeAPIDataBuilder(url=url)
-                self.app_logger.info("found #%d API data" % len(datamodel_builder))
+                self._logger.info("url => %s" % url)
+
+                server_wrap = APIServerWrapper(url=url)
+                self._logger.debug("successfully get server response!!!")
+
+                datamodel_builder = AtmotubeAPIDataBuilder(json_response=server_wrap.json)
+                self._logger.info("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddAtmotubeMeasureRequestBuilder(datamodel=datamodel_builder, code2id=measure_param)
-                self.app_logger.info("found #%d requests" % len(request_builder))
+                self._logger.info("found #%d requests" % len(request_builder))
 
                 validator = AddSensorMeasuresRequestValidator(request=request_builder, filter_ts=self.filter_ts_of(param))
-                self.app_logger.info("found #%d valid requests" % len(validator))
+                self._logger.info("found #%d valid requests" % len(validator))
 
                 response_builder = AddMobileMeasureResponseBuilder(requests=validator, start_packet_id=self.start_packet_id)
-                self.app_logger.info("found #%d responses" % len(response_builder))
+                self._logger.info("found #%d responses" % len(response_builder))
 
                 if response_builder:
-                    self.app_logger.info("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
+                    self._logger.info("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
                     self.output_gateway.insert_mobile_measures(responses=response_builder)
                     last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
                     self.output_gateway.update_last_acquisition_of(

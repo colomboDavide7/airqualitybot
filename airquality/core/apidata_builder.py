@@ -15,9 +15,12 @@ from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, Thin
 
 class PurpleairAPIDataBuilder(IterableItemsABC):
     """
-    An *IterableItemsABC* that defines the business rules
-    for fetching data from Purpleair API and build a
-    generator of *PurpleairAPIData*.
+    A class that implements the *IterableItemsABC* interface and defines the business rules for
+    extracting the items from a PurpleAir json response.
+
+    Keyword arguments:
+        *json_response*         the json response from PurpleAir API.
+
     """
 
     def __init__(self, json_response: Dict[str, Any]):
@@ -31,18 +34,20 @@ class PurpleairAPIDataBuilder(IterableItemsABC):
 
 class AtmotubeAPIDataBuilder(IterableItemsABC):
     """
-    An *IterableItemsABC* that defines the business rules
-    for fetching data from Atmotube API and build a
-    generator of *AtmotubeAPIData*.
+    A class that implements the *IterableItemsABC* interface and defines the business rules for
+    extracting the items from an Atmotube json response.
+
+    Keyword arguments:
+        *json_response*         the json response from Atmotube API.
+
     """
 
-    def __init__(self, url: str):
-        with urlopen(url) as http_response:
-            parsed = loads(http_response.read())
-            self.api_items = parsed['data']['items']
+    def __init__(self, json_response: Dict[str, Any]):
+        self._jresp = json_response
+        self._items = self._jresp['data']['items']
 
     def items(self) -> Generator[AtmotubeAPIData, None, None]:
-        return (AtmotubeAPIData(**item) for item in self.api_items)
+        return (AtmotubeAPIData(**item) for item in self._items)
 
 
 class ThingspeakAPIDataBuilder(IterableItemsABC):

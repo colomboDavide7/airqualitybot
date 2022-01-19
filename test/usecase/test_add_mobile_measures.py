@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
@@ -24,18 +25,16 @@ class TestAddMobileMeasuresUsecase(TestCase):
         return APIParam(sensor_id=12, api_key="fakekey", api_id="fakeid", ch_name="main", last_acquisition=test_last_acquisition)
 
     @patch('airquality.url.timeiter_url.datetime')
-    @patch('airquality.core.apidata_builder.urlopen')
-    def test_add_mobile_measures_usecase(self, mocked_urlopen, mocked_datetime):
+    @patch('airquality.url.api_server_wrap.requests.get')
+    def test_add_mobile_measures_usecase(self, mocked_get, mocked_datetime):
 
         mocked_datetime.now.return_value = datetime.strptime("2021-08-11T17:59:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
 
-        with open('test_resources/atmotube_response.json', 'r') as f:
-            apiresp = f.read()
+        test_json_response = tutils.get_json_response_from_file(filename='atmotube_response.json')
 
-        mocked_apiresp = MagicMock()
-        mocked_apiresp.read.return_value = apiresp
-        mocked_apiresp.__enter__.return_value = mocked_apiresp
-        mocked_urlopen.return_value = mocked_apiresp
+        mocked_resp = MagicMock()
+        mocked_resp.json.return_value = test_json_response
+        mocked_get.return_value = mocked_resp
 
         mocked_gateway = MagicMock()
         mocked_gateway.get_measure_param_owned_by.return_value = self.get_test_measure_param

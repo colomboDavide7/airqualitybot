@@ -43,17 +43,9 @@ class TestDatamodelBuilder(TestCase):
             print(requests[-4])
 
     ##################################### test_create_atmotube_datamodel #####################################
-    @patch('airquality.core.apidata_builder.urlopen')
-    def test_create_atmotube_datamodel(self, mocked_urlopen):
-        with open('test_resources/atmotube_response.json', 'r') as rf:
-            test_api_responses = rf.read()
-
-        mocked_resp = MagicMock()
-        mocked_resp.read.side_effect = [test_api_responses]
-        mocked_resp.__enter__.return_value = mocked_resp
-        mocked_urlopen.return_value = mocked_resp
-
-        requests = AtmotubeAPIDataBuilder(url="fake_url")
+    def test_create_atmotube_datamodel(self):
+        test_json_response = tutils.get_json_response_from_file(filename='atmotube_response.json')
+        requests = AtmotubeAPIDataBuilder(test_json_response)
         self.assertEqual(len(requests), 2)
         req1 = requests[0]
         self.assertEqual(req1.time, "2021-08-10T23:59:00.000Z")
