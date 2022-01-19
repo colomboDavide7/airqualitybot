@@ -15,12 +15,6 @@ class TimestConversionError(Exception):
     pass
 
 
-def _assign(tmp: str, alternative: str):
-    if tmp is None:
-        return alternative
-    return tmp
-
-
 class Timest(object):
     """
     A class that defines the business logic for date and timestamp manipulation.
@@ -45,7 +39,7 @@ class Timest(object):
 
     def __init__(self, input_fmt: str = None, output_fmt: str = None):
         self._input_fmt = input_fmt
-        self._output_fmt = _assign(tmp=output_fmt, alternative=input_fmt)
+        self._output_fmt = output_fmt
         self._tz_finder = TimezoneFinder()
         self._logger = logging.getLogger(__name__)
 
@@ -53,12 +47,29 @@ class Timest(object):
         self._logger.exception(cause)
         raise TimestConversionError(cause)
 
-    def utc_time2utc_timetz(self, time, latitude: float, longitude: float):
+    def utc_time2utc_timetz(self, time, latitude: float, longitude: float) -> datetime:
+        """
+        Converting UTC time zone *time* into the corresponding UTC geolocation's time zone.
+        """
         dt = self._safe_strpin(time)
         return dt.replace(tzinfo=self._tzinfo_from(lat=latitude, lng=longitude))
 
-    def _safe_strfout(self):
-        pass
+    def utc_time2utc_timetz_str(self, time, latitude: float, longitude: float) -> str:
+        """
+        Convert and format according to the *output_fmt* instance variable.
+        """
+        return self._safe_strfout(dt=self.utc_time2utc_timetz(time, latitude, longitude))
+
+    def _safe_strfout(self, dt: datetime) -> str:
+        """
+        :raises TimestConversionError:      if try to format *dt* when *output_fmt* is None.
+        :param dt:                          the datetime to format.
+        :return:                            the formatted *dt* object according to *output_fmt* value.
+        """
+
+        if self._output_fmt is None:
+            self._raise(cause="[FATAL] expected *output_fmt* to be not None!!!")
+        return dt.strftime(self._output_fmt)
 
     def _safe_strpin(self, time) -> datetime:
         """
@@ -76,7 +87,7 @@ class Timest(object):
         """
         This method handles the conversion from UNIX timestamp to *datetime* object.
 
-        :raises *TimeConversionError*:      if *time* is not of <class float>.
+        :raises TimestConversionError:      if *time* is not of <class float>.
         :param time:                        the UNIX timestamp to convert.
         :return:                            the *datetime* object that corresponds to *time* timestamp.
         """
@@ -89,8 +100,8 @@ class Timest(object):
         """
         This method handles the conversion from string to *datetime* object.
 
-        :raises *TimeConversionError*:      if *time* is not of <class str>.
-        :raises *TimeConversionError*:      if *time* does not match *input_fmt*
+        :raises TimestConversionError:      if *time* is not of <class str>.
+        :raises TimestConversionError:      if *time* does not match *input_fmt*
         :param time:                        the string time to convert.
         :return:                            the *datetime* object that correspond to the *time* string.
         """

@@ -6,7 +6,7 @@ from dateutil import tz
 from datetime import datetime
 from unittest import TestCase, main
 from timezonefinder import TimezoneFinder
-from airquality.datamodel.timest import Timest, TimestConversionError, _assign
+from airquality.datamodel.timest import Timest, TimestConversionError
 
 
 class TestTimest(TestCase):
@@ -17,10 +17,6 @@ class TestTimest(TestCase):
 
     def get_test_timezone_info(self, lat: float, lng: float):
         return tz.gettz(self.tz_finder.timezone_at(lat=lat, lng=lng))
-
-    def test_assign_alternative_if_tmp_is_none(self):
-        self.assertEqual(_assign(tmp=None, alternative="yes"), "yes")
-        self.assertEqual(_assign(tmp="yes", alternative="no"), "yes")
 
     def test_convert_utc_datetime_string_without_timezone_to_utc_datetime_with_timezone(self):
         # Pavia's timestamp with timezone IN DST is +2 hours, NOT IN DST is +1 hour
@@ -61,6 +57,20 @@ class TestTimest(TestCase):
         timest = Timest(input_fmt="%Y-%m-%d")
         with self.assertRaises(TimestConversionError):
             timest.utc_time2utc_timetz(time='31-12-2021', latitude=10, longitude=20)
+
+    def test_output_format_string_time(self):
+        test_lat = 45.1686197
+        test_lng = 9.1561581
+        timest = Timest(input_fmt="%Y-%m-%dT%H:%M:%SZ", output_fmt="%d-%m-%Y; %H:%M; %z")
+        actual = timest.utc_time2utc_timetz_str(time="2021-10-11T09:44:00Z", latitude=test_lat, longitude=test_lng)
+        self.assertEqual(actual, "11-10-2021; 09:44; +0200")
+
+    def test_output_format_timestamp(self):
+        test_lat = 40.416774
+        test_lng = -3.703790
+        timest = Timest(output_fmt="%Y-%m-%d, %z")
+        actual = timest.utc_time2utc_timetz_str(time=1551288953, latitude=test_lat, longitude=test_lng)
+        self.assertEqual(actual, "2019-02-27, +0100")
 
 
 if __name__ == '__main__':
