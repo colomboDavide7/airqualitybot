@@ -6,6 +6,7 @@
 #
 ######################################################
 import logging
+from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.database.gateway import DatabaseGateway
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
@@ -36,7 +37,10 @@ class AddPurpleairFixedSensors(object):
         return self.output_gateway.get_existing_sensor_names_of_type(sensor_type='purpleair')
 
     def run(self) -> None:
-        datamodel_builder = PurpleairAPIDataBuilder(url=self.input_url_template)
+        server_wrap = APIServerWrapper(url=self.input_url_template)
+        self._logger.debug("successfully get server response!!!")
+
+        datamodel_builder = PurpleairAPIDataBuilder(json_response=server_wrap.json)
         self._logger.debug("found #%d API data" % len(datamodel_builder))
 
         request_builder = AddPurpleairSensorRequestBuilder(datamodel=datamodel_builder)

@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
@@ -14,18 +15,16 @@ from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 class TestAddFixedSensor(TestCase):
 
     @patch('airquality.core.response_builder.datetime')
-    @patch('airquality.core.apidata_builder.urlopen')
-    def test_add_fixed_sensors_usecase(self, mocked_urlopen, mocked_datetime):
+    @patch('airquality.url.api_server_wrap.requests.get')
+    def test_add_fixed_sensors_usecase(self, mocked_get, mocked_datetime):
         mocked_now = datetime.strptime("2021-12-29 18:33:00", "%Y-%m-%d %H:%M:%S")
         mocked_datetime.now.return_value = mocked_now
 
-        with open('test_resources/purpleair_response.json', 'r') as f:
-            api_resp = f.read()
-
-        mocked_api_resp = MagicMock()
-        mocked_api_resp.read.return_value = api_resp
-        mocked_api_resp.__enter__.return_value = mocked_api_resp
-        mocked_urlopen.return_value = mocked_api_resp
+        test_json_response = tutils.get_json_response_from_file(filename='purpleair_response.json')
+        mocked_resp = MagicMock()
+        mocked_resp.json.return_value = test_json_response
+        mocked_resp.status_code = 200
+        mocked_get.return_value = mocked_resp
 
         mocked_gateway = MagicMock()
         mocked_gateway.get_max_sensor_id_plus_one.return_value = 1

@@ -20,14 +20,13 @@ class PurpleairAPIDataBuilder(IterableItemsABC):
     generator of *PurpleairAPIData*.
     """
 
-    def __init__(self, url: str):
-        with urlopen(url) as http_response:
-            parsed = loads(http_response.read())
-            self.fields = parsed['fields']
-            self.data = parsed['data']
+    def __init__(self, json_response: Dict[str, Any]):
+        self._jresp = json_response
+        self._fields = self._jresp['fields']
+        self._data = self._jresp['data']
 
     def items(self) -> Generator[PurpleairAPIData, None, None]:
-        return (PurpleairAPIData(**(dict(zip(self.fields, data)))) for data in self.data)
+        return (PurpleairAPIData(**(dict(zip(self._fields, data)))) for data in self._data)
 
 
 class AtmotubeAPIDataBuilder(IterableItemsABC):

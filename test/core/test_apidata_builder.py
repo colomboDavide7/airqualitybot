@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPIDataBuilder, ThingspeakAPIDataBuilder, \
@@ -14,17 +15,10 @@ from airquality.core.apidata_builder import PurpleairAPIDataBuilder, AtmotubeAPI
 class TestDatamodelBuilder(TestCase):
 
     ##################################### test_create_purpleair_datamodel #####################################
-    @patch('airquality.core.apidata_builder.urlopen')
-    def test_create_purpleair_datamodel(self, mocked_urlopen):
-        with open('test_resources/purpleair_response.json', 'r') as rf:
-            test_api_responses = rf.read()
+    def test_create_purpleair_datamodel(self):
 
-        mocked_resp = MagicMock()
-        mocked_resp.read.side_effect = [test_api_responses]
-        mocked_resp.__enter__.return_value = mocked_resp
-        mocked_urlopen.return_value = mocked_resp
-
-        requests = PurpleairAPIDataBuilder(url="fake_url")
+        test_json_response = tutils.get_json_response_from_file(filename='purpleair_response.json')
+        requests = PurpleairAPIDataBuilder(json_response=test_json_response)
         self.assertEqual(len(requests), 3)
         req1 = requests[0]
         self.assertEqual(req1.name, "n1")

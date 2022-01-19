@@ -67,7 +67,7 @@ class Psycopg2Adapter(DatabaseAdapter):
         self.close()
         if exc_type is not None:
             self._logger.exception(exc_val)
-            raise DatabaseError(exc_val)
+            raise DatabaseError(exc_val) from None
 
     def fetchone(self, query: str):
         return self._fetch(query, exec_name='fetchone')
