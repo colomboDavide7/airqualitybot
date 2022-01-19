@@ -5,8 +5,10 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
+from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.datamodel.service_param import ServiceParam
 from airquality.datamodel.apidata import CityOfGeoarea
 from airquality.usecase.add_weather_data import AddWeatherData
@@ -15,15 +17,13 @@ from airquality.usecase.add_weather_data import AddWeatherData
 class TestAddWeatherDataUsecase(TestCase):
 
     @patch('airquality.core.apidata_builder.open')
-    @patch('airquality.core.apidata_builder.urlopen')
-    def test_add_weather_data(self, mocked_urlopen, mocked_open):
-        with open('test_resources/openweather_data.json', 'r') as api_file:
-            apidata = api_file.read()
+    @patch('airquality.url.api_server_wrap.requests.get')
+    def test_add_weather_data(self, mocked_get, mocked_open):
+        test_json_response = tutils.get_json_response_from_file(filename='openweather_data.json')
 
         mocked_api_resp = MagicMock()
-        mocked_api_resp.read.return_value = apidata
-        mocked_api_resp.__enter__.return_value = mocked_api_resp
-        mocked_urlopen.return_value = mocked_api_resp
+        mocked_api_resp.json.return_value = test_json_response
+        mocked_get.return_value = mocked_api_resp
 
         with open('test_resources/weather_cities.json', 'r') as city_file:
             cities = city_file.read()
@@ -42,7 +42,11 @@ class TestAddWeatherDataUsecase(TestCase):
         mocked_gateway.get_geolocation_of.return_value = CityOfGeoarea(geoarea_id=14400, latitude=0.0, longitude=0.0)
         mocked_gateway.insert_weather_data = MagicMock()
 
-        usecase = AddWeatherData(output_gateway=mocked_gateway, input_url_template="fakeurl")
+        usecase = AddWeatherData(
+            database_gway=mocked_gateway,
+            server_wrap=APIServerWrapper(),
+            input_url_template="fakeurl"
+        )
         self.assertEqual(usecase.weather_map, expected_weather_conditions)
 
         usecase.run()

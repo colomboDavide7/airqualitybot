@@ -99,19 +99,10 @@ class TestDatamodelBuilder(TestCase):
         self.assertEqual(data.longitude, -2.4597)
 
     ##################################### test_create_openweathermap_data #####################################
-    @patch('airquality.core.apidata_builder.urlopen')
-    def test_create_openweathermap_data(self, mocked_urlopen):
-        with open('test_resources/openweather_data.json', 'r') as f:
-            api_resp = f.read()
-
-        mocked_resp = MagicMock()
-        mocked_resp.read.return_value = api_resp
-        mocked_resp.__enter__.return_value = mocked_resp
-        mocked_urlopen.return_value = mocked_resp
-
-        datamodel_builder = OpenWeatherMapAPIDataBuilder(url="fake_url")
+    def test_create_openweathermap_data(self):
+        test_json_resp = tutils.get_json_response_from_file(filename='openweather_data.json')
+        datamodel_builder = OpenWeatherMapAPIDataBuilder(json_response=test_json_resp)
         self.assertEqual(len(datamodel_builder), 1)
-
         resp = datamodel_builder[0]
 
         # Test current weather

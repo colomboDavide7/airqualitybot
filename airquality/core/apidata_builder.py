@@ -7,7 +7,6 @@
 ######################################################
 from json import loads
 from typing import Generator, Dict, List, Any
-from urllib.request import urlopen
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.apidata import PurpleairAPIData, AtmotubeAPIData, ThingspeakAPIData, GeonamesData, \
     Weather, WeatherForecast, OpenWeatherMapAPIData, WeatherCityData
@@ -84,14 +83,21 @@ class GeonamesDataBuilder(IterableItemsABC):
 
 
 class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
+    """
+    A class that implements the *IterableItemsABC* interface and defines the business rules for
+    extracting current weather, hourly forecast and daily forecast items from an OpenWeatherMap response.
 
-    def __init__(self, url: str):
-        with urlopen(url) as http_response:
-            parsed = loads(http_response.read())
-            self.tz_offset = parsed['timezone_offset']
-            self.current = parsed['current']
-            self.hourly = parsed['hourly']
-            self.daily = parsed['daily']
+    Keyword arguments:
+        *json_response*         the json response from OneCallAPI service of OpenWeatherMap.
+
+    """
+
+    def __init__(self, json_response: Dict[str, Any]):
+        self._jresp = json_response
+        self.tz_offset = self._jresp['timezone_offset']
+        self.current = self._jresp['current']
+        self.hourly = self._jresp['hourly']
+        self.daily = self._jresp['daily']
 
     def items(self) -> Generator[OpenWeatherMapAPIData, None, None]:
         yield OpenWeatherMapAPIData(
