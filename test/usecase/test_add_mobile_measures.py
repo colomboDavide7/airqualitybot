@@ -10,6 +10,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
+from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
 
 
@@ -44,7 +45,12 @@ class TestAddMobileMeasuresUsecase(TestCase):
         mocked_gateway.get_last_acquisition_of_sensor_channel.return_value = test_filter_timestamp
         mocked_gateway.insert_mobile_measures = MagicMock()
 
-        use_case = AddAtmotubeMeasures(output_gateway=mocked_gateway, input_url_template="fakeurl")
+        use_case = AddAtmotubeMeasures(
+            database_gway=mocked_gateway,
+            server_wrap=APIServerWrapper(),
+            input_url_template="fakeurl"
+        )
+
         self.assertEqual(use_case.measure_param, self.get_test_measure_param)
         self.assertEqual(use_case.api_param, [self.get_test_apiparam])
 

@@ -10,6 +10,7 @@ import sys
 import logging.config
 from airquality.environment import Environment
 from airquality.usecase.add_places import AddPlaces
+from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.usecase.add_station_measures import AddThingspeakMeasures
 from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
@@ -89,13 +90,15 @@ class Application(object):
             self._logger.debug("running %s" % personality)
             if personality == 'purpleair':
                 AddPurpleairFixedSensors(
-                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
+                    database_gway=DatabaseGateway(database_adapt=database_wrap),
+                    server_wrap=APIServerWrapper(),
                     input_url_template=self._env.url_template(personality)
                 ).run()
 
             elif personality == 'atmotube':
                 AddAtmotubeMeasures(
-                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
+                    database_gway=DatabaseGateway(database_adapt=database_wrap),
+                    server_wrap=APIServerWrapper(),
                     input_url_template=self._env.url_template(personality)
                 ).run()
 

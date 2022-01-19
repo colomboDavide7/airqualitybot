@@ -9,6 +9,7 @@ import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
+from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 
 
@@ -31,7 +32,11 @@ class TestAddFixedSensor(TestCase):
         mocked_gateway.get_existing_sensor_names_of_type.return_value = {'n1 (1)', 'n2 (2)'}
         mocked_gateway.insert_sensors = MagicMock()
 
-        use_case = AddPurpleairFixedSensors(output_gateway=mocked_gateway, input_url_template="fake_url")
+        use_case = AddPurpleairFixedSensors(
+            database_gway=mocked_gateway,
+            server_wrap=APIServerWrapper(),
+            input_url_template="fake_url"
+        )
 
         self.assertEqual(use_case.start_sensor_id, 1)
         self.assertEqual(len(use_case.names_of), 2)

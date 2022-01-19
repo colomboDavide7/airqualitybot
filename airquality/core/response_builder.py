@@ -61,10 +61,10 @@ def mobile_measure_record(packet_id: int, request: AddMobileMeasuresRequest) -> 
 
 class AddMobileMeasureResponseBuilder(IterableItemsABC):
     """
-        An *IterableItemsABC* that defines the business rules for
-        translating a set of *AddMobileMeasureRequest* items into
-        an *AddMobileMeasureResponse* Generator.
-        """
+    An *IterableItemsABC* that defines the business rules for
+    translating a set of *AddMobileMeasureRequest* items into
+    an *AddMobileMeasureResponse* Generator.
+    """
 
     def __init__(
             self,

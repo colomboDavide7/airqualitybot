@@ -23,25 +23,26 @@ class AddAtmotubeMeasures(object):
     A *UsecaseRunner* that defines how to run the *AddMobileMeasures* UseCase.
     """
 
-    def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
-        self.output_gateway = output_gateway
+    def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, input_url_template: str):
+        self._database_gway = database_gway
+        self._server_wrap = server_wrap
         self.input_url_template = input_url_template
         self._logger = logging.getLogger(__name__)
 
     @property
     def measure_param(self) -> Dict[str, int]:
-        return self.output_gateway.get_measure_param_owned_by(owner="atmotube")
+        return self._database_gway.get_measure_param_owned_by(owner="atmotube")
 
     @property
     def api_param(self) -> List[APIParam]:
-        return self.output_gateway.get_sensor_apiparam_of_type(sensor_type="atmotube")
+        return self._database_gway.get_sensor_apiparam_of_type(sensor_type="atmotube")
 
     @property
     def start_packet_id(self) -> int:
-        return self.output_gateway.get_max_mobile_packet_id_plus_one()
+        return self._database_gway.get_max_mobile_packet_id_plus_one()
 
     def filter_ts_of(self, param: APIParam) -> datetime:
-        return self.output_gateway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
+        return self._database_gway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
 
     def urls_of(self, param: APIParam) -> AtmotubeTimeIterableURL:
         pre_formatted_url = self.input_url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
@@ -54,10 +55,10 @@ class AddAtmotubeMeasures(object):
             for url in self.urls_of(param):
                 self._logger.info("url => %s" % url)
 
-                server_wrap = APIServerWrapper(url=url)
+                server_jresp = self._server_wrap.json(url=url)
                 self._logger.debug("successfully get server response!!!")
 
-                datamodel_builder = AtmotubeAPIDataBuilder(json_response=server_wrap.json)
+                datamodel_builder = AtmotubeAPIDataBuilder(json_response=server_jresp)
                 self._logger.info("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddAtmotubeMeasureRequestBuilder(datamodel=datamodel_builder, code2id=measure_param)
@@ -71,8 +72,8 @@ class AddAtmotubeMeasures(object):
 
                 if response_builder:
                     self._logger.info("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
-                    self.output_gateway.insert_mobile_measures(responses=response_builder)
+                    self._database_gway.insert_mobile_measures(responses=response_builder)
                     last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
-                    self.output_gateway.update_last_acquisition_of(
+                    self._database_gway.update_last_acquisition_of(
                         timestamp=last_acquisition, sensor_id=param.sensor_id, ch_name=param.ch_name
                     )

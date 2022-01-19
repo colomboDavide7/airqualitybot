@@ -10,6 +10,9 @@ from airquality.url.api_server_wrap import APIServerWrapper, BadAPIServerRespons
 
 class TestAPIServerWrapper(TestCase):
 
+    def setUp(self) -> None:
+        self.server_wrap = APIServerWrapper(timeout=5.0)
+
     @property
     def get_test_json_response(self):
         return {'p1': 'a1', 'p2': 'a2'}
@@ -22,16 +25,14 @@ class TestAPIServerWrapper(TestCase):
         mocked_response.status_code = 200
         mocked_get.return_value = mocked_response
 
-        server_wrapper = APIServerWrapper(url="fake_url")
-        self.assertEqual(server_wrapper.json, {'p1': 'a1', 'p2': 'a2'})
-        self.assertEqual(server_wrapper.resp_code, 200)
+        self.assertEqual(self.server_wrap.json(url="fake_url"), {'p1': 'a1', 'p2': 'a2'})
 
     @patch('airquality.url.api_server_wrap.requests.get')
     def test_raise_bad_api_server_response_error(self, mocked_get):
         mocked_get.side_effect = [HTTPError]
 
         with self.assertRaises(BadAPIServerResponseError):
-            APIServerWrapper(url="fake_url")
+            self.server_wrap.json(url="fake_url")
 
 
 if __name__ == '__main__':

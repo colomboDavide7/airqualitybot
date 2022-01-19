@@ -30,26 +30,19 @@ class APIServerWrapper(object):
 
     """
 
-    def __init__(self, url: str, timeout=MAX_SERVER_RESPONSE_TIMEOUT):
-        self._url = url
+    def __init__(self, timeout=MAX_SERVER_RESPONSE_TIMEOUT):
         self._timeout = timeout
         self._logger = logging.getLogger(__name__)
-        self._response = self._safe_get()
 
-    def _safe_get(self):
+    def json(self, url: str):
+        return self._safe_get(url).json()
+
+    def _safe_get(self, url: str):
         try:
-            return requests.get(self._url, timeout=self._timeout, headers={'Connection': 'close'})
+            return requests.get(url, timeout=self._timeout, headers={'Connection': 'close'})
         except requests.exceptions.HTTPError as err:
             self._logger.exception(repr(err))
             raise BadAPIServerResponseError(repr(err)) from None
 
-    @property
-    def json(self):
-        return self._response.json()
-
-    @property
-    def resp_code(self):
-        return self._response.status_code
-
     def __repr__(self):
-        return f"{type(self).__name__}(url={self._url}, timeout={self._timeout})"
+        return f"{type(self).__name__}(timeout={self._timeout})"

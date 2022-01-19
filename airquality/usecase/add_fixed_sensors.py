@@ -23,24 +23,25 @@ class AddPurpleairFixedSensors(object):
     The goal of this class is to transform a set of Purpleair API data into valid SQL for inserting them.
     """
 
-    def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
-        self.output_gateway = output_gateway
+    def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, input_url_template: str):
+        self._database_gway = database_gway
+        self._server_wrap = server_wrap
         self.input_url_template = input_url_template
         self._logger = logging.getLogger(__name__)
 
     @property
     def start_sensor_id(self) -> int:
-        return self.output_gateway.get_max_sensor_id_plus_one()
+        return self._database_gway.get_max_sensor_id_plus_one()
 
     @property
     def names_of(self):
-        return self.output_gateway.get_existing_sensor_names_of_type(sensor_type='purpleair')
+        return self._database_gway.get_existing_sensor_names_of_type(sensor_type='purpleair')
 
     def run(self) -> None:
-        server_wrap = APIServerWrapper(url=self.input_url_template)
+        server_jresp = self._server_wrap.json(url=self.input_url_template)
         self._logger.debug("successfully get server response!!!")
 
-        datamodel_builder = PurpleairAPIDataBuilder(json_response=server_wrap.json)
+        datamodel_builder = PurpleairAPIDataBuilder(json_response=server_jresp)
         self._logger.debug("found #%d API data" % len(datamodel_builder))
 
         request_builder = AddPurpleairSensorRequestBuilder(datamodel=datamodel_builder)
@@ -54,4 +55,4 @@ class AddPurpleairFixedSensors(object):
 
         if response_builder:
             self._logger.debug("inserting new sensors!")
-            self.output_gateway.insert_sensors(responses=response_builder)
+            self._database_gway.insert_sensors(responses=response_builder)
