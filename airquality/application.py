@@ -104,7 +104,8 @@ class Application(object):
 
             elif personality == 'thingspeak':
                 AddThingspeakMeasures(
-                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
+                    database_gway=DatabaseGateway(database_adapt=database_wrap),
+                    server_wrap=APIServerWrapper(),
                     input_url_template=self._env.url_template(personality)
                 ).run()
             elif personality == 'geonames':

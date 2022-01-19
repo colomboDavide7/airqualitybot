@@ -64,19 +64,11 @@ class TestDatamodelBuilder(TestCase):
             print(requests[-3])
 
     ##################################### test_create_atmotube_datamodel #####################################
-    @patch('airquality.core.apidata_builder.urlopen')
-    def test_create_thingspeak_primary_channel_a_data(self, mocked_urlopen):
-        with open('test_resources/thingspeak_response_1A.json', 'r') as rf:
-            api_responses = rf.read()
-
-        mocked_resp = MagicMock()
-        mocked_resp.read.side_effect = [api_responses]
-        mocked_resp.__enter__.return_value = mocked_resp
-        mocked_urlopen.return_value = mocked_resp
-
-        apidata = ThingspeakAPIDataBuilder(url="fake_url")
-        self.assertEqual(len(apidata), 3)
-        data = apidata[0]
+    def test_create_thingspeak_primary_channel_a_data(self):
+        test_json_response = tutils.get_json_response_from_file(filename='thingspeak_response_1A.json')
+        api_data_builder = ThingspeakAPIDataBuilder(json_response=test_json_response)
+        self.assertEqual(len(api_data_builder), 3)
+        data = api_data_builder[0]
         self.assertEqual(data.field1, 20.50)
         self.assertEqual(data.field2, 35.53)
         self.assertEqual(data.field3, 37.43)

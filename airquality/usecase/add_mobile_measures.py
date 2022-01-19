@@ -59,19 +59,19 @@ class AddAtmotubeMeasures(object):
                 self._logger.debug("successfully get server response!!!")
 
                 datamodel_builder = AtmotubeAPIDataBuilder(json_response=server_jresp)
-                self._logger.info("found #%d API data" % len(datamodel_builder))
+                self._logger.debug("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddAtmotubeMeasureRequestBuilder(datamodel=datamodel_builder, code2id=measure_param)
-                self._logger.info("found #%d requests" % len(request_builder))
+                self._logger.debug("found #%d requests" % len(request_builder))
 
                 validator = AddSensorMeasuresRequestValidator(request=request_builder, filter_ts=self.filter_ts_of(param))
-                self._logger.info("found #%d valid requests" % len(validator))
+                self._logger.debug("found #%d valid requests" % len(validator))
 
                 response_builder = AddMobileMeasureResponseBuilder(requests=validator, start_packet_id=self.start_packet_id)
-                self._logger.info("found #%d responses" % len(response_builder))
+                self._logger.debug("found #%d responses" % len(response_builder))
 
                 if response_builder:
-                    self._logger.info("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
+                    self._logger.debug("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
                     self._database_gway.insert_mobile_measures(responses=response_builder)
                     last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
                     self._database_gway.update_last_acquisition_of(

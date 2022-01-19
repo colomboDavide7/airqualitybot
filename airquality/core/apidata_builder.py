@@ -52,18 +52,20 @@ class AtmotubeAPIDataBuilder(IterableItemsABC):
 
 class ThingspeakAPIDataBuilder(IterableItemsABC):
     """
-    An *IterableItemsABC* that defines the business rules
-    for fetching data from Thingspeak API and build a
-    generator of *ThingspeakPrimaryChannelAData*.
+    A class that implements the *IterableItemsABC* interface and defines the business rules for
+    extracting the items from a Thingspeak json response.
+
+    Keyword arguments:
+        *json_response*         the json response from Thingspeak API.
+
     """
 
-    def __init__(self, url: str):
-        with urlopen(url) as http_response:
-            parsed = loads(http_response.read())
-            self.feeds = parsed['feeds']
+    def __init__(self, json_response: Dict[str, Any]):
+        self._jresp = json_response
+        self._feeds = self._jresp['feeds']
 
     def items(self) -> Generator[ThingspeakAPIData, None, None]:
-        return (ThingspeakAPIData(**item) for item in self.feeds)
+        return (ThingspeakAPIData(**item) for item in self._feeds)
 
 
 class GeonamesDataBuilder(IterableItemsABC):

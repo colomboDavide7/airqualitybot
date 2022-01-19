@@ -10,6 +10,7 @@ from typing import List, Dict
 from datetime import datetime
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
+from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.url.timeiter_url import ThingspeakTimeIterableURL
 from airquality.core.apidata_builder import ThingspeakAPIDataBuilder
 from airquality.core.request_builder import AddThingspeakMeasuresRequestBuilder
@@ -37,28 +38,29 @@ class AddThingspeakMeasures(object):
                   'field4': '2.5_um_count_b', 'field5': '5.0_um_count_b', 'field6': '10.0_um_count_b'}
     FIELD_MAP = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B': MAPPING_2B}
 
-    def __init__(self, output_gateway: DatabaseGateway, input_url_template: str):
-        self.output_gateway = output_gateway
+    def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, input_url_template: str):
+        self._database_gway = database_gway
+        self._server_wrap = server_wrap
         self.input_url_template = input_url_template
-        self.app_logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     @property
     def measure_param(self) -> Dict[str, int]:
-        return self.output_gateway.get_measure_param_owned_by(owner="thingspeak")
+        return self._database_gway.get_measure_param_owned_by(owner="thingspeak")
 
     @property
     def api_param(self) -> List[APIParam]:
-        return self.output_gateway.get_sensor_apiparam_of_type(sensor_type="thingspeak")
+        return self._database_gway.get_sensor_apiparam_of_type(sensor_type="thingspeak")
 
     @property
     def start_packet_id(self) -> int:
-        return self.output_gateway.get_max_station_packet_id_plus_one()
+        return self._database_gway.get_max_station_packet_id_plus_one()
 
     def fields_of(self, param: APIParam) -> Dict[str, str]:
         return self.FIELD_MAP[param.ch_name]
 
     def filter_ts_of(self, param: APIParam) -> datetime:
-        return self.output_gateway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
+        return self._database_gway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
 
     def urls_of(self, param: APIParam) -> ThingspeakTimeIterableURL:
         pre_formatted_url = self.input_url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
@@ -67,30 +69,33 @@ class AddThingspeakMeasures(object):
     def run(self) -> None:
         measure_param = self.measure_param
         for param in self.api_param:
-            self.app_logger.info("sensor => %s" % repr(param))
-
+            self._logger.info("sensor => %s" % repr(param))
             for url in self.urls_of(param):
-                self.app_logger.info("url => %s" % url)
-                datamodel_builder = ThingspeakAPIDataBuilder(url=url)
-                self.app_logger.info("found #%d API data" % len(datamodel_builder))
+                self._logger.info("url => %s" % url)
+
+                server_jresp = self._server_wrap.json(url=url)
+                self._logger.debug("successfully get server response!!!")
+
+                datamodel_builder = ThingspeakAPIDataBuilder(json_response=server_jresp)
+                self._logger.debug("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddThingspeakMeasuresRequestBuilder(
                     datamodel=datamodel_builder, code2id=measure_param, field_map=self.fields_of(param)
                 )
-                self.app_logger.info("found #%d requests" % len(request_builder))
+                self._logger.debug("found #%d requests" % len(request_builder))
 
                 validator = AddSensorMeasuresRequestValidator(request=request_builder, filter_ts=self.filter_ts_of(param))
-                self.app_logger.info("found #%d valid requests" % len(validator))
+                self._logger.debug("found #%d valid requests" % len(validator))
 
                 response_builder = AddStationMeasuresResponseBuilder(
                     requests=validator, start_packet_id=self.start_packet_id, sensor_id=param.sensor_id
                 )
-                self.app_logger.info("found #%d responses" % len(response_builder))
+                self._logger.debug("found #%d responses" % len(response_builder))
 
                 if len(response_builder) > 0:
-                    self.app_logger.info("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
-                    self.output_gateway.insert_station_measures(responses=response_builder)
+                    self._logger.debug("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
+                    self._database_gway.insert_station_measures(responses=response_builder)
                     last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
-                    self.output_gateway.update_last_acquisition_of(
+                    self._database_gway.update_last_acquisition_of(
                         timestamp=last_acquisition, sensor_id=param.sensor_id, ch_name=param.ch_name
                     )
