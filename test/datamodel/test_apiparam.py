@@ -10,25 +10,34 @@ from unittest import TestCase, main
 from airquality.datamodel.apiparam import APIParam
 
 
-class TestAPIParamDataclass(TestCase):
+def _last_acquisition_test_datetime():
+    return datetime.strptime("2018-12-11 18:49:00", "%Y-%m-%d %H:%M:%S")
 
-    def test_apiparam_dataclass(self):
-        test_last_acquisition = datetime.strptime("2018-12-11 18:49:00", "%Y-%m-%d %H:%M:%S")
-        data = APIParam(
+
+def _sensor_api_param_test_datamodel():
+    return APIParam(
             sensor_id=1,
             api_key="fakekey",
             api_id="fakeident",
             ch_name="fakename",
-            last_acquisition=test_last_acquisition
+            last_acquisition=_last_acquisition_test_datetime()
         )
 
-        self.assertEqual(data.sensor_id, 1)
-        self.assertEqual(data.api_key, "fakekey")
-        self.assertEqual(data.api_id, "fakeident")
-        self.assertEqual(data.ch_name, "fakename")
-        self.assertEqual(data.last_acquisition, test_last_acquisition)
-        expected_repr = "APIParam(sensor_id=1, api_key=XXX, api_id=XXX, ch_name=fakename, last_acquisition=2018-12-11 18:49:00)"
-        self.assertEqual(repr(data), expected_repr)
+
+def _expected_sensor_api_param_representation():
+    return "APIParam(sensor_id=1, api_key=XXX, api_id=XXX, ch_name=fakename, last_acquisition=2018-12-11 18:49:00)"
+
+
+class TestAPIParamDataclass(TestCase):
+
+    def test_apiparam_dataclass(self):
+        api_param = _sensor_api_param_test_datamodel()
+        self.assertEqual(api_param.sensor_id, 1)
+        self.assertEqual(api_param.api_key, "fakekey")
+        self.assertEqual(api_param.api_id, "fakeident")
+        self.assertEqual(api_param.ch_name, "fakename")
+        self.assertEqual(api_param.last_acquisition, _last_acquisition_test_datetime())
+        self.assertEqual(repr(api_param), _expected_sensor_api_param_representation())
 
 
 if __name__ == '__main__':
