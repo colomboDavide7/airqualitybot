@@ -106,7 +106,7 @@ class AddThingspeakMeasures(object):
                 if len(response_builder) > 0:
                     self._logger.debug("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
                     self._database_gway.insert_station_measures(responses=response_builder)
-                    last_acquisition = validator[-1].timestamp.strftime("%Y-%m-%d %H:%M:%S")
+                    last_acquisition = validator[-1].timestamp
                     self._database_gway.update_last_acquisition_of(
                         timestamp=last_acquisition, sensor_id=param.sensor_id, ch_name=param.ch_name
                     )
