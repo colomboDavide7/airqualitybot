@@ -175,8 +175,8 @@ class TestDatabaseGateway(TestCase):
         mocked_dbadapter = MockedDatabaseAdapter()
         mocked_dbadapter.fetchone.return_value = (datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"),)
 
-        actual = DatabaseGateway(database_adapt=mocked_dbadapter).get_last_acquisition_of_sensor_channel(sensor_id=12,
-                                                                                                         ch_name="fakename")
+        actual = DatabaseGateway(database_adapt=mocked_dbadapter).get_last_acquisition_of(sensor_id=12,
+                                                                                          ch_name="fakename")
         self.assertEqual(actual, datetime.strptime("2012-09-17 08:37:00", "%Y-%m-%d %H:%M:%S"))
 
     @property

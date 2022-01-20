@@ -8,6 +8,7 @@
 import logging
 from typing import List, Dict
 from datetime import datetime
+from airquality.datamodel.timest import Timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper
@@ -38,7 +39,10 @@ class AddThingspeakMeasures(object):
                   'field4': '2.5_um_count_b', 'field5': '5.0_um_count_b', 'field6': '10.0_um_count_b'}
     FIELD_MAP = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B': MAPPING_2B}
 
-    def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, input_url_template: str):
+    def __init__(
+        self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, timest: Timest, input_url_template: str
+    ):
+        self._timest = timest
         self._database_gway = database_gway
         self._server_wrap = server_wrap
         self.input_url_template = input_url_template
@@ -60,11 +64,15 @@ class AddThingspeakMeasures(object):
         return self.FIELD_MAP[param.ch_name]
 
     def filter_ts_of(self, param: APIParam) -> datetime:
-        return self._database_gway.get_last_acquisition_of_sensor_channel(sensor_id=param.sensor_id, ch_name=param.ch_name)
+        return self._database_gway.get_last_acquisition_of(sensor_id=param.sensor_id, ch_name=param.ch_name)
 
     def urls_of(self, param: APIParam) -> ThingspeakTimeIterableURL:
         pre_formatted_url = self.input_url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
-        return ThingspeakTimeIterableURL(url=pre_formatted_url, begin=param.last_acquisition, step_size_in_days=7)
+        return ThingspeakTimeIterableURL(
+            url=pre_formatted_url,
+            begin=param.last_acquisition,
+            step_size_in_days=7
+        )
 
     def run(self) -> None:
         measure_param = self.measure_param
@@ -80,7 +88,10 @@ class AddThingspeakMeasures(object):
                 self._logger.debug("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddThingspeakMeasuresRequestBuilder(
-                    datamodel=datamodel_builder, code2id=measure_param, field_map=self.fields_of(param)
+                    datamodel=datamodel_builder,
+                    timest=self._timest,
+                    code2id=measure_param,
+                    field_map=self.fields_of(param)
                 )
                 self._logger.debug("found #%d requests" % len(request_builder))
 

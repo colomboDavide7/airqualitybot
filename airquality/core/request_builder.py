@@ -26,7 +26,7 @@ class AddPurpleairSensorRequestBuilder(IterableItemsABC):
 
     def items(self) -> Generator[AddFixedSensorsRequest, None, None]:
         for dm in self.datamodel:
-            created_at = self._timest.utc_time2utc_timetz(
+            created_at = self._timest.utc_time2utc_localtz(
                 time=dm.date_created, latitude=dm.latitude, longitude=dm.longitude
             )
 
@@ -62,16 +62,19 @@ class AddAtmotubeMeasureRequestBuilder(IterableItemsABC):
 
     TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%S.000Z"
 
-    def __init__(self, datamodel: IterableItemsABC, code2id: Dict[str, int]):
+    def __init__(self, datamodel: IterableItemsABC, timest: Timest, code2id: Dict[str, int]):
         self.datamodel = datamodel
+        self._timest = timest
         self.code2id = code2id
 
     def items(self) -> Generator[AddMobileMeasuresRequest, None, None]:
         for dm in self.datamodel:
             pt = dm.coords
             yield AddMobileMeasuresRequest(
-                timestamp=datetime.strptime(dm.time, self.TIMESTAMP_FMT),
-                geolocation=NullGeometry() if pt is None else PostgisPoint(latitude=pt['lat'], longitude=pt['lon']),
+                timestamp=self._timest.utc_time2utc_tz(dm.time) if pt is None else
+                          self._timest.utc_time2utc_localtz(time=dm.time, latitude=pt['lat'], longitude=pt['lon']),
+                geolocation=NullGeometry() if pt is None else
+                            PostgisPoint(latitude=pt['lat'], longitude=pt['lon']),
                 measures=[(ident, getattr(dm, code)) for code, ident in self.code2id.items() if
                           getattr(dm, code) is not None]
             )
@@ -85,17 +88,21 @@ class AddThingspeakMeasuresRequestBuilder(IterableItemsABC):
 
     TIMESTAMP_FMT = "%Y-%m-%dT%H:%M:%SZ"
 
-    def __init__(self, datamodel: IterableItemsABC, code2id: Dict[str, int], field_map: Dict[str, str]):
+    def __init__(self, datamodel: IterableItemsABC, timest: Timest, code2id: Dict[str, int], field_map: Dict[str, str]):
         self.datamodel = datamodel
+        self._timest = timest
         self.code2id = code2id
         self.field_map = field_map
 
     def items(self):
         for dm in self.datamodel:
             yield AddSensorMeasuresRequest(
-                timestamp=datetime.strptime(dm.created_at, self.TIMESTAMP_FMT),
-                measures=[(self.code2id[fcode], getattr(dm, fname)) for fname, fcode in self.field_map.items() if
-                          getattr(dm, fname) is not None]
+                timestamp=self._timest.utc_time2utc_localtz(time=dm.created_at),
+                measures=[
+                    (self.code2id[fcode], getattr(dm, fname)) for
+                    fname, fcode in self.field_map.items() if
+                    getattr(dm, fname) is not None
+                ]
             )
 
 

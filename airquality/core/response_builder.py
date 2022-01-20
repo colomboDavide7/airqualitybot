@@ -54,9 +54,9 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
 
 
 def mobile_measure_record(packet_id: int, request: AddMobileMeasuresRequest) -> str:
-    timestamp = request.timestamp.strftime(SQL_TIMESTAMP_FTM)
-    geometry = request.geolocation.geom_from_text()
-    return ','.join(f"({packet_id}, {param_id}, {param_val}, '{timestamp}', {geometry})" for param_id, param_val in request.measures)
+    ts = request.timestamp
+    g = request.geolocation.geom_from_text()
+    return ','.join(f"({packet_id}, {param_id}, {param_val}, '{ts}', {g})" for param_id, param_val in request.measures)
 
 
 class AddMobileMeasureResponseBuilder(IterableItemsABC):
@@ -83,8 +83,11 @@ class AddMobileMeasureResponseBuilder(IterableItemsABC):
 
 
 def station_measure_record(packet_id: int, sensor_id: int, request: AddSensorMeasuresRequest) -> str:
-    timestamp = request.timestamp.strftime(SQL_TIMESTAMP_FTM)
-    return ','.join(f"({packet_id}, {sensor_id}, {param_id}, {param_val}, '{timestamp}')" for param_id, param_val in request.measures)
+    ts = request.timestamp
+    return ','.join(
+        f"({packet_id}, {sensor_id}, {param_id}, {param_val}, '{ts}')" for
+        param_id, param_val in request.measures
+    )
 
 
 class AddStationMeasuresResponseBuilder(IterableItemsABC):

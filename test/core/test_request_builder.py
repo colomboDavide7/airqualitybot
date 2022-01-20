@@ -6,7 +6,8 @@
 #
 ######################################################
 import test._test_utils as tutils
-from airquality.datamodel.timest import Timest
+from airquality.datamodel.timest import Timest, atmotube_timest, thingspeak_timest
+from dateutil import tz
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
@@ -93,13 +94,22 @@ class TestRequestBuilder(TestCase):
     def test_create_request_for_adding_atmotube_measure(self):
         test_code2id = {'voc': 66, 'pm1': 48, 'pm25': 94, 'pm10': 2, 't': 4, 'h': 12, 'p': 39}
         mocked_datamodel_builder = MagicMock()
-        mocked_datamodel_builder.__iter__.return_value = [self.get_test_atmotube_datamodel, self.get_test_atmotube_datamodel_without_coords]
+        mocked_datamodel_builder.__iter__.return_value = [
+            self.get_test_atmotube_datamodel,
+            self.get_test_atmotube_datamodel_without_coords
+        ]
 
-        requests = AddAtmotubeMeasureRequestBuilder(datamodel=mocked_datamodel_builder, code2id=test_code2id)
+        requests = AddAtmotubeMeasureRequestBuilder(
+            datamodel=mocked_datamodel_builder,
+            timest=atmotube_timest(),
+            code2id=test_code2id
+        )
+
         self.assertEqual(len(requests), 2)
         req1 = requests[0]
 
-        expected_timestamp = datetime.strptime("2021-08-10T23:59:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
+        expected_tzinfo = tutils.get_tzinfo_from_coordinates(latitude=45.765, longitude=9.897)
+        expected_timestamp = datetime(2021, 8, 11, 1, 59, tzinfo=expected_tzinfo)
         expected_geolocation = PostgisPoint(latitude=45.765, longitude=9.897)
         expected_measures = [(66, 0.17), (48, 8), (94, 10), (2, 11), (4, 29), (12, 42), (39, 1004.68)]
 
@@ -108,7 +118,7 @@ class TestRequestBuilder(TestCase):
         self.assertEqual(req1.measures, expected_measures)
 
         req2 = requests[1]
-        expected_timestamp = datetime.strptime("2021-08-11T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.000Z")
+        expected_timestamp = datetime(2021, 8, 11, tzinfo=tz.tzutc())
         expected_measures = [(66, 0.19), (48, 7), (39, 1007.03)]
         self.assertEqual(req2.timestamp, expected_timestamp)
         self.assertEqual(req2.measures, expected_measures)
@@ -134,12 +144,16 @@ class TestRequestBuilder(TestCase):
         mocked_datamodel_builder.__iter__.return_value = [self.get_test_thingspeak_primary_channel_a_datamodel]
 
         requests = AddThingspeakMeasuresRequestBuilder(
-            datamodel=mocked_datamodel_builder, code2id=test_code2id, field_map=test_field_map
+            datamodel=mocked_datamodel_builder,
+            timest=thingspeak_timest(),
+            code2id=test_code2id,
+            field_map=test_field_map
         )
         self.assertEqual(len(requests), 1)
         req = requests[0]
 
-        expected_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
+        expected_tzinfo = tutils.get_tzinfo_from_coordinates(latitude=45, longitude=9)
+        expected_timestamp = datetime(2021, 12, 20, 12, 18, 40, tzinfo=expected_tzinfo)
         expected_measures = [(12, 20.50), (14, 37.43), (15, 55), (16, 60)]
         self.assertEqual(req.timestamp, expected_timestamp)
         self.assertEqual(req.measures, expected_measures)
@@ -152,12 +166,16 @@ class TestRequestBuilder(TestCase):
         mocked_datamodel_builder.__iter__.return_value = [self.get_test_thingspeak_primary_channel_a_datamodel]
 
         requests = AddThingspeakMeasuresRequestBuilder(
-            datamodel=mocked_datamodel_builder, code2id=test_code2id, field_map=test_field_map
+            datamodel=mocked_datamodel_builder,
+            timest=thingspeak_timest(),
+            code2id=test_code2id,
+            field_map=test_field_map
         )
         self.assertEqual(len(requests), 1)
         req = requests[0]
 
-        expected_timestamp = datetime.strptime("2021-12-20T11:18:40Z", "%Y-%m-%dT%H:%M:%SZ")
+        expected_tzinfo = tutils.get_tzinfo_from_coordinates(latitude=45, longitude=9)
+        expected_timestamp = datetime(2021, 12, 20, 12, 18, 40, tzinfo=expected_tzinfo)
         expected_measures = [(12, 20.50), (14, 37.43), (15, 55.0)]
         self.assertEqual(req.timestamp, expected_timestamp)
         self.assertEqual(req.measures, expected_measures)

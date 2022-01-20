@@ -76,8 +76,12 @@ class DatabaseGateway(object):
 # SENSOR API PARAM TABLE
 #                                   #
 # ================================= #
-    def get_last_acquisition_of_sensor_channel(self, sensor_id: int, ch_name: str) -> datetime:
-        return self.database_adapt.fetchone(const.SELECT_LAST_ACQUISITION_OF.format(sid=sensor_id, ch=ch_name))[0]
+    def get_last_acquisition_of(self, sensor_id: int, ch_name: str) -> datetime:
+        row = self.database_adapt.fetchone(const.SELECT_LAST_ACQUISITION_OF.format(sid=sensor_id, ch=ch_name))
+        if row is None:
+            self._raise(f"[FATAL]: database failed to query 'sensor_api_param': "
+                        f"sensor_id='{sensor_id}', ch_name='{ch_name}'!!!")
+        return row[0]
 
     def get_sensor_apiparam_of_type(self, sensor_type: str) -> List[APIParam]:
         rows = self.database_adapt.fetchall(const.SELECT_SENS_API_PARAM_OF.format(type=sensor_type))
@@ -89,7 +93,7 @@ class DatabaseGateway(object):
                          ch_name=name,
                          last_acquisition=last) for sid, key, ident, name, last in rows]
 
-    def update_last_acquisition_of(self, timestamp: str, sensor_id: int, ch_name: str):
+    def update_last_acquisition_of(self, timestamp: datetime, sensor_id: int, ch_name: str):
         self.database_adapt.execute(const.UPDATE_LAST_CH_TIMEST.format(time=timestamp, sid=sensor_id, ch=ch_name))
 
 # ================================= #

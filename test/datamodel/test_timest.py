@@ -6,58 +6,55 @@ from dateutil import tz
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
-from timezonefinder import TimezoneFinder
 from airquality.datamodel.timest import Timest, TimestConversionError
+import test._test_utils as tutils
 
 
 class TestTimest(TestCase):
+    """
+    A class for testing the timestamp conversion with or without fixed timezone, with or without an input/output format.
+    """
 
-    @property
-    def tz_finder(self):
-        return TimezoneFinder()
-
-    def get_test_timezone_info(self, lat: float, lng: float):
-        return tz.gettz(self.tz_finder.timezone_at(lat=lat, lng=lng))
-
+# =========== TEST _RotatingTimezone
     def test_convert_utc_datetime_string_without_timezone_to_utc_datetime_with_timezone(self):
         # Pavia's timestamp with timezone IN DST is +2 hours, NOT IN DST is +1 hour
         test_lat = 45.1686197
         test_lng = 9.1561581
         timest = Timest(input_fmt="%Y-%m-%dT%H:%M:%S.%fZ")
-        actual = timest.utc_time2utc_timetz(time='2021-08-08T00:00:00.000Z', latitude=test_lat, longitude=test_lng)
-        expected_tzinfo = self.get_test_timezone_info(lat=test_lat, lng=test_lng)
+        actual = timest.utc_time2utc_localtz(time='2021-08-08T00:00:00.000Z', latitude=test_lat, longitude=test_lng)
+        expected_tzinfo = tutils.get_tzinfo_from_coordinates(latitude=test_lat, longitude=test_lng)
         self.assertEqual(actual, datetime(2021, 8, 8, 2, 0, 0, tzinfo=expected_tzinfo))
 
         # New York's timestamp with timezone NOT IN DST is -5 hours, IN DST is -4 hours
         test_lat = 40.7127281
         test_lng = -74.0060152
         timest = Timest(input_fmt="%Y-%m-%dT%H:%M:%S.%fZ")
-        actual = timest.utc_time2utc_timetz(time='2021-12-08T00:00:00.000Z', latitude=test_lat, longitude=test_lng)
-        expected_tzinfo = self.get_test_timezone_info(lat=test_lat, lng=test_lng)
+        actual = timest.utc_time2utc_localtz(time='2021-12-08T00:00:00.000Z', latitude=test_lat, longitude=test_lng)
+        expected_tzinfo = tutils.get_tzinfo_from_coordinates(latitude=test_lat, longitude=test_lng)
         self.assertEqual(actual, datetime(2021, 12, 7, 19, 0, 0, tzinfo=expected_tzinfo))
 
     def test_convert_utc_timestamp_without_timezone_to_utc_timestamp_with_timezone(self):
         test_lat = 45.1686197
         test_lng = 9.1561581
         timest = Timest()
-        actual = timest.utc_time2utc_timetz(time=1531432748, latitude=test_lat, longitude=test_lng)
-        expected_tzinfo = self.get_test_timezone_info(lat=test_lat, lng=test_lng)
+        actual = timest.utc_time2utc_localtz(time=1531432748, latitude=test_lat, longitude=test_lng)
+        expected_tzinfo = tutils.get_tzinfo_from_coordinates(latitude=test_lat, longitude=test_lng)
         self.assertEqual(actual, datetime(2018, 7, 12, 23, 59, 8, tzinfo=expected_tzinfo))
 
     def test_raise_timest_conversion_error_when_passing_string_time_instead_of_unix_timestamp(self):
         timest = Timest()
         with self.assertRaises(TimestConversionError):
-            timest.utc_time2utc_timetz(time="2021-10-11 09:44:00", latitude=10, longitude=20)
+            timest.utc_time2utc_localtz(time="2021-10-11 09:44:00", latitude=10, longitude=20)
 
     def test_raise_timest_conversion_error_when_passing_unix_timestamp_instead_of_string_time(self):
         timest = Timest(input_fmt="%Y-%m-%d")
         with self.assertRaises(TimestConversionError):
-            timest.utc_time2utc_timetz(time=1531432748, latitude=10, longitude=20)
+            timest.utc_time2utc_localtz(time=1531432748, latitude=10, longitude=20)
 
     def test_raise_timest_conversion_error_when_wrong_format_is_used(self):
         timest = Timest(input_fmt="%Y-%m-%d")
         with self.assertRaises(TimestConversionError):
-            timest.utc_time2utc_timetz(time='31-12-2021', latitude=10, longitude=20)
+            timest.utc_time2utc_localtz(time='31-12-2021', latitude=10, longitude=20)
 
     @patch('airquality.datamodel.timest.datetime')
     def test_get_current_utc_time_in_current_timezone(self, mocked_datetime):
@@ -66,6 +63,40 @@ class TestTimest(TestCase):
         mocked_now.astimezone.return_value = datetime(2022, 1, 19, 20, 30, tzinfo=tz.tzlocal())
         mocked_datetime.now = mocked_now
         self.assertEqual(Timest.current_utc_timetz(), datetime(2022, 1, 19, 20, 30, tzinfo=tz.tzlocal()))
+
+    def test_convert_utc_time_without_time_zone_into_utc_time_with_time_zone(self):
+        timest = Timest(input_fmt="%Y-%m-%dT%H:%M:%S.%fZ")
+        actual = timest.utc_time2utc_tz(time='2021-12-08T00:00:00.000Z')
+        self.assertEqual(actual, datetime(2021, 12, 8, tzinfo=tz.tzutc()))
+
+    def test_raise_time_conversion_error_when_converting_time_without_specify_geolocation(self):
+        timest = Timest()
+        with self.assertRaises(TimestConversionError):
+            timest.utc_time2utc_localtz(time=1531432748)
+
+# =========== TEST _FixedTimezone
+    def test_convert_utc_time_without_time_zone_into_utc_time_with_fixed_time_zone(self):
+        timest = Timest(latitude=45, longitude=9)
+        actual = timest.utc_time2utc_localtz(time=1531432748)
+        expected_tzinfo = tutils.get_tzinfo_from_coordinates(latitude=45, longitude=9)
+        self.assertEqual(actual, datetime(2018, 7, 12, 23, 59, 8, tzinfo=expected_tzinfo))
+
+    @patch('airquality.datamodel.timest.datetime')
+    def test_convert_current_utc_time_without_time_zone_into_utc_time_with_fixed_time_zone(self, mocked_datetime):
+        mocked_now = MagicMock()
+        mocked_now.return_value = datetime(2022, 1, 19, 16, 35, tzinfo=tz.tzutc())
+        new_york_tz = tutils.get_tzinfo_from_coordinates(latitude=40.7127281, longitude=-74.0060152)
+        mocked_now.astimezone.return_value = datetime(2022, 1, 19, 11, 35, tzinfo=new_york_tz)
+        mocked_datetime.now = mocked_now
+
+        timest = Timest(latitude=40.7127281, longitude=-74.0060152)
+        actual = timest.current_utc_timetz()
+        self.assertEqual(actual, datetime(2022, 1, 19, 11, 35, tzinfo=new_york_tz))
+
+    def test_raise_timest_conversion_error_when_try_to_use_a_different_location_with_fixed_timezone(self):
+        timest = Timest(latitude=45, longitude=9)
+        with self.assertRaises(TimestConversionError):
+            timest.utc_time2utc_localtz(time=1531432748, longitude=10, latitude=44)
 
 
 if __name__ == '__main__':

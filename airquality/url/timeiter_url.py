@@ -6,6 +6,7 @@
 #
 ######################################################
 from airquality.core.iteritems import IterableItemsABC
+from airquality.datamodel.timest import Timest
 from datetime import datetime, timedelta
 from typing import Generator
 from abc import abstractmethod
@@ -18,7 +19,7 @@ class TimeIterableURL(IterableItemsABC):
     """
     TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self, url: str, begin: datetime, until=datetime.now(), step_size_in_days=1):
+    def __init__(self, url: str, begin: datetime, until=Timest.current_utc_timetz(), step_size_in_days=1):
         self.url = url
         self.begin = begin
         self.until = until
