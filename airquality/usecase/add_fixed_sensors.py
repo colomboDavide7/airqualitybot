@@ -6,6 +6,7 @@
 #
 ######################################################
 import logging
+from airquality.datamodel.timest import Timest
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.database.gateway import DatabaseGateway
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
@@ -23,9 +24,12 @@ class AddPurpleairFixedSensors(object):
     The goal of this class is to transform a set of Purpleair API data into valid SQL for inserting them.
     """
 
-    def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, input_url_template: str):
-        self._database_gway = database_gway
+    def __init__(
+        self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, timest: Timest, input_url_template: str
+    ):
+        self._timest = timest
         self._server_wrap = server_wrap
+        self._database_gway = database_gway
         self.input_url_template = input_url_template
         self._logger = logging.getLogger(__name__)
 
@@ -44,7 +48,7 @@ class AddPurpleairFixedSensors(object):
         datamodel_builder = PurpleairAPIDataBuilder(json_response=server_jresp)
         self._logger.debug("found #%d API data" % len(datamodel_builder))
 
-        request_builder = AddPurpleairSensorRequestBuilder(datamodel=datamodel_builder)
+        request_builder = AddPurpleairSensorRequestBuilder(datamodel=datamodel_builder, timest=self._timest)
         self._logger.debug("found #%d requests" % len(request_builder))
 
         validator = AddFixedSensorRequestValidator(request=request_builder, existing_names=self.names_of)

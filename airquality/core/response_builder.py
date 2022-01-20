@@ -7,10 +7,10 @@
 ######################################################
 from itertools import count
 from typing import Generator, List
-from datetime import datetime
+from airquality.datamodel.timest import Timest
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest
-from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse, \
+from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse,\
     AddPlacesResponse, AddOpenWeatherMapDataResponse
 
 SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
@@ -22,7 +22,7 @@ def apiparam_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
 
 
 def sensor_at_location_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
-    valid_from = datetime.now().strftime(SQL_TIMESTAMP_FTM)
+    valid_from = Timest.current_utc_timetz()
     location = request.geolocation.geom_from_text()
     return f"({sensor_id}, '{valid_from}', {location})"
 

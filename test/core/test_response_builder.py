@@ -6,6 +6,7 @@
 #
 ######################################################
 from datetime import datetime
+from dateutil import tz
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
 from airquality.datamodel.geometry import PostgisPoint
@@ -46,15 +47,18 @@ class TestResponseBuilder(TestCase):
         )
 
     ##################################### test_create_response_to_request_of_adding_fixed_sensor #####################################
-    @patch('airquality.core.response_builder.datetime')
+    @patch('airquality.datamodel.timest.datetime')
     def test_create_response_to_request_of_adding_fixed_sensor(self, mocked_datetime):
-        mocked_now = datetime.strptime("2021-12-29 18:33:00", SQL_TIMESTAMP_FMT)
+        mocked_now = datetime(2021, 12, 29, 18, 33, tzinfo=tz.tzutc())
         mocked_datetime.now.return_value = mocked_now
 
         mocked_validated_requests = MagicMock()
         mocked_validated_requests.__iter__.return_value = [self.get_test_validated_requests]
 
-        responses = AddFixedSensorResponseBuilder(requests=mocked_validated_requests, start_sensor_id=12)
+        responses = AddFixedSensorResponseBuilder(
+            requests=mocked_validated_requests,
+            start_sensor_id=12
+        )
         record = responses[0]
         self.assertEqual(len(responses), 1)
 
@@ -65,7 +69,7 @@ class TestResponseBuilder(TestCase):
                                    f"(12, 'key2b', '444', '2B', '{expected_datetime}')"
 
         expected_geometry = "ST_GeomFromText('POINT(5.666 1.234)', 4326)"
-        expected_geolocation_record = f"(12, '{mocked_now}', {expected_geometry})"
+        expected_geolocation_record = f"(12, '2021-12-29 19:33:00+01:00', {expected_geometry})"
 
         self.assertEqual(record.sensor_record, "(12, 'faketype', 'fakename')")
         self.assertEqual(record.apiparam_record, expected_apiparam_record)

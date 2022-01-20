@@ -9,6 +9,7 @@ from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasur
     AddSensorMeasuresRequest, Channel, AddPlacesRequest, AddWeatherForecastRequest, AddOpenWeatherMapDataRequest
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.core.iteritems import IterableItemsABC
+from airquality.datamodel.timest import Timest
 from typing import Dict, Generator
 from datetime import datetime
 
@@ -19,12 +20,16 @@ class AddPurpleairSensorRequestBuilder(IterableItemsABC):
     a set of *PurpleairDatamodel* items into an *AddFixedSensorRequest* Generator.
     """
 
-    def __init__(self, datamodel: IterableItemsABC):
+    def __init__(self, datamodel: IterableItemsABC, timest: Timest):
         self.datamodel = datamodel
+        self._timest = timest
 
     def items(self) -> Generator[AddFixedSensorsRequest, None, None]:
         for dm in self.datamodel:
-            created_at = datetime.fromtimestamp(dm.date_created)
+            created_at = self._timest.utc_time2utc_timetz(
+                time=dm.date_created, latitude=dm.latitude, longitude=dm.longitude
+            )
+
             channels = [Channel(api_key=dm.primary_key_a,
                                 api_id=str(dm.primary_id_a),
                                 channel_name="1A",

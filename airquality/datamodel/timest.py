@@ -4,7 +4,7 @@
 # ======================================
 import logging
 from dateutil import tz
-from datetime import datetime, tzinfo
+from datetime import datetime, tzinfo, timezone
 from timezonefinder import TimezoneFinder
 
 
@@ -47,18 +47,28 @@ class Timest(object):
         self._logger.exception(cause)
         raise TimestConversionError(cause)
 
+    @classmethod
+    def current_utc_timetz(cls) -> datetime:
+        """
+        A class method that returns the current timestamp in the local time zone.
+        """
+        utc_dt = datetime.now(tz=timezone.utc)
+        return utc_dt.astimezone().replace(microsecond=0)
+
     def utc_time2utc_timetz(self, time, latitude: float, longitude: float) -> datetime:
         """
         Converting UTC time zone *time* into the corresponding UTC geolocation's time zone.
         """
         dt = self._safe_strpin(time)
-        return dt.replace(tzinfo=self._tzinfo_from(lat=latitude, lng=longitude))
+        dt_tz = dt.replace(tzinfo=tz.tzutc())
+        return dt_tz.astimezone(tz=self._tzinfo_from(lat=latitude, lng=longitude))
 
-    def utc_time2utc_timetz_str(self, time, latitude: float, longitude: float) -> str:
+    def strfout(self, dt: datetime) -> str:
         """
-        Convert and format according to the *output_fmt* instance variable.
+        :param dt:                          the datetime object to format.
+        :return:                            the formatted datetime object according to *output_fmt* value.
         """
-        return self._safe_strfout(dt=self.utc_time2utc_timetz(time, latitude, longitude))
+        return self._safe_strfout(dt)
 
     def _safe_strfout(self, dt: datetime) -> str:
         """
@@ -124,3 +134,32 @@ class Timest(object):
 
         tzname = self._tz_finder.timezone_at(lat=lat, lng=lng)
         return tz.gettz(tzname)
+
+
+DEFAULT_OUT_FMT = "%Y-%m-%d %H:%M:%S%z"
+ATMOTUBE_FMT    = "%Y-%m-%dT%H:%M:%S.%fZ"
+THINGSPEAK_FMT  = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def purpleair_timest(output_fmt=DEFAULT_OUT_FMT) -> Timest:
+    """
+    Constructor function that return a ready-to-use *Timest* object compliant to PurpleAir timestamp format.
+    """
+
+    return Timest(output_fmt=output_fmt)
+
+
+def atmotube_timest(output_fmt=DEFAULT_OUT_FMT) -> Timest:
+    """
+    Constructor function that return a ready-to-use *Timest* object compliant to Atmotube timestamp format.
+    """
+
+    return Timest(input_fmt=ATMOTUBE_FMT, output_fmt=output_fmt)
+
+
+def thingspeak_timest(output_fmt=DEFAULT_OUT_FMT) -> Timest:
+    """
+    Constructor function that return a ready-to-use *Timest* object compliant to Thingspeak timestamp format.
+    """
+
+    return Timest(input_fmt=THINGSPEAK_FMT, output_fmt=output_fmt)

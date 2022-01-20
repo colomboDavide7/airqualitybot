@@ -5,6 +5,8 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import test._test_utils as tutils
+from airquality.datamodel.timest import Timest
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
@@ -42,11 +44,15 @@ class TestRequestBuilder(TestCase):
         mocked_datamodel_builder = MagicMock()
         mocked_datamodel_builder.__iter__.return_value = [self.get_test_purpleair_datamodel]
 
-        requests = AddPurpleairSensorRequestBuilder(datamodel=mocked_datamodel_builder)
+        requests = AddPurpleairSensorRequestBuilder(
+            datamodel=mocked_datamodel_builder,
+            timest=Timest()
+        )
         self.assertEqual(len(requests), 1)
         req1 = requests[0]
 
-        expected_last_acquisition = datetime.fromtimestamp(1234567890)
+        expected_tz = tutils.get_tzinfo_from_coordinates(latitude=1.234, longitude=5.666)
+        expected_last_acquisition = datetime(2009, 2, 13, 23, 31, 30, tzinfo=expected_tz)
         expected_api_param = [
             Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=expected_last_acquisition),
             Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=expected_last_acquisition),
