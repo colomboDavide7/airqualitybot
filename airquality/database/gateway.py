@@ -41,9 +41,9 @@ class DatabaseGateway(object):
         self._logger.exception(cause)
         raise ValueError(cause)
 
-    def _fetch_all(self, query: str, err_msg: str):
+    def _fetch_all(self, query: str, err_msg=""):
         rows = self.database_adapt.fetchall(query)
-        if not rows:
+        if not rows and err_msg:
             self._raise(err_msg)
         return rows
 
@@ -76,15 +76,13 @@ class DatabaseGateway(object):
 # =========== SELECT SET QUERIES
     def query_poscodes_of_country(self, country_code: str) -> Set[str]:
         rows = self._fetch_all(
-            query=queries.SELECT_POSCODES_OF.format(code=country_code),
-            err_msg=f"database failed to query 'geographical_area' for country code '{country_code}'"
+            query=queries.SELECT_POSCODES_OF.format(code=country_code)
         )
         return {row[0] for row in rows}
 
     def query_sensor_names_of_type(self, sensor_type: str) -> Set[str]:
         rows = self._fetch_all(
-            query=queries.SELECT_SENSOR_NAMES.format(type=sensor_type),
-            err_msg=f"database failed to query 'sensor' of type '{sensor_type}'"
+            query=queries.SELECT_SENSOR_NAMES.format(type=sensor_type)
         )
         return {row[0] for row in rows}
 

@@ -115,7 +115,7 @@ class Application(object):
             elif personality == 'geonames':
                 AddPlaces(
                     output_gateway=DatabaseGateway(database_adapt=database_wrap),
-                    input_dir_path=self._env.input_dir_of(personality)
+                    input_dir=self._env.input_dir_of(personality)
                 ).run()
             elif personality == 'openweathermap':
                 AddWeatherData(

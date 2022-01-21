@@ -10,47 +10,86 @@ from unittest.mock import MagicMock, patch
 from airquality.usecase.add_places import AddPlaces
 
 
+def _test_directory_content():
+    return {"fakefile1.txt", ".ignored_file"}
+
+
+def _test_database_postal_codes():
+    return {'p1', 'p2', 'p3'}
+
+
+def _mocked_database_gway():
+    mocked_gateway = MagicMock()
+    mocked_gateway.insert_places = MagicMock()
+    mocked_gateway.query_service_id_from_name.return_value = 133
+    mocked_gateway.query_poscodes_of_country.return_value = _test_database_postal_codes()
+    return mocked_gateway
+
+
+def _test_country_place_lines():
+    with open('test_resources/ES.txt', 'r') as f:
+        return f.read()
+
+
+def _mocked_responses() -> MagicMock:
+    mocked_responses = MagicMock()
+    mocked_responses.read.side_effect = [_test_country_place_lines()]
+    mocked_responses.__enter__.return_value = mocked_responses
+    return mocked_responses
+
+
+def _expected_add_places_record():
+    return "(133, '04001', 'ES', 'Almeria', 'Almeria', 'Andalucia', ST_GeomFromText('POINT(-2.4597 36.8381)', 4326))"
+
+
 class TestAddPlaces(TestCase):
 
+# =========== SETUP METHOD
+    def setUp(self) -> None:
+        self._mocked_database_gway = _mocked_database_gway()
+        self.usecase = AddPlaces(
+            output_gateway=self._mocked_database_gway,
+            input_dir="fake_path"
+        )
+
+# =========== TEST METHODS
     @patch('airquality.usecase.add_places.listdir')
     @patch('airquality.usecase.add_places.isfile')
     @patch('airquality.core.apidata_builder.open')
     def test_run_add_fixed_sensors_usecase(self, mocked_open, mocked_isfile, mocked_listdir):
-        mocked_listdir.return_value = {"fakefile1.txt", ".ignored_file"}
+        mocked_listdir.return_value = _test_directory_content()
         mocked_isfile.return_value = [True, True, True]
+        mocked_open.return_value = _mocked_responses()
+        self.usecase.run()
+        self._assert_responses()
+        self._assert_usecase_properties()
 
-        mocked_gateway = MagicMock()
-        mocked_gateway.insert_places = MagicMock()
-        mocked_gateway.query_service_id_from_name.return_value = 133
-        mocked_gateway.query_poscodes_of_country.return_value = {'p1', 'p2', 'p3'}
-
-        with open('test_resources/ES.txt', 'r') as f:
-            content = f.read()
-
-        mocked_responses = MagicMock()
-        mocked_responses.read.side_effect = [content]
-        mocked_responses.__enter__.return_value = mocked_responses
-        mocked_open.return_value = mocked_responses
-
-        runner = AddPlaces(output_gateway=mocked_gateway, input_dir_path="fake_path")
-        self.assertIn('fakefile1.txt', runner.filenames)
-        self.assertNotIn('.ignored_file', runner.filenames)
-
-        self.assertEqual(runner.service_id, 133)
-
-        self.assertIn('p1', runner.poscodes_of("fakecountry"))
-        self.assertIn('p2', runner.poscodes_of("fakecountry"))
-        self.assertIn('p3', runner.poscodes_of("fakecountry"))
-
-        self.assertEqual(runner.fullpath("fakefile.txt"), "fake_path/fakefile.txt")
-
-        runner.run()
-        responses = mocked_gateway.insert_places.call_args[0][0]
+# =========== SUPPORT METHODS
+    def _assert_responses(self):
+        responses = self._mocked_database_gway.insert_places.call_args[0][0]
         self.assertEqual(len(responses), 3)
+        self.assertEqual(
+            responses[0].place_record,
+            _expected_add_places_record()
+        )
 
-        resp = responses[0]
-        expected_place_record = "(133, '04001', 'ES', 'Almeria', 'Almeria', 'Andalucia', ST_GeomFromText('POINT(-2.4597 36.8381)', 4326))"
-        self.assertEqual(resp.place_record, expected_place_record)
+    def _assert_usecase_properties(self):
+        self._assert_directory_filenames()
+        self._assert_existing_postal_codes()
+        self.assertEqual(self.usecase.service_id, 133)
+        self.assertEqual(
+            self.usecase.fullpath("fakefile.txt"),
+            "fake_path/fakefile.txt"
+        )
+
+    def _assert_directory_filenames(self):
+        self.assertIn('fakefile1.txt', self.usecase.filenames)
+        self.assertNotIn('.ignored_file', self.usecase.filenames)
+
+    def _assert_existing_postal_codes(self):
+        self.assertIn('p1', self.usecase.poscodes_of("fakecountry"))
+        self.assertIn('p2', self.usecase.poscodes_of("fakecountry"))
+        self.assertIn('p3', self.usecase.poscodes_of("fakecountry"))
 
 
 if __name__ == '__main__':

@@ -18,45 +18,56 @@ from airquality.core.response_builder import AddPlacesResponseBuilder
 
 class AddPlaces(object):
 
-    def __init__(self, input_dir_path: str, output_gateway: DatabaseGateway):
-        self.input_dir_path = input_dir_path
-        self.output_gateway = output_gateway
-        self.app_logger = logging.getLogger(__name__)
+    def __init__(self, input_dir: str, output_gateway: DatabaseGateway):
+        self._input_dir = input_dir
+        self._database_gway = output_gateway
+        self._logger = logging.getLogger(__name__)
 
     @property
     def filenames(self) -> Set[str]:
-        return {f for f in listdir(self.input_dir_path) if isfile(self.fullpath(f)) and not f.startswith('.')}
+        return {f for f in listdir(self._input_dir) if isfile(self.fullpath(f)) and not f.startswith('.')}
 
     @property
     def service_id(self) -> int:
-        return self.output_gateway.query_service_id_from_name(service_name='geonames')
+        return self._database_gway.query_service_id_from_name(service_name='geonames')
 
     def poscodes_of(self, country_code: str) -> Set[str]:
-        return self.output_gateway.query_poscodes_of_country(country_code=country_code)
+        return self._database_gway.query_poscodes_of_country(country_code=country_code)
 
     def fullpath(self, filename: str) -> str:
-        return join(self.input_dir_path, filename)
+        return join(self._input_dir, filename)
 
     def run(self) -> None:
         service_id = self.service_id
         for f in self.filenames:
-            self.app_logger.info("filename => %s" % f)
+            self._logger.info("filename => %s" % f)
 
-            datamodel_builder = GeonamesDataBuilder(filepath=self.fullpath(f))
-            self.app_logger.info("found #%d file lines" % len(datamodel_builder))
+            country_code = f.split('.')[0]
+            database_pcodes = self.poscodes_of(country_code=country_code)
+            self._logger.info("queried #%d postal codes of country='%s'" % (len(database_pcodes), country_code))
 
-            request_builder = AddPlacesRequestBuilder(datamodels=datamodel_builder)
-            self.app_logger.info("found #%d requests" % len(request_builder))
+            datamodel_builder = GeonamesDataBuilder(
+                filepath=self.fullpath(f)
+            )
+            self._logger.info("found #%d file lines" % len(datamodel_builder))
 
-            dbposcodes = self.poscodes_of(country_code=f.split('.')[0])
-            self.app_logger.info("found #%d unique database poscodes of country='%s'" % (len(dbposcodes), f.split('.')[0]))
+            request_builder = AddPlacesRequestBuilder(
+                datamodels=datamodel_builder
+            )
+            self._logger.info("found #%d requests" % len(request_builder))
 
-            validator = AddPlacesRequestValidator(requests=request_builder, existing_poscodes=dbposcodes)
-            self.app_logger.info("found #%d valid requests" % len(validator))
+            validator = AddPlacesRequestValidator(
+                requests=request_builder,
+                existing_poscodes=database_pcodes
+            )
+            self._logger.info("found #%d valid requests" % len(validator))
 
-            response_builder = AddPlacesResponseBuilder(requests=validator, service_id=service_id)
-            self.app_logger.info("found #%d responses" % len(response_builder))
+            response_builder = AddPlacesResponseBuilder(
+                requests=validator,
+                service_id=service_id
+            )
+            self._logger.info("found #%d responses" % len(response_builder))
 
             if response_builder:
-                self.app_logger.info("inserting new places!")
-                self.output_gateway.insert_places(response_builder)
+                self._logger.info("inserting new places!")
+                self._database_gway.insert_places(response_builder)
