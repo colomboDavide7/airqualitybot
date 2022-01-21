@@ -58,7 +58,7 @@ class TestDatabaseGatewayAddFixedSensorsSection(TestCase):
         mocked_database_adapt.fetchone.return_value = (12,)
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         self.assertEqual(
-            gateway.get_max_sensor_id_plus_one(),
+            gateway.query_max_sensor_id_plus_one(),
             13
         )
 
@@ -67,7 +67,7 @@ class TestDatabaseGatewayAddFixedSensorsSection(TestCase):
         mocked_database_adapt.fetchone.return_value = (None,)
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         self.assertEqual(
-            gateway.get_max_sensor_id_plus_one(),
+            gateway.query_max_sensor_id_plus_one(),
             1
         )
 

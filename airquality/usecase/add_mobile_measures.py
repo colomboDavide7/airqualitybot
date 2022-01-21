@@ -39,14 +39,14 @@ class AddAtmotubeMeasures(object):
 
     @property
     def api_param(self) -> List[APIParam]:
-        return self._database_gway.get_sensor_apiparam_of_type(sensor_type="atmotube")
+        return self._database_gway.query_sensor_apiparam_of_type(sensor_type="atmotube")
 
     @property
     def start_packet_id(self) -> int:
         return self._database_gway.query_max_mobile_packet_id_plus_one()
 
     def filter_ts_of(self, param: APIParam) -> datetime:
-        return self._database_gway.get_last_acquisition_of(sensor_id=param.sensor_id, ch_name=param.ch_name)
+        return self._database_gway.query_last_acquisition_of(sensor_id=param.sensor_id, ch_name=param.ch_name)
 
     def urls_of(self, param: APIParam) -> AtmotubeTimeIterableURL:
         pre_formatted_url = self.input_url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")

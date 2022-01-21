@@ -56,7 +56,7 @@ class DatabaseGateway(object):
     def query_sensor_names_of_type(self, sensor_type: str) -> Set[str]:
         return {row[0] for row in self.database_adapt.fetchall(const.SELECT_SENSOR_NAMES.format(type=sensor_type))}
 
-    def get_max_sensor_id_plus_one(self) -> int:
+    def query_max_sensor_id_plus_one(self) -> int:
         row = self.database_adapt.fetchone(const.SELECT_MAX_SENS_ID)
         return 1 if row[0] is None else row[0] + 1
 
@@ -76,14 +76,14 @@ class DatabaseGateway(object):
 # SENSOR API PARAM TABLE
 #                                   #
 # ================================= #
-    def get_last_acquisition_of(self, sensor_id: int, ch_name: str) -> datetime:
+    def query_last_acquisition_of(self, sensor_id: int, ch_name: str) -> datetime:
         row = self.database_adapt.fetchone(const.SELECT_LAST_ACQUISITION_OF.format(sid=sensor_id, ch=ch_name))
         if row is None:
             self._raise(f"[FATAL]: database failed to query 'sensor_api_param': "
                         f"sensor_id='{sensor_id}', ch_name='{ch_name}'!!!")
         return row[0]
 
-    def get_sensor_apiparam_of_type(self, sensor_type: str) -> List[APIParam]:
+    def query_sensor_apiparam_of_type(self, sensor_type: str) -> List[APIParam]:
         rows = self.database_adapt.fetchall(const.SELECT_SENS_API_PARAM_OF.format(type=sensor_type))
         if not rows:
             self._raise(f"[FATAL]: database failed to query 'sensor_api_param' of sensor type '{sensor_type}'!!!")
@@ -176,7 +176,7 @@ class DatabaseGateway(object):
 # WEATHER CONDITION TABLE
 #                                   #
 # ================================= #
-    def get_weather_conditions(self):
+    def query_weather_conditions(self):
         rows = self.database_adapt.fetchall(const.SELECT_WEATHER_COND)
         if not rows:
             self._raise(f"[FATAL]: database failed to query 'weather_condition'!!!")

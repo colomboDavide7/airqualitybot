@@ -51,7 +51,7 @@ class AddWeatherData(object):
     @property
     def weather_map(self) -> Dict[int, Dict[str, int]]:
         if not self._cached_weather_map:
-            rows = self._database_gway.get_weather_conditions()
+            rows = self._database_gway.query_weather_conditions()
             weather_map = {code: {} for id_, code, icon in rows}
             for id_, code, icon in rows:
                 weather_map[code][icon] = id_

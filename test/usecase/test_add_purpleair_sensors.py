@@ -64,7 +64,7 @@ def _test_max_sensor_id_plus_one() -> int:
 
 def _setup_mocked_database_gway() -> MagicMock:
     mocked_gateway = MagicMock()
-    mocked_gateway.get_max_sensor_id_plus_one.return_value = _test_max_sensor_id_plus_one()
+    mocked_gateway.query_max_sensor_id_plus_one.return_value = _test_max_sensor_id_plus_one()
     mocked_gateway.query_sensor_names_of_type.return_value = _test_existing_sensor_names()
     mocked_gateway.insert_sensors = MagicMock()
     return mocked_gateway

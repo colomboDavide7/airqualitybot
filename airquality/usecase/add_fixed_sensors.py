@@ -35,7 +35,7 @@ class AddPurpleairFixedSensors(object):
 
     @property
     def start_sensor_id(self) -> int:
-        return self._database_gway.get_max_sensor_id_plus_one()
+        return self._database_gway.query_max_sensor_id_plus_one()
 
     @property
     def names_of(self):
