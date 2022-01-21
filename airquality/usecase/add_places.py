@@ -29,7 +29,7 @@ class AddPlaces(object):
 
     @property
     def service_id(self) -> int:
-        return self.output_gateway.get_service_id_from_name(service_name='geonames')
+        return self.output_gateway.query_service_id_from_name(service_name='geonames')
 
     def poscodes_of(self, country_code: str) -> Set[str]:
         return self.output_gateway.query_poscodes_of_country(country_code=country_code)

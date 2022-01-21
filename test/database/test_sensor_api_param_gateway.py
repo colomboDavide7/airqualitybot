@@ -49,7 +49,10 @@ class TestDatabaseGatewaySensorAPIParamSection(TestCase):
             sensor_id=12,
             ch_name="fakename"
         )
-        mocked_database_adapt.execute.assert_called_with(_expected_update_last_acq_query())
+        self.assertEqual(
+            mocked_database_adapt.execute.call_args[1]['query'],
+            _expected_update_last_acq_query()
+        )
 
     def test_get_last_acquisition_timestamp_of_sensor_channel(self):
         mocked_database_adapt = MagicMock()

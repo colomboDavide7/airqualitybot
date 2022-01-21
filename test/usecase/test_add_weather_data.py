@@ -36,9 +36,9 @@ class TestAddWeatherDataUsecase(TestCase):
         test_weather_conditions = [(55, 804, "04d"), (37, 500, "13d"), (56, 804, "04n")]
         expected_weather_conditions = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
         mocked_gateway = MagicMock()
-        mocked_gateway.get_service_apiparam_of.return_value = [ServiceParam(api_key="fakekey", n_requests=0)]
+        mocked_gateway.query_service_apiparam_of.return_value = [ServiceParam(api_key="fakekey", n_requests=0)]
         mocked_gateway.query_weather_conditions.return_value = test_weather_conditions
-        mocked_gateway.get_service_id_from_name.return_value = 1
+        mocked_gateway.query_service_id_from_name.return_value = 1
         mocked_gateway.query_geolocation_of.return_value = CityOfGeoarea(geoarea_id=14400, latitude=0.0, longitude=0.0)
         mocked_gateway.insert_weather_data = MagicMock()
 

@@ -46,7 +46,7 @@ class AddWeatherData(object):
 
     @property
     def service_param(self) -> List[ServiceParam]:
-        return self._database_gway.get_service_apiparam_of(service_name="openweathermap")
+        return self._database_gway.query_service_apiparam_of(service_name="openweathermap")
 
     @property
     def weather_map(self) -> Dict[int, Dict[str, int]]:
@@ -60,7 +60,7 @@ class AddWeatherData(object):
 
     @property
     def service_id(self):
-        return self._database_gway.get_service_id_from_name(service_name="openweathermap")
+        return self._database_gway.query_service_id_from_name(service_name="openweathermap")
 
     def run(self):
         for param in self.service_param:

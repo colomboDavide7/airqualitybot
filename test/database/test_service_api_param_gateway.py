@@ -25,7 +25,7 @@ class TestDatabaseGatewayServiceAPIParamSection(TestCase):
         mocked_database_adapt.fetchone.return_value = (1, )
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         self.assertEqual(
-            gateway.get_service_id_from_name(service_name="fakename"),
+            gateway.query_service_id_from_name(service_name="fakename"),
             1
         )
 
@@ -34,14 +34,14 @@ class TestDatabaseGatewayServiceAPIParamSection(TestCase):
         mocked_database_adapt.fetchone.return_value = None
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         with self.assertRaises(ValueError):
-            gateway.get_service_id_from_name(service_name="fakename")
+            gateway.query_service_id_from_name(service_name="fakename")
 
     def test_get_service_apiparam(self):
         mocked_database_adapt = MagicMock()
         mocked_database_adapt.fetchall.return_value = _test_database_service_api_param()
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         self._assert_service_api_param(
-            api_param=gateway.get_service_apiparam_of(
+            api_param=gateway.query_service_apiparam_of(
                 service_name="fakename"
             )
         )
@@ -51,7 +51,7 @@ class TestDatabaseGatewayServiceAPIParamSection(TestCase):
         mocked_database_adapt.fetchall.return_value = []
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         with self.assertRaises(ValueError):
-            gateway.get_service_apiparam_of(service_name="fakename")
+            gateway.query_service_apiparam_of(service_name="fakename")
 
     def _assert_service_api_param(self, api_param):
         self.assertEqual(api_param[0].api_key, "key1")
