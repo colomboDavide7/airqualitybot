@@ -71,28 +71,28 @@ def _mocked_json_api_resp() -> MagicMock:
     return mocked_resp
 
 
-def _mocked_datetime_now() -> MagicMock():
-    mocked_now = MagicMock()
-    mocked_now.return_value = datetime(2021, 8, 12, 12, tzinfo=_test_timezone())
-    return mocked_now
-
-
-def _mocked_datetime_strptime() -> MagicMock:
-    mocked_strptime = MagicMock()
-    mocked_strptime.return_value = datetime(2021, 8, 11)
-    return mocked_strptime
-
-
-def _mocked_datetime_replace() -> MagicMock:
-    mocked_replace = MagicMock()
-    mocked_replace.return_value = datetime(2021, 8, 11)
-    return mocked_replace
-
-
-def _mocked_datetime_astimezone() -> MagicMock:
-    mocked_astz = MagicMock()
-    mocked_astz.return_value = datetime(2021, 8, 11, 2, tzinfo=_test_timezone())
-    return mocked_astz
+# def _mocked_datetime_now() -> MagicMock:
+#     mocked_now = MagicMock()
+#     mocked_now.return_value = datetime(2021, 8, 12, 12, tzinfo=_test_timezone())
+#     return mocked_now
+#
+#
+# def _mocked_datetime_strptime() -> MagicMock:
+#     mocked_strptime = MagicMock()
+#     mocked_strptime.return_value = datetime(2021, 8, 11)
+#     return mocked_strptime
+#
+#
+# def _mocked_datetime_replace() -> MagicMock:
+#     mocked_replace = MagicMock()
+#     mocked_replace.return_value = datetime(2021, 8, 11)
+#     return mocked_replace
+#
+#
+# def _mocked_datetime_astimezone() -> MagicMock:
+#     mocked_astz = MagicMock()
+#     mocked_astz.return_value = datetime(2021, 8, 11, 2, tzinfo=_test_timezone())
+#     return mocked_astz
 
 
 def _expected_measure_record() -> str:

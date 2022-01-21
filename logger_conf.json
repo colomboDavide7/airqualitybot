@@ -31,7 +31,7 @@
         "": {
             "level": "DEBUG",
             "handlers": ["console", "report", "issues"],
-            "propate": false
+            "propagate": false
         }
     }
 }
