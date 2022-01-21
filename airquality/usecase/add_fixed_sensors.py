@@ -7,8 +7,8 @@
 ######################################################
 import logging
 from airquality.datamodel.timest import Timest
-from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.database.gateway import DatabaseGateway
+from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
 from airquality.core.request_validator import AddFixedSensorRequestValidator
@@ -42,6 +42,8 @@ class AddPurpleairFixedSensors(object):
         return self._database_gway.query_sensor_names_of_type(sensor_type='purpleair')
 
     def run(self) -> None:
+        self._logger.debug("fetching purpleair data at => %s" % self.input_url_template)
+
         server_jresp = self._server_wrap.json(url=self.input_url_template)
         self._logger.debug("successfully get server response!!!")
 

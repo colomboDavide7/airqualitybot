@@ -33,35 +33,81 @@ class AddAtmotubeMeasures(object):
         self.input_url_template = input_url_template
         self._logger = logging.getLogger(__name__)
 
-    @property
-    def measure_param(self) -> Dict[str, int]:
-        return self._database_gway.query_measure_param_owned_by(owner="atmotube")
+    def _database_measure_param(self) -> Dict[str, int]:
+        return self._database_gway.query_measure_param_owned_by(
+            owner="atmotube"
+        )
 
-    @property
-    def api_param(self) -> List[APIParam]:
-        return self._database_gway.query_sensor_apiparam_of_type(sensor_type="atmotube")
+    def _database_api_param(self) -> List[APIParam]:
+        return self._database_gway.query_sensor_apiparam_of_type(
+            sensor_type="atmotube"
+        )
 
-    @property
-    def start_packet_id(self) -> int:
+    def _packet_id(self) -> int:
         return self._database_gway.query_max_mobile_packet_id_plus_one()
 
-    def filter_ts_of(self, param: APIParam) -> datetime:
-        return self._database_gway.query_last_acquisition_of(sensor_id=param.sensor_id, ch_name=param.ch_name)
+    def _filter_ts_of(self, api_param: APIParam) -> datetime:
+        """
+        This method is called to get the timestamp used to filter out old measures before inserting into the database.
 
-    def urls_of(self, param: APIParam) -> AtmotubeTimeIterableURL:
-        pre_formatted_url = self.input_url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
+        :param api_param:                       the API param to search for the 'last_acquisition' timestamp.
+        :return:                                the 'last_acquisition' datetime-aware object from the database.
+        """
+        return self._database_gway.query_last_acquisition_of(
+            sensor_id=api_param.sensor_id,
+            ch_name=api_param.ch_name
+        )
+
+    def _urls_of(self, api_param: APIParam) -> AtmotubeTimeIterableURL:
+        pre_formatted_url = self.input_url_template.format(
+            api_key=api_param.api_key,
+            api_id=api_param.api_id,
+            api_fmt="json"
+        )
         return AtmotubeTimeIterableURL(
             url=pre_formatted_url,
-            begin=param.last_acquisition,
+            begin=api_param.last_acquisition,
             step_size_in_days=1
         )
 
+# =========== SAFE METHODS
+    def _safe_insert(self, validator: AddSensorMeasuresRequestValidator, api_param: APIParam):
+        if validator:
+            self._logger.debug(
+                "found #%d responses within: [%s - %s]" %
+                (len(validator), validator[0].timestamp, validator[-1].timestamp)
+            )
+
+            response_builder = AddMobileMeasureResponseBuilder(
+                requests=validator,
+                start_packet_id=self._packet_id()
+            )
+            self._logger.debug("found #%d responses" % len(response_builder))
+
+            self._database_gway.insert_mobile_measures(responses=response_builder)
+            self._safe_update(
+                time=validator[-1].timestamp,
+                api_param=api_param
+            )
+
+    def _safe_update(self, time: datetime, api_param: APIParam):
+        self._logger.debug("updating last acquisition timestamp to => '%s'" % time)
+        self._database_gway.update_last_acquisition_of(
+            timestamp=time,
+            sensor_id=api_param.sensor_id,
+            ch_name=api_param.ch_name
+        )
+
+# =========== RUN METHOD
     def run(self):
-        measure_param = self.measure_param
-        for param in self.api_param:
-            self._logger.info("sensor => %s" % repr(param))
-            for url in self.urls_of(param):
-                self._logger.info("url => %s" % url)
+        measure_param = self._database_measure_param()
+        self._logger.debug("parameters in use for mapping the measures with database code => %s" % repr(measure_param))
+
+        for param in self._database_api_param():
+            self._logger.debug("parameters in use for fetching sensor data => %s" % repr(param))
+
+            for url in self._urls_of(param):
+                self._logger.debug("downloading sensor measures at => %s" % url)
 
                 server_jresp = self._server_wrap.json(url=url)
                 self._logger.debug("successfully get server response!!!")
@@ -70,25 +116,18 @@ class AddAtmotubeMeasures(object):
                 self._logger.debug("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddAtmotubeMeasureRequestBuilder(
-                    datamodel=datamodel_builder, timest=self._timest, code2id=measure_param
+                    datamodel=datamodel_builder,
+                    timest=self._timest,
+                    code2id=measure_param
                 )
                 self._logger.debug("found #%d requests" % len(request_builder))
 
                 validator = AddSensorMeasuresRequestValidator(
-                    request=request_builder, filter_ts=self.filter_ts_of(param)
+                    request=request_builder,
+                    filter_ts=self._filter_ts_of(param)
                 )
-                self._logger.debug("found #%d valid requests" % len(validator))
 
-                response_builder = AddMobileMeasureResponseBuilder(
-                    requests=validator, start_packet_id=self.start_packet_id
+                self._safe_insert(
+                    validator=validator,
+                    api_param=param
                 )
-                self._logger.debug("found #%d responses" % len(response_builder))
-
-                if response_builder:
-                    self._logger.debug(
-                        "found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
-                    self._database_gway.insert_mobile_measures(responses=response_builder)
-                    last_acquisition = validator[-1].timestamp
-                    self._database_gway.update_last_acquisition_of(
-                        timestamp=last_acquisition, sensor_id=param.sensor_id, ch_name=param.ch_name
-                    )
