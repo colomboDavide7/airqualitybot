@@ -42,7 +42,7 @@ class DatabaseGateway(object):
 # MEASURE PARAM TABLE
 #                                   #
 # ================================= #
-    def get_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
+    def query_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
         rows = self.database_adapt.fetchall(const.SELECT_MEASURE_PARAM.format(owner=owner))
         if not rows:
             self._raise(f"[FATAL]: database failed to query 'measure_param' owned by '{owner}'!!!")
@@ -53,7 +53,7 @@ class DatabaseGateway(object):
 # SENSOR TABLE
 #                                   #
 # ================================= #
-    def get_existing_sensor_names_of_type(self, sensor_type: str) -> Set[str]:
+    def query_sensor_names_of_type(self, sensor_type: str) -> Set[str]:
         return {row[0] for row in self.database_adapt.fetchall(const.SELECT_SENSOR_NAMES.format(type=sensor_type))}
 
     def get_max_sensor_id_plus_one(self) -> int:
@@ -101,7 +101,7 @@ class DatabaseGateway(object):
 # MOBILE MEASUREMENTS TABLE
 #                                   #
 # ================================= #
-    def get_max_mobile_packet_id_plus_one(self) -> int:
+    def query_max_mobile_packet_id_plus_one(self) -> int:
         row = self.database_adapt.fetchone(const.SELECT_MAX_MOBILE_PACK_ID)
         return 1 if row[0] is None else row[0] + 1
 
@@ -115,7 +115,7 @@ class DatabaseGateway(object):
 # STATION MEASUREMENT TABLE
 #                                   #
 # ================================= #
-    def get_max_station_packet_id_plus_one(self) -> int:
+    def query_max_station_packet_id_plus_one(self) -> int:
         row = self.database_adapt.fetchone(const.SELECT_MAX_STATION_PACK_ID)
         return 1 if row[0] is None else row[0] + 1
 
@@ -151,7 +151,7 @@ class DatabaseGateway(object):
 # GEOGRAPHICAL AREA TABLE
 #                                   #
 # ================================= #
-    def get_poscodes_of_country(self, country_code: str) -> Set[str]:
+    def query_poscodes_of_country(self, country_code: str) -> Set[str]:
         return {row[0] for row in self.database_adapt.fetchall(const.SELECT_POSCODES_OF.format(code=country_code))}
 
     def insert_places(self, responses: AddPlacesResponseBuilder):
@@ -159,13 +159,17 @@ class DatabaseGateway(object):
         query = const.INSERT_PLACES.format(val=values)
         self.database_adapt.execute(query)
 
-    def get_geolocation_of(self, city: WeatherCityData) -> CityOfGeoarea:
+    def query_geolocation_of(self, city: WeatherCityData) -> CityOfGeoarea:
         row = self.database_adapt.fetchone(
             const.SELECT_GEOLOCATION_OF.format(country=city.country_code, place=city.place_name)
         )
         if row is None:
             self._raise(f"[FATAL]: database failed to query 'geographical_area' from {city!r}!!!")
-        return CityOfGeoarea(geoarea_id=row[0], longitude=row[1], latitude=row[2])
+        return CityOfGeoarea(
+            geoarea_id=row[0],
+            longitude=row[1],
+            latitude=row[2]
+        )
 
 # ================================= #
 #                                   #

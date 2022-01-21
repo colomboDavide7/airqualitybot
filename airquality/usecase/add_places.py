@@ -32,7 +32,7 @@ class AddPlaces(object):
         return self.output_gateway.get_service_id_from_name(service_name='geonames')
 
     def poscodes_of(self, country_code: str) -> Set[str]:
-        return self.output_gateway.get_poscodes_of_country(country_code=country_code)
+        return self.output_gateway.query_poscodes_of_country(country_code=country_code)
 
     def fullpath(self, filename: str) -> str:
         return join(self.input_dir_path, filename)

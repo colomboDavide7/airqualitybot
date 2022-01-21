@@ -50,7 +50,7 @@ class AddThingspeakMeasures(object):
 
     @property
     def measure_param(self) -> Dict[str, int]:
-        return self._database_gway.get_measure_param_owned_by(owner="thingspeak")
+        return self._database_gway.query_measure_param_owned_by(owner="thingspeak")
 
     @property
     def api_param(self) -> List[APIParam]:
@@ -58,7 +58,7 @@ class AddThingspeakMeasures(object):
 
     @property
     def start_packet_id(self) -> int:
-        return self._database_gway.get_max_station_packet_id_plus_one()
+        return self._database_gway.query_max_station_packet_id_plus_one()
 
     def fields_of(self, param: APIParam) -> Dict[str, str]:
         return self.FIELD_MAP[param.ch_name]

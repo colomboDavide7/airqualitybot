@@ -22,7 +22,7 @@ class TestAddPlaces(TestCase):
         mocked_gateway = MagicMock()
         mocked_gateway.insert_places = MagicMock()
         mocked_gateway.get_service_id_from_name.return_value = 133
-        mocked_gateway.get_poscodes_of_country.return_value = {'p1', 'p2', 'p3'}
+        mocked_gateway.query_poscodes_of_country.return_value = {'p1', 'p2', 'p3'}
 
         with open('test_resources/ES.txt', 'r') as f:
             content = f.read()

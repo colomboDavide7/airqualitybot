@@ -39,7 +39,7 @@ class AddPurpleairFixedSensors(object):
 
     @property
     def names_of(self):
-        return self._database_gway.get_existing_sensor_names_of_type(sensor_type='purpleair')
+        return self._database_gway.query_sensor_names_of_type(sensor_type='purpleair')
 
     def run(self) -> None:
         server_jresp = self._server_wrap.json(url=self.input_url_template)

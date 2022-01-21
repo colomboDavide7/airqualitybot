@@ -35,7 +35,7 @@ class AddAtmotubeMeasures(object):
 
     @property
     def measure_param(self) -> Dict[str, int]:
-        return self._database_gway.get_measure_param_owned_by(owner="atmotube")
+        return self._database_gway.query_measure_param_owned_by(owner="atmotube")
 
     @property
     def api_param(self) -> List[APIParam]:
@@ -43,7 +43,7 @@ class AddAtmotubeMeasures(object):
 
     @property
     def start_packet_id(self) -> int:
-        return self._database_gway.get_max_mobile_packet_id_plus_one()
+        return self._database_gway.query_max_mobile_packet_id_plus_one()
 
     def filter_ts_of(self, param: APIParam) -> datetime:
         return self._database_gway.get_last_acquisition_of(sensor_id=param.sensor_id, ch_name=param.ch_name)

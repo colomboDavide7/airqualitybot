@@ -70,7 +70,7 @@ class AddWeatherData(object):
             for city in cities:
                 self._logger.debug("city => %s" % repr(city))
 
-                geoarea_info = self._database_gway.get_geolocation_of(city=city)
+                geoarea_info = self._database_gway.query_geolocation_of(city=city)
                 self._logger.debug("geoarea_info => %s" % repr(geoarea_info))
 
                 pre_formatted_url = self.input_url_template.format(

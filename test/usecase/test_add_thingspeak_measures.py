@@ -55,9 +55,9 @@ def _mocked_database_gway() -> MagicMock:
     """
     mocked_gateway = MagicMock()
     mocked_gateway.insert_station_measures = MagicMock()
-    mocked_gateway.get_max_station_packet_id_plus_one.return_value = _test_max_station_packet_id_plus_one()
+    mocked_gateway.query_max_station_packet_id_plus_one.return_value = _test_max_station_packet_id_plus_one()
     mocked_gateway.get_sensor_apiparam_of_type.return_value = [_test_sensor_api_param()]
-    mocked_gateway.get_measure_param_owned_by.return_value = _test_measure_param()
+    mocked_gateway.query_measure_param_owned_by.return_value = _test_measure_param()
     mocked_gateway.get_last_acquisition_of.return_value = datetime(2021, 12, 20, 11, 18, 40, tzinfo=_test_tzinfo())
     return mocked_gateway
 
