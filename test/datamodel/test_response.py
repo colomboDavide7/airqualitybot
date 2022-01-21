@@ -6,29 +6,32 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, \
-    AddStationMeasuresResponse, AddPlacesResponse, AddOpenWeatherMapDataResponse
+from airquality.datamodel.response import AddFixedSensorResponse, \
+                                          AddMobileMeasureResponse, \
+                                          AddStationMeasuresResponse, \
+                                          AddPlacesResponse, \
+                                          AddOpenWeatherMapDataResponse
 
 
 class TestResponseModel(TestCase):
 
-    def test_add_fixed_sensor_response_model(self):
-
-        record = AddFixedSensorResponse(
-            sensor_record="fake_sensor_record", apiparam_record="fake_apiparam_record", geolocation_record="fake_geo_record"
+    def test_add_fixed_sensors_response(self):
+        response = AddFixedSensorResponse(
+            sensor_record="fake_sensor_record",
+            apiparam_record="fake_apiparam_record",
+            geolocation_record="fake_geo_record"
         )
-        self.assertEqual(record.sensor_record, "fake_sensor_record")
-        self.assertEqual(record.apiparam_record, "fake_apiparam_record")
-        self.assertEqual(record.geolocation_record, "fake_geo_record")
+        self.assertEqual(response.sensor_record, "fake_sensor_record")
+        self.assertEqual(response.apiparam_record, "fake_apiparam_record")
+        self.assertEqual(response.geolocation_record, "fake_geo_record")
 
-    def test_add_mobile_measure_response_model(self):
-
-        record = AddMobileMeasureResponse(
+    def test_add_mobile_measures_response(self):
+        response = AddMobileMeasureResponse(
             measure_record="fake_measure_record"
         )
-        self.assertEqual(record.measure_record, "fake_measure_record")
+        self.assertEqual(response.measure_record, "fake_measure_record")
 
-    def test_add_station_measures_response_model(self):
+    def test_add_station_measures_response(self):
         response = AddStationMeasuresResponse(
             measure_record="fake_measure_records"
         )
