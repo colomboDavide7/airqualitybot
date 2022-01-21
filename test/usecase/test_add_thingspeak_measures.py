@@ -88,6 +88,7 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
     A class that defines the integration test for *AddThingspeakMeasures* usecase.
     """
 
+# =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
         self._usecase = AddThingspeakMeasures(

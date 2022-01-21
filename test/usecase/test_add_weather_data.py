@@ -8,60 +8,133 @@
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
+from airquality.datamodel.apidata import CityOfGeoarea
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.datamodel.service_param import ServiceParam
-from airquality.datamodel.apidata import CityOfGeoarea
 from airquality.usecase.add_weather_data import AddWeatherData
 
 
-class TestAddWeatherDataUsecase(TestCase):
+def _test_weather_conditions():
+    return [(55, 804, "04d"), (37, 500, "13d"), (56, 804, "04n")]
 
-    @patch('airquality.core.apidata_builder.open')
-    @patch('airquality.url.api_server_wrap.requests.get')
-    def test_add_weather_data(self, mocked_get, mocked_open):
-        test_json_response = tutils.get_json_response_from_file(filename='openweather_data.json')
 
-        mocked_api_resp = MagicMock()
-        mocked_api_resp.json.return_value = test_json_response
-        mocked_get.return_value = mocked_api_resp
+def _test_json_response():
+    return tutils.get_json_response_from_file(
+        filename='openweather_data.json'
+    )
 
-        with open('test_resources/weather_cities.json', 'r') as city_file:
-            cities = city_file.read()
 
-        mocked_file_resp = MagicMock()
-        mocked_file_resp.read.return_value = cities
-        mocked_file_resp.__enter__.return_value = mocked_file_resp
-        mocked_open.return_value = mocked_file_resp
+def _mocked_responses() -> MagicMock:
+    mocked_r = MagicMock()
+    mocked_r.json.return_value = _test_json_response()
+    return mocked_r
 
-        test_weather_conditions = [(55, 804, "04d"), (37, 500, "13d"), (56, 804, "04n")]
-        expected_weather_conditions = {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
-        mocked_gateway = MagicMock()
-        mocked_gateway.query_service_apiparam_of.return_value = [ServiceParam(api_key="fakekey", n_requests=0)]
-        mocked_gateway.query_weather_conditions.return_value = test_weather_conditions
-        mocked_gateway.query_service_id_from_name.return_value = 1
-        mocked_gateway.query_geolocation_of.return_value = CityOfGeoarea(geoarea_id=14400, latitude=0.0, longitude=0.0)
-        mocked_gateway.insert_weather_data = MagicMock()
 
-        usecase = AddWeatherData(
-            database_gway=mocked_gateway,
+def _test_cities():
+    with open('test_resources/weather_cities.json', 'r') as f:
+        return f.read()
+
+
+def _mocked_city_file() -> MagicMock:
+    mocked_f = MagicMock()
+    mocked_f.read.return_value = _test_cities()
+    mocked_f.__enter__.return_value = mocked_f
+    return mocked_f
+
+
+def _test_service_api_param():
+    return ServiceParam(api_key="fakekey", n_requests=0)
+
+
+def _test_service_id():
+    return 1
+
+
+def _test_database_geolocation_of_city():
+    return CityOfGeoarea(
+        geoarea_id=14400,
+        latitude=0.0,
+        longitude=0.0
+    )
+
+
+def _mocked_database_gway() -> MagicMock:
+    mocked_gateway = MagicMock()
+    mocked_gateway.query_service_apiparam_of.return_value = [_test_service_api_param()]
+    mocked_gateway.query_weather_conditions.return_value = _test_weather_conditions()
+    mocked_gateway.query_service_id_from_name.return_value = _test_service_id()
+    mocked_gateway.query_geolocation_of.return_value = _test_database_geolocation_of_city()
+    mocked_gateway.insert_weather_data = MagicMock()
+    return mocked_gateway
+
+
+def _expected_weather_map():
+    return {
+        804: {
+                '04d': 55,
+                '04n': 56
+            },
+        500: {
+                "13d": 37
+            }
+        }
+
+
+def _expected_current_record():
+    return "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
+
+
+def _expected_hourly_forecast():
+    return "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
+
+
+def _expected_daily_forecast():
+    return "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
+
+
+class AddWeatherDataIntegrationTest(TestCase):
+
+# =========== SETUP METHOD
+    def setUp(self) -> None:
+        self._mocked_database_gway = _mocked_database_gway()
+        self._usecase = AddWeatherData(
+            database_gway=self._mocked_database_gway,
             server_wrap=APIServerWrapper(),
             input_url_template="fakeurl"
         )
-        self.assertEqual(usecase.weather_map, expected_weather_conditions)
 
-        usecase.run()
-        responses = mocked_gateway.insert_weather_data.call_args[1]['responses']
+# =========== TEST METHOD
+    @patch('airquality.core.apidata_builder.open')
+    @patch('airquality.url.api_server_wrap.requests.get')
+    def test_add_weather_data(self, mocked_get, mocked_open):
+        mocked_get.return_value = _mocked_responses()
+        mocked_open.return_value = _mocked_city_file()
+        self._usecase.run()
+        self._assert_responses()
+        self._assert_usecase_properties()
+
+# =========== SUPPORT METHODS
+    def _assert_responses(self):
+        responses = self._mocked_database_gway.insert_weather_data.call_args[1]['responses']
         self.assertEqual(len(responses), 1)
+        self.assertEqual(
+            responses[0].current_weather_record,
+            _expected_current_record()
+        )
+        self.assertEqual(
+            responses[0].hourly_forecast_record,
+            _expected_hourly_forecast()
+        )
+        self.assertEqual(
+            responses[0].daily_forecast_record,
+            _expected_daily_forecast()
+        )
 
-        resp = responses[0]
-        expected_current_record = "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
-        self.assertEqual(resp.current_weather_record, expected_current_record)
-
-        expected_hourly_record = "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
-        self.assertEqual(resp.hourly_forecast_record, expected_hourly_record)
-
-        expected_daily_record = "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
-        self.assertEqual(resp.daily_forecast_record, expected_daily_record)
+    def _assert_usecase_properties(self):
+        self.assertEqual(
+            self._usecase.weather_map,
+            _expected_weather_map()
+        )
 
 
 if __name__ == '__main__':

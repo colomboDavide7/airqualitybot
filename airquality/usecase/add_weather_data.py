@@ -7,12 +7,13 @@
 ######################################################
 import logging
 from typing import Dict, List
+from airquality.datamodel.apidata import WeatherCityData
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.datamodel.service_param import ServiceParam
-from airquality.core.apidata_builder import OpenWeatherMapAPIDataBuilder, WeatherCityDataBuilder
 from airquality.core.request_builder import AddOpenWeatherMapDataRequestBuilder
 from airquality.core.response_builder import AddOpenWeatherMapDataResponseBuilder
+from airquality.core.apidata_builder import OpenWeatherMapAPIDataBuilder, WeatherCityDataBuilder
 
 
 class AddWeatherData(object):
@@ -38,11 +39,19 @@ class AddWeatherData(object):
     """
 
     def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, input_url_template: str):
+        self._logger = logging.getLogger(__name__)
         self._database_gway = database_gway
         self._server_wrap = server_wrap
         self.input_url_template = input_url_template
+        self._cached_service_id = 0
         self._cached_weather_map = {}
-        self._logger = logging.getLogger(__name__)
+        self._cached_cities = None
+
+    @property
+    def cities_of_interest(self):
+        if self._cached_cities is None:
+            self._cached_cities = WeatherCityDataBuilder(filepath='resources/weather_cities.json')
+        return self._cached_cities
 
     @property
     def service_param(self) -> List[ServiceParam]:
@@ -60,43 +69,77 @@ class AddWeatherData(object):
 
     @property
     def service_id(self):
-        return self._database_gway.query_service_id_from_name(service_name="openweathermap")
+        if not self._cached_service_id:
+            self._cached_service_id = self._database_gway.query_service_id_from_name(service_name="openweathermap")
+        return self._cached_service_id
 
+    def _delete_forecast_measures(self):
+        """
+        This method should be called at the beginning of the run method and NOT WITHIN any loop, otherwise
+        every loop the measures are deleted and only those of the last city are kept in the database.
+        """
+        self._logger.warning("deleting all the hourly weather forecast data")
+        self._database_gway.delete_all_from_hourly_weather_forecast()
+        self._logger.warning("deleting all the daily weather forecast data")
+        self._database_gway.delete_all_from_daily_weather_forecast()
+
+# =========== SAFE METHOD
+    def _safe_insert_city(self, api_key: str, city: WeatherCityData):
+        """
+        This method handles the possibility that a *ValueError* exception is raised by the *database_gateway* when
+        try to query the geolocation of the current *city*.
+
+        In that case the application won't stop, but it takes the next city in the file.
+
+        The exception is safely logged for debug purposes.
+
+        :param api_key:                 the service's API key to use for downloading the data.
+        :param city:                    the weather city data object that refers to the current city.
+        """
+        try:
+            geoarea_info = self._database_gway.query_geolocation_of(city=city)
+            self._logger.debug("found database correspondence for this city => %s" % repr(geoarea_info))
+
+            pre_formatted_url = self.input_url_template.format(
+                api_key=api_key,
+                lat=geoarea_info.latitude,
+                lon=geoarea_info.longitude
+            )
+            self._logger.debug(f"fetching weather data at => {pre_formatted_url}")
+
+            service_jresp = self._server_wrap.json(url=pre_formatted_url)
+            self._logger.debug("successfully get server response!!!")
+
+            datamodel_builder = OpenWeatherMapAPIDataBuilder(json_response=service_jresp)
+            self._logger.debug("found #%d API data" % len(datamodel_builder))
+
+            request_builder = AddOpenWeatherMapDataRequestBuilder(
+                datamodels=datamodel_builder, weather_map=self.weather_map
+            )
+            self._logger.debug("found #%d requests" % len(request_builder))
+
+            response_builder = AddOpenWeatherMapDataResponseBuilder(
+                requests=request_builder, service_id=self.service_id, geoarea_id=geoarea_info.geoarea_id
+            )
+            self._logger.debug("found #%d responses" % len(response_builder))
+
+            if response_builder:
+                self._logger.debug("inserting new weather data!")
+                self._database_gway.insert_weather_data(responses=response_builder)
+
+        except ValueError as err:
+            self._logger.exception(err)
+
+# =========== RUN METHOD
     def run(self):
-        for param in self.service_param:
-            self._logger.debug("service => %s" % repr(param))
+        api_service_param = self.service_param[0]       # for now, we use only the first API key
+        self._logger.debug("parameters in use for connecting to API server => %s" % repr(api_service_param))
 
-            cities = WeatherCityDataBuilder(filepath="resources/weather_cities.json")
-            for city in cities:
-                self._logger.debug("city => %s" % repr(city))
+        self._delete_forecast_measures()
 
-                geoarea_info = self._database_gway.query_geolocation_of(city=city)
-                self._logger.debug("geoarea_info => %s" % repr(geoarea_info))
-
-                pre_formatted_url = self.input_url_template.format(
-                    api_key=param.api_key, lat=geoarea_info.latitude, lon=geoarea_info.longitude
-                )
-
-                service_jresp = self._server_wrap.json(url=pre_formatted_url)
-                self._logger.debug("successfully get service response!!!")
-
-                datamodel_builder = OpenWeatherMapAPIDataBuilder(json_response=service_jresp)
-                self._logger.debug("found #%d API data" % len(datamodel_builder))
-
-                request_builder = AddOpenWeatherMapDataRequestBuilder(
-                    datamodels=datamodel_builder, weather_map=self.weather_map
-                )
-                self._logger.debug("found #%d requests" % len(request_builder))
-
-                response_builder = AddOpenWeatherMapDataResponseBuilder(
-                    requests=request_builder, service_id=self.service_id, geoarea_id=geoarea_info.geoarea_id
-                )
-                self._logger.debug("found #%d responses" % len(response_builder))
-
-                if response_builder:
-                    self._logger.warning("deleting all the hourly weather forecast data")
-                    self._database_gway.delete_all_from_hourly_weather_forecast()
-                    self._logger.warning("deleting all the daily weather forecast data")
-                    self._database_gway.delete_all_from_daily_weather_forecast()
-                    self._logger.debug("inserting new weather data!")
-                    self._database_gway.insert_weather_data(responses=response_builder)
+        for city in self.cities_of_interest:
+            self._logger.debug("downloading weather data for => %s" % repr(city))
+            self._safe_insert_city(
+                api_key=api_service_param.api_key,
+                city=city
+            )
