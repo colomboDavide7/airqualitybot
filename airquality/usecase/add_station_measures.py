@@ -21,7 +21,7 @@ from airquality.core.response_builder import AddStationMeasuresResponseBuilder
 
 class AddThingspeakMeasures(object):
     """
-    An *object* that defines the application UseCase of adding the measures detected by a fixed sensor (i.e., a station).
+    An *object* that defines the application UseCase of adding the measures detected by a fixed sensor (i.e., a station)
 
     Data are fetched from the API by building a set of urls by covering the period from the *last_acquisition* (queried
     from the database) to the moment of the application running.
@@ -48,38 +48,79 @@ class AddThingspeakMeasures(object):
         self.input_url_template = input_url_template
         self._logger = logging.getLogger(__name__)
 
-    @property
-    def measure_param(self) -> Dict[str, int]:
-        return self._database_gway.query_measure_param_owned_by(owner="thingspeak")
+    def _database_measure_param(self) -> Dict[str, int]:
+        return self._database_gway.query_measure_param_owned_by(
+            owner="thingspeak"
+        )
 
-    @property
-    def api_param(self) -> List[APIParam]:
-        return self._database_gway.query_sensor_apiparam_of_type(sensor_type="thingspeak")
+    def _database_api_param(self) -> List[APIParam]:
+        return self._database_gway.query_sensor_apiparam_of_type(
+            sensor_type="thingspeak"
+        )
 
-    @property
-    def start_packet_id(self) -> int:
+    def _packet_id(self) -> int:
         return self._database_gway.query_max_station_packet_id_plus_one()
 
-    def fields_of(self, param: APIParam) -> Dict[str, str]:
+    def _fields_of(self, param: APIParam) -> Dict[str, str]:
         return self.FIELD_MAP[param.ch_name]
 
-    def filter_ts_of(self, param: APIParam) -> datetime:
-        return self._database_gway.query_last_acquisition_of(sensor_id=param.sensor_id, ch_name=param.ch_name)
+    def _filter_ts_of(self, param: APIParam) -> datetime:
+        return self._database_gway.query_last_acquisition_of(
+            sensor_id=param.sensor_id,
+            ch_name=param.ch_name
+        )
 
-    def urls_of(self, param: APIParam) -> ThingspeakTimeIterableURL:
-        pre_formatted_url = self.input_url_template.format(api_key=param.api_key, api_id=param.api_id, api_fmt="json")
+    def _urls_of(self, param: APIParam) -> ThingspeakTimeIterableURL:
+        pre_formatted_url = self.input_url_template.format(
+            api_key=param.api_key,
+            api_id=param.api_id,
+            api_fmt="json"
+        )
         return ThingspeakTimeIterableURL(
             url=pre_formatted_url,
             begin=param.last_acquisition,
             step_size_in_days=7
         )
 
+# =========== SAFE METHODS
+    def _safe_insert(self, validator: AddSensorMeasuresRequestValidator, api_param: APIParam):
+        if validator:
+            self._logger.debug(
+                "found responses within: [%s - %s]" %
+                (validator[0].timestamp, validator[-1].timestamp)
+            )
+
+            response_builder = AddStationMeasuresResponseBuilder(
+                requests=validator,
+                start_packet_id=self._packet_id(),
+                sensor_id=api_param.sensor_id
+            )
+            self._logger.debug("found #%d responses" % len(response_builder))
+
+            self._database_gway.insert_station_measures(responses=response_builder)
+            self._safe_update(
+                time=validator[-1].timestamp,
+                api_param=api_param
+            )
+
+    def _safe_update(self, time: datetime, api_param: APIParam):
+        self._logger.debug("updating last acquisition timestamp to => '%s'" % time)
+        self._database_gway.update_last_acquisition_of(
+            timestamp=time,
+            sensor_id=api_param.sensor_id,
+            ch_name=api_param.ch_name
+        )
+
+# =========== RUN METHOD
     def run(self) -> None:
-        measure_param = self.measure_param
-        for param in self.api_param:
-            self._logger.info("sensor => %s" % repr(param))
-            for url in self.urls_of(param):
-                self._logger.info("url => %s" % url)
+        measure_param = self._database_measure_param()
+        self._logger.debug("parameters in use for mapping the measures with database code => %s" % repr(measure_param))
+
+        for param in self._database_api_param():
+            self._logger.debug("parameters in use for fetching sensor data => %s" % repr(param))
+
+            for url in self._urls_of(param):
+                self._logger.debug("downloading sensor measures at => %s" % url)
 
                 server_jresp = self._server_wrap.json(url=url)
                 self._logger.debug("successfully get server response!!!")
@@ -91,22 +132,16 @@ class AddThingspeakMeasures(object):
                     datamodel=datamodel_builder,
                     timest=self._timest,
                     code2id=measure_param,
-                    field_map=self.fields_of(param)
+                    field_map=self._fields_of(param)
                 )
                 self._logger.debug("found #%d requests" % len(request_builder))
 
-                validator = AddSensorMeasuresRequestValidator(request=request_builder, filter_ts=self.filter_ts_of(param))
-                self._logger.debug("found #%d valid requests" % len(validator))
-
-                response_builder = AddStationMeasuresResponseBuilder(
-                    requests=validator, start_packet_id=self.start_packet_id, sensor_id=param.sensor_id
+                validator = AddSensorMeasuresRequestValidator(
+                    request=request_builder,
+                    filter_ts=self._filter_ts_of(param)
                 )
-                self._logger.debug("found #%d responses" % len(response_builder))
 
-                if len(response_builder) > 0:
-                    self._logger.debug("found responses within: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
-                    self._database_gway.insert_station_measures(responses=response_builder)
-                    last_acquisition = validator[-1].timestamp
-                    self._database_gway.update_last_acquisition_of(
-                        timestamp=last_acquisition, sensor_id=param.sensor_id, ch_name=param.ch_name
-                    )
+                self._safe_insert(
+                    validator=validator,
+                    api_param=param
+                )

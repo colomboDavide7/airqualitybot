@@ -113,9 +113,9 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
         self.assertEqual(responses[0].measure_record, _expected_measure_record())
 
     def _assert_usecase_properties(self):
-        self.assertEqual(self._usecase.start_packet_id, 140)
-        self.assertEqual(self._usecase.api_param, [_test_sensor_api_param()])
-        self.assertEqual(self._usecase.measure_param, _test_measure_param())
+        self.assertEqual(self._usecase._packet_id(), 140)
+        self.assertEqual(self._usecase._database_api_param(), [_test_sensor_api_param()])
+        self.assertEqual(self._usecase._database_measure_param(), _test_measure_param())
 
 
 if __name__ == '__main__':
