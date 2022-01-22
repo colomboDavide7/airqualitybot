@@ -15,7 +15,31 @@ class TestTimest(TestCase):
     A class for testing the timestamp conversion with or without fixed timezone, with or without an input/output format.
     """
 
-# =========== TEST _RotatingTimezone
+# =========== TEST _RotatingTimezone using time zone name
+    def test_onthefly_convert_utc_time_without_timezone_to_utc_time_with_timezone_from_timezone_name(self):
+        test_timezone_name = 'Europe/Rome'
+        timest = Timest(input_fmt="%Y-%m-%dT%H:%M:%S.%fZ")
+        expected_tzinfo = tutils.get_tzinfo_from_timezone_name(test_timezone_name)
+        self.assertEqual(
+            timest.utc_time2utc_localtz(time='2021-08-08T00:00:00.000Z', tzname=test_timezone_name),
+            datetime(2021, 8, 8, 2, tzinfo=expected_tzinfo)
+        )
+
+    def test_onthefly_convert_utc_timestamp_without_timezone_into_utc_time_with_timezone_from_timezone_name(self):
+        test_timezone_name = "America/New_York"
+        timest = Timest()
+        expected_tzinfo = tutils.get_tzinfo_from_timezone_name(test_timezone_name)
+        self.assertEqual(
+            timest.utc_time2utc_localtz(time=1642859435, tzname=test_timezone_name),
+            datetime(2022, 1, 22, 8, 50, 35, tzinfo=expected_tzinfo)
+        )
+
+    def test_raise_time_conversion_error_when_onthefly_convert_timestamp_without_specifying_timezone_name(self):
+        timest = Timest()
+        with self.assertRaises(TimestConversionError):
+            timest.utc_time2utc_localtz(time=1642859435)
+
+# =========== TEST _RotatingTimezone using time zone latitude and longitude
     def test_convert_utc_datetime_string_without_timezone_to_utc_datetime_with_timezone(self):
         # Pavia's timestamp with timezone IN DST is +2 hours, NOT IN DST is +1 hour
         test_lat = 45.1686197
@@ -101,13 +125,15 @@ class TestTimest(TestCase):
 
 # =========== TEST _FixedTimezoneWithName
     def test_convert_utc_time_without_time_zone_into_utc_time_with_fixed_time_zone_from_name(self):
-        timest = Timest(tz_name="America/New_York")
+        test_timezone_name = "America/New_York"
+        timest = Timest(tz_name=test_timezone_name)
+        expected_tzinfo = tutils.get_tzinfo_from_timezone_name(test_timezone_name)
         self.assertEqual(
             timest.utc_time2utc_localtz(time=1642859435),
-            datetime(2022, 1, 22, 8, 50, 35, tzinfo=tz.gettz("America/New_York"))
+            datetime(2022, 1, 22, 8, 50, 35, tzinfo=expected_tzinfo)
         )
 
-    def test_raise_timest_conversion_error_when_try_to_use_a_different_location_with_fixed_timezone_with_name(self):
+    def test_raise_timest_conversion_error_when_using_location_arguments_with_fixed_timezone_maker_with_name(self):
         timest = Timest(tz_name="Europe/Rome")
         with self.assertRaises(TimestConversionError):
             timest.utc_time2utc_localtz(time=1642859435, latitude=45, longitude=9)

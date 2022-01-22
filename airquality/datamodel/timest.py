@@ -35,14 +35,27 @@ class _RotatingTimezone(TimezoneMaker):
         self._tzfinder.using_numba()
         self._lat = None
         self._lng = None
+        self._tzname = None
 
-    def set_timezone(self, lat: float, lng: float):
-        self._lat = lat
-        self._lng = lng
+    def set_timezone(self, lat: float = None, lng: float = None, tz_name: str = None):
+        if lat is not None and lng is not None:
+            self._lat = lat
+            self._lng = lng
+            self._tzname = None
+        elif tz_name is not None:
+            self._lat = self._lng = None
+            self._tzname = tz_name
+        else:
+            raise ValueError(
+                "CANNOT PICK METHOD FOR BUILDING THE TIME ZONE INFO: "
+                "expected latitude and longitude or time zone name to be not None."
+            )
 
     def tzinfo(self):
-        tzname = self._tzfinder.timezone_at(lat=self._lat, lng=self._lng)
-        return tz.gettz(tzname)
+        tmp_tzname = self._tzname
+        if self._lat is not None and self._lng is not None:
+            tmp_tzname = self._tzfinder.timezone_at(lat=self._lat, lng=self._lng)
+        return tz.gettz(tmp_tzname)
 
 
 class _FixedTimezone(TimezoneMaker):
@@ -164,28 +177,42 @@ class Timest(object):
         dt = self._safe_strpin(time)
         return dt.replace(tzinfo=tz.tzutc())
 
-    def utc_time2utc_localtz(self, time, latitude: float = None, longitude: float = None) -> datetime:
+    def utc_time2utc_localtz(
+            self,
+            time,                               # the time object to convert (str or float).
+            latitude: float = None,             # the time zone's latitude in decimal degrees.
+            longitude: float = None,            # the time zone's longitude in decimal degrees.
+            tzname: str = None                  # the time zone's name.
+    ) -> datetime:
         """
-        Converting UTC time zone *time* into the corresponding UTC time shifted by the geolocation's time zone.
+        Converting UTC time zone *time* into the corresponding UTC time shifted by the desired time zone offset.
         """
-        utc_dt_tz = self.utc_time2utc_tz(time)
-        return utc_dt_tz.astimezone(tz=self._safe_tzinfo(lat=latitude, lng=longitude))
+        utc_dt_tz = self.utc_time2utc_tz(time=time)
+        tz_info = self._safe_tzinfo(
+            lat=latitude,
+            lng=longitude,
+            tz_name=tzname
+        )
+        return utc_dt_tz.astimezone(tz=tz_info)
 
 # =========== TIMEZONE COMPUTATION METHODS
-    def _safe_tzinfo(self, lat: float, lng: float) -> tzinfo:
+    def _safe_tzinfo(self, lat: float = None, lng: float = None, tz_name: str = None) -> tzinfo:
         """
-        This method converts a geolocation into a *tzinfo* object.
+        This method converts a geolocation into a *tzinfo* object. Latitude and longitude method has the priority
+        on the time zone name method.
 
         :param lat:                     latitude in decimal degrees.
         :param lng:                     longitude in decimal degrees.
+        :param tz_name:                 time zone name.
         :return:                        the *tzinfo* object corresponding to the given location.
         """
 
-        if lat is not None and lng is not None:
-            return self._safe_tzinfo_from(lat, lng)
+        if (lat is not None and lng is not None) or \
+           tz_name is not None:
+            return self._safe_onthefly_tzinfo(lat=lat, lng=lng, tzname=tz_name)
         return self._safe_cached_tzinfo()
 
-    def _safe_tzinfo_from(self, lat: float, lng: float) -> tzinfo:
+    def _safe_onthefly_tzinfo(self, lat: float, lng: float, tzname: str) -> tzinfo:
         """
         Safely assert that this class was configured with *_RotatingTimezone* class for computing the tzinfo.
 
@@ -195,19 +222,20 @@ class Timest(object):
         """
 
         if not isinstance(self._tzmaker, _RotatingTimezone):
-            self._raise(f"[FATAL] expected _tzinfo to be of type '{_RotatingTimezone.__name__}'")
-        self._tzmaker.set_timezone(lat, lng)
+            self._raise(f"expected time zone maker to be of type '{_RotatingTimezone.__name__}'")
+        self._tzmaker.set_timezone(lat=lat, lng=lng, tz_name=tzname)
         return self._tzmaker.tzinfo()
 
     def _safe_cached_tzinfo(self) -> tzinfo:
         """
-        Safely verify that this class was configured with *_FixedTimezone* class for computing the tzinfo.
+        Safely verify that this class was configured with *_FixedTimezone* or *_FixedTimezoneWithName* class
+        for computing the time zone info object.
 
         :return:                        the pre-computed *tzinfo* corresponding to the location at configuration time.
         """
 
         if not isinstance(self._tzmaker, (_FixedTimezone, _FixedTimezoneWithName)):
-            self._raise(f"[FATAL] expected _tzinfo to be of type '{_FixedTimezone.__name__}'")
+            self._raise(f"expected time zone maker to be of type '_FixedTimezone*'")
         return self._tzmaker.tzinfo()
 
 # =========== TIME FORMATTER METHODS
