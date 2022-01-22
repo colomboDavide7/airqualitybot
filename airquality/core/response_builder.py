@@ -168,4 +168,4 @@ class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
     def record_of(self, source, attributes: List[str]) -> str:
         return f"({self.service_id}, {self.geoarea_id}, {source.weather_id}, " + \
                ', '.join(f"{value_of(getattr(source, attr))}" for attr in attributes) + \
-               f", '{source.timestamp.strftime(SQL_TIMESTAMP_FTM)}')"
+               f", '{source.timestamp}')"

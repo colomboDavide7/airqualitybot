@@ -114,12 +114,15 @@ class AddWeatherData(object):
             self._logger.debug("found #%d API data" % len(datamodel_builder))
 
             request_builder = AddOpenWeatherMapDataRequestBuilder(
-                datamodels=datamodel_builder, weather_map=self.weather_map
+                datamodels=datamodel_builder,
+                weather_map=self.weather_map
             )
             self._logger.debug("found #%d requests" % len(request_builder))
 
             response_builder = AddOpenWeatherMapDataResponseBuilder(
-                requests=request_builder, service_id=self.service_id, geoarea_id=geoarea_info.geoarea_id
+                requests=request_builder,
+                service_id=self.service_id,
+                geoarea_id=geoarea_info.geoarea_id
             )
             self._logger.debug("found #%d responses" % len(response_builder))
 

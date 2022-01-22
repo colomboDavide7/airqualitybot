@@ -69,11 +69,36 @@ class _FixedTimezone(TimezoneMaker):
         return self._cached_tzinfo
 
 
+class _FixedTimezoneWithName(TimezoneMaker):
+    """
+    A class that implements the *TimezoneMaker* interface and persistently provide a time zone offset using the
+    time zone name passed as argument.
+    """
+
+    def __init__(self, tz_name: str):
+        self._tz_name = tz_name
+        self._cached_tzinfo = None
+
+    def tzinfo(self):
+        if not self._cached_tzinfo:
+            self._cached_tzinfo = tz.gettz(self._tz_name)
+        return self._cached_tzinfo
+
+
 class TimestConversionError(Exception):
     """
     A subclass of Exception that is raised by *Timest* class.
     """
     pass
+
+
+def _init_tzmaker(lat: float, lng: float, tz_name: str):
+    if lat is not None and lng is not None:
+        return _FixedTimezone(latitude=lat, longitude=lng)
+    elif tz_name is not None:
+        return _FixedTimezoneWithName(tz_name=tz_name)
+    else:
+        return _RotatingTimezone()
 
 
 class Timest(object):
@@ -85,12 +110,20 @@ class Timest(object):
         *output_fmt*                the desired format for the output date or timestamp objects (defaults to None).
         *latitude*                  the latitude in decimal degrees of the desired time zone.
         *longitude*                 the longitude in decimal degrees of the desired time zone.
+        *tz_name*                   the string representation of the time zone.
 
     Raises:
         *TimestConversionError*     this exception is raised to signal an invalid usage of this class.
 
     Settings: if BOTH *latitude* and *longitude* are passed to __init__, this class will shift every date using
-              the pre-computed time zone offset according to *latitude* and *longitude* values.
+              the pre-computed time zone offset according to *latitude* and *longitude* values. Same for the case
+              of passing *tz_name* to __init__ method.
+
+              In case both *latitude* and *longitude* and *tz_name* are passed, the first two has the precedence.
+
+              Otherwise, this class assumes that a 'rotating' time zone will be used.
+              The term 'rotating' refers to the fact that the class will compute the time zone offset on the fly,
+              and this may slow down a little the program.
 
     If *input_fmt* is None, this class expects that all the input time to be formatted are UNIX timestamp (float).
 
@@ -104,14 +137,17 @@ class Timest(object):
     """
 
     def __init__(
-        self, input_fmt: str = None, output_fmt: str = None, latitude: float = None, longitude: float = None
+        self,
+        input_fmt: str = None,
+        output_fmt: str = None,
+        latitude: float = None,
+        longitude: float = None,
+        tz_name: str = None
     ):
         self._logger = logging.getLogger(__name__)
         self._input_fmt = input_fmt
         self._output_fmt = output_fmt
-        self._tzmaker = _FixedTimezone(latitude=latitude, longitude=longitude) if \
-                        latitude is not None and longitude is not None else \
-                        _RotatingTimezone()
+        self._tzmaker = _init_tzmaker(lat=latitude, lng=longitude, tz_name=tz_name)
 
     @classmethod
     def current_utc_timetz(cls) -> datetime:
@@ -170,7 +206,7 @@ class Timest(object):
         :return:                        the pre-computed *tzinfo* corresponding to the location at configuration time.
         """
 
-        if not isinstance(self._tzmaker, _FixedTimezone):
+        if not isinstance(self._tzmaker, (_FixedTimezone, _FixedTimezoneWithName)):
             self._raise(f"[FATAL] expected _tzinfo to be of type '{_FixedTimezone.__name__}'")
         return self._tzmaker.tzinfo()
 
