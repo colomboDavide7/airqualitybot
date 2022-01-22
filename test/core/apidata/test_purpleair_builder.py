@@ -24,7 +24,7 @@ class TestPurpleairAPIDataBuilder(TestCase):
 # =========== TEST METHOD
     def test_create_purpleair_datamodel(self):
         self.assertEqual(len(self._builder), 3)
-        self._assert_built_data(datamodel=self._builder[0])
+        self._assert_built_data()
         self._assert_index_error(index=3)
         self._assert_index_error(index=-4)
 
@@ -33,7 +33,8 @@ class TestPurpleairAPIDataBuilder(TestCase):
         with self.assertRaises(IndexError):
             self._builder[index]
 
-    def _assert_built_data(self, datamodel):
+    def _assert_built_data(self):
+        datamodel = self._builder[0]
         self.assertEqual(datamodel.name, "n1")
         self.assertEqual(datamodel.sensor_index, 1)
         self.assertEqual(datamodel.latitude, 45.29)

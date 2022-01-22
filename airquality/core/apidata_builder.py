@@ -108,7 +108,7 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
 
     def forecast_of(self, source: Dict[str, Any]) -> WeatherForecast:
         return WeatherForecast(
-            dt=self.timestamp_of(source=source),
+            dt=source['dt'],
             temp=source.get('temp'),
             pressure=source.get('pressure'),
             humidity=source.get('humidity'),
@@ -121,7 +121,7 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
 
     def daily_forecast_of(self, source: Dict[str, Any]) -> WeatherForecast:
         return WeatherForecast(
-            dt=self.timestamp_of(source=source),
+            dt=source['dt'],
             temp=self.recursive_search(source=source, keywords=['temp', 'day']),
             temp_min=self.recursive_search(source=source, keywords=['temp', 'min']),
             temp_max=self.recursive_search(source=source, keywords=['temp', 'max']),
@@ -133,9 +133,6 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
             rain=source.get('rain'),
             snow=source.get('snow')
         )
-
-    def timestamp_of(self, source: Dict[str, Any]):
-        return source['dt'] + self.tz_offset
 
     def weather_of(self, source: Dict[str, Any]) -> List[Weather]:
         weather = source.get('weather')
