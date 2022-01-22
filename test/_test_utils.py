@@ -16,3 +16,7 @@ def get_json_response_from_file(filename: str):
 def get_tzinfo_from_coordinates(latitude: float, longitude: float) -> tzinfo:
     tz_name = TimezoneFinder().timezone_at(lat=latitude, lng=longitude)
     return tz.gettz(tz_name)
+
+
+def get_utc_tz():
+    return tz.tzutc()

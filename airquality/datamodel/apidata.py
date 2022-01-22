@@ -56,14 +56,14 @@ class ThingspeakAPIData(object):
     Primary Channel A:
     *field1* => The atmospheric concentration of PM 1.0 (µg/m^3).
     *field2* => The atmospheric concentration of PM 2.5 (µg/m^3).
-    *field3* => The atmospheric concentration of PM 1.0 (µg/m^3).
+    *field3* => The atmospheric concentration of PM 10.0 (µg/m^3).
     *field6* => Temperature inside the sensor housing (°F).
     *field7* => Relative humidity inside the sensor housing (%).
 
     Primary Channel B:
     *field1* => The atmospheric concentration of PM 1.0 (µg/m^3).
     *field2* => The atmospheric concentration of PM 2.5 (µg/m^3).
-    *field3* => The atmospheric concentration of PM 1.0 (µg/m^3).
+    *field3* => The atmospheric concentration of PM 10.0 (µg/m^3).
     *field6* => The current pressure in Millibars.
 
     Secondary Channel A:
