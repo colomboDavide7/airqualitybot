@@ -6,10 +6,16 @@
 #
 ######################################################
 from datetime import datetime
+import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
+from airquality.datamodel.timest import Timest
 from airquality.datamodel.apidata import Weather, WeatherForecast, OpenWeatherMapAPIData
 from airquality.core.request_builder import AddOpenWeatherMapDataRequestBuilder
+
+
+def _test_timezone_name():
+    return "America/New_York"
 
 
 def _test_weather():
@@ -57,6 +63,7 @@ def _test_daily_forecast_data():
 
 def _test_openweathermap_datamodel():
     return OpenWeatherMapAPIData(
+            tz_name=_test_timezone_name(),
             current=_test_current_weather_data(),
             hourly_forecast=[_test_hourly_forecast_data()],
             daily_forecast=[_test_daily_forecast_data()]
@@ -74,13 +81,18 @@ def _mocked_datamodel_builder():
     return mocked_db
 
 
+def _expected_timezone_info():
+    return tutils.get_tzinfo_from_timezone_name(_test_timezone_name())
+
+
 class TestAddWeatherDataRequestBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._builder = AddOpenWeatherMapDataRequestBuilder(
             datamodels=_mocked_datamodel_builder(),
-            weather_map=_test_weather_conditions_mapping()
+            weather_map=_test_weather_conditions_mapping(),
+            timest=Timest()
         )
 
 # =========== TEST METHOD
@@ -98,7 +110,7 @@ class TestAddWeatherDataRequestBuilder(TestCase):
         req = self._builder[0]
         self.assertEqual(
             req.current.timestamp,
-            datetime.utcfromtimestamp(1641217631)
+            datetime(2022, 1, 3, 8, 47, 11, tzinfo=_expected_timezone_info())
         )
         self.assertEqual(req.current.weather_id, 55)
         self.assertEqual(req.current.temperature, 8.84)
@@ -115,7 +127,7 @@ class TestAddWeatherDataRequestBuilder(TestCase):
         hourly = self._builder[0].hourly[0]
         self.assertEqual(
             hourly.timestamp,
-            datetime.utcfromtimestamp(1641214800)
+            datetime(2022, 1, 3, 8, tzinfo=_expected_timezone_info())
         )
         self.assertEqual(hourly.weather_id, 55)
         self.assertEqual(hourly.temperature, 9.21)
@@ -132,7 +144,7 @@ class TestAddWeatherDataRequestBuilder(TestCase):
         daily = self._builder[0].daily[0]
         self.assertEqual(
             daily.timestamp,
-            datetime.utcfromtimestamp(1641207600)
+            datetime(2022, 1, 3, 6, tzinfo=_expected_timezone_info())
         )
         self.assertEqual(daily.weather_id, 55)
         self.assertEqual(daily.temperature, 9.25)

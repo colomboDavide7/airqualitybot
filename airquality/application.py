@@ -17,7 +17,7 @@ from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
 from airquality.usecase.add_weather_data import AddWeatherData
 from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
-from airquality.datamodel.timest import purpleair_timest, atmotube_timest, thingspeak_timest
+from airquality.datamodel.timest import purpleair_timest, atmotube_timest, thingspeak_timest, openweathermap_timest
 
 
 class WrongUsageError(Exception):
@@ -121,5 +121,6 @@ class Application(object):
                 AddWeatherData(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
                     server_wrap=APIServerWrapper(),
+                    timest=openweathermap_timest(),
                     input_url_template=self._env.url_template(personality)
                 ).run()

@@ -94,13 +94,14 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
 
     def __init__(self, json_response: Dict[str, Any]):
         self._jresp = json_response
-        self.tz_offset = self._jresp['timezone_offset']
+        self.tzname = self._jresp['timezone']
         self.current = self._jresp['current']
         self.hourly = self._jresp['hourly']
         self.daily = self._jresp['daily']
 
     def items(self) -> Generator[OpenWeatherMapAPIData, None, None]:
         yield OpenWeatherMapAPIData(
+            tz_name=self.tzname,
             current=self.forecast_of(source=self.current),
             hourly_forecast=[self.forecast_of(source=item) for item in self.hourly],
             daily_forecast=[self.daily_forecast_of(source=item) for item in self.daily]

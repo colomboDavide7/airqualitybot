@@ -7,6 +7,7 @@
 ######################################################
 import logging
 from typing import Dict, List
+from airquality.datamodel.timest import Timest
 from airquality.datamodel.apidata import WeatherCityData
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper
@@ -38,10 +39,11 @@ class AddWeatherData(object):
     If the API has provided some data, those are inserted into the database.
     """
 
-    def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, input_url_template: str):
+    def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, timest: Timest, input_url_template: str):
         self._logger = logging.getLogger(__name__)
         self._database_gway = database_gway
         self._server_wrap = server_wrap
+        self._timest = timest
         self.input_url_template = input_url_template
         self._cached_service_id = 0
         self._cached_weather_map = {}
@@ -115,7 +117,8 @@ class AddWeatherData(object):
 
             request_builder = AddOpenWeatherMapDataRequestBuilder(
                 datamodels=datamodel_builder,
-                weather_map=self.weather_map
+                weather_map=self.weather_map,
+                timest=self._timest
             )
             self._logger.debug("found #%d requests" % len(request_builder))
 

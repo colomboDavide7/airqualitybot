@@ -11,7 +11,6 @@ from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.timest import Timest
 from typing import Dict, Generator
-from datetime import datetime
 
 
 class AddPurpleairSensorRequestBuilder(IterableItemsABC):
@@ -131,22 +130,23 @@ class AddPlacesRequestBuilder(IterableItemsABC):
 
 class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
 
-    def __init__(self, datamodels: IterableItemsABC, weather_map: Dict[int, Dict[str, int]]):
+    def __init__(self, datamodels: IterableItemsABC, timest: Timest, weather_map: Dict[int, Dict[str, int]]):
         self.datamodels = datamodels
         self.weather_map = weather_map
+        self._timest = timest
 
     def items(self):
         for dm in self.datamodels:
             yield AddOpenWeatherMapDataRequest(
-                current=self.request_of(source=dm.current),
-                hourly=[self.request_of(source=item) for item in dm.hourly_forecast],
-                daily=[self.request_of(source=item) for item in dm.daily_forecast]
+                current=self.request_of(source=dm.current, tzname=dm.tz_name),
+                hourly=[self.request_of(source=item, tzname=dm.tz_name) for item in dm.hourly_forecast],
+                daily=[self.request_of(source=item, tzname=dm.tz_name) for item in dm.daily_forecast]
             )
 
-    def request_of(self, source) -> AddWeatherForecastRequest:
+    def request_of(self, source, tzname: str) -> AddWeatherForecastRequest:
         weather = source.weather[0]
         return AddWeatherForecastRequest(
-            timestamp=datetime.utcfromtimestamp(source.dt),
+            timestamp=self._timest.utc_time2utc_localtz(time=source.dt, tzname=tzname),
             temperature=source.temp,
             min_temp=source.temp_min,
             max_temp=source.temp_max,

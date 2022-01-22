@@ -91,10 +91,12 @@ class TestOpenWeatherMapDatamodel(TestCase):
 
     def test_full_openweathermap_datamodel(self):
         data = OpenWeatherMapAPIData(
+            tz_name="Europe/Rome",
             current=_current_weather_test_datamodel(),
             hourly_forecast=[_hourly_forecast_test_datamodel()],
             daily_forecast=[_daily_forecast_test_datamodel()]
         )
+        self.assertEqual(data.tz_name, "Europe/Rome")
         self._assert_current_weather(data.current)
         self._assert_hourly_forecast(data.hourly_forecast[0])
         self._assert_daily_forecast(data.daily_forecast[0])

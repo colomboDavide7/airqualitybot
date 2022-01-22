@@ -147,6 +147,7 @@ class OpenWeatherMapAPIData(object):
     A *dataclass* that defines the raw datastructure of a One Call API response available on OpenWeatherMap service.
     """
 
+    tz_name: str                                    # The timezone name of the request location.
     current: WeatherForecast                        # The current weather conditions.
     hourly_forecast: List[WeatherForecast]          # The weather conditions forecast for the next 48 hours (hourly).
     daily_forecast: List[WeatherForecast]           # The weather conditions forecast for the next 7 days (daily).

@@ -332,6 +332,13 @@ def thingspeak_timest(output_fmt=DEFAULT_OUT_FMT) -> Timest:
     Constructor function that return a ready-to-use *Timest* object compliant to Thingspeak timestamp format.
     """
 
-    # TODO: add latitude and longitude formal parameters
-
     return Timest(input_fmt=THINGSPEAK_FMT, output_fmt=output_fmt, latitude=45, longitude=9)
+
+
+def openweathermap_timest(output_fmt=DEFAULT_OUT_FMT) -> Timest:
+    """
+    Constructor function that returns a ready-to-use *Timest* object that computes the shift for converting dates
+    on the fly.
+    """
+
+    return Timest(output_fmt=output_fmt)

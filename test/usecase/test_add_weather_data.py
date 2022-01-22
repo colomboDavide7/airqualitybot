@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 from airquality.datamodel.apidata import CityOfGeoarea
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.datamodel.service_param import ServiceParam
+from airquality.datamodel.timest import openweathermap_timest
 from airquality.usecase.add_weather_data import AddWeatherData
 
 
@@ -81,15 +82,15 @@ def _expected_weather_map():
 
 
 def _expected_current_record():
-    return "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
+    return "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11+01:00')"
 
 
 def _expected_hourly_forecast():
-    return "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
+    return "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00+01:00')"
 
 
 def _expected_daily_forecast():
-    return "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
+    return "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00+01:00')"
 
 
 class AddWeatherDataIntegrationTest(TestCase):
@@ -100,6 +101,7 @@ class AddWeatherDataIntegrationTest(TestCase):
         self._usecase = AddWeatherData(
             database_gway=self._mocked_database_gway,
             server_wrap=APIServerWrapper(),
+            timest=openweathermap_timest(),
             input_url_template="fakeurl"
         )
 
