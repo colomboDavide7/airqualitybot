@@ -8,6 +8,7 @@
 import logging
 from typing import List, Dict
 from datetime import datetime
+import airquality.environment as env
 from airquality.datamodel.timest import Timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
@@ -40,13 +41,17 @@ class AddThingspeakMeasures(object):
     FIELD_MAP = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B': MAPPING_2B}
 
     def __init__(
-        self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, timest: Timest, input_url_template: str
+        self,
+        database_gway: DatabaseGateway,
+        server_wrap: APIServerWrapper,
+        timest: Timest
     ):
-        self._timest = timest
-        self._database_gway = database_gway
-        self._server_wrap = server_wrap
-        self.input_url_template = input_url_template
-        self._logger = logging.getLogger(__name__)
+        self._timest = timest                               # the date and time handler class.
+        self._database_gway = database_gway                 # the gateway interface for storing data into database.
+        self._server_wrap = server_wrap                     # the instance that handles download of the sensor data.
+        self._environ = env.get_environ()                   # the Singleton Environment instance.
+        self._logger = logging.getLogger(__name__)          # the Logger instance
+        self._cached_url_template = ""                      # the cached URL template for fetching sensor data.
 
     def _database_measure_param(self) -> Dict[str, int]:
         return self._database_gway.query_measure_param_owned_by(
@@ -70,8 +75,13 @@ class AddThingspeakMeasures(object):
             ch_name=param.ch_name
         )
 
+    def _url_template(self):
+        if not self._cached_url_template:
+            self._cached_url_template = self._environ.url_template(personality='thingspeak')
+        return self._cached_url_template
+
     def _urls_of(self, param: APIParam) -> ThingspeakTimeIterableURL:
-        pre_formatted_url = self.input_url_template.format(
+        pre_formatted_url = self._url_template().format(
             api_key=param.api_key,
             api_id=param.api_id,
             api_fmt="json"

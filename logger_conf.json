@@ -14,24 +14,77 @@
             "formatter": "short",
             "class": "logging.StreamHandler"
         },
-        "report": {
-            "level": "DEBUG",
-            "formatter": "short",
-            "filename": "./log/report.log",
-            "class": "logging.FileHandler"
-        },
         "issues": {
             "level": "ERROR",
             "formatter": "detailed",
             "filename": "./log/issues.log",
+            "class": "logging.FileHandler"
+        },
+        "thingspeak_rotating_report": {
+            "level": "DEBUG",
+            "formatter": "short",
+            "filename": "./log/thingspeak/report.log",
+            "maxBytes": 1048576,
+            "backupCount": 20,
+            "class": "logging.handlers.RotatingFileHandler"
+        },
+        "atmotube_rotating_report": {
+            "level": "DEBUG",
+            "formatter": "short",
+            "filename": "./log/atmotube/report.log",
+            "maxBytes": 1048576,
+            "backupCount": 20,
+            "class": "logging.handlers.RotatingFileHandler"
+        },
+        "purpleair_report": {
+            "level": "DEBUG",
+            "formatter": "short",
+            "filename": "./log/purpleair/report.log",
+            "class": "logging.FileHandler"
+        },
+        "geonames_report": {
+            "level": "DEBUG",
+            "formatter": "short",
+            "filename": "./log/geonames/report.log",
+            "class": "logging.FileHandler"
+        },
+        "opwmap_report": {
+            "level": "DEBUG",
+            "formatter": "short",
+            "filename": "./log/openweathermap/report.log",
             "class": "logging.FileHandler"
         }
     },
     "loggers": {
         "": {
             "level": "DEBUG",
-            "handlers": ["console", "report", "issues"],
+            "handlers": ["console", "issues"],
             "propagate": false
+        },
+        "airquality.usecase.add_station_measures": {
+            "level": "DEBUG",
+            "handlers": ["thingspeak_rotating_report"],
+            "propagate": true
+        },
+        "airquality.usecase.add_mobile_measures": {
+            "level": "DEBUG",
+            "handlers": ["atmotube_rotating_report"],
+            "propagate": true
+        },
+        "airquality.usecase.add_places": {
+            "level": "DEBUG",
+            "handlers": ["geonames_report"],
+            "propagate": true
+        },
+        "airquality.usecase.add_fixed_sensors": {
+            "level": "DEBUG",
+            "handlers": ["purpleair_report"],
+            "propagate": true
+        },
+        "airquality.usecase.add_weather_data": {
+            "level": "DEBUG",
+            "handlers": ["opwmap_report"],
+            "propagate": true
         }
     }
 }

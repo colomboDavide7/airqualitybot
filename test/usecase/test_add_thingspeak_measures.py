@@ -94,13 +94,14 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
         self._usecase = AddThingspeakMeasures(
             database_gway=self._mocked_database_gway,
             timest=thingspeak_timest(),
-            server_wrap=APIServerWrapper(),
-            input_url_template="fakeurl"
+            server_wrap=APIServerWrapper()
         )
 
 # =========== TEST METHODS
+    @patch('airquality.environment.os')
     @patch('airquality.url.api_server_wrap.requests.get')
-    def test_add_thingspeak_measures_usecase(self, mocked_get):
+    def test_add_thingspeak_measures_usecase(self, mocked_get, mocked_os):
+        mocked_os.environ = {'thingspeak_url': "fake_url"}
         mocked_get.return_value = _mocked_json_response()
         self._usecase.run()
         self._assert_responses()

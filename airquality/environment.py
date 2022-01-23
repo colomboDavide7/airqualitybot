@@ -8,6 +8,18 @@
 import os
 from typing import Tuple
 from dotenv import load_dotenv
+from airquality.extra.singleton import Singleton
+
+
+LOGGING_DIR_PERMISSION = 0o600      # only the user can read/write from that directory.
+
+
+def get_environ(**kwargs):
+    """
+    A function that return the Singleton Environment instance or creates a new one if not exists.
+    """
+
+    return Environment(**kwargs)
 
 
 class MissingEnvironPropertyError(Exception):
@@ -18,7 +30,7 @@ class MissingEnvironPropertyError(Exception):
     pass
 
 
-class Environment(object):
+class Environment(object, metaclass=Singleton):
     """
     A class that defines the interface for application environment interactions.
 
@@ -41,9 +53,32 @@ class Environment(object):
             raise MissingEnvironPropertyError(f"Cannot found '{property_name}' in '{self._env_path}'")
         return property_val
 
-    def url_template(self, personality: str) -> str:
-        return self._secure_get_from_environ(f'{personality}_url')
+# =========== APPLICATION PROPERTIES
+    @property
+    def valid_personalities(self) -> Tuple[str]:
+        if not self._valid_pers:
+            self._valid_pers = tuple([p for p in self._secure_get_from_environ('valid_personalities').split(',')])
+        return self._valid_pers
 
+    @property
+    def program_usage_msg(self) -> str:
+        pers = ' | '.join(f"{p}" for p in self.valid_personalities)
+        return f"USAGE: {self._secure_get_from_environ('program_usage_msg').format(pers=pers)}"
+
+# =========== LOG DIRECTORIES
+    def logging_dir_of(self, personality: str) -> str:
+        dirpath = f"{self._logging_dir()}/{personality}"
+        if not os.path.exists(dirpath):
+            os.mkdir(
+                path=dirpath,
+                mode=LOGGING_DIR_PERMISSION
+            )
+        return dirpath
+
+    def _logging_dir(self) -> str:
+        return self._secure_get_from_environ(property_name="logging_dir")
+
+# =========== RESOURCE DIRECTORIES
     def input_dir_of(self, personality: str) -> str:
         return f"{self._resource_dir()}/{self._directory_of(personality)}/{self._data_dir_of(personality)}"
 
@@ -56,17 +91,11 @@ class Environment(object):
     def _data_dir_of(self, personality: str) -> str:
         return self._secure_get_from_environ(f'{personality}_data_dir')
 
-    @property
-    def valid_personalities(self) -> Tuple[str]:
-        if not self._valid_pers:
-            self._valid_pers = tuple([p for p in self._secure_get_from_environ('valid_personalities').split(',')])
-        return self._valid_pers
+# =========== API SERVER URLS
+    def url_template(self, personality: str) -> str:
+        return self._secure_get_from_environ(f'{personality}_url')
 
-    @property
-    def program_usage_msg(self) -> str:
-        pers = ' | '.join(f"{p}" for p in self.valid_personalities)
-        return f"USAGE: {self._secure_get_from_environ('program_usage_msg').format(pers=pers)}"
-
+# =========== DATABASE CONNECTION PROPERTIES
     @property
     def dbname(self) -> str:
         return self._secure_get_from_environ('dbname')

@@ -109,8 +109,7 @@ class Application(object):
                 AddThingspeakMeasures(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
                     timest=thingspeak_timest(),
-                    server_wrap=APIServerWrapper(),
-                    input_url_template=self._env.url_template(personality)
+                    server_wrap=APIServerWrapper()
                 ).run()
             elif personality == 'geonames':
                 AddPlaces(

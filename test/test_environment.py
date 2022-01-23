@@ -6,8 +6,8 @@
 #
 ######################################################
 import os
-from unittest.mock import patch
 from unittest import TestCase, main
+from unittest.mock import patch, MagicMock
 from airquality.environment import Environment, MissingEnvironPropertyError
 
 
@@ -49,19 +49,28 @@ def _fake_environ_resource_directory():
     }
 
 
+def _fake_environ_logging_directory():
+    return {
+        "logging_dir": "fake_logging_dir"
+    }
+
+
 class TestEnvironment(TestCase):
 
 # =========== TEST METHODS
     def test_get_valid_personalities(self):
         with patch.dict(os.environ, _fake_environ_personalities()):
-            env = Environment()
-            actual = env.valid_personalities
-            self.assertEqual(actual, ('p1', 'p2', 'p3'))
+            self.assertEqual(
+                Environment().valid_personalities,
+                ('p1', 'p2', 'p3')
+            )
 
     def test_get_program_usage_msg(self):
         with patch.dict(os.environ, _fake_environ_program_usage()):
-            actual = Environment().program_usage_msg
-            self.assertEqual(actual, "USAGE: python(version) -m airquality [p1 | p2 | p3]")
+            self.assertEqual(
+                Environment().program_usage_msg,
+                "USAGE: python(version) -m airquality [p1 | p2 | p3]"
+            )
 
     def test_get_database_credentials(self):
         with patch.dict(os.environ, _fake_environ_database_credentials()):
@@ -74,21 +83,37 @@ class TestEnvironment(TestCase):
 
     def test_get_url_from_personality(self):
         with patch.dict(os.environ, _fake_environ_url_template()):
-            env = Environment()
-            actual = env.url_template(personality="p1")
-            self.assertEqual(actual, "url_template_of_p1")
+            self.assertEqual(
+                Environment().url_template(personality="p1"),
+                "url_template_of_p1"
+            )
 
     def test_input_dir_of(self):
         with patch.dict(os.environ, _fake_environ_resource_directory()):
-            env = Environment()
-            actual = env.input_dir_of(personality="p1")
-            self.assertEqual(actual, "fakeroot/fakep1dir/fakep1datadir")
+            self.assertEqual(
+                Environment().input_dir_of(personality="p1"),
+                "fakeroot/fakep1dir/fakep1datadir"
+            )
 
     def test_raise_missing_environ_property_error_when_key_error_is_raised(self):
         with patch.dict(os.environ, _fake_environ_personalities()):
             with self.assertRaises(MissingEnvironPropertyError):
-                env = Environment()
-                env.url_template('p4')
+                Environment().url_template('p4')
+
+    @patch('airquality.environment.os.path')
+    @patch('airquality.environment.os')
+    def test_logging_dir_of(self, mocked_os, mocked_path):
+        mocked_os.mkdir = MagicMock()
+        mocked_path.exists.return_value = False
+        mocked_os.environ = _fake_environ_logging_directory()
+        self.assertEqual(
+            Environment().logging_dir_of("fake_personality"),
+            "fake_logging_dir/fake_personality"
+        )
+        mocked_os.mkdir.assert_called_with(
+            path='fake_logging_dir/fake_personality',
+            mode=0o600
+        )
 
 
 if __name__ == '__main__':
