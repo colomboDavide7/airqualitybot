@@ -10,7 +10,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
-from airquality.datamodel.timest import atmotube_timest
+from airquality.extra.timest import atmotube_timest
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
 

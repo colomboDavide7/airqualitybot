@@ -6,7 +6,7 @@ from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.datamodel.timest import thingspeak_timest
+from airquality.extra.timest import thingspeak_timest
 from airquality.datamodel.apidata import ThingspeakAPIData
 from airquality.core.request_builder import AddThingspeakMeasuresRequestBuilder
 

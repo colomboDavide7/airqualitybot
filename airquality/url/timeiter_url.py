@@ -6,10 +6,20 @@
 #
 ######################################################
 from airquality.core.iteritems import IterableItemsABC
-from airquality.datamodel.timest import Timest
+from airquality.extra.timest import make_naive
 from datetime import datetime, timedelta
-from typing import Generator
 from abc import abstractmethod
+from typing import Generator
+
+ISO_DATETIME_FMT = "%Y-%m-%d %H:%M:%S"              # e.g., 2021-10-11 09:44:37
+
+
+def _get_smallest_between(time: datetime, upper_bound: datetime):
+    """
+    A function that compare the *time* to the *upper_bound* and return the smallest.
+    """
+
+    return upper_bound if time >= upper_bound else time
 
 
 class TimeIterableURL(IterableItemsABC):
@@ -17,25 +27,30 @@ class TimeIterableURL(IterableItemsABC):
     An *IterableItemsABC* that defines the basic business rules for building and formatting a URL by adding time
     optional parameters.
     """
-    TIMESTAMP_FMT = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self, url: str, begin: datetime, until=Timest.current_utc_timetz(), step_size_in_days=1):
+    def __init__(
+        self,
+        url: str,                           # the url to decorate with time range.
+        begin: datetime,                    # the datetime object that defines the starting point for generating urls.
+        until=datetime.now(),               # the datetime object that defines the upper bound for generating urls.
+        step_size_in_days=1                 # the time loop's step size in days.
+    ):
         self.url = url
-        self.begin = begin
-        self.until = until
+        self.begin = make_naive(begin)
+        self.until = make_naive(until)
         self.step_size_in_days = step_size_in_days
 
     def add_days_to(self, timestamp: datetime):
         return timestamp + timedelta(days=self.step_size_in_days)
 
-    def datetime_to_string(self, timestamp: datetime):
-        return timestamp.strftime(self.TIMESTAMP_FMT).replace(" ", "%20")
-
-    def get_tmp_timest(self, tmp_end: datetime, until: datetime):
-        return until if tmp_end >= until else tmp_end
+    @abstractmethod
+    def format_time(self, time: datetime):
+        """A method that a subclass must override to explicitly define how to format a datetime object."""
+        pass
 
     @abstractmethod
     def format_url(self, begin: datetime, until: datetime) -> str:
+        """A method that a subclass must override to explicitly define how to format the url string."""
         pass
 
     def items(self) -> Generator[str, None, None]:
@@ -56,8 +71,11 @@ class AtmotubeTimeIterableURL(TimeIterableURL):
     """
 
     def format_url(self, begin: datetime, until: datetime) -> str:
-        timest = self.get_tmp_timest(tmp_end=begin, until=until)
-        return f"{self.url}&date={timest.date().strftime('%Y-%m-%d')}"
+        tmp_date = _get_smallest_between(time=begin, upper_bound=until)
+        return f"{self.url}&date={self.format_time(tmp_date)}"
+
+    def format_time(self, time: datetime):
+        return time.date().strftime('%Y-%m-%d')
 
 
 class ThingspeakTimeIterableURL(TimeIterableURL):
@@ -66,5 +84,8 @@ class ThingspeakTimeIterableURL(TimeIterableURL):
     """
 
     def format_url(self, begin: datetime, until: datetime) -> str:
-        tmp_timest = self.get_tmp_timest(tmp_end=self.add_days_to(begin), until=until)
-        return f"{self.url}&start={self.datetime_to_string(begin)}&end={self.datetime_to_string(tmp_timest)}"
+        tmp_until = _get_smallest_between(time=self.add_days_to(begin), upper_bound=until)
+        return f"{self.url}&start={self.format_time(begin)}&end={self.format_time(tmp_until)}"
+
+    def format_time(self, time: datetime):
+        return time.strftime(ISO_DATETIME_FMT).replace(" ", "%20")

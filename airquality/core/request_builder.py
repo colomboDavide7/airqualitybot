@@ -9,7 +9,7 @@ from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasur
     AddSensorMeasuresRequest, Channel, AddPlacesRequest, AddWeatherForecastRequest, AddOpenWeatherMapDataRequest
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.core.iteritems import IterableItemsABC
-from airquality.datamodel.timest import Timest
+from airquality.extra.timest import Timest
 from typing import Dict, Generator
 
 

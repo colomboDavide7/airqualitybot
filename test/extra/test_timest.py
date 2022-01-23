@@ -6,14 +6,42 @@ from dateutil import tz
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
-from airquality.datamodel.timest import Timest, TimestConversionError
+from airquality.extra.timest import Timest, TimestConversionError, make_naive
 import test._test_utils as tutils
+
+
+def _new_york_timezone():
+    return tutils.get_tzinfo_from_timezone_name('America/New_York')
+
+
+def _rome_timezone():
+    return tutils.get_tzinfo_from_timezone_name(tzname='Europe/Rome')
+
+
+def _mocked_datetime() -> MagicMock:
+    mocked_dt = MagicMock()
+    mocked_dt.now.return_value = datetime(2022, 1, 23, 18, tzinfo=_rome_timezone())
+    mocked_dt.astimezone.return_value = datetime(2022, 1, 23, 17, tzinfo=tz.tzutc())
+    mocked_dt.replace.return_value = datetime(2022, 1, 23, 17, tzinfo=None)
+    return mocked_dt
 
 
 class TestTimest(TestCase):
     """
     A class for testing the timestamp conversion with or without fixed timezone, with or without an input/output format.
     """
+
+    def test_make_naive_datetime(self):
+        self.assertEqual(
+            make_naive(datetime(2021, 11, 11, 14, 35, tzinfo=_new_york_timezone())),
+            datetime(2021, 11, 11, 19, 35, tzinfo=None)
+        )
+
+    def test_make_naive_current_timestamp(self):
+        self.assertEqual(
+            make_naive(_mocked_datetime().now()),
+            datetime(2022, 1, 23, 17, tzinfo=None)
+        )
 
 # =========== TEST _RotatingTimezone using time zone name
     def test_onthefly_convert_utc_time_without_timezone_to_utc_time_with_timezone_from_timezone_name(self):
@@ -86,7 +114,7 @@ class TestTimest(TestCase):
         with self.assertRaises(TimestConversionError):
             timest.utc_time2utc_localtz(time='31-12-2021', latitude=10, longitude=20)
 
-    @patch('airquality.datamodel.timest.datetime')
+    @patch('airquality.extra.timest.datetime')
     def test_get_current_utc_time_in_current_timezone(self, mocked_datetime):
         mocked_now = MagicMock()
         mocked_now.return_value = datetime(2022, 1, 19, 19, 30, tzinfo=tz.tzutc())

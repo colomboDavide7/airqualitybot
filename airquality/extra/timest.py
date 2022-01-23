@@ -114,6 +114,14 @@ def _init_tzmaker(lat: float, lng: float, tz_name: str):
         return _RotatingTimezone()
 
 
+def make_naive(time: datetime) -> datetime:
+    """
+    A function that takes a datetime object and returns the corresponding UTC time zone naive datetime object.
+    """
+
+    return time.astimezone(tz=timezone.utc).replace(microsecond=0, tzinfo=None)
+
+
 class Timest(object):
     """
     A class that defines the business logic for time zone's date and timestamp manipulation.

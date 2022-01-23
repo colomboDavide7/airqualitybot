@@ -9,7 +9,7 @@ import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.timest import thingspeak_timest
+from airquality.extra.timest import thingspeak_timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.usecase.add_station_measures import AddThingspeakMeasures

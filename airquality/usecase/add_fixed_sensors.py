@@ -7,7 +7,7 @@
 ######################################################
 import logging
 import airquality.environment as environ
-from airquality.datamodel.timest import Timest
+from airquality.extra.timest import Timest
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder

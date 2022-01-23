@@ -7,7 +7,7 @@
 ######################################################
 from itertools import count
 from typing import Generator, List
-from airquality.datamodel.timest import Timest
+from airquality.extra.timest import Timest
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse,\

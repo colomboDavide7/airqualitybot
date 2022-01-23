@@ -9,7 +9,7 @@ import logging
 from typing import List, Dict
 from datetime import datetime
 import airquality.environment as env
-from airquality.datamodel.timest import Timest
+from airquality.extra.timest import Timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper

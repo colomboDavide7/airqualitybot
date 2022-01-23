@@ -6,7 +6,7 @@ import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.datamodel.timest import Timest
+from airquality.extra.timest import Timest
 from airquality.datamodel.request import Channel
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.apidata import PurpleairAPIData

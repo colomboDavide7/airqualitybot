@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 from airquality.datamodel.apidata import CityOfGeoarea
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.datamodel.service_param import ServiceParam
-from airquality.datamodel.timest import openweathermap_timest
+from airquality.extra.timest import openweathermap_timest
 from airquality.usecase.add_weather_data import AddWeatherData
 
 

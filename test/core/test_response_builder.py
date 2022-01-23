@@ -48,7 +48,7 @@ class TestResponseBuilder(TestCase):
         )
 
     ##################################### test_create_response_to_request_of_adding_fixed_sensor #####################################
-    @patch('airquality.datamodel.timest.datetime')
+    @patch('airquality.extra.timest.datetime')
     def test_create_response_to_request_of_adding_fixed_sensor(self, mocked_datetime):
         mocked_now = datetime(2021, 12, 29, 18, 33, tzinfo=tz.tzutc())
         mocked_datetime.now.return_value = mocked_now
