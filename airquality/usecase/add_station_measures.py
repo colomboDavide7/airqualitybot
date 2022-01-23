@@ -13,6 +13,7 @@ from airquality.datamodel.timest import Timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.extra.logger_extra import FileHandlerRotator
 from airquality.url.timeiter_url import ThingspeakTimeIterableURL
 from airquality.core.apidata_builder import ThingspeakAPIDataBuilder
 from airquality.core.request_builder import AddThingspeakMeasuresRequestBuilder
@@ -50,7 +51,8 @@ class AddThingspeakMeasures(object):
         self._database_gway = database_gway                 # the gateway interface for storing data into database.
         self._server_wrap = server_wrap                     # the instance that handles download of the sensor data.
         self._environ = env.get_environ()                   # the Singleton Environment instance.
-        self._logger = logging.getLogger(__name__)          # the Logger instance
+        self._logger = logging.getLogger(__name__)          # the Logger instance.
+        self._file_handler_rotator = None                   # the file handler rotator associated to the current logger.
         self._cached_url_template = ""                      # the cached URL template for fetching sensor data.
 
     def _database_measure_param(self) -> Dict[str, int]:
@@ -92,6 +94,21 @@ class AddThingspeakMeasures(object):
             step_size_in_days=7
         )
 
+    def _safe_rotate_handler(self, sensor_ident):
+        """
+        This function lazy initialize the file handler rotator (if no one already exists) and rotate the file handler.
+        """
+
+        if self._file_handler_rotator is None:
+            self._file_handler_rotator = FileHandlerRotator(
+                logger_name=self._logger.name,
+                logger_level=self._logger.level,
+                logger_dir=self._environ.logging_dir_of(personality='thingspeak')
+            )
+        self._file_handler_rotator.rotate(
+            sensor_ident=sensor_ident
+        )
+
 # =========== SAFE METHODS
     def _safe_insert(self, validator: AddSensorMeasuresRequestValidator, api_param: APIParam):
         if validator:
@@ -128,6 +145,11 @@ class AddThingspeakMeasures(object):
 
         for param in self._database_api_param():
             self._logger.debug("parameters in use for fetching sensor data => %s" % repr(param))
+
+            sensor_ident = self._database_gway.query_fixed_sensor_unique_info(
+                sensor_id=param.sensor_id
+            )
+            self._safe_rotate_handler(sensor_ident=sensor_ident)
 
             for url in self._urls_of(param):
                 self._logger.debug("downloading sensor measures at => %s" % url)

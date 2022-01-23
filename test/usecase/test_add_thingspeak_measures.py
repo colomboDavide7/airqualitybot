@@ -83,6 +83,13 @@ def _expected_measure_record() -> str:
            f"(140, 99, 16, 60.0, '{ts}')"
 
 
+def _mocked_environ():
+    return {
+        'thingspeak_url': "fake_url",
+        'logging_dir': "fake_dir"
+    }
+
+
 class AddThingspeakMeasuresIntegrationTest(TestCase):
     """
     A class that defines the integration test for *AddThingspeakMeasures* usecase.
@@ -98,10 +105,11 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
         )
 
 # =========== TEST METHODS
+    @patch('airquality.extra.logger_extra.logging')
     @patch('airquality.environment.os')
     @patch('airquality.url.api_server_wrap.requests.get')
-    def test_add_thingspeak_measures_usecase(self, mocked_get, mocked_os):
-        mocked_os.environ = {'thingspeak_url': "fake_url"}
+    def test_add_thingspeak_measures_usecase(self, mocked_get, mocked_os, mocked_logging):
+        mocked_os.environ = _mocked_environ()
         mocked_get.return_value = _mocked_json_response()
         self._usecase.run()
         self._assert_responses()

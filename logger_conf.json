@@ -61,11 +61,6 @@
             "handlers": ["console", "issues"],
             "propagate": false
         },
-        "airquality.usecase.add_station_measures": {
-            "level": "DEBUG",
-            "handlers": ["thingspeak_rotating_report"],
-            "propagate": true
-        },
         "airquality.usecase.add_mobile_measures": {
             "level": "DEBUG",
             "handlers": ["atmotube_rotating_report"],

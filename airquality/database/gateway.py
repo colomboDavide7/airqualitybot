@@ -12,6 +12,7 @@ import airquality.database as queries
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.adapter import DatabaseAdapter
 from airquality.datamodel.service_param import ServiceParam
+from airquality.datamodel.sensor_ident import SensorIdentity
 from airquality.datamodel.apidata import WeatherCityData, CityOfGeoarea
 from airquality.core.response_builder import \
     AddFixedSensorResponseBuilder, \
@@ -142,6 +143,18 @@ class DatabaseGateway(object):
             geoarea_id=row[0],
             longitude=row[1],
             latitude=row[2]
+        )
+
+    def query_fixed_sensor_unique_info(self, sensor_id: int):
+        row = self._fetch_one(
+            query=queries.SELECT_FIXED_SENSOR_UNIQUE_INFO.format(sid=sensor_id),
+            err_msg=f"database failed to query 'sensor' for id = '{sensor_id}'"
+        )
+        return SensorIdentity(
+            sensor_id=row[0],
+            sensor_name=row[1],
+            sensor_lat=row[2],
+            sensor_lng=row[3]
         )
 
 # =========== INSERT QUERIES
