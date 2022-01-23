@@ -145,7 +145,7 @@ class DatabaseGateway(object):
             latitude=row[2]
         )
 
-    def query_fixed_sensor_unique_info(self, sensor_id: int):
+    def query_fixed_sensor_unique_info(self, sensor_id: int) -> SensorIdentity:
         row = self._fetch_one(
             query=queries.SELECT_FIXED_SENSOR_UNIQUE_INFO.format(sid=sensor_id),
             err_msg=f"database failed to query 'sensor' for id = '{sensor_id}'"
@@ -153,8 +153,18 @@ class DatabaseGateway(object):
         return SensorIdentity(
             sensor_id=row[0],
             sensor_name=row[1],
-            sensor_lat=row[2],
-            sensor_lng=row[3]
+            sensor_lng=row[2],
+            sensor_lat=row[3]
+        )
+
+    def query_mobile_sensor_unique_info(self, sensor_id: int) -> SensorIdentity:
+        row = self._fetch_one(
+            query=queries.SELECT_MOBILE_SENSOR_UNIQUE_INFO.format(sid=sensor_id),
+            err_msg=f"database failed to query 'sensor' for id = '{sensor_id}'"
+        )
+        return SensorIdentity(
+            sensor_id=row[0],
+            sensor_name=row[1]
         )
 
 # =========== INSERT QUERIES

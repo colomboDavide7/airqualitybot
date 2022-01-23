@@ -20,22 +20,6 @@
             "filename": "./log/issues.log",
             "class": "logging.FileHandler"
         },
-        "thingspeak_rotating_report": {
-            "level": "DEBUG",
-            "formatter": "short",
-            "filename": "./log/thingspeak/report.log",
-            "maxBytes": 1048576,
-            "backupCount": 20,
-            "class": "logging.handlers.RotatingFileHandler"
-        },
-        "atmotube_rotating_report": {
-            "level": "DEBUG",
-            "formatter": "short",
-            "filename": "./log/atmotube/report.log",
-            "maxBytes": 1048576,
-            "backupCount": 20,
-            "class": "logging.handlers.RotatingFileHandler"
-        },
         "purpleair_report": {
             "level": "DEBUG",
             "formatter": "short",
@@ -60,11 +44,6 @@
             "level": "DEBUG",
             "handlers": ["console", "issues"],
             "propagate": false
-        },
-        "airquality.usecase.add_mobile_measures": {
-            "level": "DEBUG",
-            "handlers": ["atmotube_rotating_report"],
-            "propagate": true
         },
         "airquality.usecase.add_places": {
             "level": "DEBUG",

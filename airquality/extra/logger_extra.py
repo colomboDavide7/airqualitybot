@@ -81,7 +81,6 @@ class FileHandlerRotator(object):
         """
 
         if self._cached_file_handler is not None:
-            self._logger.debug("attach FileHandler => %s" % filename)
             self._detach_handler()
 
         self._cached_file_handler = logging.FileHandler(filename=self._fullpath(filename))

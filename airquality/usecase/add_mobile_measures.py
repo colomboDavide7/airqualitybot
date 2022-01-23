@@ -13,6 +13,7 @@ from airquality.datamodel.timest import Timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.extra.logger_extra import FileHandlerRotator
 from airquality.url.timeiter_url import AtmotubeTimeIterableURL
 from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
 from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
@@ -36,6 +37,7 @@ class AddAtmotubeMeasures(object):
         self._server_wrap = server_wrap
         self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
+        self._file_handler_rotator = None
         self._cached_url_template = ""
 
     def _database_measure_param(self) -> Dict[str, int]:
@@ -80,6 +82,15 @@ class AddAtmotubeMeasures(object):
             step_size_in_days=1
         )
 
+    def _safe_rotate_handler(self, sensor_ident):
+        if self._file_handler_rotator is None:
+            self._file_handler_rotator = FileHandlerRotator(
+                logger_name=self._logger.name,
+                logger_level=self._logger.level,
+                logger_dir=self._environ.logging_dir_of(personality='atmotube')
+            )
+        self._file_handler_rotator.rotate(sensor_ident=sensor_ident)
+
 # =========== SAFE METHODS
     def _safe_insert(self, validator: AddSensorMeasuresRequestValidator, api_param: APIParam):
         if validator:
@@ -115,6 +126,11 @@ class AddAtmotubeMeasures(object):
 
         for param in self._database_api_param():
             self._logger.debug("parameters in use for fetching sensor data => %s" % repr(param))
+
+            sensor_ident = self._database_gway.query_mobile_sensor_unique_info(
+                sensor_id=param.sensor_id
+            )
+            self._safe_rotate_handler(sensor_ident=sensor_ident)
 
             for url in self._urls_of(param):
                 self._logger.debug("downloading sensor measures at => %s" % url)

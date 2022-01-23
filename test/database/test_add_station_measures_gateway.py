@@ -5,6 +5,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
+from airquality.datamodel.sensor_ident import SensorIdentity
 from airquality.datamodel.response import AddStationMeasuresResponse
 
 
@@ -31,6 +32,15 @@ def _expected_query():
     return "INSERT INTO level0_raw.station_measurement " \
            "(packet_id, sensor_id, param_id, param_value, timestamp) " \
            f"VALUES {_test_measure_record()};"
+
+
+def _expected_fixed_sensor_unique_info():
+    return SensorIdentity(
+        sensor_id=0,
+        sensor_name='fake_name',
+        sensor_lat=44,
+        sensor_lng=-9
+    )
 
 
 class TestDatabaseGatewayAddStationMeasuresSection(TestCase):
@@ -60,6 +70,15 @@ class TestDatabaseGatewayAddStationMeasuresSection(TestCase):
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         gateway.insert_station_measures(responses=_mocked_response_builder())
         mocked_database_adapt.execute.assert_called_with(_expected_query())
+
+    def test_query_fixed_sensor_unique_info(self):
+        mocked_database_adapt = MagicMock()
+        mocked_database_adapt.fetchone.return_value = (0, 'fake_name', -9, 44)
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
+        self.assertEqual(
+            gateway.query_fixed_sensor_unique_info(sensor_id=0),
+            _expected_fixed_sensor_unique_info()
+        )
 
 
 if __name__ == '__main__':

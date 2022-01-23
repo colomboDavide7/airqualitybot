@@ -110,6 +110,13 @@ def _expected_measure_record() -> str:
            f"(12399, 39, 1004.72, '{ts}', {geom})"
 
 
+def _mocked_environ():
+    return {
+        'atmotube_url': 'fake_url',
+        'logging_dir': 'fake_dir'
+    }
+
+
 class AddAtmotubeMeasuresIntegrationTest(TestCase):
     """
     A class that performs the proper integration test for the *AddAtmotubeMeasures* usecase.
@@ -125,10 +132,11 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
         )
 
 # =========== TEST METHODS
+    @patch('airquality.extra.logger_extra.logging')
     @patch('airquality.environment.os')
     @patch('airquality.url.api_server_wrap.requests.get')
-    def test_add_atmotube_measures_usecase(self, mocked_get, mocked_os):
-        mocked_os.environ = {'atmotube_url': 'fake_url'}
+    def test_add_atmotube_measures_usecase(self, mocked_get, mocked_os, mocked_logging):
+        mocked_os.environ = _mocked_environ()
         mocked_get.return_value = _mocked_json_api_resp()
         self._usecase.run()
         self._assert_responses()

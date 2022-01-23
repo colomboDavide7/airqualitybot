@@ -5,6 +5,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
+from airquality.datamodel.sensor_ident import SensorIdentity
 from airquality.datamodel.response import AddMobileMeasureResponse
 
 
@@ -41,6 +42,13 @@ def _expected_insert_mobile_measures_query():
            f"VALUES {_test_mobile_record()};"
 
 
+def _expected_mobile_sensor_unique_info():
+    return SensorIdentity(
+        sensor_id=0,
+        sensor_name='fake_name'
+    )
+
+
 class TestDatabaseGatewayAddMobileMeasuresSection(TestCase):
 
 # =========== TEST METHODS
@@ -74,6 +82,15 @@ class TestDatabaseGatewayAddMobileMeasuresSection(TestCase):
         self.assertEqual(
             gateway.query_max_mobile_packet_id_plus_one(),
             12400
+        )
+
+    def test_query_mobile_sensor_unique_info(self):
+        mocked_database_adapt = MagicMock()
+        mocked_database_adapt.fetchone.return_value = (0, 'fake_name')
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
+        self.assertEqual(
+            gateway.query_mobile_sensor_unique_info(sensor_id=0),
+            _expected_mobile_sensor_unique_info()
         )
 
     def test_query_one_when_max_packet_id_is_none(self):
