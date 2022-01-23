@@ -38,6 +38,13 @@ def _mocked_responses() -> MagicMock:
     return mocked_responses
 
 
+def _mocked_environ():
+    return {
+        'resource_dir': 'fake_dir',
+        'geonames_dir': 'fake_dirr',
+        'geonames_data_dir': 'fake_dirrr'
+    }
+
 def _expected_add_places_record():
     return "(133, '04001', 'ES', 'Almeria', 'Almeria', 'Andalucia', ST_GeomFromText('POINT(-2.4597 36.8381)', 4326))"
 
@@ -48,15 +55,16 @@ class TestAddPlaces(TestCase):
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
         self.usecase = AddPlaces(
-            output_gateway=self._mocked_database_gway,
-            input_dir="fake_path"
+            database_gway=self._mocked_database_gway
         )
 
 # =========== TEST METHODS
+    @patch('airquality.environment.os')
     @patch('airquality.usecase.add_places.listdir')
     @patch('airquality.usecase.add_places.isfile')
     @patch('airquality.core.apidata_builder.open')
-    def test_run_add_fixed_sensors_usecase(self, mocked_open, mocked_isfile, mocked_listdir):
+    def test_run_add_fixed_sensors_usecase(self, mocked_open, mocked_isfile, mocked_listdir, mocked_os):
+        mocked_os.environ = _mocked_environ()
         mocked_listdir.return_value = _test_directory_content()
         mocked_isfile.return_value = [True, True, True]
         mocked_open.return_value = _mocked_responses()
@@ -79,7 +87,7 @@ class TestAddPlaces(TestCase):
         self.assertEqual(self.usecase.service_id, 133)
         self.assertEqual(
             self.usecase.fullpath("fakefile.txt"),
-            "fake_path/fakefile.txt"
+            'fake_dir/fake_dirr/fake_dirrr/fakefile.txt'
         )
 
     def _assert_directory_filenames(self):

@@ -81,14 +81,15 @@ class AddPurpleairFixedSensorsIntegrationTest(TestCase):
         self._usecase = AddPurpleairFixedSensors(
             database_gway=self._mocked_database_gway,
             server_wrap=APIServerWrapper(),
-            timest=purpleair_timest(),
-            input_url_template="fake_url"
+            timest=purpleair_timest()
         )
 
 # =========== TEST METHODS
+    @patch('airquality.environment.os')
     @patch('airquality.datamodel.timest.datetime')
     @patch('airquality.url.api_server_wrap.requests.get')
-    def test_add_fixed_sensors_usecase(self, mocked_get, mocked_datetime):
+    def test_add_fixed_sensors_usecase(self, mocked_get, mocked_datetime, mocked_os):
+        mocked_os.environ = {'purpleair_url': 'fake_url'}
         mocked_get.return_value = _setup_mocked_json_response()
         mocked_datetime.now = _mocked_datetime_now()
         mocked_datetime.utcfromtimestamp = _mocked_datetime_utcfromtimestamp()

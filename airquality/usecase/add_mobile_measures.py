@@ -8,6 +8,7 @@
 import logging
 from datetime import datetime
 from typing import Dict, List
+import airquality.environment as environ
 from airquality.datamodel.timest import Timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
@@ -25,13 +26,17 @@ class AddAtmotubeMeasures(object):
     """
 
     def __init__(
-            self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, timest: Timest, input_url_template: str
+        self,
+        database_gway: DatabaseGateway,
+        server_wrap: APIServerWrapper,
+        timest: Timest
     ):
         self._timest = timest
         self._database_gway = database_gway
         self._server_wrap = server_wrap
-        self.input_url_template = input_url_template
+        self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
+        self._cached_url_template = ""
 
     def _database_measure_param(self) -> Dict[str, int]:
         return self._database_gway.query_measure_param_owned_by(
@@ -58,8 +63,13 @@ class AddAtmotubeMeasures(object):
             ch_name=api_param.ch_name
         )
 
+    def _url_template(self) -> str:
+        if not self._cached_url_template:
+            self._cached_url_template = self._environ.url_template(personality='atmotube')
+        return self._cached_url_template
+
     def _urls_of(self, api_param: APIParam) -> AtmotubeTimeIterableURL:
-        pre_formatted_url = self.input_url_template.format(
+        pre_formatted_url = self._url_template().format(
             api_key=api_param.api_key,
             api_id=api_param.api_id,
             api_fmt="json"

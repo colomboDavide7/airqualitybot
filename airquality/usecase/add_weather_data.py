@@ -7,6 +7,7 @@
 ######################################################
 import logging
 from typing import Dict, List
+import airquality.environment as environ
 from airquality.datamodel.timest import Timest
 from airquality.datamodel.apidata import WeatherCityData
 from airquality.database.gateway import DatabaseGateway
@@ -39,12 +40,18 @@ class AddWeatherData(object):
     If the API has provided some data, those are inserted into the database.
     """
 
-    def __init__(self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, timest: Timest, input_url_template: str):
-        self._logger = logging.getLogger(__name__)
-        self._database_gway = database_gway
-        self._server_wrap = server_wrap
+    def __init__(
+        self,
+        database_gway: DatabaseGateway,
+        server_wrap: APIServerWrapper,
+        timest: Timest
+    ):
         self._timest = timest
-        self.input_url_template = input_url_template
+        self._server_wrap = server_wrap
+        self._database_gway = database_gway
+        self._environ = environ.get_environ()
+        self._logger = logging.getLogger(__name__)
+        self._cached_url_template = ""
         self._cached_service_id = 0
         self._cached_weather_map = {}
         self._cached_cities = None
@@ -75,6 +82,11 @@ class AddWeatherData(object):
             self._cached_service_id = self._database_gway.query_service_id_from_name(service_name="openweathermap")
         return self._cached_service_id
 
+    def _url_template(self) -> str:
+        if not self._cached_url_template:
+            self._cached_url_template = self._environ.url_template(personality='openweathermap')
+        return self._cached_url_template
+
     def _delete_forecast_measures(self):
         """
         This method should be called at the beginning of the run method and NOT WITHIN any loop, otherwise
@@ -102,7 +114,7 @@ class AddWeatherData(object):
             geoarea_info = self._database_gway.query_geolocation_of(city=city)
             self._logger.debug("found database correspondence for this city => %s" % repr(geoarea_info))
 
-            pre_formatted_url = self.input_url_template.format(
+            pre_formatted_url = self._url_template().format(
                 api_key=api_key,
                 lat=geoarea_info.latitude,
                 lon=geoarea_info.longitude

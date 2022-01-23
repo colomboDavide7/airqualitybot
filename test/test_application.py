@@ -36,7 +36,7 @@ class TestApplication(TestCase):
         with patch.object(sys, 'argv', program_args):
             with patch.dict(os.environ, _fake_environ()):
                 with self.assertRaises(SystemExit):
-                    with Application(env=Environment()) as app:
+                    with Application() as app:
                         with self.assertRaises(WrongUsageError):
                             app.main()
                     self.assertEqual(app._exit_code, 1)
@@ -46,7 +46,7 @@ class TestApplication(TestCase):
         with patch.object(sys, 'argv', program_args):
             with patch.dict(os.environ, _fake_environ()):
                 with self.assertRaises(SystemExit):
-                    with Application(env=Environment()) as app:
+                    with Application() as app:
                         with self.assertRaises(WrongUsageError):
                             app.main()
                     self.assertEqual(app._exit_code, 1)

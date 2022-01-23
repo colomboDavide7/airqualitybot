@@ -121,13 +121,14 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
         self._usecase = AddAtmotubeMeasures(
             database_gway=self._mocked_database_gway,
             server_wrap=APIServerWrapper(),
-            timest=atmotube_timest(),
-            input_url_template="fakeurl"
+            timest=atmotube_timest()
         )
 
 # =========== TEST METHODS
+    @patch('airquality.environment.os')
     @patch('airquality.url.api_server_wrap.requests.get')
-    def test_add_atmotube_measures_usecase(self, mocked_get):
+    def test_add_atmotube_measures_usecase(self, mocked_get, mocked_os):
+        mocked_os.environ = {'atmotube_url': 'fake_url'}
         mocked_get.return_value = _mocked_json_api_resp()
         self._usecase.run()
         self._assert_responses()

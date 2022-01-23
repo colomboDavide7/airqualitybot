@@ -8,7 +8,7 @@
 import json
 import sys
 import logging.config
-from airquality.environment import Environment
+import airquality.environment as environ
 from airquality.usecase.add_places import AddPlaces
 from airquality.url.api_server_wrap import APIServerWrapper
 from airquality.usecase.add_station_measures import AddThingspeakMeasures
@@ -52,14 +52,15 @@ class Application(object):
 
     """
 
-    def __init__(self, env: Environment):
+    def __init__(self):
         with open('logger_conf.json', 'r') as fconf:
             logging.config.dictConfig(json.load(fconf))
         self._args = sys.argv[1:]
-        self._env = env
+        self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
         self._exit_code = 0
 
+# =========== CONTEXT MANAGER INTERFACE
     def __enter__(self):
         return self
 
@@ -68,41 +69,40 @@ class Application(object):
             self._exit_code = 1
             self._logger.exception(exc_val)
             if exc_type == WrongUsageError:
-                print(self._env.program_usage_msg)
+                print(self._environ.program_usage_msg)
         self._logger.debug("finish with exit code %d" % self._exit_code)
         logging.shutdown()
         sys.exit(self._exit_code)
 
+# =========== MAIN METHOD
     def main(self):
         if not self._args:
             raise WrongUsageError("[FATAL]: missing 'personality' argument!!!")
 
         personality = self._args[0]
-        if personality not in self._env.valid_personalities:
+        if personality not in self._environ.valid_personalities:
             raise WrongUsageError("[FATAL]: invalid 'personality' argument!!!")
 
         with Psycopg2Adapter(
-            dbname=self._env.dbname,
-            user=self._env.dbuser,
-            password=self._env.dbpwd,
-            host=self._env.dbhost,
-            port=self._env.dbport
+            dbname=self._environ.dbname,
+            user=self._environ.dbuser,
+            password=self._environ.dbpwd,
+            host=self._environ.dbhost,
+            port=self._environ.dbport
         ) as database_wrap:
             self._logger.debug("running %s" % personality)
             if personality == 'purpleair':
                 AddPurpleairFixedSensors(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
                     server_wrap=APIServerWrapper(),
-                    timest=purpleair_timest(),
-                    input_url_template=self._env.url_template(personality)
+                    timest=purpleair_timest()
                 ).run()
 
             elif personality == 'atmotube':
                 AddAtmotubeMeasures(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
                     server_wrap=APIServerWrapper(),
-                    timest=atmotube_timest(),
-                    input_url_template=self._env.url_template(personality)
+                    timest=atmotube_timest()
                 ).run()
 
             elif personality == 'thingspeak':
@@ -113,13 +113,11 @@ class Application(object):
                 ).run()
             elif personality == 'geonames':
                 AddPlaces(
-                    output_gateway=DatabaseGateway(database_adapt=database_wrap),
-                    input_dir=self._env.input_dir_of(personality)
+                    database_gway=DatabaseGateway(database_adapt=database_wrap)
                 ).run()
             elif personality == 'openweathermap':
                 AddWeatherData(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
                     server_wrap=APIServerWrapper(),
-                    timest=openweathermap_timest(),
-                    input_url_template=self._env.url_template(personality)
+                    timest=openweathermap_timest()
                 ).run()

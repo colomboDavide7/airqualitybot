@@ -6,6 +6,7 @@
 #
 ######################################################
 import logging
+import airquality.environment as environ
 from airquality.datamodel.timest import Timest
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper
@@ -25,12 +26,15 @@ class AddPurpleairFixedSensors(object):
     """
 
     def __init__(
-        self, database_gway: DatabaseGateway, server_wrap: APIServerWrapper, timest: Timest, input_url_template: str
+        self,
+        database_gway: DatabaseGateway,
+        server_wrap: APIServerWrapper,
+        timest: Timest
     ):
         self._timest = timest
         self._server_wrap = server_wrap
         self._database_gway = database_gway
-        self.input_url_template = input_url_template
+        self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
 
     @property
@@ -41,10 +45,15 @@ class AddPurpleairFixedSensors(object):
     def names_of(self):
         return self._database_gway.query_sensor_names_of_type(sensor_type='purpleair')
 
-    def run(self) -> None:
-        self._logger.debug("fetching purpleair data at => %s" % self.input_url_template)
+    def _url_template(self) -> str:
+        return self._environ.url_template(
+            personality='purpleair'
+        )
 
-        server_jresp = self._server_wrap.json(url=self.input_url_template)
+    def run(self) -> None:
+        self._logger.debug("fetching purpleair data at => %s" % self._url_template())
+
+        server_jresp = self._server_wrap.json(url=self._url_template())
         self._logger.debug("successfully get server response!!!")
 
         datamodel_builder = PurpleairAPIDataBuilder(json_response=server_jresp)

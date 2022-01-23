@@ -6,8 +6,7 @@
 #
 ######################################################
 from airquality.application import Application
-from airquality.environment import Environment
 
 if __name__ == '__main__':
-    with Application(env=Environment()) as runner:
+    with Application() as runner:
         runner.main()

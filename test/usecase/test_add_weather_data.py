@@ -101,14 +101,15 @@ class AddWeatherDataIntegrationTest(TestCase):
         self._usecase = AddWeatherData(
             database_gway=self._mocked_database_gway,
             server_wrap=APIServerWrapper(),
-            timest=openweathermap_timest(),
-            input_url_template="fakeurl"
+            timest=openweathermap_timest()
         )
 
 # =========== TEST METHOD
+    @patch('airquality.environment.os')
     @patch('airquality.core.apidata_builder.open')
     @patch('airquality.url.api_server_wrap.requests.get')
-    def test_add_weather_data(self, mocked_get, mocked_open):
+    def test_add_weather_data(self, mocked_get, mocked_open, mocked_os):
+        mocked_os.environ = {'openweathermap_url': 'fake_url'}
         mocked_get.return_value = _mocked_responses()
         mocked_open.return_value = _mocked_city_file()
         self._usecase.run()

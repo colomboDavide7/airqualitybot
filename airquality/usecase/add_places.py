@@ -9,6 +9,7 @@ import logging
 from os import listdir
 from typing import Set
 from os.path import isfile, join
+import airquality.environment as environ
 from airquality.database.gateway import DatabaseGateway
 from airquality.core.apidata_builder import GeonamesDataBuilder
 from airquality.core.request_builder import AddPlacesRequestBuilder
@@ -18,14 +19,19 @@ from airquality.core.response_builder import AddPlacesResponseBuilder
 
 class AddPlaces(object):
 
-    def __init__(self, input_dir: str, output_gateway: DatabaseGateway):
-        self._input_dir = input_dir
-        self._database_gway = output_gateway
+    def __init__(self, database_gway: DatabaseGateway):
+        self._database_gway = database_gway
+        self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
+
+    def _resource_dir(self):
+        return self._environ.input_dir_of(
+            personality='geonames'
+        )
 
     @property
     def filenames(self) -> Set[str]:
-        return {f for f in listdir(self._input_dir) if isfile(self.fullpath(f)) and not f.startswith('.')}
+        return {f for f in listdir(self._resource_dir()) if isfile(self.fullpath(f)) and not f.startswith('.')}
 
     @property
     def service_id(self) -> int:
@@ -35,7 +41,7 @@ class AddPlaces(object):
         return self._database_gway.query_poscodes_of_country(country_code=country_code)
 
     def fullpath(self, filename: str) -> str:
-        return join(self._input_dir, filename)
+        return join(self._resource_dir(), filename)
 
     def run(self) -> None:
         service_id = self.service_id
