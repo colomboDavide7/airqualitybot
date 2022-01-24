@@ -21,7 +21,6 @@ def _test_database_postal_codes():
 def _mocked_database_gway():
     mocked_gateway = MagicMock()
     mocked_gateway.insert_places = MagicMock()
-    mocked_gateway.query_service_id_from_name.return_value = 133
     mocked_gateway.query_poscodes_of_country.return_value = _test_database_postal_codes()
     return mocked_gateway
 
@@ -45,8 +44,9 @@ def _mocked_environ():
         'geonames_data_dir': 'fake_dirrr'
     }
 
+
 def _expected_add_places_record():
-    return "(133, '04001', 'ES', 'Almeria', 'Almeria', 'Andalucia', ST_GeomFromText('POINT(-2.4597 36.8381)', 4326))"
+    return "('04001', 'ES', 'Almeria', 'Almeria', 'Andalucia', ST_GeomFromText('POINT(-2.4597 36.8381)', 4326))"
 
 
 class TestAddPlaces(TestCase):
@@ -84,7 +84,6 @@ class TestAddPlaces(TestCase):
     def _assert_usecase_properties(self):
         self._assert_directory_filenames()
         self._assert_existing_postal_codes()
-        self.assertEqual(self.usecase.service_id, 133)
         self.assertEqual(
             self.usecase.fullpath("fakefile.txt"),
             'fake_dir/fake_dirr/fake_dirrr/fakefile.txt'

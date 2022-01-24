@@ -67,15 +67,15 @@ def _mocked_request_builder():
 
 
 def _expected_current_weather_record():
-    return "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
+    return "(14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
 
 
 def _expected_hourly_forecast_record():
-    return "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
+    return "(14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
 
 
 def _expected_daily_forecast_record():
-    return "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
+    return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
 
 
 class TestAddOpenweathermapDataResponseBuilder(TestCase):
@@ -84,7 +84,6 @@ class TestAddOpenweathermapDataResponseBuilder(TestCase):
     def setUp(self) -> None:
         self._response_builder = AddOpenWeatherMapDataResponseBuilder(
             requests=_mocked_request_builder(),
-            service_id=1,
             geoarea_id=14400
         )
 

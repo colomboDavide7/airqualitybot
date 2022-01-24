@@ -33,10 +33,6 @@ class AddPlaces(object):
     def filenames(self) -> Set[str]:
         return {f for f in listdir(self._resource_dir()) if isfile(self.fullpath(f)) and not f.startswith('.')}
 
-    @property
-    def service_id(self) -> int:
-        return self._database_gway.query_service_id_from_name(service_name='geonames')
-
     def poscodes_of(self, country_code: str) -> Set[str]:
         return self._database_gway.query_poscodes_of_country(country_code=country_code)
 
@@ -44,9 +40,6 @@ class AddPlaces(object):
         return join(self._resource_dir(), filename)
 
     def run(self) -> None:
-        service_id = self.service_id
-        self._logger.debug("service id in use for fetching data => %d" % service_id)
-
         for f in self.filenames:
             self._logger.debug("reading geonames data from => '%s'" % f)
 
@@ -68,10 +61,7 @@ class AddPlaces(object):
             )
             self._logger.debug("found #%d valid requests" % len(validator))
 
-            response_builder = AddPlacesResponseBuilder(
-                requests=validator,
-                service_id=service_id
-            )
+            response_builder = AddPlacesResponseBuilder(requests=validator)
             self._logger.debug("found #%d responses" % len(response_builder))
 
             if response_builder:

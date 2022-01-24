@@ -10,7 +10,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apidata import CityOfGeoarea
 from airquality.url.api_server_wrap import APIServerWrapper
-from airquality.datamodel.service_param import ServiceParam
+from airquality.datamodel.openweathermap_key import OpenweathermapKey
 from airquality.extra.timest import openweathermap_timest
 from airquality.usecase.add_weather_data import AddWeatherData
 
@@ -43,12 +43,12 @@ def _mocked_city_file() -> MagicMock:
     return mocked_f
 
 
-def _test_service_api_param():
-    return ServiceParam(api_key="fakekey", n_requests=0)
-
-
-def _test_service_id():
-    return 1
+def _test_opwmap_key():
+    return OpenweathermapKey(
+        key_value="fakekey",
+        done_requests_per_minute=0,
+        max_requests_per_minute=60
+    )
 
 
 def _test_database_geolocation_of_city():
@@ -61,9 +61,8 @@ def _test_database_geolocation_of_city():
 
 def _mocked_database_gway() -> MagicMock:
     mocked_gateway = MagicMock()
-    mocked_gateway.query_service_apiparam_of.return_value = [_test_service_api_param()]
+    mocked_gateway.query_service_apiparam_of.return_value = [_test_opwmap_key()]
     mocked_gateway.query_weather_conditions.return_value = _test_weather_conditions()
-    mocked_gateway.query_service_id_from_name.return_value = _test_service_id()
     mocked_gateway.query_geolocation_of.return_value = _test_database_geolocation_of_city()
     mocked_gateway.insert_weather_data = MagicMock()
     return mocked_gateway
@@ -82,15 +81,15 @@ def _expected_weather_map():
 
 
 def _expected_current_record():
-    return "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11+01:00')"
+    return "(14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11+01:00')"
 
 
 def _expected_hourly_forecast():
-    return "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00+01:00')"
+    return "(14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00+01:00')"
 
 
 def _expected_daily_forecast():
-    return "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00+01:00')"
+    return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00+01:00')"
 
 
 class AddWeatherDataIntegrationTest(TestCase):

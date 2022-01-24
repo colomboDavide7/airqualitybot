@@ -25,15 +25,15 @@ def _test_database_weather_conditions():
 
 
 def _test_current_weather_record():
-    return "(1, 14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
+    return "(14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
 
 
 def _test_hourly_forecast_record():
-    return "(1, 14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
+    return "(14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
 
 
 def _test_daily_forecast_record():
-    return "(1, 14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
+    return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
 
 
 def _test_add_weather_data_response():
@@ -52,14 +52,14 @@ def _mocked_response_builder() -> MagicMock:
 
 
 def _expected_insert_weather_data_query():
-    return "INSERT INTO level0_raw.current_weather (service_id, geoarea_id, weather_id, temperature, pressure, " \
+    return "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, " \
             "humidity, wind_speed, wind_direction, rain, snow, timestamp) " \
            f"VALUES {_test_current_weather_record()}; " \
-            "INSERT INTO level0_raw.hourly_forecast (service_id, geoarea_id, weather_id, temperature, pressure, " \
+            "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, " \
             "humidity, wind_speed, wind_direction, rain, snow, timestamp) " \
            f"VALUES {_test_hourly_forecast_record()}; " \
             "INSERT INTO level0_raw.daily_forecast " \
-           "(service_id, geoarea_id, weather_id, temperature, min_temp, max_temp, " \
+           "(geoarea_id, weather_id, temperature, min_temp, max_temp, " \
             "pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) " \
            f"VALUES {_test_daily_forecast_record()};"
 

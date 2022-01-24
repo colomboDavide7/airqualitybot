@@ -37,7 +37,7 @@ def _mocked_validator():
 
 def _expected_place_record():
     geom = "ST_GeomFromText('POINT(9 45)', 4326)"
-    return f"(1, '27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', {geom})"
+    return f"('27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', {geom})"
 
 
 class TestAddPlacesResponseBuilder(TestCase):
@@ -45,8 +45,7 @@ class TestAddPlacesResponseBuilder(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._response_builder = AddPlacesResponseBuilder(
-            requests=_mocked_validator(),
-            service_id=1
+            requests=_mocked_validator()
         )
 
 # =========== TEST METHOD

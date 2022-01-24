@@ -12,7 +12,7 @@ from airquality.extra.timest import Timest
 from airquality.datamodel.apidata import WeatherCityData
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.api_server_wrap import APIServerWrapper
-from airquality.datamodel.service_param import ServiceParam
+from airquality.datamodel.openweathermap_key import OpenweathermapKey
 from airquality.core.request_builder import AddOpenWeatherMapDataRequestBuilder
 from airquality.core.response_builder import AddOpenWeatherMapDataResponseBuilder
 from airquality.core.apidata_builder import OpenWeatherMapAPIDataBuilder, WeatherCityDataBuilder
@@ -52,7 +52,6 @@ class AddWeatherData(object):
         self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
         self._cached_url_template = ""
-        self._cached_service_id = 0
         self._cached_weather_map = {}
         self._cached_cities = None
 
@@ -63,8 +62,8 @@ class AddWeatherData(object):
         return self._cached_cities
 
     @property
-    def service_param(self) -> List[ServiceParam]:
-        return self._database_gway.query_service_apiparam_of(service_name="openweathermap")
+    def openweathermap_keys(self) -> List[OpenweathermapKey]:
+        return self._database_gway.query_openweathermap_keys()
 
     @property
     def weather_map(self) -> Dict[int, Dict[str, int]]:
@@ -75,12 +74,6 @@ class AddWeatherData(object):
                 weather_map[code][icon] = id_
             self._cached_weather_map = weather_map
         return self._cached_weather_map
-
-    @property
-    def service_id(self):
-        if not self._cached_service_id:
-            self._cached_service_id = self._database_gway.query_service_id_from_name(service_name="openweathermap")
-        return self._cached_service_id
 
     def _url_template(self) -> str:
         if not self._cached_url_template:
@@ -136,7 +129,6 @@ class AddWeatherData(object):
 
             response_builder = AddOpenWeatherMapDataResponseBuilder(
                 requests=request_builder,
-                service_id=self.service_id,
                 geoarea_id=geoarea_info.geoarea_id
             )
             self._logger.debug("found #%d responses" % len(response_builder))
@@ -150,14 +142,14 @@ class AddWeatherData(object):
 
 # =========== RUN METHOD
     def run(self):
-        api_service_param = self.service_param[0]       # for now, we use only the first API key
-        self._logger.debug("parameters in use for connecting to API server => %s" % repr(api_service_param))
+        opwmap_key = self.openweathermap_keys[0]       # for now, we use only the first API key
+        self._logger.debug("parameters in use for connecting to API server => %s" % repr(opwmap_key))
 
         self._delete_forecast_measures()
 
         for city in self.cities_of_interest:
             self._logger.debug("downloading weather data for => %s" % repr(city))
             self._safe_insert_city(
-                api_key=api_service_param.api_key,
+                api_key=opwmap_key.key_value,
                 city=city
             )

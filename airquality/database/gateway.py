@@ -11,7 +11,7 @@ from typing import Set, Dict, List
 import airquality.database as queries
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.adapter import DatabaseAdapter
-from airquality.datamodel.service_param import ServiceParam
+from airquality.datamodel.openweathermap_key import OpenweathermapKey
 from airquality.datamodel.sensor_ident import SensorIdentity
 from airquality.datamodel.apidata import WeatherCityData, CityOfGeoarea
 from airquality.core.response_builder import \
@@ -106,12 +106,17 @@ class DatabaseGateway(object):
             sid, key, ident, name, last in rows
         ]
 
-    def query_service_apiparam_of(self, service_name: str) -> List[ServiceParam]:
+    def query_openweathermap_keys(self) -> List[OpenweathermapKey]:
         rows = self._fetch_all(
-            query=queries.SELECT_SERVICE_API_PARAM_OF.format(sn=service_name),
-            err_msg=f"database failed to query 'service_api_param' for service '{service_name}'"
+            query=queries.SELECT_OPENWEATHERMAP_KEY,
+            err_msg=f"database failed to query 'openweathermap_key'"
         )
-        return [ServiceParam(api_key=api_key, n_requests=nreq) for api_key, nreq in rows]
+        return [
+            OpenweathermapKey(
+                key_value=key_val,
+                done_requests_per_minute=done_r,
+                max_requests_per_minute=max_r
+            ) for key_val, done_r, max_r in rows]
 
     def query_weather_conditions(self):
         return self._fetch_all(
@@ -124,13 +129,6 @@ class DatabaseGateway(object):
         row = self._fetch_one(
             query=queries.SELECT_LAST_ACQUISITION_OF.format(sid=sensor_id, ch=ch_name),
             err_msg=f"database failed to query 'sensor_api_param' at sensor id '{sensor_id}' and channel '{ch_name}'"
-        )
-        return row[0]
-
-    def query_service_id_from_name(self, service_name: str) -> int:
-        row = self._fetch_one(
-            query=queries.SELECT_SERVICE_ID_FROM.format(sn=service_name),
-            err_msg=f"database failed to query 'service_id' for service '{service_name}'!!!"
         )
         return row[0]
 

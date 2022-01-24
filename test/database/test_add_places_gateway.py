@@ -14,7 +14,7 @@ def _test_database_postal_codes():
 
 
 def _test_place_record():
-    return "(1, '27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', ST_GeomFromText('POINT(9 45)', 4326))"
+    return "('27100', 'IT', 'Pavia', 'Pavia', 'Lombardia', ST_GeomFromText('POINT(9 45)', 4326))"
 
 
 def _test_add_places_response():
@@ -32,7 +32,7 @@ def _mocked_response_builder() -> MagicMock:
 
 def _expected_insert_places_query():
     return "INSERT INTO level0_raw.geographical_area " \
-           "(service_id, postal_code, country_code, place_name, province, state, geom) " \
+           "(postal_code, country_code, place_name, province, state, geom) " \
            f"VALUES {_test_place_record()};"
 
 

@@ -111,7 +111,11 @@ class AddStationMeasuresResponseBuilder(IterableItemsABC):
         packet_id_counter = count(self.start_packet_id)
         for req in self.requests:
             yield AddStationMeasuresResponse(
-                measure_record=station_measure_record(packet_id=next(packet_id_counter), sensor_id=self.sensor_id, request=req)
+                measure_record=station_measure_record(
+                    packet_id=next(packet_id_counter),
+                    sensor_id=self.sensor_id,
+                    request=req
+                )
             )
 
 
@@ -122,19 +126,15 @@ class AddPlacesResponseBuilder(IterableItemsABC):
     an *AddPlacesResponse* generator.
     """
 
-    def __init__(
-            self,
-            requests: IterableItemsABC,         # The class that holds the requests items.
-            service_id: int                     # The service's database id from which the data derives from.
-    ):
+    def __init__(self, requests: IterableItemsABC):
         self.requests = requests
-        self.service_id = service_id
 
     def items(self):
         for req in self.requests:
             yield AddPlacesResponse(
-                place_record=f"({self.service_id}, '{req.poscode}', '{req.countrycode}', "
-                             f"'{req.placename}', '{req.province}', '{req.state}', {req.geolocation.geom_from_text()})"
+                place_record=f"('{req.poscode}', '{req.countrycode}', "
+                             f"'{req.placename}', '{req.province}', "
+                             f"'{req.state}', {req.geolocation.geom_from_text()})"
             )
 
 
@@ -150,11 +150,9 @@ class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
     def __init__(
             self,
             requests: IterableItemsABC,
-            service_id: int,
             geoarea_id: int
     ):
         self.requests = requests
-        self.service_id = service_id
         self.geoarea_id = geoarea_id
 
     def items(self) -> Generator[AddOpenWeatherMapDataResponse, None, None]:
@@ -166,6 +164,6 @@ class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
             )
 
     def record_of(self, source, attributes: List[str]) -> str:
-        return f"({self.service_id}, {self.geoarea_id}, {source.weather_id}, " + \
+        return f"({self.geoarea_id}, {source.weather_id}, " + \
                ', '.join(f"{value_of(getattr(source, attr))}" for attr in attributes) + \
                f", '{source.timestamp}')"
