@@ -20,40 +20,44 @@ def _weather_test_data():
 
 def _current_weather_test_datamodel():
     return WeatherForecast(
-            dt=1641217631,
-            temp=8.84,
-            pressure=1018,
-            humidity=81,
-            wind_speed=0.59,
-            wind_deg=106,
-            weather=[_weather_test_data()]
-        )
+        dt=1641217631,
+        temp=8.84,
+        pressure=1018,
+        humidity=81,
+        wind_speed=0.59,
+        wind_deg=106,
+        weather=[_weather_test_data()],
+        sunrise=1641193337,
+        sunset=1641225175
+    )
 
 
 def _hourly_forecast_test_datamodel():
     return WeatherForecast(
-            dt=1641214800,
-            temp=9.21,
-            pressure=1018,
-            humidity=80,
-            wind_speed=0.33,
-            wind_deg=186,
-            weather=[_weather_test_data()]
-        )
+        dt=1641214800,
+        temp=9.21,
+        pressure=1018,
+        humidity=80,
+        wind_speed=0.33,
+        wind_deg=186,
+        weather=[_weather_test_data()],
+        pop=0.0
+    )
 
 
 def _daily_forecast_test_datamodel():
     return WeatherForecast(
-            dt=1641207600,
-            temp=9.25,
-            temp_min=5.81,
-            temp_max=9.4,
-            pressure=1019,
-            humidity=83,
-            wind_speed=2.72,
-            wind_deg=79,
-            weather=[_weather_test_data()]
-        )
+        dt=1641207600,
+        temp=9.25,
+        temp_min=5.81,
+        temp_max=9.4,
+        pressure=1019,
+        humidity=83,
+        wind_speed=2.72,
+        wind_deg=79,
+        weather=[_weather_test_data()],
+        pop=0.01
+    )
 
 
 class TestOpenWeatherMapDatamodel(TestCase):
@@ -110,6 +114,8 @@ class TestOpenWeatherMapDatamodel(TestCase):
 
     def _assert_current_weather(self, current_weather: WeatherForecast):
         self.assertEqual(current_weather.dt, 1641217631)
+        self.assertEqual(current_weather.sunrise, 1641193337)
+        self.assertEqual(current_weather.sunset, 1641225175)
         self.assertEqual(current_weather.temp, 8.84)
         self.assertEqual(current_weather.pressure, 1018)
         self.assertEqual(current_weather.humidity, 81)
@@ -120,6 +126,7 @@ class TestOpenWeatherMapDatamodel(TestCase):
         self.assertIsNone(current_weather.temp_min)
         self.assertIsNone(current_weather.rain)
         self.assertIsNone(current_weather.snow)
+        self.assertIsNone(current_weather.pop)
 
     def _assert_hourly_forecast(self, hourly_forecast: WeatherForecast):
         self.assertEqual(hourly_forecast.dt, 1641214800)
@@ -129,10 +136,13 @@ class TestOpenWeatherMapDatamodel(TestCase):
         self.assertEqual(hourly_forecast.wind_speed, 0.33)
         self.assertEqual(hourly_forecast.wind_deg, 186)
         self.assertEqual(len(hourly_forecast.weather), 1)
+        self.assertEqual(hourly_forecast.pop, 0)
         self.assertIsNone(hourly_forecast.temp_max)
         self.assertIsNone(hourly_forecast.temp_min)
         self.assertIsNone(hourly_forecast.rain)
         self.assertIsNone(hourly_forecast.snow)
+        self.assertIsNone(hourly_forecast.sunset)
+        self.assertIsNone(hourly_forecast.sunrise)
 
     def _assert_daily_forecast(self, daily_forecast: WeatherForecast):
         self.assertEqual(daily_forecast.dt, 1641207600)
@@ -144,8 +154,11 @@ class TestOpenWeatherMapDatamodel(TestCase):
         self.assertEqual(daily_forecast.wind_speed, 2.72)
         self.assertEqual(daily_forecast.wind_deg, 79)
         self.assertEqual(len(daily_forecast.weather), 1)
+        self.assertEqual(daily_forecast.pop, 0.01)
         self.assertIsNone(daily_forecast.rain)
         self.assertIsNone(daily_forecast.snow)
+        self.assertIsNone(daily_forecast.sunset)
+        self.assertIsNone(daily_forecast.sunrise)
 
 
 if __name__ == '__main__':

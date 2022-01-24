@@ -91,7 +91,7 @@ class AddWeatherData(object):
         self._database_gway.delete_all_from_daily_weather_forecast()
 
 # =========== SAFE METHOD
-    def _safe_insert_city(self, api_key: str, city: WeatherCityData):
+    def _safe_insert_weather_of(self, api_key: str, city: WeatherCityData):
         """
         This method handles the possibility that a *ValueError* exception is raised by the *database_gateway* when
         try to query the geolocation of the current *city*.
@@ -143,13 +143,13 @@ class AddWeatherData(object):
 # =========== RUN METHOD
     def run(self):
         opwmap_key = self.openweathermap_keys[0]       # for now, we use only the first API key
-        self._logger.debug("parameters in use for connecting to API server => %s" % repr(opwmap_key))
+        self._logger.debug("API key in use for connecting to server => %s" % repr(opwmap_key))
 
         self._delete_forecast_measures()
 
         for city in self.cities_of_interest:
             self._logger.debug("downloading weather data for => %s" % repr(city))
-            self._safe_insert_city(
+            self._safe_insert_weather_of(
                 api_key=opwmap_key.key_value,
                 city=city
             )

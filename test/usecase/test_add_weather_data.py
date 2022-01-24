@@ -61,7 +61,7 @@ def _test_database_geolocation_of_city():
 
 def _mocked_database_gway() -> MagicMock:
     mocked_gateway = MagicMock()
-    mocked_gateway.query_service_apiparam_of.return_value = [_test_opwmap_key()]
+    mocked_gateway.query_openweathermap_keys.return_value = [_test_opwmap_key()]
     mocked_gateway.query_weather_conditions.return_value = _test_weather_conditions()
     mocked_gateway.query_geolocation_of.return_value = _test_database_geolocation_of_city()
     mocked_gateway.insert_weather_data = MagicMock()
@@ -81,15 +81,16 @@ def _expected_weather_map():
 
 
 def _expected_current_record():
-    return "(14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11+01:00')"
+    return "(14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, " \
+           "'2022-01-03 14:47:11+01:00', '2022-01-03 08:02:17+01:00', '2022-01-03 16:52:55+01:00')"
 
 
 def _expected_hourly_forecast():
-    return "(14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00+01:00')"
+    return "(14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, 0, NULL, '2022-01-03 14:00:00+01:00')"
 
 
 def _expected_daily_forecast():
-    return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00+01:00')"
+    return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, 0.01, NULL, '2022-01-03 12:00:00+01:00')"
 
 
 class AddWeatherDataIntegrationTest(TestCase):

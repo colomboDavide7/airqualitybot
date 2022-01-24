@@ -138,14 +138,21 @@ class AddPlacesResponseBuilder(IterableItemsABC):
             )
 
 
-def value_of(val) -> str:
+def _safe_sql_value_of(val) -> str:
+    if not isinstance(val, (float, int, type(None))):
+        val = f"'{val}'"
     return val if val is not None else "NULL"
+
+
+def _body_of(source, attributes: List[str]):
+    return ', '.join(f"{_safe_sql_value_of(getattr(source, attr))}" for attr in attributes)
 
 
 class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
 
-    DAILY_ATTRIBUTES = ['temperature', 'min_temp', 'max_temp', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'snow']
-    CURRENT_ATTRIBUTES = ['temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'snow']
+    DAILY_ATTRIBUTES = ['weather_id', 'temperature', 'min_temp', 'max_temp', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'pop', 'snow', 'timestamp']
+    HOURLY_ATTRIBUTES = ['weather_id', 'temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'pop', 'snow', 'timestamp']
+    CURRENT_ATTRIBUTES = ['weather_id', 'temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'snow', 'timestamp', 'sunrise', 'sunset']
 
     def __init__(
             self,
@@ -158,12 +165,13 @@ class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
     def items(self) -> Generator[AddOpenWeatherMapDataResponse, None, None]:
         for req in self.requests:
             yield AddOpenWeatherMapDataResponse(
-                current_weather_record=self.record_of(source=req.current, attributes=self.CURRENT_ATTRIBUTES),
-                hourly_forecast_record=','.join(self.record_of(source=item, attributes=self.CURRENT_ATTRIBUTES) for item in req.hourly),
-                daily_forecast_record=','.join(self.record_of(source=item, attributes=self.DAILY_ATTRIBUTES) for item in req.daily)
+                current_weather_record=self._record_of(body=_body_of(source=req.current, attributes=self.CURRENT_ATTRIBUTES)),
+                hourly_forecast_record=','.join(self._record_of(body=_body_of(source=item, attributes=self.HOURLY_ATTRIBUTES)) for item in req.hourly),
+                daily_forecast_record=','.join(self._record_of(body=_body_of(source=item, attributes=self.DAILY_ATTRIBUTES)) for item in req.daily)
             )
 
-    def record_of(self, source, attributes: List[str]) -> str:
-        return f"({self.geoarea_id}, {source.weather_id}, " + \
-               ', '.join(f"{value_of(getattr(source, attr))}" for attr in attributes) + \
-               f", '{source.timestamp}')"
+    def _record_of(self, body: str) -> str:
+        return self._header_of() + body + ')'
+
+    def _header_of(self):
+        return f"({self.geoarea_id}, "

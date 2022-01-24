@@ -53,14 +53,14 @@ def _mocked_response_builder() -> MagicMock:
 
 def _expected_insert_weather_data_query():
     return "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, " \
-            "humidity, wind_speed, wind_direction, rain, snow, timestamp) " \
+            "humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) " \
            f"VALUES {_test_current_weather_record()}; " \
             "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, " \
-            "humidity, wind_speed, wind_direction, rain, snow, timestamp) " \
+            "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
            f"VALUES {_test_hourly_forecast_record()}; " \
             "INSERT INTO level0_raw.daily_forecast " \
            "(geoarea_id, weather_id, temperature, min_temp, max_temp, " \
-            "pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) " \
+            "pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
            f"VALUES {_test_daily_forecast_record()};"
 
 

@@ -128,7 +128,7 @@ class WeatherForecast(object):
     A *dataclass* that defines the raw datastructure of the weather forecast conditions.
     """
 
-    dt: int                                         # The UNIX time stamp that defines the validity of the measures.
+    dt: int                                         # The UNIX time stamp at acquisition time (UTC).
     temp: float                                     # The daily temperature conditions for this forecast.
     pressure: float                                 # The pressure conditions for this forecast (mbar).
     humidity: float                                 # The humidity conditions for this forecast (%).
@@ -136,9 +136,12 @@ class WeatherForecast(object):
     wind_deg: float                                 # The wind's direction for this forecast (degrees, °).
     weather: List[Weather]                          # The list of weather conditions for this forecast.
     rain: float = None                              # The rain volume for last hour (mm).
+    pop: float = None                               # The probability of precipitation (%).
     snow: float = None                              # The snow volume for last hour (mm).
     temp_min: float = None                          # The minimum temperature of the day (°C)
     temp_max: float = None                          # The maximum temperature of the day (°C)
+    sunrise: int = None                             # The UNIX time stamp of the sunrise time (UTC).
+    sunset: int = None                              # The UNIX time stamp of the sunset time (UTC).
 
 
 @dataclass

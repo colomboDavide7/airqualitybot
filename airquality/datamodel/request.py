@@ -75,7 +75,7 @@ class AddWeatherForecastRequest(object):
     This class is used both for current weather, hourly forecast and daily forecast data.
     """
 
-    timestamp: datetime                 # The datetime object that represents the forecast time.
+    timestamp: datetime                 # The datetime object that represents the forecast time (local timezone).
     weather_id: int                     # The id that identifies a row of *weather_condition* table.
     temperature: float                  # The daily temperature in °C.
     pressure: float                     # The atmospheric pressure in mbar.
@@ -83,9 +83,12 @@ class AddWeatherForecastRequest(object):
     wind_speed: float                   # The wind's speed in m/s.
     wind_direction: float               # The wind's direction in meteorological degrees.
     rain: float = None                  # The volume of rain precipitation in mm.
+    pop: float = None                   # The probability of precipitation in %.
     snow: float = None                  # The volume of snow precipitation in mm.
     min_temp: float = None              # The daily minimum temperature in °C.
     max_temp: float = None              # The daily maximum temperature in °C.
+    sunrise: datetime = None            # The datetime object that represent the sunrise time (local timezone).
+    sunset: datetime = None             # The datetime object that represent the sunrise time (local timezone).
 
 
 @dataclass

@@ -15,6 +15,8 @@ from airquality.datamodel.request import AddWeatherForecastRequest, AddOpenWeath
 def _current_weather_request():
     return AddWeatherForecastRequest(
         timestamp=datetime.utcfromtimestamp(1641217631 + 3600),
+        sunrise=datetime.utcfromtimestamp(1641193337),
+        sunset=datetime.utcfromtimestamp(1641225175),
         temperature=8.84,
         pressure=1018,
         humidity=81,
@@ -33,6 +35,7 @@ def _hourly_forecast_request():
         wind_speed=0.33,
         wind_direction=186,
         rain=0.21,
+        pop=0,
         weather_id=55
     )
 
@@ -47,7 +50,8 @@ def _daily_forecast_request():
         humidity=83,
         wind_speed=2.72,
         wind_direction=79,
-        weather_id=55
+        weather_id=55,
+        pop=0.01
     )
 
 
@@ -67,15 +71,16 @@ def _mocked_request_builder():
 
 
 def _expected_current_weather_record():
-    return "(14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, '2022-01-03 14:47:11')"
+    return "(14400, 55, 8.84, 1018, 81, 0.59, 106, NULL, NULL, " \
+           "'2022-01-03 14:47:11', '2022-01-03 07:02:17', '2022-01-03 15:52:55')"
 
 
 def _expected_hourly_forecast_record():
-    return "(14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, NULL, '2022-01-03 14:00:00')"
+    return "(14400, 55, 9.21, 1018, 80, 0.33, 186, 0.21, 0, NULL, '2022-01-03 14:00:00')"
 
 
 def _expected_daily_forecast_record():
-    return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
+    return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, 0.01, NULL, '2022-01-03 12:00:00')"
 
 
 class TestAddOpenweathermapDataResponseBuilder(TestCase):

@@ -102,12 +102,27 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
     def items(self) -> Generator[OpenWeatherMapAPIData, None, None]:
         yield OpenWeatherMapAPIData(
             tz_name=self.tzname,
-            current=self.forecast_of(source=self.current),
-            hourly_forecast=[self.forecast_of(source=item) for item in self.hourly],
-            daily_forecast=[self.daily_forecast_of(source=item) for item in self.daily]
+            current=self._current_weather_datamodel(),
+            hourly_forecast=[self._hourly_forecast_of(source=item) for item in self.hourly],
+            daily_forecast=[self._daily_forecast_of(source=item) for item in self.daily]
         )
 
-    def forecast_of(self, source: Dict[str, Any]) -> WeatherForecast:
+    def _current_weather_datamodel(self):
+        return WeatherForecast(
+            dt=self.current['dt'],
+            sunrise=self.current['sunrise'],
+            sunset=self.current['sunset'],
+            temp=self.current.get('temp'),
+            pressure=self.current.get('pressure'),
+            humidity=self.current.get('humidity'),
+            wind_speed=self.current.get('wind_speed'),
+            wind_deg=self.current.get('wind_deg'),
+            weather=self._weather_of(source=self.current),
+            rain=self.recursive_search(source=self.current, keywords=['rain', '1h']),
+            snow=self.recursive_search(source=self.current, keywords=['snow', '1h'])
+        )
+
+    def _hourly_forecast_of(self, source: Dict[str, Any]) -> WeatherForecast:
         return WeatherForecast(
             dt=source['dt'],
             temp=source.get('temp'),
@@ -115,12 +130,13 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
             humidity=source.get('humidity'),
             wind_speed=source.get('wind_speed'),
             wind_deg=source.get('wind_deg'),
-            weather=self.weather_of(source=source),
+            weather=self._weather_of(source=source),
             rain=self.recursive_search(source=source, keywords=['rain', '1h']),
             snow=self.recursive_search(source=source, keywords=['snow', '1h']),
+            pop=source.get('pop')
         )
 
-    def daily_forecast_of(self, source: Dict[str, Any]) -> WeatherForecast:
+    def _daily_forecast_of(self, source: Dict[str, Any]) -> WeatherForecast:
         return WeatherForecast(
             dt=source['dt'],
             temp=self.recursive_search(source=source, keywords=['temp', 'day']),
@@ -130,12 +146,13 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
             humidity=source.get('humidity'),
             wind_speed=source.get('wind_speed'),
             wind_deg=source.get('wind_deg'),
-            weather=self.weather_of(source=source),
+            weather=self._weather_of(source=source),
             rain=source.get('rain'),
-            snow=source.get('snow')
+            snow=source.get('snow'),
+            pop=source.get('pop')
         )
 
-    def weather_of(self, source: Dict[str, Any]) -> List[Weather]:
+    def _weather_of(self, source: Dict[str, Any]) -> List[Weather]:
         weather = source.get('weather')
         if weather is not None:
             weather = [Weather(**w) for w in weather]

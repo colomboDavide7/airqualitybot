@@ -25,6 +25,8 @@ def _test_weather():
 def _test_current_weather_data():
     return WeatherForecast(
         dt=1641217631,
+        sunset=1641225175,
+        sunrise=1641193337,
         temp=8.84,
         pressure=1018,
         humidity=81,
@@ -43,7 +45,8 @@ def _test_hourly_forecast_data():
         wind_speed=0.33,
         wind_deg=186,
         weather=[_test_weather()],
-        rain=0.21
+        rain=0.21,
+        pop=0
     )
 
 
@@ -57,7 +60,8 @@ def _test_daily_forecast_data():
         humidity=83,
         wind_speed=2.72,
         wind_deg=79,
-        weather=[_test_weather()]
+        weather=[_test_weather()],
+        pop=0.01
     )
 
 
@@ -112,6 +116,14 @@ class TestAddWeatherDataRequestBuilder(TestCase):
             req.current.timestamp,
             datetime(2022, 1, 3, 8, 47, 11, tzinfo=_expected_timezone_info())
         )
+        self.assertEqual(
+            req.current.sunrise,
+            datetime(2022, 1, 3, 2, 2, 17, tzinfo=_expected_timezone_info())
+        )
+        self.assertEqual(
+            req.current.sunset,
+            datetime(2022, 1, 3, 10, 52, 55, tzinfo=_expected_timezone_info())
+        )
         self.assertEqual(req.current.weather_id, 55)
         self.assertEqual(req.current.temperature, 8.84)
         self.assertEqual(req.current.pressure, 1018)
@@ -122,6 +134,7 @@ class TestAddWeatherDataRequestBuilder(TestCase):
         self.assertIsNone(req.current.snow)
         self.assertIsNone(req.current.min_temp)
         self.assertIsNone(req.current.max_temp)
+        self.assertIsNone(req.current.pop)
 
     def _assert_hourly_forecast(self):
         hourly = self._builder[0].hourly[0]
@@ -136,9 +149,12 @@ class TestAddWeatherDataRequestBuilder(TestCase):
         self.assertEqual(hourly.wind_speed, 0.33)
         self.assertEqual(hourly.wind_direction, 186)
         self.assertEqual(hourly.rain, 0.21)
+        self.assertEqual(hourly.pop, 0)
         self.assertIsNone(hourly.snow)
         self.assertIsNone(hourly.min_temp)
         self.assertIsNone(hourly.max_temp)
+        self.assertIsNone(hourly.sunrise)
+        self.assertIsNone(hourly.sunset)
 
     def _assert_daily_forecast(self):
         daily = self._builder[0].daily[0]
@@ -152,10 +168,13 @@ class TestAddWeatherDataRequestBuilder(TestCase):
         self.assertEqual(daily.humidity, 83)
         self.assertEqual(daily.wind_speed, 2.72)
         self.assertEqual(daily.wind_direction, 79)
+        self.assertEqual(daily.pop, 0.01)
         self.assertIsNone(daily.rain)
         self.assertIsNone(daily.snow)
         self.assertEqual(daily.min_temp, 5.81)
         self.assertEqual(daily.max_temp, 9.4)
+        self.assertIsNone(daily.sunrise)
+        self.assertIsNone(daily.sunset)
 
 
 if __name__ == '__main__':

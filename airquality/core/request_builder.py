@@ -144,9 +144,11 @@ class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
             )
 
     def request_of(self, source, tzname: str) -> AddWeatherForecastRequest:
-        weather = source.weather[0]
+        weather = source.weather[0]             # take only the first weather instance from the list.
         return AddWeatherForecastRequest(
             timestamp=self._timest.utc_time2utc_localtz(time=source.dt, tzname=tzname),
+            sunrise=self._safe_time(time=source.sunrise, tzname=tzname),
+            sunset=self._safe_time(time=source.sunset, tzname=tzname),
             temperature=source.temp,
             min_temp=source.temp_min,
             max_temp=source.temp_max,
@@ -155,6 +157,12 @@ class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
             wind_speed=source.wind_speed,
             wind_direction=source.wind_deg,
             rain=source.rain,
+            pop=source.pop,
             snow=source.snow,
             weather_id=self.weather_map[weather.id][weather.icon]
         )
+
+    def _safe_time(self, time, tzname: str):
+        if time is not None:
+            return self._timest.utc_time2utc_localtz(time=time, tzname=tzname)
+        return None

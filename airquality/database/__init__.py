@@ -25,9 +25,9 @@ INSERT_SENSOR_API_PARAM = "INSERT INTO level0_raw.sensor_api_param (sensor_id, c
 INSERT_MOBILE_MEASURES = "INSERT INTO level0_raw.mobile_measurement (packet_id, param_id, param_value, timestamp, geom) VALUES {val};"
 INSERT_STATION_MEASURES = "INSERT INTO level0_raw.station_measurement (packet_id, sensor_id, param_id, param_value, timestamp) VALUES {val};"
 INSERT_PLACES = "INSERT INTO level0_raw.geographical_area (postal_code, country_code, place_name, province, state, geom) VALUES {val};"
-INSERT_CURRENT_WEATHER_DATA = "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES {val};"
-INSERT_HOURLY_FORECAST_DATA = "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES {val};"
-INSERT_DAILY_FORECAST_DATA = "INSERT INTO level0_raw.daily_forecast (geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp) VALUES {val};"
+INSERT_CURRENT_WEATHER_DATA = "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) VALUES {val};"
+INSERT_HOURLY_FORECAST_DATA = "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
+INSERT_DAILY_FORECAST_DATA = "INSERT INTO level0_raw.daily_forecast (geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
 
 # =========== UPDATE QUERIES
 UPDATE_LAST_CH_TIMEST = "UPDATE level0_raw.sensor_api_param SET last_acquisition = '{time}' WHERE sensor_id = {sid} AND ch_name = '{ch}';"

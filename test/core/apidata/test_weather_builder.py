@@ -42,6 +42,8 @@ class TestOpenweathermapAPIDataBuilder(TestCase):
         current = self._builder[0].current
         self._assert_weather(weather=current.weather[0])
         self.assertEqual(current.dt, 1641217631)
+        self.assertEqual(current.sunrise, 1641193337)
+        self.assertEqual(current.sunset, 1641225175)
         self.assertEqual(current.temp, 8.84)
         self.assertIsNone(current.temp_min)
         self.assertIsNone(current.temp_max)
@@ -51,6 +53,7 @@ class TestOpenweathermapAPIDataBuilder(TestCase):
         self.assertEqual(current.wind_deg, 106)
         self.assertIsNone(current.rain)
         self.assertIsNone(current.snow)
+        self.assertIsNone(current.pop)
 
     def _assert_hourly_forecast(self):
         forecast_list = self._builder[0].hourly_forecast
@@ -67,7 +70,10 @@ class TestOpenweathermapAPIDataBuilder(TestCase):
         self.assertEqual(hourly1.wind_speed, 0.33)
         self.assertEqual(hourly1.wind_deg, 186)
         self.assertEqual(hourly1.rain, 0.21)
+        self.assertEqual(hourly1.pop, 0)
         self.assertIsNone(hourly1.snow)
+        self.assertIsNone(hourly1.sunrise)
+        self.assertIsNone(hourly1.sunset)
 
     def _assert_daily_forecast(self):
         forecast_list = self._builder[0].daily_forecast
@@ -83,8 +89,11 @@ class TestOpenweathermapAPIDataBuilder(TestCase):
         self.assertEqual(daily1.humidity, 83)
         self.assertEqual(daily1.wind_speed, 2.72)
         self.assertEqual(daily1.wind_deg, 79)
+        self.assertEqual(daily1.pop, 0.01)
         self.assertIsNone(daily1.rain)
         self.assertIsNone(daily1.snow)
+        self.assertIsNone(daily1.sunset)
+        self.assertIsNone(daily1.sunrise)
 
 
 if __name__ == '__main__':
