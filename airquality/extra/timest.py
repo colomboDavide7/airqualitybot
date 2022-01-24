@@ -4,9 +4,9 @@
 # ======================================
 import logging
 from dateutil import tz
-from datetime import datetime, tzinfo, timezone
-from timezonefinder import TimezoneFinderL
+from datetime import datetime, tzinfo
 from abc import ABC, abstractmethod
+from timezonefinder import TimezoneFinderL
 
 
 # =========== TIMEZONE MAKER (SUPPORT CLASS)
@@ -119,7 +119,7 @@ def make_naive(time: datetime) -> datetime:
     A function that takes a datetime object and returns the corresponding UTC time zone naive datetime object.
     """
 
-    return time.astimezone(tz=timezone.utc).replace(microsecond=0, tzinfo=None)
+    return time.astimezone(tz=tz.tzutc()).replace(microsecond=0, tzinfo=None)
 
 
 class Timest(object):
@@ -175,7 +175,7 @@ class Timest(object):
         """
         A class method that returns the current timestamp in the local time zone.
         """
-        utc_dt = datetime.now(tz=timezone.utc)
+        utc_dt = datetime.now(tz=tz.tzutc())
         return utc_dt.astimezone().replace(microsecond=0)
 
     def utc_time2utc_tz(self, time) -> datetime:
