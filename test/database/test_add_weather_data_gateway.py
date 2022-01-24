@@ -36,11 +36,18 @@ def _test_daily_forecast_record():
     return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, NULL, '2022-01-03 12:00:00')"
 
 
+def _test_weather_alert_record():
+    return "(14400, 'Fake sender', 'Fake event', " \
+           "'2022-01-24 19:00:00+01:00', '2022-01-25 09:59:00+01:00', " \
+           "'Fake description')"
+
+
 def _test_add_weather_data_response():
     return AddOpenWeatherMapDataResponse(
         current_weather_record=_test_current_weather_record(),
         hourly_forecast_record=_test_hourly_forecast_record(),
-        daily_forecast_record=_test_daily_forecast_record()
+        daily_forecast_record=_test_daily_forecast_record(),
+        weather_alert_record=_test_weather_alert_record()
     )
 
 
@@ -61,7 +68,9 @@ def _expected_insert_weather_data_query():
             "INSERT INTO level0_raw.daily_forecast " \
            "(geoarea_id, weather_id, temperature, min_temp, max_temp, " \
             "pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-           f"VALUES {_test_daily_forecast_record()};"
+           f"VALUES {_test_daily_forecast_record()}; " \
+           f"INSERT INTO level0_raw.weather_alert (geoarea_id, sender_name, alert_event, alert_begin, " \
+           f"alert_until, description) VALUES {_test_weather_alert_record()};"
 
 
 class TestDatabaseGatewayAddWeatherDataSection(TestCase):

@@ -55,3 +55,4 @@ class AddOpenWeatherMapDataResponse(object):
     current_weather_record: str         # The current weather SQL record.
     hourly_forecast_record: str         # The next 48 hours weather forecast SQL record.
     daily_forecast_record: str          # The next 7 days weather forecast SQL record.
+    weather_alert_record: str           # The weather alert SQL record.

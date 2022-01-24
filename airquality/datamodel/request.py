@@ -92,6 +92,19 @@ class AddWeatherForecastRequest(object):
 
 
 @dataclass
+class AddWeatherAlertRequest(object):
+    """
+    A *dataclass* that defines the raw datastructure for a request of adding a weather alert.
+    """
+
+    sender_name: str                    # The alert's sender name.
+    alert_event: str                    # The specific event for this alert.
+    alert_begin: datetime               # The datetime object that represent the alert begin (local timezone).
+    alert_until: datetime               # The datetime object that represent the alert end time (local timezone).
+    description: str                    # The alert description.
+
+
+@dataclass
 class AddOpenWeatherMapDataRequest(object):
     """
     A *dataclass* that defines the raw data structure for a request of adding new data fetched from OpenWeatherMap API.
@@ -100,3 +113,4 @@ class AddOpenWeatherMapDataRequest(object):
     current: AddWeatherForecastRequest          # The request for the current weather.
     hourly: List[AddWeatherForecastRequest]     # The list of requests for the hourly forecast weather (next 48 hours).
     daily: List[AddWeatherForecastRequest]      # The list of requests for the daily forecast weather (next 7 days).
+    alerts: List[AddWeatherAlertRequest] = ()   # The list of requests of weather alert for the requested location.

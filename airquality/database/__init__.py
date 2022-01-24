@@ -28,6 +28,7 @@ INSERT_PLACES = "INSERT INTO level0_raw.geographical_area (postal_code, country_
 INSERT_CURRENT_WEATHER_DATA = "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) VALUES {val};"
 INSERT_HOURLY_FORECAST_DATA = "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
 INSERT_DAILY_FORECAST_DATA = "INSERT INTO level0_raw.daily_forecast (geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
+INSERT_WEATHER_ALERT_DATA = "INSERT INTO level0_raw.weather_alert (geoarea_id, sender_name, alert_event, alert_begin, alert_until, description) VALUES {val};"
 
 # =========== UPDATE QUERIES
 UPDATE_LAST_CH_TIMEST = "UPDATE level0_raw.sensor_api_param SET last_acquisition = '{time}' WHERE sensor_id = {sid} AND ch_name = '{ch}';"

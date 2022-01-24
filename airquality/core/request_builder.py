@@ -5,12 +5,13 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
-    AddSensorMeasuresRequest, Channel, AddPlacesRequest, AddWeatherForecastRequest, AddOpenWeatherMapDataRequest
-from airquality.datamodel.geometry import PostgisPoint, NullGeometry
-from airquality.core.iteritems import IterableItemsABC
-from airquality.extra.timest import Timest
 from typing import Dict, Generator
+from airquality.extra.timest import Timest
+from airquality.core.iteritems import IterableItemsABC
+from airquality.datamodel.geometry import PostgisPoint, NullGeometry
+from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
+    AddSensorMeasuresRequest, Channel, AddPlacesRequest, AddWeatherForecastRequest, AddOpenWeatherMapDataRequest, \
+    AddWeatherAlertRequest
 
 
 class AddPurpleairSensorRequestBuilder(IterableItemsABC):
@@ -140,8 +141,18 @@ class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
             yield AddOpenWeatherMapDataRequest(
                 current=self.request_of(source=dm.current, tzname=dm.tz_name),
                 hourly=[self.request_of(source=item, tzname=dm.tz_name) for item in dm.hourly_forecast],
-                daily=[self.request_of(source=item, tzname=dm.tz_name) for item in dm.daily_forecast]
+                daily=[self.request_of(source=item, tzname=dm.tz_name) for item in dm.daily_forecast],
+                alerts=[self._alert_of(source=item, tzname=dm.tz_name) for item in dm.alerts]
             )
+
+    def _alert_of(self, source, tzname: str) -> AddWeatherAlertRequest:
+        return AddWeatherAlertRequest(
+            sender_name=source.sender_name,
+            alert_event=source.alert_event,
+            alert_begin=self._safe_time(time=source.alert_begin, tzname=tzname),
+            alert_until=self._safe_time(time=source.alert_until, tzname=tzname),
+            description=source.description
+        )
 
     def request_of(self, source, tzname: str) -> AddWeatherForecastRequest:
         weather = source.weather[0]             # take only the first weather instance from the list.

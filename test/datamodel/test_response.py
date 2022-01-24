@@ -47,11 +47,13 @@ class TestResponseModel(TestCase):
         response = AddOpenWeatherMapDataResponse(
             current_weather_record="fake_current",
             hourly_forecast_record="fake_hourly",
-            daily_forecast_record="fake_daily"
+            daily_forecast_record="fake_daily",
+            weather_alert_record='fake_alert'
         )
         self.assertEqual(response.current_weather_record, "fake_current")
         self.assertEqual(response.hourly_forecast_record, "fake_hourly")
         self.assertEqual(response.daily_forecast_record, "fake_daily")
+        self.assertEqual(response.weather_alert_record, 'fake_alert')
 
 
 if __name__ == '__main__':

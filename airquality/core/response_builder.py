@@ -153,6 +153,7 @@ class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
     DAILY_ATTRIBUTES = ['weather_id', 'temperature', 'min_temp', 'max_temp', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'pop', 'snow', 'timestamp']
     HOURLY_ATTRIBUTES = ['weather_id', 'temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'pop', 'snow', 'timestamp']
     CURRENT_ATTRIBUTES = ['weather_id', 'temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'snow', 'timestamp', 'sunrise', 'sunset']
+    ALERT_ATTRIBUTES = ['sender_name', 'alert_event', 'alert_begin', 'alert_until', 'description']
 
     def __init__(
             self,
@@ -167,7 +168,8 @@ class AddOpenWeatherMapDataResponseBuilder(IterableItemsABC):
             yield AddOpenWeatherMapDataResponse(
                 current_weather_record=self._record_of(body=_body_of(source=req.current, attributes=self.CURRENT_ATTRIBUTES)),
                 hourly_forecast_record=','.join(self._record_of(body=_body_of(source=item, attributes=self.HOURLY_ATTRIBUTES)) for item in req.hourly),
-                daily_forecast_record=','.join(self._record_of(body=_body_of(source=item, attributes=self.DAILY_ATTRIBUTES)) for item in req.daily)
+                daily_forecast_record=','.join(self._record_of(body=_body_of(source=item, attributes=self.DAILY_ATTRIBUTES)) for item in req.daily),
+                weather_alert_record=','.join(self._record_of(body=_body_of(source=item, attributes=self.ALERT_ATTRIBUTES)) for item in req.alerts)
             )
 
     def _record_of(self, body: str) -> str:

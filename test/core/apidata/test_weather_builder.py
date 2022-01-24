@@ -30,8 +30,19 @@ class TestOpenweathermapAPIDataBuilder(TestCase):
         self._assert_current_weather()
         self._assert_hourly_forecast()
         self._assert_daily_forecast()
+        self._assert_weather_alert()
 
 # =========== SUPPORT METHODS
+    def _assert_weather_alert(self):
+        alerts = self._builder[0].alerts
+        self.assertEqual(len(alerts), 1)
+
+        self.assertEqual(alerts[0].sender_name, 'Fake sender')
+        self.assertEqual(alerts[0].alert_event, 'Fake event')
+        self.assertEqual(alerts[0].alert_begin, 1643047200)
+        self.assertEqual(alerts[0].alert_until, 1643101140)
+        self.assertEqual(alerts[0].description, 'Fake description')
+
     def _assert_weather(self, weather):
         self.assertEqual(weather.id, 804)
         self.assertEqual(weather.icon, "04d")

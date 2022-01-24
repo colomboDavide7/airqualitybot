@@ -145,6 +145,19 @@ class WeatherForecast(object):
 
 
 @dataclass
+class WeatherAlert(object):
+    """
+    A dataclass that defines the raw datastructure for openweathermap.org weather alerts.
+    """
+
+    sender_name: str                                # The name of the alert source.
+    alert_event: str                                # The alert event name.
+    alert_begin: int                                # The UNIX time stamp from which the alert begins (UTC).
+    alert_until: int                                # The UNIX time stamp until the alert is valid (UTC).
+    description: str                                # The alert long description.
+
+
+@dataclass
 class OpenWeatherMapAPIData(object):
     """
     A *dataclass* that defines the raw datastructure of a One Call API response available on OpenWeatherMap service.
@@ -154,6 +167,7 @@ class OpenWeatherMapAPIData(object):
     current: WeatherForecast                        # The current weather conditions.
     hourly_forecast: List[WeatherForecast]          # The weather conditions forecast for the next 48 hours (hourly).
     daily_forecast: List[WeatherForecast]           # The weather conditions forecast for the next 7 days (daily).
+    alerts: List[WeatherAlert] = ()                 # The weather alerts (if any) for the requested location.
 
 
 @dataclass

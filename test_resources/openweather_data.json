@@ -95,5 +95,17 @@
       "pop": 0.01,
       "uvi": 1
     }
+],
+"alerts": [
+    {
+      "sender_name": "Fake sender",
+      "event": "Fake event",
+      "start": 1643047200,
+      "end": 1643101140,
+      "description": "Fake description",
+      "tags": [
+        "Fog"
+      ]
+    }
   ]
 }

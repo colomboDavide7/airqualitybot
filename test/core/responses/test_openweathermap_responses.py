@@ -6,10 +6,15 @@
 #
 ######################################################
 from datetime import datetime
+import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.core.response_builder import AddOpenWeatherMapDataResponseBuilder
-from airquality.datamodel.request import AddWeatherForecastRequest, AddOpenWeatherMapDataRequest
+from airquality.datamodel.request import AddWeatherForecastRequest, AddOpenWeatherMapDataRequest, AddWeatherAlertRequest
+
+
+def _rome_timezone():
+    return tutils.get_tzinfo_from_timezone_name(tzname='Europe/Rome')
 
 
 def _current_weather_request():
@@ -55,11 +60,22 @@ def _daily_forecast_request():
     )
 
 
+def _weather_alert_request():
+    return AddWeatherAlertRequest(
+        sender_name='Fake sender',
+        alert_event='Fake event',
+        alert_begin=datetime(2022, 1, 24, 19, tzinfo=_rome_timezone()),
+        alert_until=datetime(2022, 1, 25, 9, 59, tzinfo=_rome_timezone()),
+        description='Fake description'
+    )
+
+
 def _openweathermap_request():
     return AddOpenWeatherMapDataRequest(
         current=_current_weather_request(),
         hourly=[_hourly_forecast_request()],
-        daily=[_daily_forecast_request()]
+        daily=[_daily_forecast_request()],
+        alerts=[_weather_alert_request()]
     )
 
 
@@ -81,6 +97,12 @@ def _expected_hourly_forecast_record():
 
 def _expected_daily_forecast_record():
     return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, 0.01, NULL, '2022-01-03 12:00:00')"
+
+
+def _expected_weather_alert_record():
+    return "(14400, 'Fake sender', 'Fake event', " \
+           "'2022-01-24 19:00:00+01:00', '2022-01-25 09:59:00+01:00', " \
+           "'Fake description')"
 
 
 class TestAddOpenweathermapDataResponseBuilder(TestCase):
@@ -114,6 +136,10 @@ class TestAddOpenweathermapDataResponseBuilder(TestCase):
         self.assertEqual(
             resp.daily_forecast_record,
             _expected_daily_forecast_record()
+        )
+        self.assertEqual(
+            resp.weather_alert_record,
+            _expected_weather_alert_record()
         )
 
 

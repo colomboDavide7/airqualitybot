@@ -10,7 +10,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.extra.timest import Timest
-from airquality.datamodel.apidata import Weather, WeatherForecast, OpenWeatherMapAPIData
+from airquality.datamodel.apidata import Weather, WeatherForecast, OpenWeatherMapAPIData, WeatherAlert
 from airquality.core.request_builder import AddOpenWeatherMapDataRequestBuilder
 
 
@@ -19,7 +19,12 @@ def _test_timezone_name():
 
 
 def _test_weather():
-    return Weather(id=804, icon="04d", main="Clouds", description="overcast clouds")
+    return Weather(
+        id=804,
+        icon="04d",
+        main="Clouds",
+        description="overcast clouds"
+    )
 
 
 def _test_current_weather_data():
@@ -65,13 +70,24 @@ def _test_daily_forecast_data():
     )
 
 
+def _test_weather_alert():
+    return WeatherAlert(
+        sender_name='fake sender',
+        alert_event='fake event',
+        alert_begin=1643047200,
+        alert_until=1643101140,
+        description='fake description'
+    )
+
+
 def _test_openweathermap_datamodel():
     return OpenWeatherMapAPIData(
-            tz_name=_test_timezone_name(),
-            current=_test_current_weather_data(),
-            hourly_forecast=[_test_hourly_forecast_data()],
-            daily_forecast=[_test_daily_forecast_data()]
-        )
+        tz_name=_test_timezone_name(),
+        current=_test_current_weather_data(),
+        hourly_forecast=[_test_hourly_forecast_data()],
+        daily_forecast=[_test_daily_forecast_data()],
+        alerts=[_test_weather_alert()]
+    )
 
 
 def _test_weather_conditions_mapping():
@@ -110,6 +126,21 @@ class TestAddWeatherDataRequestBuilder(TestCase):
         self._assert_daily_forecast()
 
 # =========== SUPPORT METHODS
+    def _assert_weather_alerts(self):
+        alerts = self._builder[0].alerts
+        self.assertEqual(len(alerts), 1)
+        self.assertEqual(alerts[0].sender_name, 'fake sender')
+        self.assertEqual(alerts[0].alert_event, 'fake event')
+        self.assertEqual(
+            alerts[0].alert_begin,
+            datetime(2022, 1, 24, 13, tzinfo=_expected_timezone_info())
+        )
+        self.assertEqual(
+            alerts[0].alert_until,
+            datetime(2022, 1, 25, 3, 59, tzinfo=_expected_timezone_info())
+        )
+        self.assertEqual(alerts[0].description, 'fake description')
+
     def _assert_current_weather(self):
         req = self._builder[0]
         self.assertEqual(

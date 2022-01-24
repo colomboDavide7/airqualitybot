@@ -167,15 +167,19 @@ class DatabaseGateway(object):
 
 # =========== INSERT QUERIES
     def insert_weather_data(self, responses: AddOpenWeatherMapDataResponseBuilder):
-        cval = hval = dval = ""
+        cval = hval = dval = aval = ""
         for r in responses:
             cval += f"{r.current_weather_record},"
             hval += f"{r.hourly_forecast_record},"
             dval += f"{r.daily_forecast_record},"
+            aval += f"{r.weather_alert_record},"
         current_weather_query = queries.INSERT_CURRENT_WEATHER_DATA.format(val=cval.strip(','))
         hourly_forecast_query = queries.INSERT_HOURLY_FORECAST_DATA.format(val=hval.strip(','))
         daily_forecast_query = queries.INSERT_DAILY_FORECAST_DATA.format(val=dval.strip(','))
-        self.database_adapt.execute(f"{current_weather_query} {hourly_forecast_query} {daily_forecast_query}")
+        weather_alert_query = queries.INSERT_WEATHER_ALERT_DATA.format(val=aval.strip(','))
+        self.database_adapt.execute(
+            f"{current_weather_query} {hourly_forecast_query} {daily_forecast_query} {weather_alert_query}"
+        )
 
     def insert_sensors(self, responses: AddFixedSensorResponseBuilder):
         sval = pval = gval = ""
