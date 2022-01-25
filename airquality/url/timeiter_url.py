@@ -24,8 +24,7 @@ def _get_smallest_between(time: datetime, upper_bound: datetime):
 
 class TimeIterableURL(IterableItemsABC):
     """
-    An *IterableItemsABC* that defines the basic business rules for building and formatting a URL by adding time
-    optional parameters.
+    An interface for generating urls within a given period of time with a given granularity (step size).
     """
 
     def __init__(
@@ -67,7 +66,7 @@ class TimeIterableURL(IterableItemsABC):
 
 class AtmotubeTimeIterableURL(TimeIterableURL):
     """
-    A *TimeIterableURL* that implements the *format_url* method and defines the details of formatting an Atmotube URL.
+    A concrete implementation of the *TimeIterableURL* interface that formats the URLs specifically for Atmotube APIs.
     """
 
     def format_url(self, begin: datetime, until: datetime) -> str:
@@ -80,7 +79,7 @@ class AtmotubeTimeIterableURL(TimeIterableURL):
 
 class ThingspeakTimeIterableURL(TimeIterableURL):
     """
-    A *TimeIterableURL* that implements the *format_url* method and defines the details of formatting a Thingspeak URL.
+    A concrete implementation of the *TimeIterableURL* interface that formats the URLs specifically for Thingspeak APIs.
     """
 
     def format_url(self, begin: datetime, until: datetime) -> str:

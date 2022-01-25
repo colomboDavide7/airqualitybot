@@ -26,11 +26,9 @@ class DatabaseGateway(object):
     """
     A class that defines how the application can interact with the database.
 
-    Every single query that can be executed must be defined here within a method.
+    This class defines all the queries that the application can perform against the database.
 
-    Keyword arguments:
-        *database_adapt*            the concrete implementation of DatabaseAdapter interface for executing actions
-                                    against the database.
+    It supports SELECT, INSERT, UPDATE and DELETE.
 
     """
 
@@ -166,45 +164,95 @@ class DatabaseGateway(object):
         )
 
 # =========== INSERT QUERIES
+    def _safe_format_insert_query(self, query: str, values: str) -> str:
+        """
+        A method that safely format insert queries by checking that values is not empty.
+
+        :param query:           the insert query to be formatted IT MUST CONTAIN THE *val* KEYWORD ARGUMENT.
+        :param values:          the values to format the query with.
+        :return:                the original query formatted or empty string.
+        """
+
+        if values:
+            return query.format(val=values)
+        self._logger.warning(f"[CAUSE]: failed to format insert query - [QUERY]: {query} - [VALUES]: '{values}'")
+        return ""
+
     def insert_weather_data(self, responses: AddOpenWeatherMapDataResponseBuilder):
+        """
+        A method that knows how to build the query for inserting weather data including current weather,
+        hourly forecast, daily forecast and weather alerts.
+
+        :param responses:               the response builder instance that generates the weather responses.
+        """
+
         cval = hval = dval = aval = ""
         for r in responses:
             cval += f"{r.current_weather_record},"
             hval += f"{r.hourly_forecast_record},"
             dval += f"{r.daily_forecast_record},"
             aval += f"{r.weather_alert_record},"
-        current_weather_query = queries.INSERT_CURRENT_WEATHER_DATA.format(val=cval.strip(','))
-        hourly_forecast_query = queries.INSERT_HOURLY_FORECAST_DATA.format(val=hval.strip(','))
-        daily_forecast_query = queries.INSERT_DAILY_FORECAST_DATA.format(val=dval.strip(','))
-        weather_alert_query = queries.INSERT_WEATHER_ALERT_DATA.format(val=aval.strip(','))
-        self.database_adapt.execute(
-            f"{current_weather_query} {hourly_forecast_query} {daily_forecast_query} {weather_alert_query}"
-        )
+        query = self._safe_format_insert_query(query=queries.INSERT_CURRENT_WEATHER_DATA, values=cval.strip(','))
+        query += self._safe_format_insert_query(query=queries.INSERT_HOURLY_FORECAST_DATA, values=hval.strip(','))
+        query += self._safe_format_insert_query(query=queries.INSERT_DAILY_FORECAST_DATA, values=dval.strip(','))
+        query += self._safe_format_insert_query(query=queries.INSERT_WEATHER_ALERT_DATA, values=aval.strip(','))
+        self.database_adapt.execute(query)
 
     def insert_sensors(self, responses: AddFixedSensorResponseBuilder):
+        """
+        A method that knows how to build the query for inserting sensor data including sensor basic information,
+        sensor API param and sensor geolocation.
+
+        :param responses:               the response builder instance that generates the weather responses.
+        """
+
         sval = pval = gval = ""
         for r in responses:
             sval += f"{r.sensor_record},"
             pval += f"{r.apiparam_record},"
             gval += f"{r.geolocation_record},"
-        sensor_query = queries.INSERT_SENSORS.format(val=sval.strip(','))
-        apiparam_query = queries.INSERT_SENSOR_API_PARAM.format(val=pval.strip(','))
-        geolocation_query = queries.INSERT_SENSOR_LOCATION.format(val=gval.strip(','))
-        self.database_adapt.execute(f"{sensor_query} {apiparam_query} {geolocation_query}")
+        query = self._safe_format_insert_query(query=queries.INSERT_SENSORS, values=sval.strip(','))
+        query += self._safe_format_insert_query(query=queries.INSERT_SENSOR_API_PARAM, values=pval.strip(','))
+        query += self._safe_format_insert_query(query=queries.INSERT_SENSOR_LOCATION, values=gval.strip(','))
+        self.database_adapt.execute(query)
 
     def insert_mobile_measures(self, responses: AddMobileMeasureResponseBuilder):
-        values = ','.join(resp.measure_record for resp in responses)
-        measure_query = queries.INSERT_MOBILE_MEASURES.format(val=values)
-        self.database_adapt.execute(measure_query)
+        """
+        A method that knows how to build the query for inserting mobile sensor's measures.
+
+        :param responses:           the response builder instance that generates the mobile sensor's measure responses.
+        """
+
+        query = self._safe_format_insert_query(
+            query=queries.INSERT_MOBILE_MEASURES,
+            values=','.join(resp.measure_record for resp in responses)
+        )
+        self.database_adapt.execute(query)
 
     def insert_station_measures(self, responses: AddStationMeasuresResponseBuilder):
-        values = ','.join(resp.measure_record for resp in responses)
-        query = queries.INSERT_STATION_MEASURES.format(val=values)
+        """
+        A method that knows how to build the query for inserting fixed sensor's measures.
+
+        :param responses:           the response builder instance that generates the fixed sensor's measure responses.
+        """
+
+        query = self._safe_format_insert_query(
+            query=queries.INSERT_STATION_MEASURES,
+            values=','.join(resp.measure_record for resp in responses)
+        )
         self.database_adapt.execute(query)
 
     def insert_places(self, responses: AddPlacesResponseBuilder):
-        values = ','.join(resp.place_record for resp in responses)
-        query = queries.INSERT_PLACES.format(val=values)
+        """
+        A method that knows how to build the query for inserting country locations.
+
+        :param responses:           the response builder instance that generates the country location responses.
+        """
+
+        query = self._safe_format_insert_query(
+            query=queries.INSERT_PLACES,
+            values=','.join(resp.place_record for resp in responses)
+        )
         self.database_adapt.execute(query)
 
 # =========== UPDATE QUERIES

@@ -33,10 +33,10 @@ def _mocked_response_builder() -> MagicMock:
 
 
 def _expected_insert_sensors_query():
-    return "INSERT INTO level0_raw.sensor VALUES (12, 'faketype', 'fakename'); " \
+    return "INSERT INTO level0_raw.sensor VALUES (12, 'faketype', 'fakename');" \
             "INSERT INTO level0_raw.sensor_api_param (sensor_id, ch_key, ch_id, ch_name, last_acquisition) VALUES " \
             "(12, 'key1', 'ident1', 'name1', '2018-12-13 18:19:00')," \
-           "(12, 'key2', 'ident2', 'name2', '2018-12-13 18:19:00'); " \
+           "(12, 'key2', 'ident2', 'name2', '2018-12-13 18:19:00');" \
             "INSERT INTO level0_raw.sensor_at_location (sensor_id, valid_from, geom) VALUES " \
             "(12, '2019-09-25 17:44:00', NULL, ST_GeomFromText('POINT(-9 36)', 26918));"
 

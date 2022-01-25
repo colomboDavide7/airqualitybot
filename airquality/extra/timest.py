@@ -170,6 +170,11 @@ class Timest(object):
         self._output_fmt = output_fmt
         self._tzmaker = _init_tzmaker(lat=latitude, lng=longitude, tz_name=tz_name)
 
+# =========== EXCEPTION METHOD
+    def _raise(self, cause: str):
+        self._logger.exception(cause)
+        raise TimestConversionError(cause)
+
     @classmethod
     def current_utc_timetz(cls) -> datetime:
         """
@@ -243,7 +248,7 @@ class Timest(object):
         """
 
         if not isinstance(self._tzmaker, (_FixedTimezone, _FixedTimezoneWithName)):
-            self._raise(f"expected time zone maker to be of type '_FixedTimezone*'")
+            self._raise("expected time zone maker to be of type '_FixedTimezone' or '_FixedTimezoneWithName'")
         return self._tzmaker.tzinfo()
 
 # =========== TIME FORMATTER METHODS
@@ -306,11 +311,6 @@ class Timest(object):
             return datetime.strptime(time, self._input_fmt)
         except ValueError as err:
             self._raise(cause=str(err))
-
-# =========== EXCEPTION METHOD
-    def _raise(self, cause: str):
-        self._logger.exception(cause)
-        raise TimestConversionError(cause)
 
 
 DEFAULT_OUT_FMT = "%Y-%m-%d %H:%M:%S%z"

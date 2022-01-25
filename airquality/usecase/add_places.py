@@ -9,6 +9,7 @@ import logging
 from os import listdir
 from typing import Set
 from os.path import isfile, join
+import airquality.usecase as constants
 import airquality.environment as environ
 from airquality.database.gateway import DatabaseGateway
 from airquality.core.apidata_builder import GeonamesDataBuilder
@@ -40,6 +41,7 @@ class AddPlaces(object):
         return join(self._resource_dir(), filename)
 
     def run(self) -> None:
+        self._logger.info(constants.START_MESSAGE)
         for f in self.filenames:
             self._logger.debug("reading geonames data from => '%s'" % f)
 
@@ -67,3 +69,4 @@ class AddPlaces(object):
             if response_builder:
                 self._logger.debug("inserting new places!")
                 self._database_gway.insert_places(response_builder)
+        self._logger.info(constants.END_MESSAGE)

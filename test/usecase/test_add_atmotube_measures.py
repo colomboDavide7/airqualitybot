@@ -11,7 +11,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
 from airquality.extra.timest import atmotube_timest
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
 
 
@@ -68,6 +68,7 @@ def _mocked_json_api_resp() -> MagicMock:
     """
     mocked_resp = MagicMock()
     mocked_resp.json.return_value = tutils.get_json_response_from_file(filename='atmotube_response.json')
+    mocked_resp.status_code = 200
     return mocked_resp
 
 
@@ -127,14 +128,14 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
         self._mocked_database_gway = _mocked_database_gway()
         self._usecase = AddAtmotubeMeasures(
             database_gway=self._mocked_database_gway,
-            server_wrap=APIServerWrapper(),
+            url_reader=URLReader(),
             timest=atmotube_timest()
         )
 
 # =========== TEST METHODS
     @patch('airquality.extra.logger_extra.logging')
     @patch('airquality.environment.os')
-    @patch('airquality.url.api_server_wrap.requests.get')
+    @patch('airquality.url.url_reader.requests.get')
     def test_add_atmotube_measures_usecase(self, mocked_get, mocked_os, mocked_logging):
         mocked_os.environ = _mocked_environ()
         mocked_get.return_value = _mocked_json_api_resp()

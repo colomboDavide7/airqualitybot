@@ -7,11 +7,12 @@
 ######################################################
 import logging
 from typing import Dict, List
+import airquality.usecase as constants
 import airquality.environment as environ
 from airquality.extra.timest import Timest
 from airquality.datamodel.apidata import WeatherCityData
 from airquality.database.gateway import DatabaseGateway
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.datamodel.openweathermap_key import OpenweathermapKey
 from airquality.core.request_builder import AddOpenWeatherMapDataRequestBuilder
 from airquality.core.response_builder import AddOpenWeatherMapDataResponseBuilder
@@ -43,11 +44,11 @@ class AddWeatherData(object):
     def __init__(
         self,
         database_gway: DatabaseGateway,
-        server_wrap: APIServerWrapper,
+        url_reader: URLReader,
         timest: Timest
     ):
         self._timest = timest
-        self._server_wrap = server_wrap
+        self._url_reader = url_reader
         self._database_gway = database_gway
         self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
@@ -114,7 +115,7 @@ class AddWeatherData(object):
             )
             self._logger.debug(f"fetching weather data at => {pre_formatted_url}")
 
-            service_jresp = self._server_wrap.json(url=pre_formatted_url)
+            service_jresp = self._url_reader.json(url=pre_formatted_url)
             self._logger.debug("successfully get server response!!!")
 
             datamodel_builder = OpenWeatherMapAPIDataBuilder(json_response=service_jresp)
@@ -142,6 +143,7 @@ class AddWeatherData(object):
 
 # =========== RUN METHOD
     def run(self):
+        self._logger.info(constants.START_MESSAGE)
         opwmap_key = self.openweathermap_keys[0]       # for now, we use only the first API key
         self._logger.debug("API key in use for connecting to server => %s" % repr(opwmap_key))
 
@@ -153,3 +155,4 @@ class AddWeatherData(object):
                 api_key=opwmap_key.key_value,
                 city=city
             )
+        self._logger.info(constants.END_MESSAGE)

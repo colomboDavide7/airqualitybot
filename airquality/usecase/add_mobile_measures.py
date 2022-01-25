@@ -8,11 +8,12 @@
 import logging
 from datetime import datetime
 from typing import Dict, List
+import airquality.usecase as constants
 import airquality.environment as environ
 from airquality.extra.timest import Timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.extra.logger_extra import FileHandlerRotator
 from airquality.url.timeiter_url import AtmotubeTimeIterableURL
 from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
@@ -29,12 +30,12 @@ class AddAtmotubeMeasures(object):
     def __init__(
         self,
         database_gway: DatabaseGateway,
-        server_wrap: APIServerWrapper,
+        url_reader: URLReader,
         timest: Timest
     ):
         self._timest = timest
+        self._url_reader = url_reader
         self._database_gway = database_gway
-        self._server_wrap = server_wrap
         self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
         self._file_handler_rotator = None
@@ -131,12 +132,13 @@ class AddAtmotubeMeasures(object):
 
         for param in self._database_api_param():
             self._safe_rotate_handler(sensor_id=param.sensor_id)
+            self._logger.info(constants.START_MESSAGE)
             self._logger.debug("parameters in use for fetching sensor data => %s" % repr(param))
 
             for url in self._urls_of(param):
                 self._logger.debug("downloading sensor measures at => %s" % url)
 
-                server_jresp = self._server_wrap.json(url=url)
+                server_jresp = self._url_reader.json(url=url)
                 self._logger.debug("successfully get server response!!!")
 
                 datamodel_builder = AtmotubeAPIDataBuilder(json_response=server_jresp)
@@ -158,3 +160,4 @@ class AddAtmotubeMeasures(object):
                     validator=validator,
                     api_param=param
                 )
+            self._logger.info(constants.END_MESSAGE)

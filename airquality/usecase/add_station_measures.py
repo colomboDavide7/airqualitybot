@@ -9,10 +9,11 @@ import logging
 from typing import List, Dict
 from datetime import datetime
 import airquality.environment as env
+import airquality.usecase as constants
 from airquality.extra.timest import Timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.extra.logger_extra import FileHandlerRotator
 from airquality.url.timeiter_url import ThingspeakTimeIterableURL
 from airquality.core.apidata_builder import ThingspeakAPIDataBuilder
@@ -44,12 +45,12 @@ class AddThingspeakMeasures(object):
     def __init__(
         self,
         database_gway: DatabaseGateway,
-        server_wrap: APIServerWrapper,
+        url_reader: URLReader,
         timest: Timest
     ):
         self._timest = timest                               # the date and time handler class.
+        self._url_reader = url_reader                       # the instance that handles download of the sensor data.
         self._database_gway = database_gway                 # the gateway interface for storing data into database.
-        self._server_wrap = server_wrap                     # the instance that handles download of the sensor data.
         self._environ = env.get_environ()                   # the Singleton Environment instance.
         self._logger = logging.getLogger(__name__)          # the Logger instance.
         self._file_handler_rotator = None                   # the file handler rotator associated to the current logger.
@@ -147,15 +148,14 @@ class AddThingspeakMeasures(object):
         self._logger.debug("parameters in use for mapping the measures with database code => %s" % repr(measure_param))
 
         for param in self._database_api_param():
-            self._safe_rotate_handler(
-                sensor_id=param.sensor_id
-            )
+            self._safe_rotate_handler(sensor_id=param.sensor_id)
+            self._logger.info(constants.START_MESSAGE)
             self._logger.debug("parameters in use for fetching sensor data => %s" % repr(param))
 
             for url in self._urls_of(param):
                 self._logger.debug("downloading sensor measures at => %s" % url)
 
-                server_jresp = self._server_wrap.json(url=url)
+                server_jresp = self._url_reader.json(url=url)
                 self._logger.debug("successfully get server response!!!")
 
                 datamodel_builder = ThingspeakAPIDataBuilder(json_response=server_jresp)
@@ -178,3 +178,4 @@ class AddThingspeakMeasures(object):
                     validator=validator,
                     api_param=param
                 )
+        self._logger.info(constants.END_MESSAGE)

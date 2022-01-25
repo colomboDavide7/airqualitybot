@@ -11,7 +11,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.extra.timest import thingspeak_timest
 from airquality.datamodel.apiparam import APIParam
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.usecase.add_station_measures import AddThingspeakMeasures
 
 
@@ -68,6 +68,7 @@ def _mocked_json_response() -> MagicMock:
     """
     mocked_resp = MagicMock()
     mocked_resp.json.return_value = tutils.get_json_response_from_file(filename='thingspeak_response_1A.json')
+    mocked_resp.status_code = 200
     return mocked_resp
 
 
@@ -101,13 +102,13 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
         self._usecase = AddThingspeakMeasures(
             database_gway=self._mocked_database_gway,
             timest=thingspeak_timest(),
-            server_wrap=APIServerWrapper()
+            url_reader=URLReader()
         )
 
 # =========== TEST METHODS
     @patch('airquality.extra.logger_extra.logging')
     @patch('airquality.environment.os')
-    @patch('airquality.url.api_server_wrap.requests.get')
+    @patch('airquality.url.url_reader.requests.get')
     def test_add_thingspeak_measures_usecase(self, mocked_get, mocked_os, mocked_logging):
         mocked_os.environ = _mocked_environ()
         mocked_get.return_value = _mocked_json_response()

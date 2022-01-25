@@ -10,7 +10,7 @@ import sys
 import logging.config
 import airquality.environment as environ
 from airquality.usecase.add_places import AddPlaces
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.usecase.add_station_measures import AddThingspeakMeasures
 from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
@@ -94,14 +94,14 @@ class Application(object):
             if personality == 'purpleair':
                 AddPurpleairFixedSensors(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
-                    server_wrap=APIServerWrapper(),
+                    url_reader=URLReader(),
                     timest=purpleair_timest()
                 ).run()
 
             elif personality == 'atmotube':
                 AddAtmotubeMeasures(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
-                    server_wrap=APIServerWrapper(),
+                    url_reader=URLReader(),
                     timest=atmotube_timest()
                 ).run()
 
@@ -109,7 +109,7 @@ class Application(object):
                 AddThingspeakMeasures(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
                     timest=thingspeak_timest(),
-                    server_wrap=APIServerWrapper()
+                    url_reader=URLReader()
                 ).run()
             elif personality == 'geonames':
                 AddPlaces(
@@ -118,6 +118,6 @@ class Application(object):
             elif personality == 'openweathermap':
                 AddWeatherData(
                     database_gway=DatabaseGateway(database_adapt=database_wrap),
-                    server_wrap=APIServerWrapper(),
+                    url_reader=URLReader(),
                     timest=openweathermap_timest()
                 ).run()

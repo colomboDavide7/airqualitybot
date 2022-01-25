@@ -9,7 +9,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apidata import CityOfGeoarea
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.datamodel.openweathermap_key import OpenweathermapKey
 from airquality.extra.timest import openweathermap_timest
 from airquality.usecase.add_weather_data import AddWeatherData
@@ -28,6 +28,7 @@ def _test_json_response():
 def _mocked_responses() -> MagicMock:
     mocked_r = MagicMock()
     mocked_r.json.return_value = _test_json_response()
+    mocked_r.status_code = 200
     return mocked_r
 
 
@@ -100,14 +101,14 @@ class AddWeatherDataIntegrationTest(TestCase):
         self._mocked_database_gway = _mocked_database_gway()
         self._usecase = AddWeatherData(
             database_gway=self._mocked_database_gway,
-            server_wrap=APIServerWrapper(),
+            url_reader=URLReader(),
             timest=openweathermap_timest()
         )
 
 # =========== TEST METHOD
     @patch('airquality.environment.os')
     @patch('airquality.core.apidata_builder.open')
-    @patch('airquality.url.api_server_wrap.requests.get')
+    @patch('airquality.url.url_reader.requests.get')
     def test_add_weather_data(self, mocked_get, mocked_open, mocked_os):
         mocked_os.environ = {'openweathermap_url': 'fake_url'}
         mocked_get.return_value = _mocked_responses()

@@ -6,7 +6,7 @@
 #
 ######################################################
 import logging
-from psycopg2 import connect
+from psycopg2 import connect, Error
 from abc import ABC, abstractmethod
 
 
@@ -65,9 +65,9 @@ class Psycopg2Adapter(DatabaseAdapter):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._logger.debug('closing database connection')
         self.close()
-        if exc_type is not None:
+        if exc_type is not None and issubclass(exc_type, Error):
             self._logger.exception(exc_val)
-            raise DatabaseError(exc_val) from None
+            raise DatabaseError(exc_val)
 
     def fetchone(self, query: str):
         return self._fetch(query, exec_name='fetchone')

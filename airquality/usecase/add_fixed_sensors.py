@@ -6,10 +6,11 @@
 #
 ######################################################
 import logging
+import airquality.usecase as constant
 import airquality.environment as environ
 from airquality.extra.timest import Timest
 from airquality.database.gateway import DatabaseGateway
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
 from airquality.core.request_validator import AddFixedSensorRequestValidator
@@ -28,11 +29,11 @@ class AddPurpleairFixedSensors(object):
     def __init__(
         self,
         database_gway: DatabaseGateway,
-        server_wrap: APIServerWrapper,
+        url_reader: URLReader,
         timest: Timest
     ):
         self._timest = timest
-        self._server_wrap = server_wrap
+        self._url_reader = url_reader
         self._database_gway = database_gway
         self._environ = environ.get_environ()
         self._logger = logging.getLogger(__name__)
@@ -51,9 +52,10 @@ class AddPurpleairFixedSensors(object):
         )
 
     def run(self) -> None:
+        self._logger.info(constant.START_MESSAGE)
         self._logger.debug("fetching purpleair data at => %s" % self._url_template())
 
-        server_jresp = self._server_wrap.json(url=self._url_template())
+        server_jresp = self._url_reader.json(url=self._url_template())
         self._logger.debug("successfully get server response!!!")
 
         datamodel_builder = PurpleairAPIDataBuilder(json_response=server_jresp)
@@ -71,3 +73,4 @@ class AddPurpleairFixedSensors(object):
         if response_builder:
             self._logger.debug("inserting new sensors!")
             self._database_gway.insert_sensors(responses=response_builder)
+        self._logger.info(constant.END_MESSAGE)

@@ -10,7 +10,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.extra.timest import purpleair_timest
-from airquality.url.api_server_wrap import APIServerWrapper
+from airquality.url.url_reader import URLReader
 from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 
 
@@ -80,14 +80,14 @@ class AddPurpleairFixedSensorsIntegrationTest(TestCase):
         self._mocked_database_gway = _setup_mocked_database_gway()
         self._usecase = AddPurpleairFixedSensors(
             database_gway=self._mocked_database_gway,
-            server_wrap=APIServerWrapper(),
+            url_reader=URLReader(),
             timest=purpleair_timest()
         )
 
 # =========== TEST METHODS
     @patch('airquality.environment.os')
     @patch('airquality.extra.timest.datetime')
-    @patch('airquality.url.api_server_wrap.requests.get')
+    @patch('airquality.url.url_reader.requests.get')
     def test_add_fixed_sensors_usecase(self, mocked_get, mocked_datetime, mocked_os):
         mocked_os.environ = {'purpleair_url': 'fake_url'}
         mocked_get.return_value = _setup_mocked_json_response()
