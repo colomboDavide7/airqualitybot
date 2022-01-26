@@ -5,6 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
+import json
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
@@ -27,7 +28,7 @@ def _test_json_response():
 
 def _mocked_responses() -> MagicMock:
     mocked_r = MagicMock()
-    mocked_r.json.return_value = _test_json_response()
+    mocked_r.content = json.dumps(_test_json_response()).encode('utf-8')
     mocked_r.status_code = 200
     return mocked_r
 

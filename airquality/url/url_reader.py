@@ -4,6 +4,7 @@
 # ======================================
 import logging
 import requests
+import json
 import requests.exceptions
 from airquality.url import HTTP_ERROR_MESSAGES, DEFAULT_ERROR_MESSAGE
 
@@ -40,7 +41,7 @@ class URLReader(object):
         self._logger = logging.getLogger(__name__)
 
     def json(self, url: str):
-        return self._safe_get(url).json()
+        return json.loads(self._safe_get(url).content)
 
     def _safe_get(self, url: str):
         http_response = requests.get(
@@ -53,7 +54,7 @@ class URLReader(object):
                 err_url=url,
                 status_code=http_response.status_code,
                 code_explain=HTTP_ERROR_MESSAGES.get(http_response.status_code, DEFAULT_ERROR_MESSAGE),
-                http_jresp=http_response.json()
+                http_jresp=json.loads(http_response.content)
             )
             self._raise(cause=cause)
         return http_response
