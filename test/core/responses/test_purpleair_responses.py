@@ -31,8 +31,7 @@ def _test_valid_request():
     return AddFixedSensorsRequest(
         type="faketype",
         name="fakename",
-        channels=_test_sensor_api_param(),
-        geolocation=_test_sensor_location()
+        channels=_test_sensor_api_param()
     )
 
 
@@ -59,9 +58,9 @@ def _expected_sensor_api_param_record():
            f"(12, 'key2b', '444', '2B', '{ts}')"
 
 
-def _expected_sensor_location():
-    geom = "ST_GeomFromText('POINT(5.666 1.234)', 4326)"
-    return f"(12, '2021-12-29 19:33:00+01:00', {geom})"
+# def _expected_sensor_location():
+#     geom = "ST_GeomFromText('POINT(5.666 1.234)', 4326)"
+#     return f"(12, '2021-12-29 19:33:00+01:00', {geom})"
 
 
 class TestAddPurpleairSensorsResponseBuilder(TestCase):
@@ -89,10 +88,6 @@ class TestAddPurpleairSensorsResponseBuilder(TestCase):
         self.assertEqual(
             record.apiparam_record,
             _expected_sensor_api_param_record()
-        )
-        self.assertEqual(
-            record.geolocation_record,
-            _expected_sensor_location()
         )
 
 

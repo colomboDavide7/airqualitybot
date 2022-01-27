@@ -32,7 +32,6 @@ class AddFixedSensorsRequest(object):
     name: str                           # The name assigned to the sensor.
     type: str                           # The type assigned to the sensor.
     channels: List[Channel]             # The API parameters of each channel associated to the sensor.
-    geolocation: PostgisGeometry        # The sensor's geolocation in decimal degrees.
 
 
 @dataclass

@@ -44,8 +44,7 @@ def _test_requests():
         AddFixedSensorsRequest(
             type="faketype",
             name=name,
-            channels=_test_sensor_channels(),
-            geolocation=_test_sensor_location()
+            channels=_test_sensor_channels()
         ) for name in _test_requests_sensor_names()]
 
 

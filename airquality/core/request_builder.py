@@ -49,8 +49,7 @@ class AddPurpleairSensorRequestBuilder(IterableItemsABC):
             yield AddFixedSensorsRequest(
                 type="Purpleair/Thingspeak",
                 name=f"{dm.name} ({dm.sensor_index})",
-                channels=channels,
-                geolocation=PostgisPoint(latitude=dm.latitude, longitude=dm.longitude)
+                channels=channels
             )
 
 

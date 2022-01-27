@@ -8,7 +8,6 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.extra.timest import Timest
 from airquality.datamodel.request import Channel
-from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.apidata import PurpleairAPIData
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
 
@@ -17,9 +16,8 @@ def _test_purpleair_datamodel():
     return PurpleairAPIData(
         name="fakename",
         sensor_index=9,
-        latitude=1.234,
-        longitude=5.666,
-        altitude=0,
+        latitude=-74.8888,
+        longitude=12.1111,
         primary_id_a=111,
         primary_key_a="key1a",
         primary_id_b=222,
@@ -40,8 +38,8 @@ def _mocked_datamodel_builder():
 
 def _expected_sensor_api_param():
     tz = tutils.get_tzinfo_from_coordinates(
-        latitude=1.234,
-        longitude=5.666
+        latitude=-74.888,
+        longitude=12.1111
     )
     ts = datetime(2009, 2, 13, 23, 31, 30, tzinfo=tz)
     return [
@@ -50,10 +48,6 @@ def _expected_sensor_api_param():
             Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=ts),
             Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=ts)
         ]
-
-
-def _expected_sensor_location():
-    return PostgisPoint(latitude=1.234, longitude=5.666)
 
 
 class TestAddPurpleairSensorRequestBuilder(TestCase):
@@ -84,10 +78,6 @@ class TestAddPurpleairSensorRequestBuilder(TestCase):
         self.assertEqual(
             req1.channels,
             _expected_sensor_api_param()
-        )
-        self.assertEqual(
-            req1.geolocation,
-            _expected_sensor_location()
         )
 
 

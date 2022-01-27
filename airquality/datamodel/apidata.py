@@ -16,10 +16,9 @@ class PurpleairAPIData(object):
     """
 
     name: str                           # The name assigned to a Purpleair sensor.
-    sensor_index: int                   # The unique number assigned to a Purpleair sensor.
     latitude: float                     # The latitude position value for the sensor.
     longitude: float                    # The longitude position value for the sensor.
-    altitude: float                     # The altitude for the sensor's location in feet.
+    sensor_index: int                   # The unique number assigned to a Purpleair sensor.
     primary_id_a: int                   # ThingSpeak channel ID for storing sensor values.
     primary_key_a: str                  # ThingSpeak read key used for accessing data for the channel.
     primary_id_b: int                   # ThingSpeak channel ID for storing sensor values.
@@ -29,6 +28,18 @@ class PurpleairAPIData(object):
     secondary_id_b: int                 # ThingSpeak channel ID for storing sensor values.
     secondary_key_b: str                # ThingSpeak read key used for accessing data for the channel.
     date_created: int                   # The UNIX time stamp from when the device was created.
+
+
+@dataclass
+class PurpleairLocationData(object):
+    """
+    A *dataclass* that defines the raw datastructure for handling PurpleAir sensor's geolocation.
+    """
+
+    name: str                           # The name assigned to a Purpleair sensor.
+    sensor_index: int                   # The unique number assigned to a Purpleair sensor.
+    latitude: float                     # The latitude position value for the sensor.
+    longitude: float                    # The longitude position value for the sensor.
 
 
 @dataclass

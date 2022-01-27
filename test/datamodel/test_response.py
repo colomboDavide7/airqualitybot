@@ -18,12 +18,10 @@ class TestResponseModel(TestCase):
     def test_add_fixed_sensors_response(self):
         response = AddFixedSensorResponse(
             sensor_record="fake_sensor_record",
-            apiparam_record="fake_apiparam_record",
-            geolocation_record="fake_geo_record"
+            apiparam_record="fake_apiparam_record"
         )
         self.assertEqual(response.sensor_record, "fake_sensor_record")
         self.assertEqual(response.apiparam_record, "fake_apiparam_record")
-        self.assertEqual(response.geolocation_record, "fake_geo_record")
 
     def test_add_mobile_measures_response(self):
         response = AddMobileMeasureResponse(

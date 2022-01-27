@@ -37,9 +37,6 @@ class TestPurpleairAPIDataBuilder(TestCase):
         datamodel = self._builder[0]
         self.assertEqual(datamodel.name, "n1")
         self.assertEqual(datamodel.sensor_index, 1)
-        self.assertEqual(datamodel.latitude, 45.29)
-        self.assertEqual(datamodel.longitude, 9.13)
-        self.assertEqual(datamodel.altitude, 274)
         self.assertEqual(datamodel.primary_id_a, 111)
         self.assertEqual(datamodel.primary_key_a, "key1a1")
         self.assertEqual(datamodel.primary_id_b, 112)

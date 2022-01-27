@@ -38,13 +38,11 @@ class TestAddPurpleairSensorRequest(TestCase):
         request = AddFixedSensorsRequest(
             type="faketype",
             name="fakename",
-            channels=_sensor_channel_test_data(),
-            geolocation=_sensor_location_test_data()
+            channels=_sensor_channel_test_data()
         )
         self.assertEqual(request.type, "faketype")
         self.assertEqual(request.name, "fakename")
         self._assert_channels(request.channels)
-        self.assertEqual(request.geolocation.geom_from_text(), _expected_geom_from_text())
 
 # =========== SUPPORT METHODS
     def _assert_channels(self, channels):

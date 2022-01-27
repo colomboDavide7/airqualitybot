@@ -206,14 +206,12 @@ class DatabaseGateway(object):
         :param responses:               the response builder instance that generates the weather responses.
         """
 
-        sval = pval = gval = ""
+        sval = pval = ""
         for r in responses:
             sval += f"{r.sensor_record},"
             pval += f"{r.apiparam_record},"
-            gval += f"{r.geolocation_record},"
         query = self._safe_format_insert_query(query=queries.INSERT_SENSORS, values=sval.strip(','))
         query += self._safe_format_insert_query(query=queries.INSERT_SENSOR_API_PARAM, values=pval.strip(','))
-        query += self._safe_format_insert_query(query=queries.INSERT_SENSOR_LOCATION, values=gval.strip(','))
         self.database_adapt.execute(query)
 
     def insert_mobile_measures(self, responses: AddMobileMeasureResponseBuilder):

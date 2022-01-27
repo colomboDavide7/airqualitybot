@@ -105,7 +105,6 @@ class AddPurpleairFixedSensorsIntegrationTest(TestCase):
         actual_response = responses[0]
         self.assertEqual(actual_response.sensor_record, _expected_sensor_record())
         self.assertEqual(actual_response.apiparam_record, _expected_apiparam_record())
-        self.assertEqual(actual_response.geolocation_record, _expected_sensor_at_location_record())
 
     def _assert_usecase_properties(self,):
         self.assertEqual(self._usecase.start_sensor_id, 1)

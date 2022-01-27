@@ -12,9 +12,8 @@ class TestPurpleairDatamodel(TestCase):
         data = PurpleairAPIData(
             name="fakename",
             sensor_index=9,
-            latitude=1.234,
-            longitude=5.666,
-            altitude=0,
+            latitude=40,
+            longitude=18,
             primary_id_a=111,
             primary_key_a="key1a",
             primary_id_b=222,
@@ -28,10 +27,9 @@ class TestPurpleairDatamodel(TestCase):
 
         self.assertEqual(data.name, "fakename")
         self.assertEqual(data.sensor_index, 9)
-        self.assertEqual(data.latitude, 1.234)
-        self.assertEqual(data.longitude, 5.666)
-        self.assertEqual(data.altitude, 0)
         self.assertEqual(data.primary_id_a, 111)
+        self.assertEqual(data.latitude, 40.0)
+        self.assertEqual(data.longitude, 18.0)
         self.assertEqual(data.primary_key_a, "key1a")
         self.assertEqual(data.primary_id_b, 222)
         self.assertEqual(data.primary_key_b, "key1b")

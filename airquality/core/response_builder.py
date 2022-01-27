@@ -21,10 +21,10 @@ def apiparam_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
                     for ch in request.channels)
 
 
-def sensor_at_location_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
-    valid_from = Timest.current_utc_timetz()
-    location = request.geolocation.geom_from_text()
-    return f"({sensor_id}, '{valid_from}', {location})"
+# def sensor_at_location_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
+#     valid_from = Timest.current_utc_timetz()
+#     location = request.geolocation.geom_from_text()
+#     return f"({sensor_id}, '{valid_from}', {location})"
 
 
 class AddFixedSensorResponseBuilder(IterableItemsABC):
@@ -48,8 +48,7 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
             sensor_id = next(sensor_id_counter)
             yield AddFixedSensorResponse(
                 sensor_record=f"({sensor_id}, '{req.type}', '{req.name}')",
-                apiparam_record=apiparam_record(sensor_id=sensor_id, request=req),
-                geolocation_record=sensor_at_location_record(sensor_id=sensor_id, request=req)
+                apiparam_record=apiparam_record(sensor_id=sensor_id, request=req)
             )
 
 
