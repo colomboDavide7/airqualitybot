@@ -22,13 +22,14 @@ class PurpleairAPIDataBuilder(IterableItemsABC):
 
     """
 
-    def __init__(self, json_response: Dict[str, Any]):
+    def __init__(self, json_response: Dict[str, Any], item_fact=PurpleairAPIData):
         self._jresp = json_response
         self._fields = self._jresp['fields']
         self._data = self._jresp['data']
+        self._item_fact = item_fact
 
     def items(self) -> Generator[PurpleairAPIData, None, None]:
-        return (PurpleairAPIData(**(dict(zip(self._fields, data)))) for data in self._data)
+        return (self._item_fact(**(dict(zip(self._fields, data)))) for data in self._data)
 
 
 class AtmotubeAPIDataBuilder(IterableItemsABC):

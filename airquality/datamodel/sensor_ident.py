@@ -2,12 +2,31 @@
 # @author:  Davide Colombo
 # @date:    2022-01-23, dom, 15:09
 # ======================================
-from dataclasses import dataclass
+from typing import Tuple
 
 
-@dataclass
 class SensorIdentity(object):
-    sensor_id: int                      # the sensor's unique id.
-    sensor_name: str                    # the sensor's name.
-    sensor_lat: float = None            # the sensor's latitude in decimal degrees (if fixed sensor).
-    sensor_lng: float = None            # the sensor's longitude in decimal degrees (if fixed sensor).
+    def __init__(self, row: Tuple):
+        self._sensor_id = row[0]
+        self._sensor_name = row[1]
+        self._longitude = row[2] if len(row) > 2 else None
+        self._latitude = row[3] if len(row) > 3 else None
+
+    @property
+    def sensor_id(self) -> int:
+        return self._sensor_id
+
+    @property
+    def sensor_name(self) -> str:
+        return self._sensor_name
+
+    @property
+    def sensor_lng(self) -> float:
+        return self._longitude
+
+    @property
+    def sensor_lat(self) -> float:
+        return self._latitude
+
+    def __repr__(self):
+        return f"{type(self).__name__}"

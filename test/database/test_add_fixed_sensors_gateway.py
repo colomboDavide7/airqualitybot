@@ -5,6 +5,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
+from airquality.datamodel.geolocation import Geolocation
 from airquality.datamodel.response import AddFixedSensorResponse
 
 
@@ -14,10 +15,6 @@ def _test_database_sensor_names():
 
 def _expected_sensor_names():
     return {"n1", "n2", "n3"}
-
-
-def _DEPRECATED_geolocation_record() -> str:
-    return "(12, '2019-09-25 17:44:00', NULL, ST_GeomFromText('POINT(-9 36)', 26918))"
 
 
 def _test_add_fixed_sensors_response():
@@ -33,11 +30,6 @@ def _mocked_response_builder() -> MagicMock:
     mocked_rb.__len__.return_value = 1
     mocked_rb.__iter__.return_value = [_test_add_fixed_sensors_response()]
     return mocked_rb
-
-
-def _DEPRECATED_expected_sensor_location_query() -> str:
-    return "INSERT INTO level0_raw.sensor_at_location (sensor_id, valid_from, geom) VALUES " \
-            "(12, '2019-09-25 17:44:00', NULL, ST_GeomFromText('POINT(-9 36)', 26918));"
 
 
 def _expected_insert_sensors_query():
@@ -83,6 +75,14 @@ class TestDatabaseGatewayAddFixedSensorsSection(TestCase):
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         gateway.insert_sensors(responses=_mocked_response_builder())
         mocked_database_adapt.execute.assert_called_with(_expected_insert_sensors_query())
+
+    def test_query_purpleair_location_valid_location_from_sensor_index(self):
+        mocked_database_adapt = MagicMock()
+        mocked_database_adapt.fetchone.return_value = (9.12345, 45.02345)
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
+        geo = gateway.query_purpleair_location(sensor_index=123)
+        self.assertEqual(geo.latitude, 45.02345)
+        self.assertEqual(geo.longitude, 9.12345)
 
 
 if __name__ == '__main__':

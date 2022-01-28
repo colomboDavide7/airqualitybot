@@ -11,17 +11,13 @@ from airquality.extra.logger_extra import _custom_log_filename, number_cleaner, 
 
 def _test_sensor_identity():
     return SensorIdentity(
-        sensor_id=0,
-        sensor_name="n1",
-        sensor_lng=9,
-        sensor_lat=10
+        row=(0, 'n1', 9, 10)
     )
 
 
 def _test_sensor_identity_2():
     return SensorIdentity(
-        sensor_id=1,
-        sensor_name="n2"
+        row=(1, 'n2')
     )
 
 

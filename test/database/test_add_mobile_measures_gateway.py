@@ -44,8 +44,7 @@ def _expected_insert_mobile_measures_query():
 
 def _expected_mobile_sensor_unique_info():
     return SensorIdentity(
-        sensor_id=0,
-        sensor_name='fake_name'
+        row=(0, 'fake_name')
     )
 
 
@@ -88,10 +87,9 @@ class TestDatabaseGatewayAddMobileMeasuresSection(TestCase):
         mocked_database_adapt = MagicMock()
         mocked_database_adapt.fetchone.return_value = (0, 'fake_name')
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        self.assertEqual(
-            gateway.query_mobile_sensor_unique_info(sensor_id=0),
-            _expected_mobile_sensor_unique_info()
-        )
+        ident = gateway.query_mobile_sensor_unique_info(sensor_id=0)
+        self.assertEqual(ident.sensor_id, 0)
+        self.assertEqual(ident.sensor_name, 'fake_name')
 
     def test_query_one_when_max_packet_id_is_none(self):
         mocked_database_adapt = MagicMock()

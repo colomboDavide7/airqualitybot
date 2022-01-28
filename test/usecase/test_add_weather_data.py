@@ -55,9 +55,7 @@ def _test_opwmap_key():
 
 def _test_database_geolocation_of_city():
     return CityOfGeoarea(
-        geoarea_id=14400,
-        latitude=0.0,
-        longitude=0.0
+        row=(14400, 0.0, 0.0)
     )
 
 

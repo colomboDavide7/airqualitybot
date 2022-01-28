@@ -37,6 +37,12 @@
             "formatter": "short",
             "filename": "./log/openweathermap/report.log",
             "class": "logging.FileHandler"
+        },
+        "purp_update_report": {
+            "level": "DEBUG",
+            "formatter": "short",
+            "filename": "./log/purp_update/report.log",
+            "class": "logging.FileHandler"
         }
     },
     "loggers": {
@@ -58,6 +64,11 @@
         "airquality.usecase.add_weather_data": {
             "level": "DEBUG",
             "handlers": ["opwmap_report"],
+            "propagate": true
+        },
+        "airquality.usecase.update_purpleair_location": {
+            "level": "DEBUG",
+            "handlers": ["purp_update_report"],
             "propagate": true
         }
     }

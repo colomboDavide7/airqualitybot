@@ -14,6 +14,7 @@ from airquality.url.url_reader import URLReader
 from airquality.usecase.add_station_measures import AddThingspeakMeasures
 from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
 from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
+from airquality.usecase.update_purpleair_location import UpdatePurpleairLocation
 from airquality.usecase.add_weather_data import AddWeatherData
 from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
@@ -89,35 +90,40 @@ class Application(object):
             password=self._environ.dbpwd,
             host=self._environ.dbhost,
             port=self._environ.dbport
-        ) as database_wrap:
+        ) as psycopg2_adapt:
             self._logger.debug("running %s" % personality)
             if personality == 'purpleair':
                 AddPurpleairFixedSensors(
-                    database_gway=DatabaseGateway(database_adapt=database_wrap),
+                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
                     url_reader=URLReader(),
                     timest=purpleair_timest()
                 ).run()
 
             elif personality == 'atmotube':
                 AddAtmotubeMeasures(
-                    database_gway=DatabaseGateway(database_adapt=database_wrap),
+                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
                     url_reader=URLReader(),
                     timest=atmotube_timest()
                 ).run()
 
             elif personality == 'thingspeak':
                 AddThingspeakMeasures(
-                    database_gway=DatabaseGateway(database_adapt=database_wrap),
+                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
                     timest=thingspeak_timest(),
                     url_reader=URLReader()
                 ).run()
             elif personality == 'geonames':
                 AddPlaces(
-                    database_gway=DatabaseGateway(database_adapt=database_wrap)
+                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt)
                 ).run()
             elif personality == 'openweathermap':
                 AddWeatherData(
-                    database_gway=DatabaseGateway(database_adapt=database_wrap),
+                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
                     url_reader=URLReader(),
                     timest=openweathermap_timest()
+                ).run()
+            elif personality == 'purp_update':
+                UpdatePurpleairLocation(
+                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
+                    url_reader=URLReader(),
                 ).run()

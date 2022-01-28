@@ -17,6 +17,7 @@ SELECT_POSCODES_OF = "SELECT postal_code FROM level0_raw.geographical_area WHERE
 SELECT_GEOLOCATION_OF = "SELECT id, ST_X(geom), ST_Y(geom) FROM level0_raw.geographical_area WHERE country_code = '{country}' AND place_name = '{place}';"
 SELECT_FIXED_SENSOR_UNIQUE_INFO = "SELECT s.id, s.sensor_name, ST_X(l.geom), ST_Y(l.geom) FROM level0_raw.sensor AS s INNER JOIN level0_raw.sensor_at_location AS l ON s.id = l.sensor_id WHERE l.sensor_id = {sid} AND l.valid_to IS NULL;"
 SELECT_MOBILE_SENSOR_UNIQUE_INFO = "SELECT id, sensor_name FROM level0_raw.sensor WHERE id = {sid};"
+SELECT_PURPLEAIR_LOCATION = "SELECT ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l INNER JOIN level0_raw.sensor AS s ON s.id = l.sensor_id WHERE s.sensor_type ILIKE '%purpleair%' AND sensor_name ILIKE '%{idx}%' ORDER BY l.valid_from DESC;"
 
 # =========== INSERT QUERIES
 INSERT_SENSORS = "INSERT INTO level0_raw.sensor VALUES {val};"

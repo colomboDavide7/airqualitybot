@@ -19,7 +19,7 @@ class URLReadError(Exception):
     pass
 
 
-def _fmt_url_read_error_msg(
+def _format_url_read_error(
     err_url: str,                       # The URL that causes the error.
     status_code: int,                   # The HTTP response status code.
     code_explain: str,                  # The HTTP status code text explanation.
@@ -41,20 +41,24 @@ class URLReader(object):
         self._logger = logging.getLogger(__name__)
 
     def json(self, url: str):
-        return json.loads(self._safe_get(url).content)
+        return json.loads(
+            s=self._http_response_of(url).content
+        )
 
-    def _safe_get(self, url: str):
+    def _http_response_of(self, url: str) -> requests.Response:
         http_response = requests.get(
             url=url,
             timeout=self._timeout_in_seconds,
             headers={'Connection': 'close'}
         )
         if 400 <= http_response.status_code < 600:
-            cause = _fmt_url_read_error_msg(
+            content = http_response.content
+            status = http_response.status_code
+            cause = _format_url_read_error(
                 err_url=url,
-                status_code=http_response.status_code,
-                code_explain=HTTP_ERROR_MESSAGES.get(http_response.status_code, DEFAULT_ERROR_MESSAGE),
-                http_jresp=json.loads(http_response.content)
+                status_code=status,
+                code_explain=HTTP_ERROR_MESSAGES.get(status, DEFAULT_ERROR_MESSAGE),
+                http_jresp=json.loads(content) if content is not None else ""
             )
             self._raise(cause=cause)
         return http_response

@@ -6,7 +6,7 @@
 #
 ######################################################
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 
 @dataclass
@@ -36,7 +36,6 @@ class PurpleairLocationData(object):
     A *dataclass* that defines the raw datastructure for handling PurpleAir sensor's geolocation.
     """
 
-    name: str                           # The name assigned to a Purpleair sensor.
     sensor_index: int                   # The unique number assigned to a Purpleair sensor.
     latitude: float                     # The latitude position value for the sensor.
     longitude: float                    # The longitude position value for the sensor.
@@ -194,12 +193,27 @@ class WeatherCityData(object):
         return f"{type(self).__name__}(country_code={self.country_code}, place_name={self.place_name})"
 
 
-@dataclass
 class CityOfGeoarea(object):
     """
-    A *dataclass* that defines the raw datastructure for the database information of a city.
+    A class that defines the raw datastructure for the database information of a city.
     """
 
-    geoarea_id: int                                 # The database unique id that identifies a city.
-    longitude: float                                # The city's longitude.
-    latitude: float                                 # The city's latitude.
+    def __init__(self, row: Tuple):
+        self._geoarea_id = row[0]
+        self._longitude = row[1]
+        self._latitude = row[2]
+
+    @property
+    def latitude(self) -> float:
+        return self._latitude
+
+    @property
+    def longitude(self) -> float:
+        return self._longitude
+
+    @property
+    def geoarea_id(self) -> int:
+        return self._geoarea_id
+
+    def __repr__(self):
+        return f"{type(self).__name__}"

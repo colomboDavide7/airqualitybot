@@ -36,10 +36,7 @@ def _expected_query():
 
 def _expected_fixed_sensor_unique_info():
     return SensorIdentity(
-        sensor_id=0,
-        sensor_name='fake_name',
-        sensor_lat=44,
-        sensor_lng=-9
+        row=(0, 'fake_name', -9, 44)
     )
 
 
@@ -75,10 +72,11 @@ class TestDatabaseGatewayAddStationMeasuresSection(TestCase):
         mocked_database_adapt = MagicMock()
         mocked_database_adapt.fetchone.return_value = (0, 'fake_name', -9, 44)
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        self.assertEqual(
-            gateway.query_fixed_sensor_unique_info(sensor_id=0),
-            _expected_fixed_sensor_unique_info()
-        )
+        ident = gateway.query_fixed_sensor_unique_info(sensor_id=0)
+        self.assertEqual(ident.sensor_id, 0)
+        self.assertEqual(ident.sensor_name, 'fake_name')
+        self.assertEqual(ident.sensor_lng, -9.0)
+        self.assertEqual(ident.sensor_lat, 44.0)
 
 
 if __name__ == '__main__':
