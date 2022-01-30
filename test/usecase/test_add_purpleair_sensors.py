@@ -10,8 +10,6 @@ import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.extra.timest import purpleair_timest
-from airquality.url.url_reader import URLReader
 from airquality.usecase.add_purpleair_sensors import AddPurpleairFixedSensors
 
 
@@ -51,8 +49,14 @@ def _expected_sensor_record() -> str:
     return "(1, 'Purpleair/Thingspeak', 'n3 (3)')"
 
 
-def _expected_sensor_at_location_record() -> str:
-    return "(1, '2021-12-29 19:33:00+01:00', ST_GeomFromText('POINT(9.12 45.24)', 4326))"
+# def _expected_sensor_at_location_record() -> str:
+#     return "(1, '2021-12-29 19:33:00+01:00', ST_GeomFromText('POINT(9.12 45.24)', 4326))"
+
+
+def _expected_insert_sensors_query():
+    return f"INSERT INTO level0_raw.sensor VALUES {_expected_sensor_record()};" \
+            "INSERT INTO level0_raw.sensor_api_param (sensor_id, ch_key, ch_id, ch_name, last_acquisition) VALUES " \
+            f"{_expected_apiparam_record()};"
 
 
 def _test_existing_sensor_names():
@@ -67,7 +71,7 @@ def _setup_mocked_database_gway() -> MagicMock:
     mocked_gateway = MagicMock()
     mocked_gateway.query_max_sensor_id_plus_one.return_value = _test_max_sensor_id_plus_one()
     mocked_gateway.query_sensor_names_of_type.return_value = _test_existing_sensor_names()
-    mocked_gateway.insert_sensors = MagicMock()
+    mocked_gateway.execute = MagicMock()
     return mocked_gateway
 
 
@@ -79,11 +83,7 @@ class AddPurpleairFixedSensorsIntegrationTest(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _setup_mocked_database_gway()
-        self._usecase = AddPurpleairFixedSensors(
-            database_gway=self._mocked_database_gway,
-            url_reader=URLReader(),
-            timest=purpleair_timest()
-        )
+        self._usecase = AddPurpleairFixedSensors(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHODS
     @patch('airquality.environment.os')
@@ -100,17 +100,17 @@ class AddPurpleairFixedSensorsIntegrationTest(TestCase):
 
 # =========== SUPPORT METHODS
     def _assert_responses(self):
-        responses = self._mocked_database_gway.insert_sensors.call_args[1]['responses']
-        self.assertEqual(len(responses), 1)
-        actual_response = responses[0]
-        self.assertEqual(actual_response.sensor_record, _expected_sensor_record())
-        self.assertEqual(actual_response.apiparam_record, _expected_apiparam_record())
+        query = self._mocked_database_gway.execute.call_args[0][0]
+        self.assertEqual(
+            query,
+            _expected_insert_sensors_query()
+        )
 
     def _assert_usecase_properties(self,):
-        self.assertEqual(self._usecase.start_sensor_id, 1)
-        self.assertEqual(len(self._usecase.names_of), 2)
-        self.assertIn('n1 (1)', self._usecase.names_of)
-        self.assertIn('n2 (2)', self._usecase.names_of)
+        self.assertEqual(self._usecase._start_sensor_id, 1)
+        self.assertEqual(len(self._usecase._database_sensor_names), 2)
+        self.assertIn('n1 (1)', self._usecase._database_sensor_names)
+        self.assertIn('n2 (2)', self._usecase._database_sensor_names)
 
 
 if __name__ == '__main__':

@@ -23,6 +23,7 @@ from airquality.core.response_builder import AddMobileMeasureResponseBuilder
 
 _ENVIRON = environ.get_environ()
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.setLevel(logging.DEBUG)
 _FILE_ROTATOR = FileHandlerRotator(
     logger_name=_LOGGER.name,
     logger_level=_LOGGER.level,
@@ -81,7 +82,6 @@ class AddAtmotubeMeasures(UsecaseABC):
             self._rotate_file(sensor_id=param.sensor_id)
             _LOGGER.info(constants.START_MESSAGE)
             _LOGGER.debug("parameters in use for fetching sensor data => %s" % repr(param))
-
             for url in self._urls_of(param):
                 _LOGGER.debug("downloading sensor measures at => %s" % url)
 

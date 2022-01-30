@@ -82,9 +82,8 @@ class FileHandlerRotator(object):
 
         if self._cached_file_handler is not None:
             self._detach_handler()
-
         self._cached_file_handler = logging.FileHandler(filename=self._fullpath(filename))
-        self._cached_file_handler.formatter = logging.Formatter(fmt=self._logger_fmt)
+        self._cached_file_handler.setFormatter(fmt=logging.Formatter(fmt=self._logger_fmt))
         self._cached_file_handler.setLevel(level=self._logger_level)
         self._logger.addHandler(self._cached_file_handler)
 

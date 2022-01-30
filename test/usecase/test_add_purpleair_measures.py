@@ -10,9 +10,7 @@ import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.extra.timest import thingspeak_timest
 from airquality.datamodel.apiparam import APIParam
-from airquality.url.url_reader import URLReader
 from airquality.usecase.add_purpleair_measures import AddPurpleairMeasures
 
 
@@ -101,11 +99,7 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
-        self._usecase = AddPurpleairMeasures(
-            database_gway=self._mocked_database_gway,
-            timest=thingspeak_timest(),
-            url_reader=URLReader()
-        )
+        self._usecase = AddPurpleairMeasures(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHODS
     @patch('airquality.extra.logger_extra.logging')
@@ -126,8 +120,8 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
 
     def _assert_usecase_properties(self):
         self.assertEqual(self._usecase._packet_id(), 140)
-        self.assertEqual(self._usecase._database_api_param(), [_test_sensor_api_param()])
-        self.assertEqual(self._usecase._database_measure_param(), _test_measure_param())
+        self.assertEqual(self._usecase._api_param, [_test_sensor_api_param()])
+        self.assertEqual(self._usecase._measure_param, _test_measure_param())
 
 
 if __name__ == '__main__':

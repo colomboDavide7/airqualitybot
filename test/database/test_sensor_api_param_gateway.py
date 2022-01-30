@@ -40,20 +40,6 @@ def _expected_sensor_api_param():
 class TestDatabaseGatewaySensorAPIParamSection(TestCase):
 
 # =========== TEST METHODS
-    def test_update_last_acquisition(self):
-        mocked_database_adapt = MagicMock()
-        mocked_database_adapt.execute = MagicMock()
-        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        gateway.update_last_acquisition_of(
-            timestamp=_fake_last_acquisition_datetime(),
-            sensor_id=12,
-            ch_name="fakename"
-        )
-        self.assertEqual(
-            mocked_database_adapt.execute.call_args[1]['query'],
-            _expected_update_last_acq_query()
-        )
-
     def test_get_last_acquisition_timestamp_of_sensor_channel(self):
         mocked_database_adapt = MagicMock()
         mocked_database_adapt.fetchone.return_value = (_fake_last_acquisition_datetime(),)

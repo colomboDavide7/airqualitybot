@@ -11,8 +11,6 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
-from airquality.extra.timest import atmotube_timest
-from airquality.url.url_reader import URLReader
 from airquality.usecase.add_atmotube_measures import AddAtmotubeMeasures
 
 
@@ -128,11 +126,7 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
-        self._usecase = AddAtmotubeMeasures(
-            database_gway=self._mocked_database_gway,
-            url_reader=URLReader(),
-            timest=atmotube_timest()
-        )
+        self._usecase = AddAtmotubeMeasures(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHODS
     @patch('airquality.extra.logger_extra.logging')
@@ -152,8 +146,8 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
         self.assertEqual(responses[0].measure_record, _expected_measure_record())
 
     def _assert_usecase_properties(self):
-        self.assertEqual(self._usecase._database_measure_param(), _test_measure_param())
-        self.assertEqual(self._usecase._database_api_param(), [_test_sensor_api_param()])
+        self.assertEqual(self._usecase._measure_param, _test_measure_param())
+        self.assertEqual(self._usecase._api_param, [_test_sensor_api_param()])
 
 
 if __name__ == '__main__':

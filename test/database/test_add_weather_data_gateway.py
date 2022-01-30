@@ -58,52 +58,24 @@ def _mocked_response_builder() -> MagicMock:
     return mocked_rb
 
 
-def _expected_insert_weather_data_query():
-    return "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, " \
-            "humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) " \
-           f"VALUES {_test_current_weather_record()};" \
-            "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, " \
-            "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-           f"VALUES {_test_hourly_forecast_record()};" \
-            "INSERT INTO level0_raw.daily_forecast " \
-           "(geoarea_id, weather_id, temperature, min_temp, max_temp, " \
-            "pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-           f"VALUES {_test_daily_forecast_record()};" \
-           f"INSERT INTO level0_raw.weather_alert (geoarea_id, sender_name, alert_event, alert_begin, " \
-           f"alert_until, description) VALUES {_test_weather_alert_record()};"
+# def _expected_insert_weather_data_query():
+#     return "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, " \
+#             "humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) " \
+#            f"VALUES {_test_current_weather_record()};" \
+#             "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, " \
+#             "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+#            f"VALUES {_test_hourly_forecast_record()};" \
+#             "INSERT INTO level0_raw.daily_forecast " \
+#            "(geoarea_id, weather_id, temperature, min_temp, max_temp, " \
+#             "pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+#            f"VALUES {_test_daily_forecast_record()};" \
+#            f"INSERT INTO level0_raw.weather_alert (geoarea_id, sender_name, alert_event, alert_begin, " \
+#            f"alert_until, description) VALUES {_test_weather_alert_record()};"
 
 
 class TestDatabaseGatewayAddWeatherDataSection(TestCase):
 
 # =========== TEST METHODS
-    def test_safe_format_insert_query(self):
-        gateway = DatabaseGateway(database_adapt=MagicMock())
-        self.assertEqual(
-            gateway._safe_format_insert_query(query="fake query {val};", values="this is my sql value"),
-            "fake query this is my sql value;"
-        )
-
-    def test_empty_query_if_values_is_empty(self):
-        gateway = DatabaseGateway(database_adapt=MagicMock())
-        self.assertEqual(
-            gateway._safe_format_insert_query(query="fake query {val};", values=""),
-            ""
-        )
-
-    def test_delete_all_from_hourly_weather_forecast(self):
-        mocked_database_adapt = MagicMock()
-        mocked_database_adapt.execute = MagicMock()
-        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        gateway.delete_all_from_hourly_weather_forecast()
-        mocked_database_adapt.execute.assert_called_with(_expected_delete_hourly_forecast_query())
-
-    def test_delete_all_from_daily_weather_forecast(self):
-        mocked_database_adapt = MagicMock()
-        mocked_database_adapt.execute = MagicMock()
-        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        gateway.delete_all_from_daily_weather_forecast()
-        mocked_database_adapt.execute.assert_called_with(_expected_delete_daily_forecast_query())
-
     def test_get_weather_conditions(self):
         mocked_database_adapt = MagicMock()
         mocked_database_adapt.fetchall.return_value = _test_database_weather_conditions()
@@ -119,13 +91,6 @@ class TestDatabaseGatewayAddWeatherDataSection(TestCase):
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         with self.assertRaises(ValueError):
             gateway.query_weather_conditions()
-
-    def test_insert_weather_data(self):
-        mocked_database_adapt = MagicMock()
-        mocked_database_adapt.execute = MagicMock()
-        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        gateway.insert_weather_data(responses=_mocked_response_builder())
-        mocked_database_adapt.execute.assert_called_with(_expected_insert_weather_data_query())
 
 
 if __name__ == '__main__':

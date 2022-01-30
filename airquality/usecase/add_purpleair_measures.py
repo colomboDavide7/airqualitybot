@@ -24,6 +24,7 @@ from airquality.core.response_builder import AddStationMeasuresResponseBuilder
 
 _ENVIRON = environ.get_environ()
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.setLevel(logging.DEBUG)
 _FILE_ROTATOR = FileHandlerRotator(
     logger_name=_LOGGER.name,
     logger_level=_LOGGER.level,

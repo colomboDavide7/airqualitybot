@@ -17,12 +17,6 @@ def _expected_queried_measure_param():
     return {'c1': 1, 'c2': 2}
 
 
-def _test_mobile_record():
-    return "(13, 1, '0.17', '2021-10-11 09:44:00', ST_GeomFromText('POINT(-12 37)', 26918)), " \
-           "(13, 2, '8', '2021-10-11 09:44:00', ST_GeomFromText('POINT(-12.09 37.11)', 26918)), " \
-           "(13, 6, '24', '2021-10-11 09:44:00', ST_GeomFromText('POINT(-12.34 37.87)', 26918))"
-
-
 def _test_add_mobile_measures_response():
     return AddMobileMeasureResponse(
         measure_record=_test_mobile_record()
@@ -36,10 +30,16 @@ def _mocked_response_builder() -> MagicMock:
     return mocked_rb
 
 
-def _expected_insert_mobile_measures_query():
-    return "INSERT INTO level0_raw.mobile_measurement " \
-           "(packet_id, param_id, param_value, timestamp, geom) " \
-           f"VALUES {_test_mobile_record()};"
+def _test_mobile_record():
+    return "(13, 1, '0.17', '2021-10-11 09:44:00', ST_GeomFromText('POINT(-12 37)', 26918)), " \
+           "(13, 2, '8', '2021-10-11 09:44:00', ST_GeomFromText('POINT(-12.09 37.11)', 26918)), " \
+           "(13, 6, '24', '2021-10-11 09:44:00', ST_GeomFromText('POINT(-12.34 37.87)', 26918))"
+
+
+# def _expected_insert_mobile_measures_query():
+#     return "INSERT INTO level0_raw.mobile_measurement " \
+#            "(packet_id, param_id, param_value, timestamp, geom) " \
+#            f"VALUES {_test_mobile_record()};"
 
 
 def _expected_mobile_sensor_unique_info():
@@ -66,13 +66,6 @@ class TestDatabaseGatewayAddMobileMeasuresSection(TestCase):
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         with self.assertRaises(ValueError):
             gateway.query_measure_param_owned_by(owner="fakeowner")
-
-    def test_insert_mobile_sensor_measures(self):
-        mocked_database_adapt = MagicMock()
-        mocked_database_adapt.execute = MagicMock()
-        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        gateway.insert_mobile_measures(responses=_mocked_response_builder())
-        mocked_database_adapt.execute.assert_called_with(_expected_insert_mobile_measures_query())
 
     def test_get_max_mobile_packet_id_plus_one(self):
         mocked_database_adapt = MagicMock()

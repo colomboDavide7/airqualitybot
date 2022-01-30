@@ -30,10 +30,10 @@ def _mocked_response_builder() -> MagicMock:
     return mocked_rb
 
 
-def _expected_insert_places_query():
-    return "INSERT INTO level0_raw.geographical_area " \
-           "(postal_code, country_code, place_name, province, state, geom) " \
-           f"VALUES {_test_place_record()};"
+# def _expected_insert_places_query():
+#     return "INSERT INTO level0_raw.geographical_area " \
+#            "(postal_code, country_code, place_name, province, state, geom) " \
+#            f"VALUES {_test_place_record()};"
 
 
 def _test_weather_city_data():
@@ -56,13 +56,6 @@ class TestDatabaseGatewayAddPlacesSection(TestCase):
         self.assertIn("p2", actual)
         self.assertIn("p3", actual)
         self.assertNotIn('p4', actual)
-
-    def test_insert_places(self):
-        mocked_database_adapt = MagicMock()
-        mocked_database_adapt.execute = MagicMock()
-        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        gateway.insert_places(responses=_mocked_response_builder())
-        mocked_database_adapt.execute.assert_called_with(_expected_insert_places_query())
 
     def test_get_geolocation_of(self):
         mocked_database_adapt = MagicMock()

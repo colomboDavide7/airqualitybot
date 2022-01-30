@@ -60,8 +60,8 @@ class TestAddPlaces(TestCase):
 
 # =========== TEST METHODS
     @patch('airquality.environment.os')
-    @patch('airquality.usecase.add_places.listdir')
-    @patch('airquality.usecase.add_places.isfile')
+    @patch('airquality.usecase.add_geonames_places.listdir')
+    @patch('airquality.usecase.add_geonames_places.isfile')
     @patch('airquality.core.apidata_builder.open')
     def test_run_add_fixed_sensors_usecase(self, mocked_open, mocked_isfile, mocked_listdir, mocked_os):
         mocked_os.environ = _mocked_environ()

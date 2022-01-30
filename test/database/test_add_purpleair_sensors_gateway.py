@@ -5,7 +5,6 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
-from airquality.datamodel.geolocation import Geolocation
 from airquality.datamodel.response import AddFixedSensorResponse
 
 
@@ -30,13 +29,6 @@ def _mocked_response_builder() -> MagicMock:
     mocked_rb.__len__.return_value = 1
     mocked_rb.__iter__.return_value = [_test_add_fixed_sensors_response()]
     return mocked_rb
-
-
-def _expected_insert_sensors_query():
-    return "INSERT INTO level0_raw.sensor VALUES (12, 'faketype', 'fakename');" \
-            "INSERT INTO level0_raw.sensor_api_param (sensor_id, ch_key, ch_id, ch_name, last_acquisition) VALUES " \
-            "(12, 'key1', 'ident1', 'name1', '2018-12-13 18:19:00')," \
-           "(12, 'key2', 'ident2', 'name2', '2018-12-13 18:19:00');"
 
 
 class TestDatabaseGatewayAddFixedSensorsSection(TestCase):
@@ -68,13 +60,6 @@ class TestDatabaseGatewayAddFixedSensorsSection(TestCase):
             gateway.query_max_sensor_id_plus_one(),
             1
         )
-
-    def test_insert_sensors(self):
-        mocked_database_adapt = MagicMock()
-        mocked_database_adapt.execute = MagicMock()
-        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        gateway.insert_sensors(responses=_mocked_response_builder())
-        mocked_database_adapt.execute.assert_called_with(_expected_insert_sensors_query())
 
     def test_query_purpleair_location_valid_location_from_sensor_index(self):
         mocked_database_adapt = MagicMock()

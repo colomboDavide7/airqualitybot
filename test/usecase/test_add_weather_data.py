@@ -10,9 +10,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apidata import CityOfGeoarea
-from airquality.url.url_reader import URLReader
 from airquality.datamodel.openweathermap_key import OpenweathermapKey
-from airquality.extra.timest import openweathermap_timest
 from airquality.usecase.add_weather_data import AddWeatherData
 
 
@@ -98,11 +96,7 @@ class AddWeatherDataIntegrationTest(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
-        self._usecase = AddWeatherData(
-            database_gway=self._mocked_database_gway,
-            url_reader=URLReader(),
-            timest=openweathermap_timest()
-        )
+        self._usecase = AddWeatherData(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHOD
     @patch('airquality.environment.os')
@@ -135,7 +129,7 @@ class AddWeatherDataIntegrationTest(TestCase):
 
     def _assert_usecase_properties(self):
         self.assertEqual(
-            self._usecase._weather_map,
+            self._usecase._cached_weather_map,
             _expected_weather_map()
         )
 

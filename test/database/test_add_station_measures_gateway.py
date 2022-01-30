@@ -28,10 +28,10 @@ def _mocked_response_builder():
     return mocked_rb
 
 
-def _expected_query():
-    return "INSERT INTO level0_raw.station_measurement " \
-           "(packet_id, sensor_id, param_id, param_value, timestamp) " \
-           f"VALUES {_test_measure_record()};"
+# def _expected_query():
+#     return "INSERT INTO level0_raw.station_measurement " \
+#            "(packet_id, sensor_id, param_id, param_value, timestamp) " \
+#            f"VALUES {_test_measure_record()};"
 
 
 def _expected_fixed_sensor_unique_info():
@@ -60,13 +60,6 @@ class TestDatabaseGatewayAddStationMeasuresSection(TestCase):
             gateway.query_max_station_packet_id_plus_one(),
             1
         )
-
-    def test_insert_station_measures(self):
-        mocked_database_adapt = MagicMock()
-        mocked_database_adapt.execute = MagicMock()
-        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        gateway.insert_station_measures(responses=_mocked_response_builder())
-        mocked_database_adapt.execute.assert_called_with(_expected_query())
 
     def test_query_fixed_sensor_unique_info(self):
         mocked_database_adapt = MagicMock()
