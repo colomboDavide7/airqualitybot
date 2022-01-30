@@ -135,7 +135,7 @@ class AddWeatherDataIntegrationTest(TestCase):
 
     def _assert_usecase_properties(self):
         self.assertEqual(
-            self._usecase.weather_map,
+            self._usecase._weather_map,
             _expected_weather_map()
         )
 

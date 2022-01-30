@@ -5,20 +5,21 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import json
 import sys
 import logging.config
 import airquality.environment as environ
-from airquality.usecase.add_places import AddPlaces
-from airquality.url.url_reader import URLReader
-from airquality.usecase.add_station_measures import AddThingspeakMeasures
-from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
-from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
-from airquality.usecase.update_purpleair_location import UpdatePurpleairLocation
+from airquality.usecase.add_geonames_places import AddGeonamesPlaces
+from airquality.usecase.add_purpleair_measures import AddPurpleairMeasures
+from airquality.usecase.add_purpleair_sensors import AddPurpleairFixedSensors
+from airquality.usecase.add_atmotube_measures import AddAtmotubeMeasures
+from airquality.usecase.update_purpleair_locations import UpdatePurpleairLocation
 from airquality.usecase.add_weather_data import AddWeatherData
 from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
-from airquality.extra.timest import purpleair_timest, atmotube_timest, thingspeak_timest, openweathermap_timest
+
+
+_LOGGER = logging.getLogger(__name__)
+_ENVIRON = environ.get_environ()
 
 
 class WrongUsageError(Exception):
@@ -29,36 +30,8 @@ class WrongUsageError(Exception):
 
 
 class Application(object):
-    """
-    A class that glues together all the application business classes and prepare the 'ground' for the execution.
-
-    Keyword arguments:
-        *env*:                  the Environment instance that defines the boundary interface
-                                for interacting with the '.env' file.
-
-    Instance variables:
-        *_args*                 the list of command line arguments excluded the very first, i.e. program name.
-        *_logger*               the logging.Logger instance that performs auditing about the application run.
-        *_exit_code*            the status code at the end of the application: 0 => OK, 1 => Error
-
-    Raises:
-        *WrongUsageError*       for stopping the application flow in case of wrong usage.
-
-    This class implements the *context_manager* interface (__enter__, __exit__) in order
-    to collect all the exceptions received and safely performs cleanup actions.
-
-    Logger:
-
-    The Logger is configured from the 'logger_conf.json' file, be sure that file exists at the root level.
-
-    """
-
     def __init__(self):
-        with open('logger_conf.json', 'r') as fconf:
-            logging.config.dictConfig(json.load(fconf))
         self._args = sys.argv[1:]
-        self._environ = environ.get_environ()
-        self._logger = logging.getLogger(__name__)
         self._exit_code = 0
 
 # =========== CONTEXT MANAGER INTERFACE
@@ -68,10 +41,10 @@ class Application(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
             self._exit_code = 1
-            self._logger.exception(exc_val)
+            _LOGGER.exception(exc_val)
             if exc_type == WrongUsageError:
-                print(self._environ.program_usage_msg)
-        self._logger.debug("finish with exit code %d" % self._exit_code)
+                print(_ENVIRON.program_usage_msg)
+        _LOGGER.debug("finish with exit code %d" % self._exit_code)
         logging.shutdown()
         sys.exit(self._exit_code)
 
@@ -81,49 +54,26 @@ class Application(object):
             raise WrongUsageError("[FATAL]: missing 'personality' argument!!!")
 
         personality = self._args[0]
-        if personality not in self._environ.valid_personalities:
+        if personality not in _ENVIRON.valid_personalities:
             raise WrongUsageError("[FATAL]: invalid 'personality' argument!!!")
 
         with Psycopg2Adapter(
-            dbname=self._environ.dbname,
-            user=self._environ.dbuser,
-            password=self._environ.dbpwd,
-            host=self._environ.dbhost,
-            port=self._environ.dbport
+            dbname=_ENVIRON.dbname,
+            user=_ENVIRON.dbuser,
+            password=_ENVIRON.dbpwd,
+            host=_ENVIRON.dbhost,
+            port=_ENVIRON.dbport
         ) as psycopg2_adapt:
-            self._logger.debug("running %s" % personality)
+            database_gway = DatabaseGateway(database_adapt=psycopg2_adapt)
             if personality == 'purpleair':
-                AddPurpleairFixedSensors(
-                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
-                    url_reader=URLReader(),
-                    timest=purpleair_timest()
-                ).run()
-
+                AddPurpleairFixedSensors(database_gway=database_gway).run()
             elif personality == 'atmotube':
-                AddAtmotubeMeasures(
-                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
-                    url_reader=URLReader(),
-                    timest=atmotube_timest()
-                ).run()
-
+                AddAtmotubeMeasures(database_gway=database_gway).run()
             elif personality == 'thingspeak':
-                AddThingspeakMeasures(
-                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
-                    timest=thingspeak_timest(),
-                    url_reader=URLReader()
-                ).run()
+                AddPurpleairMeasures(database_gway=database_gway).run()
             elif personality == 'geonames':
-                AddPlaces(
-                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt)
-                ).run()
+                AddGeonamesPlaces(database_gway=database_gway).run()
             elif personality == 'openweathermap':
-                AddWeatherData(
-                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
-                    url_reader=URLReader(),
-                    timest=openweathermap_timest()
-                ).run()
+                AddWeatherData(database_gway=database_gway).run()
             elif personality == 'purp_update':
-                UpdatePurpleairLocation(
-                    database_gway=DatabaseGateway(database_adapt=psycopg2_adapt),
-                    url_reader=URLReader(),
-                ).run()
+                UpdatePurpleairLocation(database_gway=database_gway).run()

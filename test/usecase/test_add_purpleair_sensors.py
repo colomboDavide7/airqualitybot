@@ -12,7 +12,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.extra.timest import purpleair_timest
 from airquality.url.url_reader import URLReader
-from airquality.usecase.add_fixed_sensors import AddPurpleairFixedSensors
+from airquality.usecase.add_purpleair_sensors import AddPurpleairFixedSensors
 
 
 def _test_timezone():

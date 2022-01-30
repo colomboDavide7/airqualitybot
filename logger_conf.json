@@ -51,12 +51,12 @@
             "handlers": ["console", "issues"],
             "propagate": false
         },
-        "airquality.usecase.add_places": {
+        "airquality.usecase.add_geonames_places": {
             "level": "DEBUG",
             "handlers": ["geonames_report"],
             "propagate": true
         },
-        "airquality.usecase.add_fixed_sensors": {
+        "airquality.usecase.add_purpleair_sensors": {
             "level": "DEBUG",
             "handlers": ["purpleair_report"],
             "propagate": true

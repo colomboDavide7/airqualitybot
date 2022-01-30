@@ -2,21 +2,56 @@
 # @author:  Davide Colombo
 # @date:    2022-01-18, mar, 19:42
 # ======================================
-import logging
-import requests
 import json
+import requests
+from typing import Dict
 import requests.exceptions
-from airquality.url import HTTP_ERROR_MESSAGES, DEFAULT_ERROR_MESSAGE
+
+_DEFAULT_TIMEOUT = 10.0
+_DEFAULT_HEADERS = {'Connection': 'close'}
+_DEFAULT_ERROR_MESSAGE = "unavailable"
+_HTTP_ERROR_MESSAGES = {
+    400: 'BAD REQUEST: the server could not understand the request due to invalid syntax.',
+    401: 'UNAUTHORIZED: the client must authenticate itself to get the requested response.',
+    403: 'FORBIDDEN: the client does not have access rights to the content (but it was successfully identified).',
+    404: 'NOT FOUND: the server cannot find the requested resource',
+    406: 'NOT ACCEPTABLE: the server does not find any content that conforms to the criteria given by the user agent',
+    426: 'UPGRADE REQUIRED: the server refuses to perform the request using the current protocol.',
+    429: 'TOO MANY REQUESTS: the user has sent too many requests in a given amount of time.',
+    500: 'INTERNAL SERVER ERROR: the server has encountered a situation t does not know how to handle.',
+    503: 'SERVICE UNAVAILABLE: the server is not ready to handle the request.',
+    505: 'HTTP VERSION NOT SUPPORTED: the HTTP version used in the request is not supported by the server.',
+    511: 'NETWORK AUTHENTICATION REQUIRED: the client need to authenticate to gain network access.'
+}
 
 
-MAX_SERVER_RESPONSE_TIMEOUT = 10.0              # how many seconds to wait for a server response.
+def json_http_response(url: str, timeout=_DEFAULT_TIMEOUT, headers=None) -> Dict:
+    if headers is None:
+        headers = _DEFAULT_HEADERS
+    http_response = _http_response(url=url, timeout=timeout, headers=headers)
+    return json.loads(http_response.content)
 
 
-class URLReadError(Exception):
-    """
-    A subclass of Exception that signal an error while reading the content at a given URL.
-    """
-    pass
+def _http_response(url: str, timeout: float, headers: Dict) -> requests.Response:
+    http_response = requests.get(
+        url=url,
+        timeout=timeout,
+        headers=headers
+    )
+    return _verify_response_status(http_response)
+
+
+def _verify_response_status(http_response: requests.Response) -> requests.Response:
+    if 400 <= http_response.status_code < 600:
+        content = http_response.content
+        cause = _format_url_read_error(
+            err_url=http_response.url,
+            status_code=http_response.status_code,
+            code_explain=_HTTP_ERROR_MESSAGES.get(http_response.status_code, _DEFAULT_ERROR_MESSAGE),
+            http_jresp=json.loads(content) if content is not None else ""
+        )
+        raise requests.HTTPError(cause)
+    return http_response
 
 
 def _format_url_read_error(
@@ -29,43 +64,3 @@ def _format_url_read_error(
            f"[HTTP CODE EXPLANATION]: {code_explain} - " \
            f"[HTTP JSON RESPONSE]: {http_jresp} - " \
            f"[ERROR URL]: {err_url}"
-
-
-class URLReader(object):
-    """
-    A class that defines the business rules for reading the content of the given URL using HTTP(S) protocol.
-    """
-
-    def __init__(self, timeout_in_seconds=MAX_SERVER_RESPONSE_TIMEOUT):
-        self._timeout_in_seconds = timeout_in_seconds
-        self._logger = logging.getLogger(__name__)
-
-    def json(self, url: str):
-        return json.loads(
-            s=self._http_response_of(url).content
-        )
-
-    def _http_response_of(self, url: str) -> requests.Response:
-        http_response = requests.get(
-            url=url,
-            timeout=self._timeout_in_seconds,
-            headers={'Connection': 'close'}
-        )
-        if 400 <= http_response.status_code < 600:
-            content = http_response.content
-            status = http_response.status_code
-            cause = _format_url_read_error(
-                err_url=url,
-                status_code=status,
-                code_explain=HTTP_ERROR_MESSAGES.get(status, DEFAULT_ERROR_MESSAGE),
-                http_jresp=json.loads(content) if content is not None else ""
-            )
-            self._raise(cause=cause)
-        return http_response
-
-    def _raise(self, cause: str):
-        self._logger.exception(cause)
-        raise URLReadError(cause)
-
-    def __repr__(self):
-        return f"{type(self).__name__}(timeout={self._timeout_in_seconds})"

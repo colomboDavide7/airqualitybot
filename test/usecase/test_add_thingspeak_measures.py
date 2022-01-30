@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 from airquality.extra.timest import thingspeak_timest
 from airquality.datamodel.apiparam import APIParam
 from airquality.url.url_reader import URLReader
-from airquality.usecase.add_station_measures import AddThingspeakMeasures
+from airquality.usecase.add_purpleair_measures import AddPurpleairMeasures
 
 
 def _test_measure_param():
@@ -101,7 +101,7 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
-        self._usecase = AddThingspeakMeasures(
+        self._usecase = AddPurpleairMeasures(
             database_gway=self._mocked_database_gway,
             timest=thingspeak_timest(),
             url_reader=URLReader()

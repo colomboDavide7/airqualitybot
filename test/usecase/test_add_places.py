@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.usecase.add_places import AddPlaces
+from airquality.usecase.add_geonames_places import AddGeonamesPlaces
 
 
 def _test_directory_content():
@@ -54,7 +54,7 @@ class TestAddPlaces(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
-        self.usecase = AddPlaces(
+        self.usecase = AddGeonamesPlaces(
             database_gway=self._mocked_database_gway
         )
 

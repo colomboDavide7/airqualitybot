@@ -20,19 +20,11 @@ SELECT_MOBILE_SENSOR_UNIQUE_INFO = "SELECT id, sensor_name FROM level0_raw.senso
 SELECT_PURPLEAIR_LOCATION = "SELECT ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l INNER JOIN level0_raw.sensor AS s ON s.id = l.sensor_id WHERE s.sensor_type ILIKE '%purpleair%' AND sensor_name ILIKE '%{idx}%' ORDER BY l.valid_from DESC;"
 
 # =========== INSERT QUERIES
-INSERT_SENSORS = "INSERT INTO level0_raw.sensor VALUES {val};"
-INSERT_SENSOR_LOCATION = "INSERT INTO level0_raw.sensor_at_location (sensor_id, valid_from, geom) VALUES {val};"
-INSERT_SENSOR_API_PARAM = "INSERT INTO level0_raw.sensor_api_param (sensor_id, ch_key, ch_id, ch_name, last_acquisition) VALUES {val};"
-INSERT_MOBILE_MEASURES = "INSERT INTO level0_raw.mobile_measurement (packet_id, param_id, param_value, timestamp, geom) VALUES {val};"
-INSERT_STATION_MEASURES = "INSERT INTO level0_raw.station_measurement (packet_id, sensor_id, param_id, param_value, timestamp) VALUES {val};"
 INSERT_PLACES = "INSERT INTO level0_raw.geographical_area (postal_code, country_code, place_name, province, state, geom) VALUES {val};"
 INSERT_CURRENT_WEATHER_DATA = "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) VALUES {val};"
 INSERT_HOURLY_FORECAST_DATA = "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
 INSERT_DAILY_FORECAST_DATA = "INSERT INTO level0_raw.daily_forecast (geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
 INSERT_WEATHER_ALERT_DATA = "INSERT INTO level0_raw.weather_alert (geoarea_id, sender_name, alert_event, alert_begin, alert_until, description) VALUES {val};"
-
-# =========== UPDATE QUERIES
-UPDATE_LAST_CH_TIMEST = "UPDATE level0_raw.sensor_api_param SET last_acquisition = '{time}' WHERE sensor_id = {sid} AND ch_name = '{ch}';"
 
 # =========== DELETE QUERIES
 DELETE_ALL_HOURLY_FORECAST = "DELETE FROM level0_raw.hourly_forecast;"

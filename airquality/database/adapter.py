@@ -6,15 +6,8 @@
 #
 ######################################################
 import logging
-from psycopg2 import connect, Error
+from psycopg2 import connect
 from abc import ABC, abstractmethod
-
-
-class DatabaseError(Exception):
-    """
-    A subclass of Exception that is raised to signal a database side issue.
-    """
-    pass
 
 
 class DatabaseAdapter(ABC):
@@ -51,7 +44,7 @@ class Psycopg2Adapter(DatabaseAdapter):
         *port*              the database's connection port.
 
     Raises:
-        *DatabaseError*     to signal that a database side error occurs.
+        *psycopg2.Error*    the exceptions defined in the psycopg2 module.
 
     """
 
@@ -65,26 +58,26 @@ class Psycopg2Adapter(DatabaseAdapter):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._logger.debug('closing database connection')
         self.close()
-        if exc_type is not None and issubclass(exc_type, Error):
+        if exc_type is not None:
             self._logger.exception(exc_val)
-            raise DatabaseError(exc_val)
+            raise exc_type(exc_val) from exc_tb
 
     def fetchone(self, query: str):
-        return self._fetch(query, exec_name='fetchone')
+        with self.conn.cursor() as cur:
+            cur.execute(query)
+            self.conn.commit()
+            return cur.fetchone()
 
     def fetchall(self, query: str):
-        return self._fetch(query, exec_name='fetchall')
+        with self.conn.cursor() as cur:
+            cur.execute(query)
+            self.conn.commit()
+            return cur.fetchall()
 
     def execute(self, query: str):
         with self.conn.cursor() as cur:
             cur.execute(query)
             self.conn.commit()
-
-    def _fetch(self, query: str, exec_name: str):
-        with self.conn.cursor() as cur:
-            cur.execute(query)
-            self.conn.commit()
-            return getattr(cur, exec_name)()
 
     def close(self):
         self.conn.close()

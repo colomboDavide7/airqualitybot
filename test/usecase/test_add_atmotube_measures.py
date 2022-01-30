@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
 from airquality.extra.timest import atmotube_timest
 from airquality.url.url_reader import URLReader
-from airquality.usecase.add_mobile_measures import AddAtmotubeMeasures
+from airquality.usecase.add_atmotube_measures import AddAtmotubeMeasures
 
 
 def _test_measure_param():

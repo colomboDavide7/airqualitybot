@@ -18,7 +18,7 @@ from airquality.core.request_validator import AddPlacesRequestValidator
 from airquality.core.response_builder import AddPlacesResponseBuilder
 
 
-class AddPlaces(object):
+class AddGeonamesPlaces(object):
 
     def __init__(self, database_gway: DatabaseGateway):
         self._database_gway = database_gway
