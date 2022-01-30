@@ -28,12 +28,6 @@ def _mocked_response_builder():
     return mocked_rb
 
 
-# def _expected_query():
-#     return "INSERT INTO level0_raw.station_measurement " \
-#            "(packet_id, sensor_id, param_id, param_value, timestamp) " \
-#            f"VALUES {_test_measure_record()};"
-
-
 def _expected_fixed_sensor_unique_info():
     return SensorIdentity(
         row=(0, 'fake_name', -9, 44)

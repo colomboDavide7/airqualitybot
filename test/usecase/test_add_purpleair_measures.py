@@ -11,6 +11,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.sensor_ident import SensorIdentity
 from airquality.usecase.add_purpleair_measures import AddPurpleairMeasures
 
 
@@ -48,16 +49,23 @@ def _test_sensor_api_param():
     )
 
 
+def _test_sensor_ident():
+    return SensorIdentity(
+        row=(0, 'test_sensor', -74.0, 33.0)
+    )
+
+
 def _mocked_database_gway() -> MagicMock:
     """
     :return: a *MagicMock* instance that implements all the *DatabaseGateway* relevant methods for this class.
     """
     mocked_gateway = MagicMock()
-    mocked_gateway.insert_station_measures = MagicMock()
+    mocked_gateway.execute = MagicMock()
     mocked_gateway.query_max_station_packet_id_plus_one.return_value = _test_max_station_packet_id_plus_one()
     mocked_gateway.query_sensor_apiparam_of_type.return_value = [_test_sensor_api_param()]
     mocked_gateway.query_measure_param_owned_by.return_value = _test_measure_param()
-    mocked_gateway.query_last_acquisition_of.return_value = datetime(2021, 12, 20, 11, 18, 40, tzinfo=_test_tzinfo())
+    mocked_gateway.query_last_acquisition_of.return_value = datetime(2021, 12, 20, 12, 21, 40, tzinfo=_test_tzinfo())
+    mocked_gateway.query_fixed_sensor_unique_info.return_value = _test_sensor_ident()
     return mocked_gateway
 
 
@@ -76,12 +84,23 @@ def _expected_measure_record() -> str:
     """
     :return: the test measure record according to the filtered json responses used in this test.
     """
-    ts = '2021-12-20 12:18:40+01:00'
-    return f"(140, 99, 12, 20.5, '{ts}')," \
-           f"(140, 99, 13, 35.53, '{ts}')," \
-           f"(140, 99, 14, 37.43, '{ts}')," \
+    ts = '2021-12-20 12:22:40+01:00'
+    return f"(140, 99, 12, 30.29, '{ts}')," \
+           f"(140, 99, 13, 52.67, '{ts}')," \
+           f"(140, 99, 14, 56.11, '{ts}')," \
            f"(140, 99, 15, 55.0, '{ts}')," \
-           f"(140, 99, 16, 60.0, '{ts}')"
+           f"(140, 99, 16, 59.0, '{ts}')"
+
+
+def _expected_query():
+    return "INSERT INTO level0_raw.station_measurement " \
+           "(packet_id, sensor_id, param_id, param_value, timestamp) " \
+           f"VALUES {_expected_measure_record()};"
+
+
+def _expected_update_query():
+    return "UPDATE level0_raw.sensor_api_param SET last_acquisition = '2021-12-20 12:22:40+01:00' " \
+           "WHERE sensor_id = 99 AND ch_name = '1A';"
 
 
 def _mocked_environ():
@@ -102,10 +121,9 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
         self._usecase = AddPurpleairMeasures(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHODS
-    @patch('airquality.extra.logger_extra.logging')
     @patch('airquality.environment.os')
     @patch('airquality.url.url_reader.requests.get')
-    def test_add_thingspeak_measures_usecase(self, mocked_get, mocked_os, mocked_logging):
+    def test_add_thingspeak_measures_usecase(self, mocked_get, mocked_os):
         mocked_os.environ = _mocked_environ()
         mocked_get.return_value = _mocked_json_response()
         self._usecase.run()
@@ -114,9 +132,11 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
 
 # =========== SUPPORT METHODS
     def _assert_responses(self):
-        responses = self._mocked_database_gway.insert_station_measures.call_args[1]['responses']
-        self.assertEqual(len(responses), 3)
-        self.assertEqual(responses[0].measure_record, _expected_measure_record())
+        query = self._mocked_database_gway.execute.call_args[1]['query']
+        self.assertEqual(
+            query,
+            f"{_expected_query()}{_expected_update_query()}"
+        )
 
     def _assert_usecase_properties(self):
         self.assertEqual(self._usecase._packet_id(), 140)

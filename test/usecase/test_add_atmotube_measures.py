@@ -11,6 +11,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.sensor_ident import SensorIdentity
 from airquality.usecase.add_atmotube_measures import AddAtmotubeMeasures
 
 
@@ -48,6 +49,12 @@ def _test_sensor_api_param():
     )
 
 
+def _test_sensor_identity():
+    return SensorIdentity(
+        row=(0, 'test_sensor')
+    )
+
+
 def _mocked_database_gway() -> MagicMock:
     """
     :return: a *MagicMock* instance that implements all the *DatabaseGateway* relevant methods for this class.
@@ -57,7 +64,8 @@ def _mocked_database_gway() -> MagicMock:
     mocked_gateway.query_max_mobile_packet_id_plus_one.return_value = _test_max_mobile_packet_id_plus_one()
     mocked_gateway.query_sensor_apiparam_of_type.return_value = [_test_sensor_api_param()]
     mocked_gateway.query_last_acquisition_of.return_value = datetime(2021, 8, 11, 1, 59, tzinfo=_test_timezone())
-    mocked_gateway.insert_mobile_measures = MagicMock()
+    mocked_gateway.execute = MagicMock()
+    mocked_gateway.query_mobile_sensor_unique_info.return_value = _test_sensor_identity()
     return mocked_gateway
 
 
@@ -111,6 +119,20 @@ def _expected_measure_record() -> str:
            f"(12399, 39, 1004.72, '{ts}', {geom})"
 
 
+def _expected_insert_mobile_measures_query():
+    return "INSERT INTO level0_raw.mobile_measurement " \
+           "(packet_id, param_id, param_value, timestamp, geom) " \
+           f"VALUES {_expected_measure_record()};"
+
+
+def _expected_update_query():
+    ts = "2021-08-11 02:00:00+02:00"
+    return "UPDATE level0_raw.sensor_api_param " \
+           f"SET last_acquisition = '{ts}' " \
+           f"WHERE sensor_id = 12 AND " \
+           f"ch_name = 'main';"
+
+
 def _mocked_environ():
     return {
         'atmotube_url': 'fake_url',
@@ -129,10 +151,10 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
         self._usecase = AddAtmotubeMeasures(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHODS
-    @patch('airquality.extra.logger_extra.logging')
+#     @patch('airquality.extra.logger_extra.logging')
     @patch('airquality.environment.os')
     @patch('airquality.url.url_reader.requests.get')
-    def test_add_atmotube_measures_usecase(self, mocked_get, mocked_os, mocked_logging):
+    def test_add_atmotube_measures_usecase(self, mocked_get, mocked_os):
         mocked_os.environ = _mocked_environ()
         mocked_get.return_value = _mocked_json_api_resp()
         self._usecase.run()
@@ -141,9 +163,12 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
 
 # =========== SUPPORT METHODS
     def _assert_responses(self):
-        responses = self._mocked_database_gway.insert_mobile_measures.call_args[1]['responses']
-        self.assertEqual(len(responses), 1)
-        self.assertEqual(responses[0].measure_record, _expected_measure_record())
+        query = self._mocked_database_gway.execute.call_args[1]['query']
+        self.assertEqual(
+            query,
+            f"{_expected_insert_mobile_measures_query()}{_expected_update_query()}"
+        )
+
 
     def _assert_usecase_properties(self):
         self.assertEqual(self._usecase._measure_param, _test_measure_param())

@@ -36,12 +36,6 @@ def _test_mobile_record():
            "(13, 6, '24', '2021-10-11 09:44:00', ST_GeomFromText('POINT(-12.34 37.87)', 26918))"
 
 
-# def _expected_insert_mobile_measures_query():
-#     return "INSERT INTO level0_raw.mobile_measurement " \
-#            "(packet_id, param_id, param_value, timestamp, geom) " \
-#            f"VALUES {_test_mobile_record()};"
-
-
 def _expected_mobile_sensor_unique_info():
     return SensorIdentity(
         row=(0, 'fake_name')
