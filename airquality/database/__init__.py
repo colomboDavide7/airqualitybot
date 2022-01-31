@@ -18,14 +18,3 @@ SELECT_GEOLOCATION_OF = "SELECT id, ST_X(geom), ST_Y(geom) FROM level0_raw.geogr
 SELECT_FIXED_SENSOR_UNIQUE_INFO = "SELECT s.id, s.sensor_name, ST_X(l.geom), ST_Y(l.geom) FROM level0_raw.sensor AS s INNER JOIN level0_raw.sensor_at_location AS l ON s.id = l.sensor_id WHERE l.sensor_id = {sid} AND l.valid_to IS NULL;"
 SELECT_MOBILE_SENSOR_UNIQUE_INFO = "SELECT id, sensor_name FROM level0_raw.sensor WHERE id = {sid};"
 SELECT_PURPLEAIR_LOCATION = "SELECT ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l INNER JOIN level0_raw.sensor AS s ON s.id = l.sensor_id WHERE s.sensor_type ILIKE '%purpleair%' AND sensor_name ILIKE '%{idx}%' ORDER BY l.valid_from DESC;"
-
-# =========== INSERT QUERIES
-# INSERT_PLACES = "INSERT INTO level0_raw.geographical_area (postal_code, country_code, place_name, province, state, geom) VALUES {val};"
-INSERT_CURRENT_WEATHER_DATA = "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) VALUES {val};"
-INSERT_HOURLY_FORECAST_DATA = "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
-INSERT_DAILY_FORECAST_DATA = "INSERT INTO level0_raw.daily_forecast (geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
-INSERT_WEATHER_ALERT_DATA = "INSERT INTO level0_raw.weather_alert (geoarea_id, sender_name, alert_event, alert_begin, alert_until, description) VALUES {val};"
-
-# =========== DELETE QUERIES
-DELETE_ALL_HOURLY_FORECAST = "DELETE FROM level0_raw.hourly_forecast;"
-DELETE_ALL_DAILY_FORECAST = "DELETE FROM level0_raw.daily_forecast;"

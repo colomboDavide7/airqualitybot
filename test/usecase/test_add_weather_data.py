@@ -62,7 +62,7 @@ def _mocked_database_gway() -> MagicMock:
     mocked_gateway.query_openweathermap_keys.return_value = [_test_opwmap_key()]
     mocked_gateway.query_weather_conditions.return_value = _test_weather_conditions()
     mocked_gateway.query_geolocation_of.return_value = _test_database_geolocation_of_city()
-    mocked_gateway.insert_weather_data = MagicMock()
+    mocked_gateway.execute = MagicMock()
     return mocked_gateway
 
 
@@ -91,6 +91,30 @@ def _expected_daily_forecast():
     return "(14400, 55, 9.25, 5.81, 9.4, 1019, 83, 2.72, 79, NULL, 0.01, NULL, '2022-01-03 12:00:00+01:00')"
 
 
+def _expected_weather_alarm_record():
+    return "(14400, 'Fake sender', 'Fake event', " \
+           "'2022-01-24 19:00:00+01:00', '2022-01-25 09:59:00+01:00', 'Fake description')"
+
+
+def _expected_insert_query():
+    return "INSERT INTO level0_raw.current_weather " \
+            "(geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, " \
+            "wind_direction, rain, snow, timestamp, sunrise, sunset) " \
+            f"VALUES {_expected_current_record()};" \
+            "INSERT INTO level0_raw.hourly_forecast " \
+            "(geoarea_id, weather_id, temperature, pressure, humidity, " \
+            "wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+            f"VALUES {_expected_hourly_forecast()};" \
+           "INSERT INTO level0_raw.daily_forecast " \
+           "(geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
+           "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+           f"VALUES {_expected_daily_forecast()};" \
+           "INSERT INTO level0_raw.weather_alert " \
+           "(geoarea_id, sender_name, alert_event, " \
+           "alert_begin, alert_until, description) " \
+           f"VALUES {_expected_weather_alarm_record()};"
+
+
 class AddWeatherDataIntegrationTest(TestCase):
 
 # =========== SETUP METHOD
@@ -107,24 +131,15 @@ class AddWeatherDataIntegrationTest(TestCase):
         mocked_get.return_value = _mocked_responses()
         mocked_open.return_value = _mocked_city_file()
         self._usecase.run()
-        self._assert_responses()
+        self._assert_query()
         self._assert_usecase_properties()
 
 # =========== SUPPORT METHODS
-    def _assert_responses(self):
-        responses = self._mocked_database_gway.insert_weather_data.call_args[1]['responses']
-        self.assertEqual(len(responses), 1)
+    def _assert_query(self):
+        query = self._mocked_database_gway.execute.call_args[1]['query']
         self.assertEqual(
-            responses[0].current_weather_record,
-            _expected_current_record()
-        )
-        self.assertEqual(
-            responses[0].hourly_forecast_record,
-            _expected_hourly_forecast()
-        )
-        self.assertEqual(
-            responses[0].daily_forecast_record,
-            _expected_daily_forecast()
+            query,
+            _expected_insert_query()
         )
 
     def _assert_usecase_properties(self):

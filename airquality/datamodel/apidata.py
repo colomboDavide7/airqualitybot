@@ -216,4 +216,5 @@ class CityOfGeoarea(object):
         return self._geoarea_id
 
     def __repr__(self):
-        return f"{type(self).__name__}"
+        return f"{type(self).__name__}(geoarea_id={self._geoarea_id}, " \
+               f"longitude={self._longitude}, latitude={self._latitude})"

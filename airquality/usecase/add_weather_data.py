@@ -6,11 +6,18 @@
 #
 ######################################################
 import logging
-from typing import Dict
-import airquality.usecase as constants
 import airquality.environment as environ
 from airquality.extra.timest import openweathermap_timest
+
+_LOGGER = logging.getLogger(__name__)
+_ENVIRON = environ.get_environ()
+_TIMEST = openweathermap_timest()
+
+######################################################
+from typing import Dict
+import airquality.usecase as constants
 from airquality.extra.decorators import catch
+from airquality.usecase.abc import UsecaseABC
 from airquality.url.url_reader import json_http_response
 from airquality.datamodel.apidata import WeatherCityData
 from airquality.database.gateway import DatabaseGateway
@@ -18,13 +25,37 @@ from airquality.core.request_builder import AddOpenWeatherMapDataRequestBuilder
 from airquality.core.response_builder import AddOpenWeatherMapDataResponseBuilder
 from airquality.core.apidata_builder import OpenWeatherMapAPIDataBuilder, WeatherCityDataBuilder
 
-
-_LOGGER = logging.getLogger(__name__)
-_ENVIRON = environ.get_environ()
-_TIMEST = openweathermap_timest()
+_DELETE_FORECAST_QUERY = "DELETE FROM level0_raw.hourly_forecast; DELETE FROM level0_raw.daily_forecast;"
 
 
-class AddWeatherData(object):
+def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
+    cval = hval = dval = aval = ""
+    for resp in response_builder:
+        cval += f"{resp.current_weather_record},"
+        hval += f"{resp.hourly_forecast_record},"
+        dval += f"{resp.daily_forecast_record},"
+        aval += f"{resp.weather_alert_record},"
+    query = "INSERT INTO level0_raw.current_weather " \
+            "(geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, " \
+            "wind_direction, rain, snow, timestamp, sunrise, sunset) " \
+            f"VALUES {cval.strip(',')};"
+    query += "INSERT INTO level0_raw.hourly_forecast " \
+             "(geoarea_id, weather_id, temperature, pressure, humidity, " \
+             "wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+             f"VALUES {hval.strip(',')};"
+    query += "INSERT INTO level0_raw.daily_forecast " \
+             "(geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
+             "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+             f"VALUES {dval.strip(',')};"
+    if aval:
+        query += "INSERT INTO level0_raw.weather_alert " \
+                 "(geoarea_id, sender_name, alert_event, " \
+                 "alert_begin, alert_until, description) " \
+                 f"VALUES {aval.strip(',')};"
+    return query
+
+
+class AddWeatherData(UsecaseABC):
     """
     An *object* that defines the application UseCase flow of adding weather data from OpenWeatherMap service.
 
@@ -61,10 +92,8 @@ class AddWeatherData(object):
         return weather_map
 
     def _delete_forecast_measures(self):
-        _LOGGER.warning("deleting all the hourly weather forecast data")
-        self._database_gway.delete_all_from_hourly_weather_forecast()
-        _LOGGER.warning("deleting all the daily weather forecast data")
-        self._database_gway.delete_all_from_daily_weather_forecast()
+        _LOGGER.warning("deleting all the HOURLY and DAILY weather forecast data")
+        self._database_gway.execute(query=_DELETE_FORECAST_QUERY)
 
 # =========== SAFE METHOD
     @catch(exc_type=ValueError, logger_name=__name__)
@@ -110,9 +139,11 @@ class AddWeatherData(object):
         )
         _LOGGER.debug("found #%d responses" % len(response_builder))
 
-        if response_builder:
+        if len(response_builder) > 0:
             _LOGGER.debug("inserting new weather data!")
-            self._database_gway.insert_weather_data(responses=response_builder)
+            self._database_gway.execute(
+                query=_build_insert_query(response_builder)
+            )
 
 # =========== RUN METHOD
     def run(self):
@@ -136,6 +167,3 @@ class AddWeatherData(object):
                 city=city
             )
         _LOGGER.info(constants.END_MESSAGE)
-
-    def __repr__(self):
-        return f"{type(self).__name__}"

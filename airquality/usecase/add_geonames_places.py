@@ -53,9 +53,8 @@ class AddGeonamesPlaces(UsecaseABC):
 
             country_code = f.split('.')[0]
             database_pcodes = self._poscodes_of(country_code=country_code)
-            _LOGGER.debug(
-                "found #%d database postal codes for country => '%s'" % (len(database_pcodes), country_code)
-            )
+            _LOGGER.debug("found #%d database postal codes for country => '%s'"
+                          % (len(database_pcodes), country_code))
 
             datamodel_builder = GeonamesDataBuilder(filepath=_fullpath(f))
             _LOGGER.debug("found #%d file lines" % len(datamodel_builder))

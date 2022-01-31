@@ -21,11 +21,14 @@ class DatabaseGateway(object):
     def __init__(self, database_adapt: DatabaseAdapter):
         self._database_adapt = database_adapt
 
+    def execute(self, query: str):
+        self._database_adapt.execute(query)
+
+# =========== SELECT ID QUERIES
     def _safe_fetch_id(self, query: str):
         row = self._database_adapt.fetchone(query)
         return 1 if row[0] is None else row[0] + 1
 
-# =========== SELECT ID QUERIES
     def query_max_sensor_id_plus_one(self) -> int:
         return self._safe_fetch_id(
             query=queries.SELECT_MAX_SENS_ID
@@ -126,34 +129,3 @@ class DatabaseGateway(object):
         return self._database_adapt.fetchone(
             query=queries.SELECT_PURPLEAIR_LOCATION.format(idx=sensor_index)
         )
-
-# ======== INSERT QUERIES
-    def execute(self, query: str):
-        self._database_adapt.execute(query)
-
-#     def insert_weather_data(self, responses: AddOpenWeatherMapDataResponseBuilder):
-#         """
-#         A method that knows how to build the query for inserting weather data including current weather,
-#         hourly forecast, daily forecast and weather alerts.
-#
-#         :param responses:               the response builder instance that generates the weather responses.
-#         """
-#
-#         cval = hval = dval = aval = ""
-#         for r in responses:
-#             cval += f"{r.current_weather_record},"
-#             hval += f"{r.hourly_forecast_record},"
-#             dval += f"{r.daily_forecast_record},"
-#             aval += f"{r.weather_alert_record},"
-#         query = self._safe_format_insert_query(query=queries.INSERT_CURRENT_WEATHER_DATA, values=cval.strip(','))
-#         query += self._safe_format_insert_query(query=queries.INSERT_HOURLY_FORECAST_DATA, values=hval.strip(','))
-#         query += self._safe_format_insert_query(query=queries.INSERT_DAILY_FORECAST_DATA, values=dval.strip(','))
-#         query += self._safe_format_insert_query(query=queries.INSERT_WEATHER_ALERT_DATA, values=aval.strip(','))
-#         self.database_adapt.execute(query)
-
-# =========== DELETE QUERIES
-#     def delete_all_from_hourly_weather_forecast(self):
-#         self._database_adapt.execute(queries.DELETE_ALL_HOURLY_FORECAST)
-#
-#     def delete_all_from_daily_weather_forecast(self):
-#         self._database_adapt.execute(queries.DELETE_ALL_DAILY_FORECAST)
