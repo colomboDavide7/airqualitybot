@@ -129,3 +129,6 @@ class DatabaseGateway(object):
         return self._database_adapt.fetchone(
             query=queries.SELECT_PURPLEAIR_LOCATION.format(idx=sensor_index)
         )
+
+    def __repr__(self):
+        return f"self=(type={type(self).__name__}, id={id(self)})"

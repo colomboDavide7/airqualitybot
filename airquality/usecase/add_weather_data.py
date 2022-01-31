@@ -16,7 +16,6 @@ _TIMEST = openweathermap_timest()
 ######################################################
 from typing import Dict
 import airquality.usecase as constants
-from airquality.extra.decorators import catch
 from airquality.usecase.abc import UsecaseABC
 from airquality.url.url_reader import json_http_response
 from airquality.datamodel.apidata import WeatherCityData
@@ -96,7 +95,6 @@ class AddWeatherData(UsecaseABC):
         self._database_gway.execute(query=_DELETE_FORECAST_QUERY)
 
 # =========== SAFE METHOD
-    @catch(exc_type=ValueError, logger_name=__name__)
     def _safe_insert_weather_of(self, api_key: str, city: WeatherCityData):
         """
         This method handles the possibility that a *ValueError* exception is raised by the *database_gateway* when
@@ -110,15 +108,19 @@ class AddWeatherData(UsecaseABC):
         :param city:                    the weather city data object that refers to the current city.
         """
 
-        geoarea_info = self._database_gway.query_geolocation_of(city=city)
-        _LOGGER.debug("found database correspondence for this city => %s" % repr(geoarea_info))
+        try:
+            geoarea_info = self._database_gway.query_geolocation_of(city=city)
+            _LOGGER.debug("found database correspondence for => %s" % repr(geoarea_info))
+        except ValueError:
+            _LOGGER.warning("Cannot found database correspondence for => %s" % repr(city))
+            return
 
         pre_formatted_url = self._cached_url_template.format(
             api_key=api_key,
             lat=geoarea_info.latitude,
             lon=geoarea_info.longitude
         )
-        _LOGGER.debug(f"fetching weather data at => {pre_formatted_url}")
+        _LOGGER.debug(f"downloading weather data at => {pre_formatted_url}")
 
         service_jresp = json_http_response(url=pre_formatted_url)
         _LOGGER.debug("successfully get server response!!!")
@@ -161,7 +163,6 @@ class AddWeatherData(UsecaseABC):
         self._delete_forecast_measures()
 
         for city in self._cached_cities:
-            _LOGGER.debug("downloading weather data for => %s" % repr(city))
             self._safe_insert_weather_of(
                 api_key=opwmap_key.key_value,
                 city=city

@@ -73,7 +73,6 @@ class TestOpenWeatherMapDatamodel(TestCase):
         )
         self.assertEqual(data.country_code, "fakecode")
         self.assertEqual(data.place_name, "fakename")
-        self.assertEqual(repr(data), "WeatherCityData(country_code=fakecode, place_name=fakename)")
 
     def test_weather_data(self):
         self._assert_weather(_weather_test_data())

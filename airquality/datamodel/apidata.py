@@ -189,9 +189,6 @@ class WeatherCityData(object):
     country_code: str                               # The 2-alpha ISO city's country code.
     place_name: str                                 # The city's name.
 
-    def __repr__(self):
-        return f"{type(self).__name__}(country_code={self.country_code}, place_name={self.place_name})"
-
 
 class CityOfGeoarea(object):
     """
