@@ -3,6 +3,10 @@
 # @date:    2022-01-19, mer, 12:33
 # ======================================
 import logging
+
+_LOGGER = logging.getLogger(__name__)
+
+# ======================================
 from dateutil import tz
 from datetime import datetime, tzinfo
 from abc import ABC, abstractmethod
@@ -122,6 +126,25 @@ def make_naive(time: datetime) -> datetime:
     return time.astimezone(tz=tz.tzutc()).replace(microsecond=0, tzinfo=None)
 
 
+def _raise(cause: str):
+    _LOGGER.exception(cause)
+    raise TimestConversionError(cause)
+
+
+def _safe_utcfromtimestamp(time) -> datetime:
+    """
+    This method handles the conversion from UNIX timestamp to *datetime* object.
+
+    :raises TimestConversionError:      if *time* is not of <class float>.
+    :param time:                        the UNIX timestamp to convert.
+    :return:                            the *datetime* object that corresponds to *time* timestamp.
+    """
+
+    if not isinstance(time, (float, int)):
+        _raise(cause=f"expected '{time}' to be of type <class float>!!!")
+    return datetime.utcfromtimestamp(time)
+
+
 class Timest(object):
     """
     A class that defines the business logic for time zone's date and timestamp manipulation.
@@ -165,16 +188,11 @@ class Timest(object):
         longitude: float = None,
         tz_name: str = None
     ):
-        self._logger = logging.getLogger(__name__)
         self._input_fmt = input_fmt
         self._output_fmt = output_fmt
         self._tzmaker = _init_tzmaker(lat=latitude, lng=longitude, tz_name=tz_name)
 
 # =========== EXCEPTION METHOD
-    def _raise(self, cause: str):
-        self._logger.exception(cause)
-        raise TimestConversionError(cause)
-
     @classmethod
     def current_utc_timetz(cls) -> datetime:
         """
@@ -235,7 +253,7 @@ class Timest(object):
         """
 
         if not isinstance(self._tzmaker, _RotatingTimezone):
-            self._raise(f"expected time zone maker to be of type '{_RotatingTimezone.__name__}'")
+            _raise(f"expected time zone maker to be of type '{_RotatingTimezone.__name__}'")
         self._tzmaker.set_timezone(lat=lat, lng=lng, tz_name=tzname)
         return self._tzmaker.tzinfo()
 
@@ -248,7 +266,7 @@ class Timest(object):
         """
 
         if not isinstance(self._tzmaker, (_FixedTimezone, _FixedTimezoneWithName)):
-            self._raise("expected time zone maker to be of type '_FixedTimezone' or '_FixedTimezoneWithName'")
+            _raise("expected time zone maker to be of type '_FixedTimezone' or '_FixedTimezoneWithName'")
         return self._tzmaker.tzinfo()
 
 # =========== TIME FORMATTER METHODS
@@ -267,7 +285,7 @@ class Timest(object):
         """
 
         if self._output_fmt is None:
-            self._raise(cause="[FATAL] expected *output_fmt* to be not None!!!")
+            _raise(cause="expected *output_fmt* to be not None!!!")
         return dt.strftime(self._output_fmt)
 
     def _safe_strpin(self, time) -> datetime:
@@ -280,20 +298,7 @@ class Timest(object):
 
         if self._input_fmt is not None:
             return self._safe_strptime(time)
-        return self._safe_utcfromtimestamp(time)
-
-    def _safe_utcfromtimestamp(self, time) -> datetime:
-        """
-        This method handles the conversion from UNIX timestamp to *datetime* object.
-
-        :raises TimestConversionError:      if *time* is not of <class float>.
-        :param time:                        the UNIX timestamp to convert.
-        :return:                            the *datetime* object that corresponds to *time* timestamp.
-        """
-
-        if not isinstance(time, (float, int)):
-            self._raise(cause=f"[FATAL] expected '{time}' to be of type <class float>!!!")
-        return datetime.utcfromtimestamp(time)
+        return _safe_utcfromtimestamp(time)
 
     def _safe_strptime(self, time) -> datetime:
         """
@@ -306,11 +311,11 @@ class Timest(object):
         """
 
         if not isinstance(time, str):
-            self._raise(cause=f"[FATAL] expected '{time}' to be of type <class str>!!!")
+            _raise(cause=f"expected '{time}' to be of type <class str>!!!")
         try:
             return datetime.strptime(time, self._input_fmt)
         except ValueError as err:
-            self._raise(cause=str(err))
+            _raise(cause=str(err))
 
 
 DEFAULT_OUT_FMT = "%Y-%m-%d %H:%M:%S%z"

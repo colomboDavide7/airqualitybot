@@ -5,8 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.application import Application, WrongUsageError
-from airquality.environment import Environment
+from airquality.application import Application
 from unittest import TestCase, main
 from unittest.mock import patch
 import sys
@@ -35,21 +34,15 @@ class TestApplication(TestCase):
         program_args = ['program_name']
         with patch.object(sys, 'argv', program_args):
             with patch.dict(os.environ, _fake_environ()):
-                with self.assertRaises(SystemExit):
-                    with Application() as app:
-                        with self.assertRaises(WrongUsageError):
-                            app.main()
-                    self.assertEqual(app._exit_code, 1)
+                with self.assertRaises(ValueError):
+                    Application()
 
     def test_raise_wrong_usage_error_when_arg1_is_invalid(self):
         program_args = ['program_name', 'bad_personality']
         with patch.object(sys, 'argv', program_args):
             with patch.dict(os.environ, _fake_environ()):
-                with self.assertRaises(SystemExit):
-                    with Application() as app:
-                        with self.assertRaises(WrongUsageError):
-                            app.main()
-                    self.assertEqual(app._exit_code, 1)
+                with self.assertRaises(ValueError):
+                    Application()
 
 
 if __name__ == '__main__':

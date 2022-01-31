@@ -6,21 +6,11 @@
 #
 ######################################################
 import logging
-from datetime import datetime
-import airquality.usecase as constants
 import airquality.environment as environ
-from airquality.usecase.abc import UsecaseABC
 from airquality.extra.timest import atmotube_timest
-from airquality.datamodel.apiparam import APIParam
-from airquality.database.gateway import DatabaseGateway
-from airquality.url.url_reader import json_http_response
 from airquality.extra.logger_extra import FileHandlerRotator
-from airquality.url.timeiter_url import AtmotubeTimeIterableURL
-from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
-from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
-from airquality.core.request_validator import AddSensorMeasuresRequestValidator
-from airquality.core.response_builder import AddMobileMeasureResponseBuilder
 
+_TIMEST = atmotube_timest()
 _ENVIRON = environ.get_environ()
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
@@ -29,7 +19,19 @@ _FILE_ROTATOR = FileHandlerRotator(
     logger_level=_LOGGER.level,
     logger_dir=_ENVIRON.logging_dir_of(personality='atmotube')
 )
-_TIMEST = atmotube_timest()
+
+######################################################
+from datetime import datetime
+import airquality.usecase as constants
+from airquality.usecase.abc import UsecaseABC
+from airquality.datamodel.apiparam import APIParam
+from airquality.database.gateway import DatabaseGateway
+from airquality.url.url_reader import json_http_response
+from airquality.url.timeiter_url import AtmotubeTimeIterableURL
+from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
+from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
+from airquality.core.request_validator import AddSensorMeasuresRequestValidator
+from airquality.core.response_builder import AddMobileMeasureResponseBuilder
 
 
 def _build_insert_query(response_builder: AddMobileMeasureResponseBuilder) -> str:

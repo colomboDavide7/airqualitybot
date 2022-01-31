@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from airquality.extra.singleton import Singleton
 
 
-LOGGING_DIR_PERMISSION = 0o600      # only the user can read/write from that directory.
+_LOGGING_DIR_PERMISSION = 0o600         # only the user can read/write from that directory.
 
 
 def get_environ(**kwargs):
@@ -20,14 +20,6 @@ def get_environ(**kwargs):
     """
 
     return Environment(**kwargs)
-
-
-class MissingEnvironPropertyError(Exception):
-    """
-    A subclass of Exception that is raised to signal that the searched environment property was not found.
-    """
-
-    pass
 
 
 class Environment(object, metaclass=Singleton):
@@ -43,14 +35,14 @@ class Environment(object, metaclass=Singleton):
     """
 
     def __init__(self, env_path='.env'):
-        load_dotenv(dotenv_path=env_path)
         self._env_path = env_path
+        load_dotenv(dotenv_path=self._env_path)
         self._valid_pers = ()
 
     def _secure_get_from_environ(self, property_name: str):
         property_val = os.environ.get(property_name, None)
         if property_val is None:
-            raise MissingEnvironPropertyError(f"Cannot found '{property_name}' in '{self._env_path}'")
+            raise KeyError(f"Cannot found '{property_name}' in '{self._env_path}'")
         return property_val
 
 # =========== APPLICATION PROPERTIES
@@ -71,7 +63,7 @@ class Environment(object, metaclass=Singleton):
         if not os.path.exists(dirpath):
             os.mkdir(
                 path=dirpath,
-                mode=LOGGING_DIR_PERMISSION
+                mode=_LOGGING_DIR_PERMISSION
             )
         return dirpath
 

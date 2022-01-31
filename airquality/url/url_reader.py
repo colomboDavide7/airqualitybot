@@ -2,11 +2,6 @@
 # @author:  Davide Colombo
 # @date:    2022-01-18, mar, 19:42
 # ======================================
-import json
-import requests
-from typing import Dict
-import requests.exceptions
-
 _DEFAULT_TIMEOUT = 10.0
 _DEFAULT_HEADERS = {'Connection': 'close'}
 _DEFAULT_ERROR_MESSAGE = "unavailable"
@@ -23,6 +18,12 @@ _HTTP_ERROR_MESSAGES = {
     505: 'HTTP VERSION NOT SUPPORTED: the HTTP version used in the request is not supported by the server.',
     511: 'NETWORK AUTHENTICATION REQUIRED: the client need to authenticate to gain network access.'
 }
+
+# ======================================
+import json
+import requests
+from typing import Dict
+import requests.exceptions
 
 
 def json_http_response(url: str, timeout=_DEFAULT_TIMEOUT, headers=None) -> Dict:

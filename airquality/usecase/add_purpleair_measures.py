@@ -6,22 +6,11 @@
 #
 ######################################################
 import logging
-from datetime import datetime
 import airquality.environment as environ
-import airquality.usecase as constants
-from airquality.usecase.abc import UsecaseABC
 from airquality.extra.timest import thingspeak_timest
-from airquality.datamodel.apiparam import APIParam
-from airquality.database.gateway import DatabaseGateway
-from airquality.url.url_reader import json_http_response
 from airquality.extra.logger_extra import FileHandlerRotator
-from airquality.url.timeiter_url import ThingspeakTimeIterableURL
-from airquality.core.apidata_builder import ThingspeakAPIDataBuilder
-from airquality.core.request_builder import AddThingspeakMeasuresRequestBuilder
-from airquality.core.request_validator import AddSensorMeasuresRequestValidator
-from airquality.core.response_builder import AddStationMeasuresResponseBuilder
 
-
+_TIMEST = thingspeak_timest()
 _ENVIRON = environ.get_environ()
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
@@ -30,20 +19,28 @@ _FILE_ROTATOR = FileHandlerRotator(
     logger_level=_LOGGER.level,
     logger_dir=_ENVIRON.logging_dir_of(personality='thingspeak')
 )
-_TIMEST = thingspeak_timest()
 
-MAPPING_1A = {'field1': 'pm1.0_atm_a', 'field2': 'pm2.5_atm_a', 'field3': 'pm10.0_atm_a', 'field6': 'temperature_a',
-              'field7': 'humidity_a'}
-MAPPING_1B = {'field1': 'pm1.0_atm_b', 'field2': 'pm2.5_atm_b', 'field3': 'pm10.0_atm_b', 'field6': 'pressure_b'}
-MAPPING_2A = {'field1': '0.3_um_count_a', 'field2': '0.5_um_count_a', 'field3': '1.0_um_count_a',
-              'field4': '2.5_um_count_a', 'field5': '5.0_um_count_a', 'field6': '10.0_um_count_a'}
-MAPPING_2B = {'field1': '0.3_um_count_b', 'field2': '0.5_um_count_b', 'field3': '1.0_um_count_b',
-              'field4': '2.5_um_count_b', 'field5': '5.0_um_count_b', 'field6': '10.0_um_count_b'}
-FIELD_MAP = {'1A': MAPPING_1A, '1B': MAPPING_1B, '2A': MAPPING_2A, '2B': MAPPING_2B}
+_MAPPING_1A = {'field1': 'pm1.0_atm_a', 'field2': 'pm2.5_atm_a', 'field3': 'pm10.0_atm_a', 'field6': 'temperature_a',
+               'field7': 'humidity_a'}
+_MAPPING_1B = {'field1': 'pm1.0_atm_b', 'field2': 'pm2.5_atm_b', 'field3': 'pm10.0_atm_b', 'field6': 'pressure_b'}
+_MAPPING_2A = {'field1': '0.3_um_count_a', 'field2': '0.5_um_count_a', 'field3': '1.0_um_count_a',
+               'field4': '2.5_um_count_a', 'field5': '5.0_um_count_a', 'field6': '10.0_um_count_a'}
+_MAPPING_2B = {'field1': '0.3_um_count_b', 'field2': '0.5_um_count_b', 'field3': '1.0_um_count_b',
+               'field4': '2.5_um_count_b', 'field5': '5.0_um_count_b', 'field6': '10.0_um_count_b'}
+_FIELD_MAP = {'1A': _MAPPING_1A, '1B': _MAPPING_1B, '2A': _MAPPING_2A, '2B': _MAPPING_2B}
 
-
-def _fields_of(param: APIParam):
-    return FIELD_MAP[param.ch_name]
+######################################################
+from datetime import datetime
+import airquality.usecase as constants
+from airquality.usecase.abc import UsecaseABC
+from airquality.datamodel.apiparam import APIParam
+from airquality.database.gateway import DatabaseGateway
+from airquality.url.url_reader import json_http_response
+from airquality.url.timeiter_url import ThingspeakTimeIterableURL
+from airquality.core.apidata_builder import ThingspeakAPIDataBuilder
+from airquality.core.request_builder import AddThingspeakMeasuresRequestBuilder
+from airquality.core.request_validator import AddSensorMeasuresRequestValidator
+from airquality.core.response_builder import AddStationMeasuresResponseBuilder
 
 
 def _build_update_query(time: datetime, sensor_id: int, channel_name: str) -> str:
@@ -110,7 +107,7 @@ class AddPurpleairMeasures(UsecaseABC):
                     datamodel=datamodel_builder,
                     timest=_TIMEST,
                     code2id=self._measure_param,
-                    field_map=_fields_of(param)
+                    field_map=_FIELD_MAP[param.ch_name]
                 )
                 _LOGGER.debug("found #%d requests" % len(request_builder))
 

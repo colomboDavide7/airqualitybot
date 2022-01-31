@@ -6,6 +6,10 @@
 #
 ######################################################
 import logging
+
+_LOGGER = logging.getLogger(__name__)
+
+######################################################
 from psycopg2 import connect
 from abc import ABC, abstractmethod
 
@@ -50,16 +54,15 @@ class Psycopg2Adapter(DatabaseAdapter):
 
     def __init__(self, dbname: str, user: str, password: str, host: str, port: str):
         self.conn = connect(dbname=dbname, user=user, password=password, host=host, port=port)
-        self._logger = logging.getLogger(__name__)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._logger.debug('closing database connection')
+        _LOGGER.debug('closing database connection')
         self.close()
         if exc_type is not None:
-            self._logger.exception(exc_val)
+            _LOGGER.exception(exc_val)
             raise exc_type(exc_val) from exc_tb
 
     def fetchone(self, query: str):

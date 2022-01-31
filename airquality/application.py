@@ -6,8 +6,14 @@
 #
 ######################################################
 import sys
-import logging.config
+import logging
 import airquality.environment as environ
+
+_ROOT_LOGGER = logging.getLogger()
+_ENVIRON = environ.get_environ()
+_SYS_ARGS = sys.argv[1:]
+
+######################################################
 from airquality.usecase.add_geonames_places import AddGeonamesPlaces
 from airquality.usecase.add_purpleair_measures import AddPurpleairMeasures
 from airquality.usecase.add_purpleair_sensors import AddPurpleairFixedSensors
@@ -18,21 +24,22 @@ from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
 
 
-_LOGGER = logging.getLogger(__name__)
-_ENVIRON = environ.get_environ()
-
-
-class WrongUsageError(Exception):
-    """
-    A subclass of Exception that is raised to signal that the program is used in a wrong way.
-    """
-    pass
+def _raise(cause: str):
+    _ROOT_LOGGER.exception(cause, exc_info=False)
+    raise ValueError(cause) from None
 
 
 class Application(object):
     def __init__(self):
-        self._args = sys.argv[1:]
         self._exit_code = 0
+        if not _SYS_ARGS:
+            self._exit_code = 1
+            _raise(cause="Expected at least one argument")
+
+        self._personality = _SYS_ARGS[0]
+        if self._personality not in _ENVIRON.valid_personalities:
+            self._exit_code = 2
+            _raise(cause=f"Expected '%s' to be one of %s" % (self._personality, _ENVIRON.valid_personalities))
 
 # =========== CONTEXT MANAGER INTERFACE
     def __enter__(self):
@@ -40,40 +47,31 @@ class Application(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
-            self._exit_code = 1
-            _LOGGER.exception(exc_val)
-            if exc_type == WrongUsageError:
-                print(_ENVIRON.program_usage_msg)
-        _LOGGER.debug("finish with exit code %d" % self._exit_code)
+            self._exit_code = 3
+            _ROOT_LOGGER.exception(exc_val)
+        _ROOT_LOGGER.debug("finish with exit code %d" % self._exit_code)
         logging.shutdown()
         sys.exit(self._exit_code)
 
 # =========== MAIN METHOD
     def main(self):
-        if not self._args:
-            raise WrongUsageError("[FATAL]: missing 'personality' argument!!!")
-
-        personality = self._args[0]
-        if personality not in _ENVIRON.valid_personalities:
-            raise WrongUsageError("[FATAL]: invalid 'personality' argument!!!")
-
         with Psycopg2Adapter(
             dbname=_ENVIRON.dbname,
             user=_ENVIRON.dbuser,
             password=_ENVIRON.dbpwd,
             host=_ENVIRON.dbhost,
             port=_ENVIRON.dbport
-        ) as psycopg2_adapt:
-            database_gway = DatabaseGateway(database_adapt=psycopg2_adapt)
-            if personality == 'purpleair':
+        ) as database_adapt:
+            database_gway = DatabaseGateway(database_adapt=database_adapt)
+            if self._personality == 'purpleair':
                 AddPurpleairFixedSensors(database_gway=database_gway).run()
-            elif personality == 'atmotube':
+            elif self._personality == 'atmotube':
                 AddAtmotubeMeasures(database_gway=database_gway).run()
-            elif personality == 'thingspeak':
+            elif self._personality == 'thingspeak':
                 AddPurpleairMeasures(database_gway=database_gway).run()
-            elif personality == 'geonames':
+            elif self._personality == 'geonames':
                 AddGeonamesPlaces(database_gway=database_gway).run()
-            elif personality == 'openweathermap':
+            elif self._personality == 'openweathermap':
                 AddWeatherData(database_gway=database_gway).run()
-            elif personality == 'purp_update':
+            elif self._personality == 'purp_update':
                 UpdatePurpleairLocation(database_gway=database_gway).run()

@@ -6,20 +6,22 @@
 #
 ######################################################
 import logging
-import airquality.usecase as constant
 import airquality.environment as environ
-from airquality.usecase.abc import UsecaseABC
 from airquality.extra.timest import purpleair_timest
+
+_LOGGER = logging.getLogger(__name__)
+_ENVIRON = environ.get_environ()
+_TIMEST = purpleair_timest()
+
+######################################################
+import airquality.usecase as constant
+from airquality.usecase.abc import UsecaseABC
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.url_reader import json_http_response
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
 from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
 from airquality.core.request_validator import AddFixedSensorRequestValidator
 from airquality.core.response_builder import AddFixedSensorResponseBuilder
-
-_LOGGER = logging.getLogger(__name__)
-_ENVIRON = environ.get_environ()
-_TIMEST = purpleair_timest()
 
 
 def _build_insert_query(response_builder: AddFixedSensorResponseBuilder) -> str:
@@ -69,7 +71,7 @@ class AddPurpleairFixedSensors(UsecaseABC):
         )
         _LOGGER.debug("found #%d responses" % len(response_builder))
 
-        if response_builder:
+        if len(response_builder) > 0:
             _LOGGER.debug("inserting new sensors!")
             query = _build_insert_query(response_builder)
             self._database_gway.execute(query)

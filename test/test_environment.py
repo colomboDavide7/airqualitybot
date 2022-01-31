@@ -8,7 +8,7 @@
 import os
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
-from airquality.environment import Environment, MissingEnvironPropertyError
+from airquality.environment import Environment
 
 
 def _fake_environ_personalities():
@@ -97,7 +97,7 @@ class TestEnvironment(TestCase):
 
     def test_raise_missing_environ_property_error_when_key_error_is_raised(self):
         with patch.dict(os.environ, _fake_environ_personalities()):
-            with self.assertRaises(MissingEnvironPropertyError):
+            with self.assertRaises(KeyError):
                 Environment().url_template('p4')
 
     @patch('airquality.environment.os.path')
