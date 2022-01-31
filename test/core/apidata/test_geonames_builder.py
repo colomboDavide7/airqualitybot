@@ -28,7 +28,7 @@ class TestGeonamesLineDataBuilder(TestCase):
         builder = GeonamesDataBuilder(
             filepath="fake_filepath"
         )
-        self.assertEqual(len(builder), 3)
+        self.assertEqual(len(builder), 1)
         self._assert_built_data(datamodel=builder[0])
 
 # =========== SUPPORT METHODS

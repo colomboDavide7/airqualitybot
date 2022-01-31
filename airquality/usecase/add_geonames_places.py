@@ -6,11 +6,17 @@
 #
 ######################################################
 import logging
+import airquality.environment as environ
+
+_ENVIRON = environ.get_environ()
+_LOGGER = logging.getLogger(__name__)
+
+######################################################
 from os import listdir
 from typing import Set
 from os.path import isfile, join
 import airquality.usecase as constants
-import airquality.environment as environ
+from airquality.usecase.abc import UsecaseABC
 from airquality.database.gateway import DatabaseGateway
 from airquality.core.apidata_builder import GeonamesDataBuilder
 from airquality.core.request_builder import AddPlacesRequestBuilder
@@ -18,55 +24,57 @@ from airquality.core.request_validator import AddPlacesRequestValidator
 from airquality.core.response_builder import AddPlacesResponseBuilder
 
 
-class AddGeonamesPlaces(object):
+def _resource_dir():
+    return _ENVIRON.input_dir_of(personality='geonames')
 
+
+def _fullpath(filename: str) -> str:
+    return join(_resource_dir(), filename)
+
+
+def _build_insert_query(response_builder: AddPlacesResponseBuilder) -> str:
+    return "INSERT INTO level0_raw.geographical_area " \
+           "(postal_code, country_code, place_name, province, state, geom) " \
+           f"VALUES {','.join(resp.place_record for resp in response_builder)};"
+
+
+class AddGeonamesPlaces(UsecaseABC):
     def __init__(self, database_gway: DatabaseGateway):
         self._database_gway = database_gway
-        self._environ = environ.get_environ()
-        self._logger = logging.getLogger(__name__)
+        self._filenames = {f for f in listdir(_resource_dir()) if isfile(_fullpath(f)) and not f.startswith('.')}
 
-    def _resource_dir(self):
-        return self._environ.input_dir_of(
-            personality='geonames'
-        )
-
-    @property
-    def filenames(self) -> Set[str]:
-        return {f for f in listdir(self._resource_dir()) if isfile(self.fullpath(f)) and not f.startswith('.')}
-
-    def poscodes_of(self, country_code: str) -> Set[str]:
+    def _poscodes_of(self, country_code: str) -> Set[str]:
         return self._database_gway.query_poscodes_of_country(country_code=country_code)
 
-    def fullpath(self, filename: str) -> str:
-        return join(self._resource_dir(), filename)
-
     def run(self) -> None:
-        self._logger.info(constants.START_MESSAGE)
-        for f in self.filenames:
-            self._logger.debug("reading geonames data from => '%s'" % f)
+        _LOGGER.info(constants.START_MESSAGE)
+        for f in self._filenames:
+            _LOGGER.debug("reading geonames data from => '%s'" % f)
 
             country_code = f.split('.')[0]
-            database_pcodes = self.poscodes_of(country_code=country_code)
-            self._logger.debug(
+            database_pcodes = self._poscodes_of(country_code=country_code)
+            _LOGGER.debug(
                 "found #%d database postal codes for country => '%s'" % (len(database_pcodes), country_code)
             )
 
-            datamodel_builder = GeonamesDataBuilder(filepath=self.fullpath(f))
-            self._logger.debug("found #%d file lines" % len(datamodel_builder))
+            datamodel_builder = GeonamesDataBuilder(filepath=_fullpath(f))
+            _LOGGER.debug("found #%d file lines" % len(datamodel_builder))
 
             request_builder = AddPlacesRequestBuilder(datamodels=datamodel_builder)
-            self._logger.debug("found #%d requests" % len(request_builder))
+            _LOGGER.debug("found #%d requests" % len(request_builder))
 
             validator = AddPlacesRequestValidator(
                 requests=request_builder,
                 existing_poscodes=database_pcodes
             )
-            self._logger.debug("found #%d valid requests" % len(validator))
+            _LOGGER.debug("found #%d valid requests" % len(validator))
 
             response_builder = AddPlacesResponseBuilder(requests=validator)
-            self._logger.debug("found #%d responses" % len(response_builder))
+            _LOGGER.debug("found #%d responses" % len(response_builder))
 
-            if response_builder:
-                self._logger.debug("inserting new places!")
-                self._database_gway.insert_places(response_builder)
-        self._logger.info(constants.END_MESSAGE)
+            if len(response_builder) > 0:
+                _LOGGER.debug("inserting new places!")
+                self._database_gway.execute(
+                    query=_build_insert_query(response_builder)
+                )
+        _LOGGER.info(constants.END_MESSAGE)

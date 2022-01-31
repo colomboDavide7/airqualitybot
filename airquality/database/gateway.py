@@ -151,19 +151,6 @@ class DatabaseGateway(object):
 #         query += self._safe_format_insert_query(query=queries.INSERT_WEATHER_ALERT_DATA, values=aval.strip(','))
 #         self.database_adapt.execute(query)
 
-    # def insert_places(self, responses: AddPlacesResponseBuilder):
-    #     """
-    #     A method that knows how to build the query for inserting country locations.
-    #
-    #     :param responses:           the response builder instance that generates the country location responses.
-    #     """
-    #
-    #     query = self._safe_format_insert_query(
-    #         query=queries.INSERT_PLACES,
-    #         values=','.join(resp.place_record for resp in responses)
-    #     )
-    #     self.database_adapt.execute(query)
-
 # =========== DELETE QUERIES
 #     def delete_all_from_hourly_weather_forecast(self):
 #         self._database_adapt.execute(queries.DELETE_ALL_HOURLY_FORECAST)
