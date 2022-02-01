@@ -52,8 +52,8 @@ class UpdatePurpleairLocation(UsecaseABC):
                     )
                 )
         except ValueError:
-            _LOGGER.error("Cannot found sensor corresponding to sensor_index = '%d' "
-                          "in level0_raw.sensor_at_location table" % datamodel.sensor_index)
+            _LOGGER.warning("Cannot found 'open' location (valid_to = NULL) corresponding to sensor_index = '%d' "
+                            "in level0_raw.sensor_at_location table" % datamodel.sensor_index)
 
     def run(self):
         _LOGGER.info(constants.START_MESSAGE)

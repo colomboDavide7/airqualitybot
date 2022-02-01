@@ -135,7 +135,7 @@ class DatabaseGateway(object):
             query="SELECT l.sensor_id, ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l "
                   "INNER JOIN level0_raw.sensor AS s ON s.id = l.sensor_id "
                   f"WHERE s.sensor_type ILIKE '%purpleair%' AND sensor_name ILIKE '%{sensor_index}%' "
-                  "ORDER BY l.valid_from DESC;"
+                  "AND valid_to IS NULL;"
         )
 
     def __repr__(self):
