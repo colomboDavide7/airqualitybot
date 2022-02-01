@@ -185,8 +185,7 @@ class AddWeatherData(UsecaseABC):
         except Exception as err:
             if not isinstance(err, SystemExit) and \
                not isinstance(err, KeyboardInterrupt):
-                print(30*"!" + "RE-INSERT" + 30*"!")
-                # RE-INSERT THE FORECAST MEASURES IN THE TABLES
+
                 self._database_gway.execute(
                     query=_build_insert_cached_forecast_records_query(
                         hourly=self._cached_hourly_forecast,
