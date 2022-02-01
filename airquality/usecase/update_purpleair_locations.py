@@ -41,16 +41,11 @@ class UpdatePurpleairLocation(UsecaseABC):
                not math.isclose(a=datamodel.longitude, b=geo.longitude, rel_tol=1e-5):
                 _LOGGER.debug("update sensor_id = '%d'" % geo.sensor_id)
                 _LOGGER.debug("set location to => (%.6f, %.6f)" % (datamodel.longitude, datamodel.latitude))
-                self._database_gway.execute(
-                    query=_build_query(
-                        sensor_id=geo.sensor_id,
-                        time=_TIMEST.current_utc_timetz(),
-                        geom=PostgisPoint(
-                            latitude=datamodel.latitude,
-                            longitude=datamodel.longitude
-                        ).geom_from_text()
-                    )
-                )
+
+                geom = PostgisPoint(latitude=datamodel.latitude, longitude=datamodel.longitude).geom_from_text()
+                query = _build_query(sensor_id=geo.sensor_id, time=_TIMEST.current_utc_timetz(), geom=geom)
+                self._database_gway.execute(query=query)
+
         except ValueError:
             _LOGGER.warning("Cannot found 'open' location (valid_to = NULL) corresponding to sensor_index = '%d' "
                             "in level0_raw.sensor_at_location table" % datamodel.sensor_index)

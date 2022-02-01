@@ -14,8 +14,9 @@ _ENVIRON = environ.get_environ()
 _TIMEST = openweathermap_timest()
 
 ######################################################
-from typing import Dict
+from typing import Dict, Set
 import airquality.usecase as constants
+from airquality.extra.sqlize import sqlize
 from airquality.usecase.abc import UsecaseABC
 from airquality.url.url_reader import json_http_response
 from airquality.datamodel.apidata import WeatherCityData
@@ -46,12 +47,23 @@ def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
              "(geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
              "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
              f"VALUES {dval.strip(',')};"
-    if aval:
+    if aval.strip(','):        # TODO: strip the comma !!!
         query += "INSERT INTO level0_raw.weather_alert " \
                  "(geoarea_id, sender_name, alert_event, " \
                  "alert_begin, alert_until, description) " \
                  f"VALUES {aval.strip(',')};"
     return query
+
+
+def _build_insert_cached_forecast_records_query(hourly: Set, daily: Set) -> str:
+    return "INSERT INTO level0_raw.hourly_forecast " \
+           "(id, geoarea_id, weather_id, temperature, pressure, humidity, " \
+           "wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+           f"VALUES {','.join(sqlize(item) for item in hourly)};" \
+           "INSERT INTO level0_raw.daily_forecast" \
+           "(id, geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
+           "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+           f"VALUES {','.join(sqlize(item) for item in daily)};"
 
 
 class AddWeatherData(UsecaseABC):
@@ -82,6 +94,8 @@ class AddWeatherData(UsecaseABC):
         self._cached_url_template = _ENVIRON.url_template(personality='openweathermap')
         self._cached_cities = WeatherCityDataBuilder(filepath='resources/weather_cities.json')
         self._api_keys = self._database_gway.query_openweathermap_keys()
+        self._cached_hourly_forecast = self._database_gway.query_hourly_forecast_records()
+        self._cached_daily_forecast = self._database_gway.query_daily_forecast_records()
 
     def _weather_map(self) -> Dict[int, Dict[str, int]]:
         rows = self._database_gway.query_weather_conditions()
@@ -154,20 +168,30 @@ class AddWeatherData(UsecaseABC):
     def run(self):
         _LOGGER.info(constants.START_MESSAGE)
 
-        # TODO: switch API keys based on the number of
-        #  requests done.
+        # TODO: switch API keys based on the number of requests done.
+
         opwmap_key = self._api_keys[0]
         _LOGGER.debug("API key in use for connecting to server => %s" % repr(opwmap_key))
 
-        # TODO: cache the database rows temporarily and
-        #  then if an error from the server is raised,
-        #  re-insert the old values.
-
         self._delete_forecast_measures()
 
-        for city in self._cached_cities:
-            self._safe_insert_weather_of(
-                api_key=opwmap_key.key_value,
-                city=city
-            )
-        _LOGGER.info(constants.END_MESSAGE)
+        try:
+            for city in self._cached_cities:
+                self._safe_insert_weather_of(
+                    api_key=opwmap_key.key_value,
+                    city=city
+                )
+            _LOGGER.info(constants.END_MESSAGE)
+        except Exception as err:
+            if not isinstance(err, SystemExit) and \
+               not isinstance(err, KeyboardInterrupt):
+                print(30*"!" + "RE-INSERT" + 30*"!")
+                # RE-INSERT THE FORECAST MEASURES IN THE TABLES
+                self._database_gway.execute(
+                    query=_build_insert_cached_forecast_records_query(
+                        hourly=self._cached_hourly_forecast,
+                        daily=self._cached_daily_forecast
+                    )
+                )
+            raise
+

@@ -54,6 +54,7 @@ class Psycopg2Adapter(DatabaseAdapter):
 
     def __init__(self, dbname: str, user: str, password: str, host: str, port: str):
         self.conn = connect(dbname=dbname, user=user, password=password, host=host, port=port)
+        self.conn.autocommit = True
 
     def __enter__(self):
         return self
@@ -68,19 +69,21 @@ class Psycopg2Adapter(DatabaseAdapter):
     def fetchone(self, query: str):
         with self.conn.cursor() as cur:
             cur.execute(query)
-            self.conn.commit()
+            # self.conn.commit()
             return cur.fetchone()
 
     def fetchall(self, query: str):
         with self.conn.cursor() as cur:
             cur.execute(query)
-            self.conn.commit()
+            # self.conn.commit()
             return cur.fetchall()
 
     def execute(self, query: str):
+        print(30*"!" + "executing query" + 30*"!")
         with self.conn.cursor() as cur:
             cur.execute(query)
-            self.conn.commit()
+            # self.conn.commit()
+            print(30 * "!" + "done" + 30 * "!")
 
     def close(self):
         self.conn.close()

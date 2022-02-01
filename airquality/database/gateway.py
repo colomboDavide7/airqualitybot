@@ -21,6 +21,7 @@ class DatabaseGateway(object):
         self._database_adapt = database_adapt
 
     def execute(self, query: str):
+        print(query)
         self._database_adapt.execute(query)
 
 # =========== SELECT ID QUERIES
@@ -137,6 +138,16 @@ class DatabaseGateway(object):
                   f"WHERE s.sensor_type ILIKE '%purpleair%' AND sensor_name ILIKE '%{sensor_index}%' "
                   "AND valid_to IS NULL;"
         )
+
+    def query_hourly_forecast_records(self) -> Set:
+        return set(self._database_adapt.fetchall(
+            query="SELECT * FROM level0_raw.hourly_forecast;"
+        ))
+
+    def query_daily_forecast_records(self) -> Set:
+        return set(self._database_adapt.fetchall(
+            query="SELECT * FROM level0_raw.daily_forecast;"
+        ))
 
     def __repr__(self):
         return f"self=(type='{type(self).__name__}', id='{id(self)}')"
