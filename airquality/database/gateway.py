@@ -8,11 +8,11 @@
 from datetime import datetime
 from typing import Set, Dict, List
 from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.apidata import CityOfGeoarea
 from airquality.database.adapter import DatabaseAdapter
 from airquality.datamodel.geolocation import Geolocation
 from airquality.datamodel.sensor_ident import SensorIdentity
 from airquality.datamodel.openweathermap_key import OpenweathermapKey
-from airquality.datamodel.apidata import WeatherCityData, CityOfGeoarea
 from airquality.extra.decorators import throw_on, constructor_of, get_at, dict_from_tuples
 
 
@@ -105,11 +105,11 @@ class DatabaseGateway(object):
 
     @constructor_of(obj_type=CityOfGeoarea)
     @throw_on(sentinel_value=None, exc_type=ValueError)
-    def query_geolocation_of(self, city: WeatherCityData):
+    def query_geolocation_of(self, country_code: str, place_name: str):
         return self._database_adapt.fetchone(
             query="SELECT id, ST_X(geom), ST_Y(geom) "
                   "FROM level0_raw.geographical_area "
-                  f"WHERE country_code = '{city.country_code}' AND place_name = '{city.place_name}';"
+                  f"WHERE country_code = '{country_code}' AND place_name = '{place_name}';"
         )
 
     @constructor_of(obj_type=SensorIdentity)

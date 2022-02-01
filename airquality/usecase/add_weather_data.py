@@ -109,7 +109,10 @@ class AddWeatherData(UsecaseABC):
         """
 
         try:
-            geoarea_info = self._database_gway.query_geolocation_of(city=city)
+            geoarea_info = self._database_gway.query_geolocation_of(
+                country_code=city.country_code,
+                place_name=city.place_name
+            )
             _LOGGER.debug("found database correspondence for => %s" % repr(geoarea_info))
         except ValueError:
             _LOGGER.warning("Cannot found database correspondence for => %s" % repr(city))

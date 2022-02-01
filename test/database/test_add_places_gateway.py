@@ -5,7 +5,6 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
-from airquality.datamodel.apidata import WeatherCityData
 from airquality.datamodel.response import AddPlacesResponse
 
 
@@ -30,19 +29,6 @@ def _mocked_response_builder() -> MagicMock:
     return mocked_rb
 
 
-# def _expected_insert_places_query():
-#     return "INSERT INTO level0_raw.geographical_area " \
-#            "(postal_code, country_code, place_name, province, state, geom) " \
-#            f"VALUES {_test_place_record()};"
-
-
-def _test_weather_city_data():
-    return WeatherCityData(
-        country_code="fakecode",
-        place_name="fakename"
-    )
-
-
 class TestDatabaseGatewayAddPlacesSection(TestCase):
 
 # =========== TEST METHODS
@@ -63,7 +49,8 @@ class TestDatabaseGatewayAddPlacesSection(TestCase):
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         self._assert_city_data(
             city_data=gateway.query_geolocation_of(
-                city=_test_weather_city_data()
+                country_code='fakecode',
+                place_name='fakename'
             )
         )
 
@@ -72,7 +59,10 @@ class TestDatabaseGatewayAddPlacesSection(TestCase):
         mocked_database_adapt.fetchone.return_value = None
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         with self.assertRaises(ValueError):
-            gateway.query_geolocation_of(city=_test_weather_city_data())
+            gateway.query_geolocation_of(
+                country_code='fakecode',
+                place_name='fakename'
+            )
 
     def _assert_city_data(self, city_data):
         self.assertEqual(city_data.geoarea_id, 14400)
