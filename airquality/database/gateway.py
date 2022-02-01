@@ -130,10 +130,13 @@ class DatabaseGateway(object):
 
     @constructor_of(obj_type=Geolocation)
     @throw_on(sentinel_value=None, exc_type=ValueError)
-    def query_purpleair_location(self, sensor_index: int):
+    def query_purpleair_location_of(self, sensor_index: int) -> Geolocation:
         return self._database_adapt.fetchone(
-            query="SELECT ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l "
+            query="SELECT l.sensor_id, ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l "
                   "INNER JOIN level0_raw.sensor AS s ON s.id = l.sensor_id "
                   f"WHERE s.sensor_type ILIKE '%purpleair%' AND sensor_name ILIKE '%{sensor_index}%' "
                   "ORDER BY l.valid_from DESC;"
         )
+
+    def __repr__(self):
+        return f"self=(type='{type(self).__name__}', id='{id(self)}')"

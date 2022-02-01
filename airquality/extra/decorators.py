@@ -3,7 +3,6 @@
 # @date:    2022-01-28, ven, 11:27
 # ======================================
 import functools
-import logging
 
 
 def _concat(*args, **kwargs) -> str:
@@ -35,30 +34,30 @@ def throw_on(sentinel_value, exc_type):
     return throw_decorator
 
 
-def catch(exc_type, logger_name: str, level_name='warning'):
-    """
-    A decorator function that catches a specific type of exceptions and logs it event.
-
-    :param exc_type:                    the class of the exception to be caught.
-    :param logger_name:                 the logger's name.
-    :param level_name:                  the name's of the logging level.
-    """
-
-    _logger = logging.getLogger(logger_name)
-
-    def catch_decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except exc_type as caught:
-                logging_method = getattr(_logger, level_name)
-                logging_method(
-                    "[FUNCTION]: '%s' - [ARGUMENTS]: %s - [CAUGHT]: '%s'" %
-                    (func.__name__, _concat(*args, **kwargs), repr(caught))
-                )
-        return wrapper
-    return catch_decorator
+# def catch(exc_type, logger_name: str, level_name='warning'):
+#     """
+#     A decorator function that catches a specific type of exceptions and logs it event.
+#
+#     :param exc_type:                    the class of the exception to be caught.
+#     :param logger_name:                 the logger's name.
+#     :param level_name:                  the name's of the logging level.
+#     """
+#
+#     _logger = logging.getLogger(logger_name)
+#
+#     def catch_decorator(func):
+#         @functools.wraps(func)
+#         def wrapper(*args, **kwargs):
+#             try:
+#                 return func(*args, **kwargs)
+#             except exc_type as caught:
+#                 logging_method = getattr(_logger, level_name)
+#                 logging_method(
+#                     "[FUNCTION]: '%s' - [ARGUMENTS]: %s - [CAUGHT]: '%s'" %
+#                     (func.__name__, _concat(*args, **kwargs), repr(caught))
+#                 )
+#         return wrapper
+#     return catch_decorator
 
 
 def get_at(index: int):

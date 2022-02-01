@@ -9,7 +9,8 @@ from airquality.datamodel.geolocation import Geolocation
 class TestGeolocation(TestCase):
 
     def test_create_geolocation_from_tuple_of_float(self):
-        actual = Geolocation(row=(9.4673268, 45.12489))
+        actual = Geolocation(row=(12, 9.4673268, 45.12489))
+        self.assertEqual(actual.sensor_id, 12)
         self.assertEqual(actual.longitude, 9.4673268)
         self.assertEqual(actual.latitude, 45.12489)
 

@@ -11,8 +11,13 @@ class Geolocation(object):
     """
 
     def __init__(self, row: Tuple):
-        self._longitude = row[0]
-        self._latitude = row[1]
+        self._sensor_id = row[0]
+        self._longitude = row[1]
+        self._latitude = row[2]
+
+    @property
+    def sensor_id(self) -> int:
+        return self._sensor_id
 
     @property
     def latitude(self) -> float:
