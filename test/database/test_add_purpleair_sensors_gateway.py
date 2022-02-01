@@ -69,6 +69,17 @@ class TestDatabaseGatewayAddFixedSensorsSection(TestCase):
         self.assertEqual(geo.latitude, 45.02345)
         self.assertEqual(geo.longitude, 9.12345)
 
+    def test_execute_query(self):
+        mocked_database_adapt = MagicMock()
+        mocked_database_adapt.execute = MagicMock()
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
+        gateway.execute(query="fake query;")
+        actual_query = mocked_database_adapt.execute.call_args[0][0]
+        self.assertEqual(
+            actual_query,
+            'fake query;'
+        )
+
 
 if __name__ == '__main__':
     main()

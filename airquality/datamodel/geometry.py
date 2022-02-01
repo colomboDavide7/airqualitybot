@@ -6,13 +6,13 @@
 #
 ######################################################
 from dataclasses import dataclass
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 # POSTGIS_POINT = "POINT({lon} {lat})"
 # ST_GEOM_FROM_TEXT = "ST_GeomFromText('{geom}', {srid})"
 
 
-class PostgisGeometry:
+class PostgisGeometry(ABC):
     """
     An *object* that defines the interface for every postGIS geometry object.
     """
