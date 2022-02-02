@@ -65,7 +65,7 @@ class TestDatabaseGatewayAddFixedSensorsSection(TestCase):
         mocked_database_adapt = MagicMock()
         mocked_database_adapt.fetchone.return_value = (12, 9.12345, 45.02345)
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
-        geo = gateway.query_purpleair_location_of(sensor_index=123)
+        geo = gateway.query_purpleair_sensor_location(sensor_index=123)
         self.assertEqual(geo.sensor_id, 12)
         self.assertEqual(geo.latitude, 45.02345)
         self.assertEqual(geo.longitude, 9.12345)

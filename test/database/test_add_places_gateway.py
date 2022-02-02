@@ -48,7 +48,7 @@ class TestDatabaseGatewayAddPlacesSection(TestCase):
         mocked_database_adapt.fetchone.return_value = (14400, 9, 45)
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         self._assert_city_data(
-            city_data=gateway.query_geolocation_of(
+            city_data=gateway.query_place_location(
                 country_code='fakecode',
                 place_name='fakename'
             )
@@ -59,7 +59,7 @@ class TestDatabaseGatewayAddPlacesSection(TestCase):
         mocked_database_adapt.fetchone.return_value = None
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         with self.assertRaises(ValueError):
-            gateway.query_geolocation_of(
+            gateway.query_place_location(
                 country_code='fakecode',
                 place_name='fakename'
             )

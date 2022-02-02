@@ -22,7 +22,7 @@ def _test_queried_locations():
 def _mocked_database_gateway():
     mocked_dg = MagicMock()
     mocked_dg.execute = MagicMock()
-    mocked_dg.query_purpleair_location_of.return_value = _test_queried_locations()
+    mocked_dg.query_purpleair_sensor_location.return_value = _test_queried_locations()
     return mocked_dg
 
 

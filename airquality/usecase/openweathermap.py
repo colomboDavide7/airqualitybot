@@ -16,6 +16,7 @@ _ENVIRON = environ.get_environ()
 _TIMEST = openweathermap_timest()
 
 ######################################################
+import airquality as aq
 from typing import Dict, Set
 import airquality.usecase as constants
 from airquality.extra.sqlize import sqlize
@@ -29,7 +30,6 @@ from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
 from airquality.iterables.fromfile import CityIterableDatamodels
 
 _DELETE_FORECAST_QUERY = "DELETE FROM level0_raw.hourly_forecast; DELETE FROM level0_raw.daily_forecast;"
-_CITY_FILENAME = 'cities.json'
 
 
 def _resource_dir() -> str:
@@ -104,7 +104,7 @@ class AddWeatherData(UsecaseABC):
         self._database_gway = database_gway
         self._cached_weather_map = self._weather_map()
         self._cached_url_template = _ENVIRON.url_template(personality='openweathermap')
-        self._cached_cities = CityIterableDatamodels(filepath=_fullpath(_CITY_FILENAME))
+        self._cached_cities = CityIterableDatamodels(filepath=_fullpath(aq.CITY_FILENAME))
         self._api_keys = self._database_gway.query_openweathermap_keys()
         self._cached_hourly_forecast = self._database_gway.query_hourly_forecast_records()
         self._cached_daily_forecast = self._database_gway.query_daily_forecast_records()
@@ -135,7 +135,7 @@ class AddWeatherData(UsecaseABC):
         """
 
         try:
-            geoarea_info = self._database_gway.query_geolocation_of(
+            geoarea_info = self._database_gway.query_place_location(
                 country_code=city.country_code,
                 place_name=city.place_name
             )

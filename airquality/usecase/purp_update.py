@@ -36,7 +36,7 @@ class UpdatePurpleairLocation(UsecaseABC):
 
     def _safe_query_location_of(self, datamodel: PurpleairDM):
         try:
-            geo = self._database_gway.query_purpleair_location_of(sensor_index=datamodel.sensor_index)
+            geo = self._database_gway.query_purpleair_sensor_location(sensor_index=datamodel.sensor_index)
             if not math.isclose(a=datamodel.latitude, b=geo.latitude, rel_tol=1e-5) or \
                not math.isclose(a=datamodel.longitude, b=geo.longitude, rel_tol=1e-5):
                 _LOGGER.debug("update sensor_id = '%d'" % geo.sensor_id)

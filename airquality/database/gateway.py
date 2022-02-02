@@ -63,8 +63,8 @@ class DatabaseGateway(object):
 # =========== SELECT LIST QUERIES
     def query_sensor_apiparam_of_type(self, sensor_type: str) -> List[SensorApiParamDM]:
         query = "SELECT a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.last_acquisition " \
-                  "FROM level0_raw.sensor_api_param AS a INNER JOIN level0_raw.sensor AS s " \
-                  f"ON s.id = a.sensor_id WHERE s.sensor_type ILIKE '%{sensor_type}%';"
+                "FROM level0_raw.sensor_api_param AS a INNER JOIN level0_raw.sensor AS s " \
+                f"ON s.id = a.sensor_id WHERE s.sensor_type ILIKE '%{sensor_type}%';"
         rows = self._database_adapt.fetchall(query=query)
         if len(rows) == 0:
             raise ValueError(f"Table 'level0_raw.sensor_api_param' doesn't contain sensors of type = '{sensor_type}'")
@@ -93,14 +93,14 @@ class DatabaseGateway(object):
 # =========== SELECT SINGLE ROW QUERIES
     def query_last_acquisition_of(self, sensor_id: int, ch_name: str) -> datetime:
         query = "SELECT last_acquisition FROM level0_raw.sensor_api_param " \
-                  f"WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
+                f"WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
         row = self._database_adapt.fetchone(query=query)
         if row is None:
             raise ValueError(f"Cannot found records corresponding to sensor_id = '{sensor_id}' and "
                              f"channel_name = '{ch_name}' in 'level0_raw.sensor_api_param' table.")
         return row[0]
 
-    def query_geolocation_of(self, country_code: str, place_name: str):
+    def query_place_location(self, country_code: str, place_name: str):
         query = "SELECT id, ST_X(geom), ST_Y(geom) FROM level0_raw.geographical_area " \
                 f"WHERE country_code = '{country_code}' AND place_name = '{place_name}';"
         row = self._database_adapt.fetchone(query=query)
@@ -113,8 +113,8 @@ class DatabaseGateway(object):
 
     def query_fixed_sensor_unique_info(self, sensor_id: int):
         query = "SELECT s.id, s.sensor_name, ST_X(l.geom), ST_Y(l.geom) FROM level0_raw.sensor AS s " \
-                  "INNER JOIN level0_raw.sensor_at_location AS l ON s.id = l.sensor_id " \
-                  f"WHERE l.sensor_id = {sensor_id} ORDER BY l.valid_from DESC;"
+                "INNER JOIN level0_raw.sensor_at_location AS l ON s.id = l.sensor_id " \
+                f"WHERE l.sensor_id = {sensor_id} ORDER BY l.valid_from DESC;"
         row = self._database_adapt.fetchone(query=query)
         if row is None:
             raise ValueError(f"Cannot found record corresponding to sensor_id = "
@@ -133,7 +133,7 @@ class DatabaseGateway(object):
             sensor_id=row[0], sensor_name=row[1]
         )
 
-    def query_purpleair_location_of(self, sensor_index: int) -> SensorLocationDM:
+    def query_purpleair_sensor_location(self, sensor_index: int) -> SensorLocationDM:
         query = "SELECT l.sensor_id, ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l INNER JOIN " \
                 "level0_raw.sensor AS s ON s.id = l.sensor_id WHERE s.sensor_type ILIKE '%purpleair%' AND " \
                 f"sensor_name ILIKE '%{sensor_index}%' AND valid_to IS NULL;"

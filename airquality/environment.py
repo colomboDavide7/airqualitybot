@@ -72,9 +72,9 @@ class Environment(object, metaclass=Singleton):
 
 # =========== RESOURCE DIRECTORIES
     def input_dir_of(self, personality: str) -> str:
-        return f"{self._resource_dir()}/{personality}"
+        return f"{self.resource_dir()}/{personality}"
 
-    def _resource_dir(self) -> str:
+    def resource_dir(self) -> str:
         return self._secure_get_from_environ('resource_dir')
 
 # =========== API SERVER URLS
