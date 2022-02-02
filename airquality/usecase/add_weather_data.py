@@ -6,6 +6,8 @@
 #
 ######################################################
 import logging
+import os
+
 import airquality.environment as environ
 from airquality.extra.timest import openweathermap_timest
 
@@ -27,6 +29,15 @@ from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
 from airquality.iterables.fromfile import CityIterableDatamodels
 
 _DELETE_FORECAST_QUERY = "DELETE FROM level0_raw.hourly_forecast; DELETE FROM level0_raw.daily_forecast;"
+_CITY_FILENAME = 'cities.json'
+
+
+def _resource_dir() -> str:
+    return _ENVIRON.input_dir_of(personality='openweathermap')
+
+
+def _fullpath(filename: str) -> str:
+    return os.path.join(_resource_dir(), filename)
 
 
 def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
@@ -93,7 +104,7 @@ class AddWeatherData(UsecaseABC):
         self._database_gway = database_gway
         self._cached_weather_map = self._weather_map()
         self._cached_url_template = _ENVIRON.url_template(personality='openweathermap')
-        self._cached_cities = CityIterableDatamodels(filepath='resources/weather_cities.json')
+        self._cached_cities = CityIterableDatamodels(filepath=_fullpath(_CITY_FILENAME))
         self._api_keys = self._database_gway.query_openweathermap_keys()
         self._cached_hourly_forecast = self._database_gway.query_hourly_forecast_records()
         self._cached_daily_forecast = self._database_gway.query_daily_forecast_records()

@@ -92,7 +92,7 @@ class TestEnvironment(TestCase):
         with patch.dict(os.environ, _fake_environ_resource_directory()):
             self.assertEqual(
                 Environment().input_dir_of(personality="p1"),
-                "fakeroot/fakep1dir/fakep1datadir"
+                "fakeroot/p1"
             )
 
     def test_raise_missing_environ_property_error_when_key_error_is_raised(self):

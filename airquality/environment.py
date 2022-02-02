@@ -72,16 +72,10 @@ class Environment(object, metaclass=Singleton):
 
 # =========== RESOURCE DIRECTORIES
     def input_dir_of(self, personality: str) -> str:
-        return f"{self._resource_dir()}/{self._directory_of(personality)}/{self._data_dir_of(personality)}"
+        return f"{self._resource_dir()}/{personality}"
 
     def _resource_dir(self) -> str:
         return self._secure_get_from_environ('resource_dir')
-
-    def _directory_of(self, personality: str) -> str:
-        return self._secure_get_from_environ(f'{personality}_dir')
-
-    def _data_dir_of(self, personality: str) -> str:
-        return self._secure_get_from_environ(f'{personality}_data_dir')
 
 # =========== API SERVER URLS
     def url_template(self, personality: str) -> str:

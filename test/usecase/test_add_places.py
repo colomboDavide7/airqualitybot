@@ -89,7 +89,7 @@ class TestAddPlaces(TestCase):
         self._assert_existing_postal_codes(usecase)
         self.assertEqual(
             _fullpath("fakefile.txt"),
-            'fake_dir/fake_dirr/fake_dirrr/fakefile.txt'
+            'fake_dir/geonames/fakefile.txt'
         )
 
     def _assert_directory_filenames(self, usecase):

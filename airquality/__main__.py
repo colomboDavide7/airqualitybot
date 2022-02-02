@@ -15,7 +15,7 @@
 import json
 import logging.config
 
-with open('./logger_conf.json', 'r') as fconf:
+with open('config/logging.json', 'r') as fconf:
     logging.config.dictConfig(json.load(fconf))
 
 ######################################################
