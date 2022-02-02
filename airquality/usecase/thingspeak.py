@@ -8,7 +8,7 @@
 import logging
 import airquality.environment as environ
 from airquality.extra.timest import thingspeak_timest
-from airquality.extra.logger_extra import FileHandlerRotator
+from airquality.extra.logging import FileHandlerRotator
 
 _TIMEST = thingspeak_timest()
 _ENVIRON = environ.get_environ()
@@ -35,8 +35,8 @@ import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
 from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.database.gateway import DatabaseGateway
-from airquality.url.url_reader import json_http_response
-from airquality.url.timeiter_url import ThingspeakTimeIterableURL
+from airquality.extra.url import json_http_response
+from airquality.iterables.urls import ThingspeakIterableUrls
 from airquality.iterables.fromapi import ThingspeakIterableDatamodels
 from airquality.iterables.request_builder import AddThingspeakMeasuresRequestBuilder
 from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
@@ -71,13 +71,13 @@ class AddPurpleairMeasures(UsecaseABC):
             ch_name=param.ch_name
         )
 
-    def _urls_of(self, param: SensorApiParamDM) -> ThingspeakTimeIterableURL:
+    def _urls_of(self, param: SensorApiParamDM) -> ThingspeakIterableUrls:
         pre_formatted_url = self._url_template.format(
             api_key=param.api_key,
             api_id=param.api_id,
             api_fmt="json"
         )
-        return ThingspeakTimeIterableURL(
+        return ThingspeakIterableUrls(
             url=pre_formatted_url,
             begin=param.last_acquisition,
             step_size_in_days=7

@@ -17,7 +17,7 @@ import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.database.gateway import DatabaseGateway
-from airquality.url.url_reader import json_http_response
+from airquality.extra.url import json_http_response
 from airquality.datamodel.fromapi import PurpleairDM
 from airquality.iterables.fromapi import PurpleairIterableDatamodels
 

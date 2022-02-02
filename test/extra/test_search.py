@@ -3,7 +3,7 @@
 # @date:    2022-02-2, mer, 11:23
 # ======================================
 from unittest import TestCase, main
-from airquality.extra.weather_extra import _nested_search_dict
+from airquality.extra.weather import _nested_search_dict
 
 
 class TestSearch(TestCase):

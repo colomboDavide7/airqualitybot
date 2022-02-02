@@ -8,7 +8,7 @@
 import logging
 import airquality.environment as environ
 from airquality.extra.timest import atmotube_timest
-from airquality.extra.logger_extra import FileHandlerRotator
+from airquality.extra.logging import FileHandlerRotator
 
 _TIMEST = atmotube_timest()
 _ENVIRON = environ.get_environ()
@@ -26,8 +26,8 @@ import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
 from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.database.gateway import DatabaseGateway
-from airquality.url.url_reader import json_http_response
-from airquality.url.timeiter_url import AtmotubeTimeIterableURL
+from airquality.extra.url import json_http_response
+from airquality.iterables.urls import AtmotubeIterableUrls
 from airquality.iterables.fromapi import AtmotubeIterableDatamodels
 from airquality.iterables.request_builder import AddAtmotubeMeasureRequestBuilder
 from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
@@ -62,13 +62,13 @@ class AddAtmotubeMeasures(UsecaseABC):
             ch_name=api_param.ch_name
         )
 
-    def _urls_of(self, api_param: SensorApiParamDM) -> AtmotubeTimeIterableURL:
+    def _urls_of(self, api_param: SensorApiParamDM) -> AtmotubeIterableUrls:
         pre_formatted_url = self._cached_url_template.format(
             api_key=api_param.api_key,
             api_id=api_param.api_id,
             api_fmt="json"
         )
-        return AtmotubeTimeIterableURL(
+        return AtmotubeIterableUrls(
             url=pre_formatted_url,
             begin=api_param.last_acquisition,
             step_size_in_days=1

@@ -20,7 +20,7 @@ from typing import Dict, Set
 import airquality.usecase as constants
 from airquality.extra.sqlize import sqlize
 from airquality.usecase.abc import UsecaseABC
-from airquality.url.url_reader import json_http_response
+from airquality.extra.url import json_http_response
 from airquality.datamodel.fromfile import CityDM
 from airquality.database.gateway import DatabaseGateway
 from airquality.iterables.request_builder import AddOpenWeatherMapDataRequestBuilder

@@ -10,7 +10,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.fromdb import GeoareaLocationDM, OpenweathermapKeyDM
-from airquality.usecase.add_weather_data import AddWeatherData
+from airquality.usecase.openweathermap import AddWeatherData
 
 
 def _test_weather_conditions():
@@ -126,7 +126,7 @@ class AddWeatherDataIntegrationTest(TestCase):
 # =========== TEST METHOD
     @patch('airquality.environment.os')
     @patch('airquality.iterables.fromapi.open')
-    @patch('airquality.url.url_reader.requests.get')
+    @patch('airquality.extra.url.requests.get')
     def test_add_weather_data(self, mocked_get, mocked_open, mocked_os):
         mocked_os.environ = {'openweathermap_url': 'fake_url'}
         mocked_get.return_value = _mocked_responses()

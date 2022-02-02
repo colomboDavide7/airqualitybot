@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.url.timeiter_url import AtmotubeTimeIterableURL, ThingspeakTimeIterableURL
+from airquality.iterables.urls import AtmotubeIterableUrls, ThingspeakIterableUrls
 from unittest import TestCase, main
 import test._test_utils as tutils
 from datetime import datetime
@@ -21,7 +21,7 @@ def _new_york_timezone():
 
 # ======================================== THINGSPEAK TESTS ========================================
 def _expected_thingspeak_repr():
-    return "ThingspeakTimeIterableURL(" \
+    return "ThingspeakIterableUrls(" \
            "url='some_url', " \
            "begin='2021-12-01 07:46:00', " \
            "until='2021-12-29 07:10:00', " \
@@ -34,10 +34,10 @@ class TestThingspeakTimeIterableURL(TestCase):
     def setUp(self) -> None:
         self._begin = datetime(2021, 12, 1, 2, 46, tzinfo=_new_york_timezone())
         self._until = datetime(2021, 12, 29, 8, 10, tzinfo=_rome_timezone())
-        self._urls = ThingspeakTimeIterableURL(url="some_url",
-                                               begin=self._begin,
-                                               until=self._until,
-                                               step_size_in_days=7)
+        self._urls = ThingspeakIterableUrls(url="some_url",
+                                            begin=self._begin,
+                                            until=self._until,
+                                            step_size_in_days=7)
 
 # =========== TEST METHODS
     def test_thingspeak_url_formatter(self):
@@ -71,7 +71,7 @@ class TestThingspeakTimeIterableURL(TestCase):
 
 # ======================================== ATMOTUBE TESTS ========================================
 def _expected_atmotube_repr():
-    return "AtmotubeTimeIterableURL(" \
+    return "AtmotubeIterableUrls(" \
            "url='some_url', " \
            "begin='2021-12-01 07:10:00', " \
            "until='2021-12-03 15:10:00', " \
@@ -84,10 +84,10 @@ class TestAtmotubeTimeIterableURL(TestCase):
     def setUp(self) -> None:
         self._begin = datetime(2021, 12, 1, 8, 10, tzinfo=_rome_timezone())
         self._until = datetime(2021, 12, 3, 10, 10, tzinfo=_new_york_timezone())
-        self._urls = AtmotubeTimeIterableURL(url="some_url",
-                                             begin=self._begin,
-                                             until=self._until,
-                                             step_size_in_days=1)
+        self._urls = AtmotubeIterableUrls(url="some_url",
+                                          begin=self._begin,
+                                          until=self._until,
+                                          step_size_in_days=1)
 
 # =========== TEST METHODS
     def test_urls(self):

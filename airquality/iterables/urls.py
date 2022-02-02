@@ -22,7 +22,7 @@ def _get_smallest_between(time: datetime, upper_bound: datetime):
     return upper_bound if time >= upper_bound else time
 
 
-class TimeIterableURL(IterableItemsABC):
+class IterableUrlsABC(IterableItemsABC):
     """
     An interface for generating urls within a given period of time with a given granularity (step size).
     """
@@ -64,7 +64,7 @@ class TimeIterableURL(IterableItemsABC):
                f"step_size_in_days='{self.step_size_in_days}')"
 
 
-class AtmotubeTimeIterableURL(TimeIterableURL):
+class AtmotubeIterableUrls(IterableUrlsABC):
     """
     A concrete implementation of the *TimeIterableURL* interface that formats the URLs specifically for Atmotube APIs.
     """
@@ -77,7 +77,7 @@ class AtmotubeTimeIterableURL(TimeIterableURL):
         return time.date().strftime('%Y-%m-%d')
 
 
-class ThingspeakTimeIterableURL(TimeIterableURL):
+class ThingspeakIterableUrls(IterableUrlsABC):
     """
     A concrete implementation of the *TimeIterableURL* interface that formats the URLs specifically for Thingspeak APIs.
     """

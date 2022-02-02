@@ -14,12 +14,12 @@ _ENVIRON = environ.get_environ()
 _SYS_ARGS = sys.argv[1:]
 
 ######################################################
-from airquality.usecase.add_geonames_places import AddGeonamesPlaces
-from airquality.usecase.add_purpleair_measures import AddPurpleairMeasures
-from airquality.usecase.add_purpleair_sensors import AddPurpleairFixedSensors
-from airquality.usecase.add_atmotube_measures import AddAtmotubeMeasures
-from airquality.usecase.update_purpleair_locations import UpdatePurpleairLocation
-from airquality.usecase.add_weather_data import AddWeatherData
+from airquality.usecase.geonames import AddGeonamesPlaces
+from airquality.usecase.thingspeak import AddPurpleairMeasures
+from airquality.usecase.purpleair import AddPurpleairFixedSensors
+from airquality.usecase.atmotube import AddAtmotubeMeasures
+from airquality.usecase.purp_update import UpdatePurpleairLocation
+from airquality.usecase.openweathermap import AddWeatherData
 from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
 

@@ -17,7 +17,7 @@ _TIMEST = purpleair_timest()
 import airquality.usecase as constant
 from airquality.usecase.abc import UsecaseABC
 from airquality.database.gateway import DatabaseGateway
-from airquality.url.url_reader import json_http_response
+from airquality.extra.url import json_http_response
 from airquality.iterables.fromapi import PurpleairIterableDatamodels
 from airquality.iterables.request_builder import AddPurpleairSensorRequestBuilder
 from airquality.iterables.request_validator import AddFixedSensorRequestValidator

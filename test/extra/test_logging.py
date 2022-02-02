@@ -5,8 +5,8 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.fromdb import SensorInfoDM
-from airquality.extra.logger_extra import FileHandlerRotator
-from airquality.extra.logger_extra import _custom_log_filename, number_cleaner, name_cleaner
+from airquality.extra.logging import FileHandlerRotator
+from airquality.extra.logging import _custom_log_filename, number_cleaner, name_cleaner
 
 
 def _test_sensor_identity():
@@ -51,7 +51,7 @@ class TestFileHandlerRotator(TestCase):
             logger_fmt="fake_fmt"
         )
 
-    @patch('airquality.extra.logger_extra.logging')
+    @patch('airquality.extra.logging.logging')
     def test_rotate_file_handler(self, mocked_logging):
         mocked_logging.FileHandler = MagicMock()
         mocked_logging.Formatter = MagicMock()

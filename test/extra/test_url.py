@@ -4,10 +4,8 @@
 # ======================================
 from unittest import TestCase, main
 from unittest.mock import patch, MagicMock
-
 import requests
-
-from airquality.url.url_reader import json_http_response
+from airquality.extra.url import json_http_response
 
 
 def _test_status_code():
@@ -35,7 +33,7 @@ def _mocked_http_bad_response() -> MagicMock:
 class TestURLReader(TestCase):
 
 # =========== TEST METHODS
-    @patch('airquality.url.url_reader.requests.get')
+    @patch('airquality.extra.url.requests.get')
     def test_successfully_get_response_from_server(self, mocked_get):
         mocked_get.return_value = _mocked_json_response()
         actual_jresp = json_http_response(url='fake url')
@@ -44,7 +42,7 @@ class TestURLReader(TestCase):
             {"p1": "a1", "p2": "a2"}
         )
 
-    @patch('airquality.url.url_reader.requests.get')
+    @patch('airquality.extra.url.requests.get')
     def test_raise_bad_api_server_response_error(self, mocked_get):
         mocked_get.return_value = _mocked_http_bad_response()
         with self.assertRaises(requests.HTTPError):

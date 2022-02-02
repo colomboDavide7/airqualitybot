@@ -8,7 +8,7 @@
 import os
 from typing import Tuple
 from dotenv import load_dotenv
-from airquality.extra.singleton import Singleton
+from airquality.meta.singleton import Singleton
 
 
 _LOGGING_DIR_PERMISSION = 0o600         # only the user can read/write from that directory.

@@ -11,7 +11,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.fromdb import SensorApiParamDM, SensorInfoDM
-from airquality.usecase.add_atmotube_measures import AddAtmotubeMeasures
+from airquality.usecase.atmotube import AddAtmotubeMeasures
 
 
 def _test_measure_param():
@@ -153,7 +153,7 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
 # =========== TEST METHODS
 #     @patch('airquality.extra.logger_extra.logging')
     @patch('airquality.environment.os')
-    @patch('airquality.url.url_reader.requests.get')
+    @patch('airquality.extra.url.requests.get')
     def test_add_atmotube_measures_usecase(self, mocked_get, mocked_os):
         mocked_os.environ = _mocked_environ()
         mocked_get.return_value = _mocked_json_api_resp()

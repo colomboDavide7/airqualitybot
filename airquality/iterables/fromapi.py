@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import Generator, Dict
-import airquality.extra.weather_extra as wextra
+import airquality.extra.weather as wextra
 from airquality.iterables.abc import IterableItemsABC
 from airquality.datamodel.fromapi import PurpleairDM, AtmotubeDM, ThingspeakDM, OpenweathermapDM
 

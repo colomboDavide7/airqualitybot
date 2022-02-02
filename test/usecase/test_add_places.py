@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.usecase.add_geonames_places import AddGeonamesPlaces, _fullpath
+from airquality.usecase.geonames import AddGeonamesPlaces, _fullpath
 
 
 def _test_directory_content():
@@ -63,8 +63,8 @@ class TestAddPlaces(TestCase):
 
 # =========== TEST METHODS
     @patch('airquality.environment.os')
-    @patch('airquality.usecase.add_geonames_places.listdir')
-    @patch('airquality.usecase.add_geonames_places.isfile')
+    @patch('airquality.usecase.geonames.listdir')
+    @patch('airquality.usecase.geonames.isfile')
     @patch('airquality.iterables.fromfile.open')
     def test_run_add_fixed_sensors_usecase(self, mocked_open, mocked_isfile, mocked_listdir, mocked_os):
         mocked_os.environ = _mocked_environ()
