@@ -8,7 +8,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.requests import AddSensorMeasureRequest
-from airquality.iterables.response_builder import AddMobileMeasureResponseBuilder
+from airquality.iterables.responses import MobileMeasureIterableResponses
 
 
 def _rome_timezone():
@@ -69,7 +69,7 @@ class TestAddAtmotubeMeasuresResponseBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._response_builder = AddMobileMeasureResponseBuilder(
+        self._response_builder = MobileMeasureIterableResponses(
             requests=_mocked_validator(),
             start_packet_id=12399
         )

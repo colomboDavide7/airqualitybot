@@ -6,7 +6,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.requests import AddPlaceRequest
-from airquality.iterables.response_builder import AddPlacesResponseBuilder
+from airquality.iterables.responses import AddPlaceIterableResponses
 
 
 def _test_place_location():
@@ -44,7 +44,7 @@ class TestAddPlacesResponseBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._response_builder = AddPlacesResponseBuilder(
+        self._response_builder = AddPlaceIterableResponses(
             requests=_mocked_validator()
         )
 

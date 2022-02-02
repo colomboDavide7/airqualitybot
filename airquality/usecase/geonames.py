@@ -21,7 +21,7 @@ from airquality.database.gateway import DatabaseGateway
 from airquality.iterables.fromfile import GeonamesIterableDatamodels
 from airquality.iterables.requests import GeonamesIterableRequests
 from airquality.iterables.request_validator import AddPlacesRequestValidator
-from airquality.iterables.response_builder import AddPlacesResponseBuilder
+from airquality.iterables.responses import AddPlaceIterableResponses
 
 
 def _resource_dir():
@@ -32,7 +32,7 @@ def _fullpath(filename: str) -> str:
     return join(_resource_dir(), filename)
 
 
-def _build_insert_query(response_builder: AddPlacesResponseBuilder) -> str:
+def _build_insert_query(response_builder: AddPlaceIterableResponses) -> str:
     return "INSERT INTO level0_raw.geographical_area " \
            "(postal_code, country_code, place_name, province, state, geom) " \
            f"VALUES {','.join(resp.place_record for resp in response_builder)};"
@@ -68,7 +68,7 @@ class AddGeonamesPlaces(UsecaseABC):
             )
             _LOGGER.debug("found #%d valid requests" % len(validator))
 
-            response_builder = AddPlacesResponseBuilder(requests=validator)
+            response_builder = AddPlaceIterableResponses(requests=validator)
             _LOGGER.debug("found #%d responses" % len(response_builder))
 
             if len(response_builder) > 0:

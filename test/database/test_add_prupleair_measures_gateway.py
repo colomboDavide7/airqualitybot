@@ -6,7 +6,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
 from airquality.datamodel.fromdb import SensorInfoDM
-from airquality.datamodel.response import AddStationMeasuresResponse
+from airquality.datamodel.responses import AddSensorMeasureResponse
 
 
 def _test_measure_record():
@@ -16,7 +16,7 @@ def _test_measure_record():
 
 
 def _test_add_station_measures_response():
-    return AddStationMeasuresResponse(
+    return AddSensorMeasureResponse(
         measure_record=_test_measure_record()
     )
 

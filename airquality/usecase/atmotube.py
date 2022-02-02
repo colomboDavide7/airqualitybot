@@ -31,10 +31,10 @@ from airquality.iterables.urls import AtmotubeIterableUrls
 from airquality.iterables.fromapi import AtmotubeIterableDatamodels
 from airquality.iterables.requests import AtmotubeIterableRequests
 from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
-from airquality.iterables.response_builder import AddMobileMeasureResponseBuilder
+from airquality.iterables.responses import MobileMeasureIterableResponses
 
 
-def _build_insert_query(response_builder: AddMobileMeasureResponseBuilder) -> str:
+def _build_insert_query(response_builder: MobileMeasureIterableResponses) -> str:
     return "INSERT INTO level0_raw.mobile_measurement " \
            "(packet_id, param_id, param_value, timestamp, geom) " \
            f"VALUES {','.join(resp.measure_record for resp in response_builder)};"
@@ -106,7 +106,7 @@ class AddAtmotubeMeasures(UsecaseABC):
                 )
                 _LOGGER.debug('found #%d valid requests' % len(validator))
 
-                response_builder = AddMobileMeasureResponseBuilder(
+                response_builder = MobileMeasureIterableResponses(
                     requests=validator,
                     start_packet_id=self._packet_id()
                 )

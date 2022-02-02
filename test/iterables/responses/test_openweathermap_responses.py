@@ -9,7 +9,7 @@ from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.iterables.response_builder import AddOpenWeatherMapDataResponseBuilder
+from airquality.iterables.responses import WeatherDataIterableResponses
 from airquality.datamodel.requests import WeatherConditionsRequest, AddWeatherDataRequest, WeatherAlertRequest
 
 
@@ -109,7 +109,7 @@ class TestAddOpenweathermapDataResponseBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._response_builder = AddOpenWeatherMapDataResponseBuilder(
+        self._response_builder = WeatherDataIterableResponses(
             requests=_mocked_request_builder(),
             geoarea_id=14400
         )

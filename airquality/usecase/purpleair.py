@@ -21,10 +21,10 @@ from airquality.extra.url import json_http_response
 from airquality.iterables.fromapi import PurpleairIterableDatamodels
 from airquality.iterables.requests import PurpleairIterableRequests
 from airquality.iterables.request_validator import AddFixedSensorRequestValidator
-from airquality.iterables.response_builder import AddFixedSensorResponseBuilder
+from airquality.iterables.responses import FixedSensorIterableResponses
 
 
-def _build_insert_query(response_builder: AddFixedSensorResponseBuilder) -> str:
+def _build_insert_query(response_builder: FixedSensorIterableResponses) -> str:
     sval = pval = ""
     for r in response_builder:
         sval += f"{r.sensor_record},"
@@ -65,7 +65,7 @@ class AddPurpleairFixedSensors(UsecaseABC):
         )
         _LOGGER.debug("found #%d valid requests" % len(validator))
 
-        response_builder = AddFixedSensorResponseBuilder(
+        response_builder = FixedSensorIterableResponses(
             requests=validator,
             start_sensor_id=self._start_sensor_id
         )

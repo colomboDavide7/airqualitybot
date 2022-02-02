@@ -40,7 +40,7 @@ from airquality.iterables.urls import ThingspeakIterableUrls
 from airquality.iterables.fromapi import ThingspeakIterableDatamodels
 from airquality.iterables.requests import ThingspeakIterableRequests
 from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
-from airquality.iterables.response_builder import AddStationMeasuresResponseBuilder
+from airquality.iterables.responses import StationMeasureIterableResponses
 
 
 def _build_update_query(time: datetime, sensor_id: int, channel_name: str) -> str:
@@ -49,7 +49,7 @@ def _build_update_query(time: datetime, sensor_id: int, channel_name: str) -> st
            f"WHERE sensor_id = {sensor_id} AND ch_name = '{channel_name}';"
 
 
-def _build_insert_query(response_builder: AddStationMeasuresResponseBuilder) -> str:
+def _build_insert_query(response_builder: StationMeasureIterableResponses) -> str:
     return "INSERT INTO level0_raw.station_measurement " \
            "(packet_id, sensor_id, param_id, param_value, timestamp) " \
            f"VALUES {','.join(resp.measure_record for resp in response_builder)};"
@@ -117,7 +117,7 @@ class AddPurpleairMeasures(UsecaseABC):
                 )
                 _LOGGER.debug('found #%d valid responses' % len(validator))
 
-                response_builder = AddStationMeasuresResponseBuilder(
+                response_builder = StationMeasureIterableResponses(
                     requests=validator,
                     start_packet_id=self._packet_id(),
                     sensor_id=param.sensor_id

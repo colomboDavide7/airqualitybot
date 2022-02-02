@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam
-from airquality.iterables.response_builder import AddFixedSensorResponseBuilder
+from airquality.iterables.responses import FixedSensorIterableResponses
 
 
 def _test_sensor_location():
@@ -69,7 +69,7 @@ class TestAddPurpleairSensorsResponseBuilder(TestCase):
     @patch('airquality.extra.timest.datetime')
     def test_create_response_to_request_of_adding_fixed_sensor(self, mocked_datetime):
         mocked_datetime.now.return_value = _mocked_current_utc_timestamp()
-        response_builder = AddFixedSensorResponseBuilder(
+        response_builder = FixedSensorIterableResponses(
             requests=_mocked_validator(),
             start_sensor_id=12
         )

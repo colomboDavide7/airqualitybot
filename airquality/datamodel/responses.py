@@ -19,34 +19,25 @@ class AddFixedSensorResponse(object):
 
 
 @dataclass
-class AddMobileMeasureResponse(object):
+class AddSensorMeasureResponse(object):
     """
-    A *dataclass* that represents the response to a request of adding a set of mobile sensor measures.
-    """
-
-    measure_record: str                 # The sensor's measurement SQL record.
-
-
-@dataclass
-class AddStationMeasuresResponse(object):
-    """
-    A *dataclass* that represents the response to a request of adding a set of fixed sensor measures.
+    A *dataclass* that represents the response to a request of adding sensor measures.
     """
 
     measure_record: str                 # The sensor's measurement SQL record.
 
 
 @dataclass
-class AddPlacesResponse(object):
+class AddPlaceResponse(object):
     """
-    A *dataclass* that defines the datastructure for the response to an *AddPlacesRequest* request.
+    A *dataclass* that defines the datastructure for the response to an *AddPlaceRequest* request.
     """
 
-    place_record: str                   # The place's SQL record.
+    place_record: str                   # The place's SQL record inserted into 'level0_raw.geographical_area'.
 
 
 @dataclass
-class AddOpenWeatherMapDataResponse(object):
+class AddWeatherDataResponse(object):
     """
     A *dataclass* that defines the raw datastructure for the response to a request of adding OpenWeatherMap data.
     """

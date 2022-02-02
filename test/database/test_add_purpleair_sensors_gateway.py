@@ -5,7 +5,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
-from airquality.datamodel.response import AddFixedSensorResponse
+from airquality.datamodel.responses import AddFixedSensorResponse
 
 
 def _test_database_sensor_names():

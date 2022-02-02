@@ -25,7 +25,7 @@ from airquality.extra.url import json_http_response
 from airquality.datamodel.fromfile import CityDM
 from airquality.database.gateway import DatabaseGateway
 from airquality.iterables.requests import AddOpenWeatherMapDataRequestBuilder
-from airquality.iterables.response_builder import AddOpenWeatherMapDataResponseBuilder
+from airquality.iterables.responses import WeatherDataIterableResponses
 from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
 from airquality.iterables.fromfile import CityIterableDatamodels
 
@@ -40,7 +40,7 @@ def _fullpath(filename: str) -> str:
     return os.path.join(_resource_dir(), filename)
 
 
-def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
+def _build_insert_query(response_builder: WeatherDataIterableResponses):
     cval = hval = dval = aval = ""
     for resp in response_builder:
         cval += f"{resp.current_weather_record},"
@@ -164,7 +164,7 @@ class AddWeatherData(UsecaseABC):
         )
         _LOGGER.debug("found #%d requests" % len(request_builder))
 
-        response_builder = AddOpenWeatherMapDataResponseBuilder(
+        response_builder = WeatherDataIterableResponses(
             requests=request_builder,
             geoarea_id=geoarea_info.geoarea_id
         )

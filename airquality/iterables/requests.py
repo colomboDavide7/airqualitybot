@@ -129,6 +129,11 @@ class GeonamesIterableRequests(IterableItemsABC):
 
 
 class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
+    """
+    A class that implements the *IterableItemsABC* interface and defines the business rules for converting a
+    *OpenweathermapDM* into an *AddWeatherDataRequest*
+    """
+
     def __init__(
         self,
         timest: Timest,

@@ -5,7 +5,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
-from airquality.datamodel.response import AddOpenWeatherMapDataResponse
+from airquality.datamodel.responses import AddWeatherDataResponse
 
 
 def _expected_delete_hourly_forecast_query():
@@ -43,7 +43,7 @@ def _test_weather_alert_record():
 
 
 def _test_add_weather_data_response():
-    return AddOpenWeatherMapDataResponse(
+    return AddWeatherDataResponse(
         current_weather_record=_test_current_weather_record(),
         hourly_forecast_record=_test_hourly_forecast_record(),
         daily_forecast_record=_test_daily_forecast_record(),

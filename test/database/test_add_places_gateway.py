@@ -5,7 +5,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
-from airquality.datamodel.response import AddPlacesResponse
+from airquality.datamodel.responses import AddPlaceResponse
 
 
 def _test_database_postal_codes():
@@ -17,7 +17,7 @@ def _test_place_record():
 
 
 def _test_add_places_response():
-    return AddPlacesResponse(
+    return AddPlaceResponse(
         place_record=_test_place_record()
     )
 

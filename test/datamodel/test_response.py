@@ -6,11 +6,8 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.datamodel.response import AddFixedSensorResponse, \
-                                          AddMobileMeasureResponse, \
-                                          AddStationMeasuresResponse, \
-                                          AddPlacesResponse, \
-                                          AddOpenWeatherMapDataResponse
+from airquality.datamodel.responses import AddFixedSensorResponse, \
+    AddSensorMeasureResponse, AddPlaceResponse, AddWeatherDataResponse
 
 
 class TestResponseModel(TestCase):
@@ -24,25 +21,25 @@ class TestResponseModel(TestCase):
         self.assertEqual(response.apiparam_record, "fake_apiparam_record")
 
     def test_add_mobile_measures_response(self):
-        response = AddMobileMeasureResponse(
+        response = AddSensorMeasureResponse(
             measure_record="fake_measure_record"
         )
         self.assertEqual(response.measure_record, "fake_measure_record")
 
     def test_add_station_measures_response(self):
-        response = AddStationMeasuresResponse(
+        response = AddSensorMeasureResponse(
             measure_record="fake_measure_records"
         )
         self.assertEqual(response.measure_record, "fake_measure_records")
 
     def test_add_places_response(self):
-        response = AddPlacesResponse(
+        response = AddPlaceResponse(
             place_record="fake_place_record"
         )
         self.assertEqual(response.place_record, "fake_place_record")
 
     def test_add_openweathermap_data_response(self):
-        response = AddOpenWeatherMapDataResponse(
+        response = AddWeatherDataResponse(
             current_weather_record="fake_current",
             hourly_forecast_record="fake_hourly",
             daily_forecast_record="fake_daily",

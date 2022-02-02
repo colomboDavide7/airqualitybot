@@ -7,7 +7,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.requests import AddSensorMeasureRequest
-from airquality.iterables.response_builder import AddStationMeasuresResponseBuilder
+from airquality.iterables.responses import StationMeasureIterableResponses
 
 
 def _rome_timezone():
@@ -40,7 +40,7 @@ class TestAddThingspeakMeasureResponseBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._response_builder = AddStationMeasuresResponseBuilder(
+        self._response_builder = StationMeasureIterableResponses(
             requests=_mocked_validator(),
             start_packet_id=140,
             sensor_id=99
