@@ -23,9 +23,8 @@ class PurpleairAPIDataBuilder(IterableItemsABC):
     """
 
     def __init__(self, json_response: Dict[str, Any]):
-        self._jresp = json_response
-        self._fields = self._jresp['fields']
-        self._data = self._jresp['data']
+        self._fields = json_response['fields']
+        self._data = json_response['data']
 
     def items(self) -> Generator[PurpleairAPIData, None, None]:
         return (PurpleairAPIData(**(dict(zip(self._fields, data)))) for data in self._data)
@@ -42,8 +41,7 @@ class AtmotubeAPIDataBuilder(IterableItemsABC):
     """
 
     def __init__(self, json_response: Dict[str, Any]):
-        self._jresp = json_response
-        self._items = self._jresp['data']['items']
+        self._items = json_response['data']['items']
 
     def items(self) -> Generator[AtmotubeAPIData, None, None]:
         return (AtmotubeAPIData(**item) for item in self._items)
@@ -60,8 +58,7 @@ class ThingspeakAPIDataBuilder(IterableItemsABC):
     """
 
     def __init__(self, json_response: Dict[str, Any]):
-        self._jresp = json_response
-        self._feeds = self._jresp['feeds']
+        self._feeds = json_response['feeds']
 
     def items(self) -> Generator[ThingspeakAPIData, None, None]:
         return (ThingspeakAPIData(**item) for item in self._feeds)
@@ -110,12 +107,11 @@ class OpenWeatherMapAPIDataBuilder(IterableItemsABC):
     """
 
     def __init__(self, json_response: Dict[str, Any]):
-        self._jresp = json_response
-        self.tzname = self._jresp['timezone']               # the time zone name for the requested location.
-        self.current = self._jresp['current']               # the current weather dict.
-        self.hourly = self._jresp['hourly']                 # the list of hourly weather forecast.
-        self.daily = self._jresp['daily']                   # the list of daily weather forecast.
-        self._alerts = self._jresp.get('alerts', ())        # the list of weather alerts (DEFAULTS TO EMPTY LIST !!!)
+        self.tzname = json_response['timezone']               # the time zone name for the requested location.
+        self.current = json_response['current']               # the current weather dict.
+        self.hourly = json_response['hourly']                 # the list of hourly weather forecast.
+        self.daily = json_response['daily']                   # the list of daily weather forecast.
+        self._alerts = json_response.get('alerts', ())        # the list of weather alerts (DEFAULTS TO EMPTY LIST !!!)
 
     def items(self) -> Generator[OpenWeatherMapAPIData, None, None]:
         yield OpenWeatherMapAPIData(
