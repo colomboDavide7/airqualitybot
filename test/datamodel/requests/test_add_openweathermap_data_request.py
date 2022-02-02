@@ -60,11 +60,13 @@ class TestAddOpenweathermapDataRequest(TestCase):
         request = AddOpenWeatherMapDataRequest(
             current=_current_weather_test_request(),
             hourly=[_hourly_forecast_test_request()],
-            daily=[_daily_forecast_test_request()]
+            daily=[_daily_forecast_test_request()],
+            alerts=[]
         )
         self._assert_current_weather(request.current)
         self._assert_hourly_forecast(request.hourly[0])
         self._assert_daily_forecast(request.daily[0])
+        self.assertEqual(request.alerts, [])
 
 # =========== SUPPORT METHODS
     def _assert_current_weather(self, request: AddWeatherForecastRequest):

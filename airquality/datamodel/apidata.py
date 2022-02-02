@@ -31,17 +31,6 @@ class PurpleairAPIData(object):
 
 
 @dataclass
-class PurpleairLocationData(object):
-    """
-    A *dataclass* that defines the raw datastructure for handling PurpleAir sensor's geolocation.
-    """
-
-    sensor_index: int                   # The unique number assigned to a Purpleair sensor.
-    latitude: float                     # The latitude position value for the sensor.
-    longitude: float                    # The longitude position value for the sensor.
-
-
-@dataclass
 class AtmotubeAPIData(object):
     """
     A *dataclass* that represents the raw Atmotube API data of a single sensor.

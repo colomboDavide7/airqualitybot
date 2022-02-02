@@ -112,4 +112,4 @@ class AddOpenWeatherMapDataRequest(object):
     current: AddWeatherForecastRequest          # The request for the current weather.
     hourly: List[AddWeatherForecastRequest]     # The list of requests for the hourly forecast weather (next 48 hours).
     daily: List[AddWeatherForecastRequest]      # The list of requests for the daily forecast weather (next 7 days).
-    alerts: List[AddWeatherAlertRequest] = ()   # The list of requests of weather alert for the requested location.
+    alerts: List[AddWeatherAlertRequest]        # The list of requests of weather alert for the requested location.

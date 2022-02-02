@@ -18,7 +18,7 @@ from airquality.usecase.abc import UsecaseABC
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.url_reader import json_http_response
-from airquality.datamodel.apidata import PurpleairLocationData
+from airquality.datamodel.apidata import PurpleairAPIData
 from airquality.core.apidata_builder import PurpleairAPIDataBuilder
 
 
@@ -34,7 +34,7 @@ class UpdatePurpleairLocation(UsecaseABC):
         self._database_gway = database_gway
         self._url_template = _ENVIRON.url_template(personality='purp_update')
 
-    def _safe_query_location_of(self, datamodel: PurpleairLocationData):
+    def _safe_query_location_of(self, datamodel: PurpleairAPIData):
         try:
             geo = self._database_gway.query_purpleair_location_of(sensor_index=datamodel.sensor_index)
             if not math.isclose(a=datamodel.latitude, b=geo.latitude, rel_tol=1e-5) or \
@@ -47,8 +47,9 @@ class UpdatePurpleairLocation(UsecaseABC):
                 self._database_gway.execute(query=query)
 
         except ValueError:
-            _LOGGER.warning("Cannot found 'open' location (valid_to = NULL) corresponding to sensor_index = '%d' "
-                            "in level0_raw.sensor_at_location table" % datamodel.sensor_index)
+            _LOGGER.warning("Cannot found 'open' location (valid_to = NULL) corresponding to sensor '%s' "
+                            "(sensor_index = %d) in level0_raw.sensor_at_location table" %
+                            (datamodel.name, datamodel.sensor_index))
 
     def run(self):
         _LOGGER.info(constants.START_MESSAGE)
@@ -56,10 +57,7 @@ class UpdatePurpleairLocation(UsecaseABC):
         server_jresp = json_http_response(url=self._url_template)
         _LOGGER.debug("successfully get server response!!!")
 
-        datamodel_builder = PurpleairAPIDataBuilder(
-            json_response=server_jresp,
-            item_fact=PurpleairLocationData
-        )
+        datamodel_builder = PurpleairAPIDataBuilder(json_response=server_jresp)
         _LOGGER.debug("found #%d API items" % len(datamodel_builder))
 
         for datamodel in datamodel_builder:
