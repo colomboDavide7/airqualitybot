@@ -18,10 +18,10 @@ from os.path import isfile, join
 import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
 from airquality.database.gateway import DatabaseGateway
-from airquality.core.apidata_builder import GeonamesDataBuilder
-from airquality.core.request_builder import AddPlacesRequestBuilder
-from airquality.core.request_validator import AddPlacesRequestValidator
-from airquality.core.response_builder import AddPlacesResponseBuilder
+from airquality.iterables.fromfile import GeonamesIterableDatamodels
+from airquality.iterables.request_builder import AddPlacesRequestBuilder
+from airquality.iterables.request_validator import AddPlacesRequestValidator
+from airquality.iterables.response_builder import AddPlacesResponseBuilder
 
 
 def _resource_dir():
@@ -56,7 +56,7 @@ class AddGeonamesPlaces(UsecaseABC):
             _LOGGER.debug("found #%d database postal codes for country => '%s'"
                           % (len(database_pcodes), country_code))
 
-            datamodel_builder = GeonamesDataBuilder(filepath=_fullpath(f))
+            datamodel_builder = GeonamesIterableDatamodels(filepath=_fullpath(f))
             _LOGGER.debug("found #%d file lines" % len(datamodel_builder))
 
             request_builder = AddPlacesRequestBuilder(datamodels=datamodel_builder)

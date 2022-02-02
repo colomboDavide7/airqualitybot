@@ -9,7 +9,7 @@ import json
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.apidata import CityOfGeoarea
+from airquality.datamodel.fromdb import GeoareaLocationDM
 from airquality.datamodel.openweathermap_key import OpenweathermapKey
 from airquality.usecase.add_weather_data import AddWeatherData
 
@@ -52,7 +52,7 @@ def _test_opwmap_key():
 
 
 def _test_database_geolocation_of_city():
-    return CityOfGeoarea(
+    return GeoareaLocationDM(
         row=(14400, 0.0, 0.0)
     )
 
@@ -124,7 +124,7 @@ class AddWeatherDataIntegrationTest(TestCase):
 
 # =========== TEST METHOD
     @patch('airquality.environment.os')
-    @patch('airquality.core.apidata_builder.open')
+    @patch('airquality.iterables.fromapi.open')
     @patch('airquality.url.url_reader.requests.get')
     def test_add_weather_data(self, mocked_get, mocked_open, mocked_os):
         mocked_os.environ = {'openweathermap_url': 'fake_url'}

@@ -19,40 +19,14 @@ import airquality.usecase as constants
 from airquality.extra.sqlize import sqlize
 from airquality.usecase.abc import UsecaseABC
 from airquality.url.url_reader import json_http_response
-from airquality.datamodel.apidata import WeatherCityData
+from airquality.datamodel.fromfile import CityDM
 from airquality.database.gateway import DatabaseGateway
-from airquality.core.request_builder import AddOpenWeatherMapDataRequestBuilder
-from airquality.core.response_builder import AddOpenWeatherMapDataResponseBuilder
-from airquality.core.apidata_builder import OpenWeatherMapAPIDataBuilder, WeatherCityDataBuilder
+from airquality.iterables.request_builder import AddOpenWeatherMapDataRequestBuilder
+from airquality.iterables.response_builder import AddOpenWeatherMapDataResponseBuilder
+from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
+from airquality.iterables.fromfile import CityIterableDatamodels
 
 _DELETE_FORECAST_QUERY = "DELETE FROM level0_raw.hourly_forecast; DELETE FROM level0_raw.daily_forecast;"
-
-
-# def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
-#     cval = hval = dval = aval = ""
-#     for resp in response_builder:
-#         cval += f"{resp.current_weather_record},"
-#         hval += f"{resp.hourly_forecast_record},"
-#         dval += f"{resp.daily_forecast_record},"
-#         aval += f"{resp.weather_alert_record},"
-#     query = "INSERT INTO level0_raw.current_weather " \
-#             "(geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, " \
-#             "wind_direction, rain, snow, timestamp, sunrise, sunset) " \
-#             f"VALUES {cval.strip(',')};"
-#     query += "INSERT INTO level0_raw.hourly_forecast " \
-#              "(geoarea_id, weather_id, temperature, pressure, humidity, " \
-#              "wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-#              f"VALUES {hval.strip(',')};"
-#     query += "INSERT INTO level0_raw.daily_forecast " \
-#              "(geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
-#              "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-#              f"VALUES {dval.strip(',')};"
-#     query += "" if not aval.strip(',') else \
-#              "INSERT INTO level0_raw.weather_alert " \
-#              "(geoarea_id, sender_name, alert_event, " \
-#              "alert_begin, alert_until, description) " \
-#              f"VALUES {aval.strip(',')};"
-#     return query
 
 
 def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
@@ -119,7 +93,7 @@ class AddWeatherData(UsecaseABC):
         self._database_gway = database_gway
         self._cached_weather_map = self._weather_map()
         self._cached_url_template = _ENVIRON.url_template(personality='openweathermap')
-        self._cached_cities = WeatherCityDataBuilder(filepath='resources/weather_cities.json')
+        self._cached_cities = CityIterableDatamodels(filepath='resources/weather_cities.json')
         self._api_keys = self._database_gway.query_openweathermap_keys()
         self._cached_hourly_forecast = self._database_gway.query_hourly_forecast_records()
         self._cached_daily_forecast = self._database_gway.query_daily_forecast_records()
@@ -136,7 +110,7 @@ class AddWeatherData(UsecaseABC):
         self._database_gway.execute(query=_DELETE_FORECAST_QUERY)
 
 # =========== SAFE METHOD
-    def _safe_insert_weather_of(self, api_key: str, city: WeatherCityData):
+    def _safe_insert_weather_of(self, api_key: str, city: CityDM):
         """
         This method handles the possibility that a *ValueError* exception is raised by the *database_gateway* when
         try to query the geolocation of the current *city*.
@@ -169,7 +143,7 @@ class AddWeatherData(UsecaseABC):
         service_jresp = json_http_response(url=pre_formatted_url)
         _LOGGER.debug("successfully get server response!!!")
 
-        datamodel_builder = OpenWeatherMapAPIDataBuilder(json_response=service_jresp)
+        datamodel_builder = OpenweathermapIterableDatamodels(json_response=service_jresp)
         _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
         request_builder = AddOpenWeatherMapDataRequestBuilder(

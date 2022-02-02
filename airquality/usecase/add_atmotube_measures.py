@@ -28,10 +28,10 @@ from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.url_reader import json_http_response
 from airquality.url.timeiter_url import AtmotubeTimeIterableURL
-from airquality.core.apidata_builder import AtmotubeAPIDataBuilder
-from airquality.core.request_builder import AddAtmotubeMeasureRequestBuilder
-from airquality.core.request_validator import AddSensorMeasuresRequestValidator
-from airquality.core.response_builder import AddMobileMeasureResponseBuilder
+from airquality.iterables.fromapi import AtmotubeIterableDatamodels
+from airquality.iterables.request_builder import AddAtmotubeMeasureRequestBuilder
+from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
+from airquality.iterables.response_builder import AddMobileMeasureResponseBuilder
 
 
 def _build_insert_query(response_builder: AddMobileMeasureResponseBuilder) -> str:
@@ -90,7 +90,7 @@ class AddAtmotubeMeasures(UsecaseABC):
                 server_jresp = json_http_response(url=url)
                 _LOGGER.debug("successfully get server response!!!")
 
-                datamodel_builder = AtmotubeAPIDataBuilder(json_response=server_jresp)
+                datamodel_builder = AtmotubeIterableDatamodels(json_response=server_jresp)
                 _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddAtmotubeMeasureRequestBuilder(

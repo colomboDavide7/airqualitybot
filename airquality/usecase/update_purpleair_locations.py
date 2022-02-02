@@ -18,8 +18,8 @@ from airquality.usecase.abc import UsecaseABC
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.url_reader import json_http_response
-from airquality.datamodel.apidata import PurpleairAPIData
-from airquality.core.apidata_builder import PurpleairAPIDataBuilder
+from airquality.datamodel.fromapi import PurpleairDM
+from airquality.iterables.fromapi import PurpleairIterableDatamodels
 
 
 def _build_query(sensor_id: int, time: datetime, geom: str):
@@ -34,7 +34,7 @@ class UpdatePurpleairLocation(UsecaseABC):
         self._database_gway = database_gway
         self._url_template = _ENVIRON.url_template(personality='purp_update')
 
-    def _safe_query_location_of(self, datamodel: PurpleairAPIData):
+    def _safe_query_location_of(self, datamodel: PurpleairDM):
         try:
             geo = self._database_gway.query_purpleair_location_of(sensor_index=datamodel.sensor_index)
             if not math.isclose(a=datamodel.latitude, b=geo.latitude, rel_tol=1e-5) or \
@@ -57,7 +57,7 @@ class UpdatePurpleairLocation(UsecaseABC):
         server_jresp = json_http_response(url=self._url_template)
         _LOGGER.debug("successfully get server response!!!")
 
-        datamodel_builder = PurpleairAPIDataBuilder(json_response=server_jresp)
+        datamodel_builder = PurpleairIterableDatamodels(json_response=server_jresp)
         _LOGGER.debug("found #%d API items" % len(datamodel_builder))
 
         for datamodel in datamodel_builder:

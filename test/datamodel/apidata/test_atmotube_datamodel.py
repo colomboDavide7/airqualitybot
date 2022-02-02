@@ -3,13 +3,13 @@
 # @date:    2022-01-20, gio, 19:57
 # ======================================
 from unittest import TestCase, main
-from airquality.datamodel.apidata import AtmotubeAPIData
+from airquality.datamodel.fromapi import AtmotubeDM
 
 
 class TestAtmotubeDatamodel(TestCase):
 
     def test_atmotube_datamodel(self):
-        data = AtmotubeAPIData(
+        data = AtmotubeDM(
             time="2021-08-10T23:59:00.000Z",
             voc=0.17,
             pm1=8,

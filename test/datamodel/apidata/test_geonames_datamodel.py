@@ -3,7 +3,7 @@
 # @date:    2022-01-20, gio, 20:02
 # ======================================
 from unittest import TestCase, main
-from airquality.datamodel.apidata import GeonamesData
+from airquality.datamodel.fromfile import GeonamesDM
 
 
 class TestGeonamesDatamodel(TestCase):
@@ -23,7 +23,7 @@ class TestGeonamesDatamodel(TestCase):
             "9",
             "4"
         ]
-        data = GeonamesData(*line)
+        data = GeonamesDM(*line)
         self.assertEqual(data.postal_code, "27100")
         self.assertEqual(data.place_name, "Pavia")
         self.assertEqual(data.country_code, "IT")

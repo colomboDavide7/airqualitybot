@@ -8,7 +8,7 @@
 from datetime import datetime
 from typing import Set, Dict, List
 from airquality.datamodel.apiparam import APIParam
-from airquality.datamodel.apidata import CityOfGeoarea
+from airquality.datamodel.fromdb import GeoareaLocationDM
 from airquality.database.adapter import DatabaseAdapter
 from airquality.datamodel.geolocation import Geolocation
 from airquality.datamodel.sensor_ident import SensorIdentity
@@ -103,7 +103,7 @@ class DatabaseGateway(object):
                   f"WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
         )
 
-    @constructor_of(obj_type=CityOfGeoarea)
+    @constructor_of(obj_type=GeoareaLocationDM)
     @throw_on(sentinel_value=None, exc_type=ValueError)
     def query_geolocation_of(self, country_code: str, place_name: str):
         return self._database_adapt.fetchone(

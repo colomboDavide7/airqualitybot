@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.core.iteritems import IterableItemsABC
+from airquality.iterables.abc import IterableItemsABC
 from airquality.extra.timest import make_naive
 from datetime import datetime, timedelta
 from abc import abstractmethod

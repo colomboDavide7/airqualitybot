@@ -6,11 +6,12 @@
 #
 ######################################################
 from unittest import TestCase, main
-from airquality.datamodel.apidata import Weather, WeatherForecast, OpenWeatherMapAPIData, WeatherCityData
+from airquality.datamodel.fromfile import CityDM
+from airquality.datamodel.fromapi import WeatherDM, WeatherConditionsDM, OpenweathermapDM
 
 
 def _weather_test_data():
-    return Weather(
+    return WeatherDM(
             id=804,
             icon="04d",
             main="Clouds",
@@ -19,7 +20,7 @@ def _weather_test_data():
 
 
 def _current_weather_test_datamodel():
-    return WeatherForecast(
+    return WeatherConditionsDM(
         dt=1641217631,
         temp=8.84,
         pressure=1018,
@@ -33,7 +34,7 @@ def _current_weather_test_datamodel():
 
 
 def _hourly_forecast_test_datamodel():
-    return WeatherForecast(
+    return WeatherConditionsDM(
         dt=1641214800,
         temp=9.21,
         pressure=1018,
@@ -46,7 +47,7 @@ def _hourly_forecast_test_datamodel():
 
 
 def _daily_forecast_test_datamodel():
-    return WeatherForecast(
+    return WeatherConditionsDM(
         dt=1641207600,
         temp=9.25,
         temp_min=5.81,
@@ -67,7 +68,7 @@ class TestOpenWeatherMapDatamodel(TestCase):
 
 # =========== TEST METHODS
     def test_weathercity_datamodel(self):
-        data = WeatherCityData(
+        data = CityDM(
             country_code="fakecode",
             place_name="fakename"
         )
@@ -93,11 +94,12 @@ class TestOpenWeatherMapDatamodel(TestCase):
         self._assert_weather(daily_forecast.weather[0])
 
     def test_full_openweathermap_datamodel(self):
-        data = OpenWeatherMapAPIData(
+        data = OpenweathermapDM(
             tz_name="Europe/Rome",
             current=_current_weather_test_datamodel(),
             hourly_forecast=[_hourly_forecast_test_datamodel()],
-            daily_forecast=[_daily_forecast_test_datamodel()]
+            daily_forecast=[_daily_forecast_test_datamodel()],
+            alerts=[]
         )
         self.assertEqual(data.tz_name, "Europe/Rome")
         self._assert_current_weather(data.current)
@@ -111,7 +113,7 @@ class TestOpenWeatherMapDatamodel(TestCase):
         self.assertEqual(weather_data.main, "Clouds")
         self.assertEqual(weather_data.description, "overcast clouds")
 
-    def _assert_current_weather(self, current_weather: WeatherForecast):
+    def _assert_current_weather(self, current_weather: WeatherConditionsDM):
         self.assertEqual(current_weather.dt, 1641217631)
         self.assertEqual(current_weather.sunrise, 1641193337)
         self.assertEqual(current_weather.sunset, 1641225175)
@@ -127,7 +129,7 @@ class TestOpenWeatherMapDatamodel(TestCase):
         self.assertIsNone(current_weather.snow)
         self.assertIsNone(current_weather.pop)
 
-    def _assert_hourly_forecast(self, hourly_forecast: WeatherForecast):
+    def _assert_hourly_forecast(self, hourly_forecast: WeatherConditionsDM):
         self.assertEqual(hourly_forecast.dt, 1641214800)
         self.assertEqual(hourly_forecast.temp, 9.21)
         self.assertEqual(hourly_forecast.pressure, 1018)
@@ -143,7 +145,7 @@ class TestOpenWeatherMapDatamodel(TestCase):
         self.assertIsNone(hourly_forecast.sunset)
         self.assertIsNone(hourly_forecast.sunrise)
 
-    def _assert_daily_forecast(self, daily_forecast: WeatherForecast):
+    def _assert_daily_forecast(self, daily_forecast: WeatherConditionsDM):
         self.assertEqual(daily_forecast.dt, 1641207600)
         self.assertEqual(daily_forecast.temp, 9.25)
         self.assertEqual(daily_forecast.temp_min, 5.81)

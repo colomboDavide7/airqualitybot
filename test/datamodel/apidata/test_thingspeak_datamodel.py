@@ -3,13 +3,13 @@
 # @date:    2022-01-20, gio, 19:58
 # ======================================
 from unittest import TestCase, main
-from airquality.datamodel.apidata import ThingspeakAPIData
+from airquality.datamodel.fromapi import ThingspeakDM
 
 
 class TestThingspeakDatamodel(TestCase):
 
     def test_thingspeak_datamodel_channel_1A(self):
-        data = ThingspeakAPIData(
+        data = ThingspeakDM(
             created_at="2021-12-20T11:18:40Z",
             field1="20.50",
             field2="35.53",
@@ -28,7 +28,7 @@ class TestThingspeakDatamodel(TestCase):
         self.assertIsNone(data.field5)
 
     def test_thingspeak_datamodel_channel_1B(self):
-        data = ThingspeakAPIData(
+        data = ThingspeakDM(
             created_at="2021-12-19T11:06:25Z",
             field1="126.65",
             field2="222.24",
@@ -45,7 +45,7 @@ class TestThingspeakDatamodel(TestCase):
         self.assertIsNone(data.field5)
 
     def test_thingspeak_datamodel_channel_2A(self):
-        data = ThingspeakAPIData(
+        data = ThingspeakDM(
             created_at="2021-12-19T11:06:23Z",
             field1="10544.95",
             field2="2980.84",
@@ -64,7 +64,7 @@ class TestThingspeakDatamodel(TestCase):
         self.assertIsNone(data.field7)
 
     def test_thingspeak_datamodel_channel_2B(self):
-        data = ThingspeakAPIData(
+        data = ThingspeakDM(
             created_at="2021-12-09T15:54:34Z",
             field1="10544.95",
             field2="2980.84",

@@ -3,13 +3,13 @@
 # @date:    2022-01-20, gio, 19:55
 # ======================================
 from unittest import TestCase, main
-from airquality.datamodel.apidata import PurpleairAPIData
+from airquality.datamodel.fromapi import PurpleairDM
 
 
 class TestPurpleairDatamodel(TestCase):
 
     def test_purpleair_apidata_model(self):
-        data = PurpleairAPIData(
+        data = PurpleairDM(
             name="fakename",
             sensor_index=9,
             latitude=40,

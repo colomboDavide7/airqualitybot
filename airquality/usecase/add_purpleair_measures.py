@@ -37,10 +37,10 @@ from airquality.datamodel.apiparam import APIParam
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.url_reader import json_http_response
 from airquality.url.timeiter_url import ThingspeakTimeIterableURL
-from airquality.core.apidata_builder import ThingspeakAPIDataBuilder
-from airquality.core.request_builder import AddThingspeakMeasuresRequestBuilder
-from airquality.core.request_validator import AddSensorMeasuresRequestValidator
-from airquality.core.response_builder import AddStationMeasuresResponseBuilder
+from airquality.iterables.fromapi import ThingspeakIterableDatamodels
+from airquality.iterables.request_builder import AddThingspeakMeasuresRequestBuilder
+from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
+from airquality.iterables.response_builder import AddStationMeasuresResponseBuilder
 
 
 def _build_update_query(time: datetime, sensor_id: int, channel_name: str) -> str:
@@ -100,7 +100,7 @@ class AddPurpleairMeasures(UsecaseABC):
                 server_jresp = json_http_response(url=url)
                 _LOGGER.debug("successfully get server response")
 
-                datamodel_builder = ThingspeakAPIDataBuilder(json_response=server_jresp)
+                datamodel_builder = ThingspeakIterableDatamodels(json_response=server_jresp)
                 _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
                 request_builder = AddThingspeakMeasuresRequestBuilder(

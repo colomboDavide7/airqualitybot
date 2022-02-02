@@ -18,10 +18,10 @@ import airquality.usecase as constant
 from airquality.usecase.abc import UsecaseABC
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.url_reader import json_http_response
-from airquality.core.apidata_builder import PurpleairAPIDataBuilder
-from airquality.core.request_builder import AddPurpleairSensorRequestBuilder
-from airquality.core.request_validator import AddFixedSensorRequestValidator
-from airquality.core.response_builder import AddFixedSensorResponseBuilder
+from airquality.iterables.fromapi import PurpleairIterableDatamodels
+from airquality.iterables.request_builder import AddPurpleairSensorRequestBuilder
+from airquality.iterables.request_validator import AddFixedSensorRequestValidator
+from airquality.iterables.response_builder import AddFixedSensorResponseBuilder
 
 
 def _build_insert_query(response_builder: AddFixedSensorResponseBuilder) -> str:
@@ -50,7 +50,7 @@ class AddPurpleairFixedSensors(UsecaseABC):
         server_jresp = json_http_response(url=self._url_template)
         _LOGGER.debug("successfully get server response!!!")
 
-        datamodel_builder = PurpleairAPIDataBuilder(json_response=server_jresp)
+        datamodel_builder = PurpleairIterableDatamodels(json_response=server_jresp)
         _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
         request_builder = AddPurpleairSensorRequestBuilder(

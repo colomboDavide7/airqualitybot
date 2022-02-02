@@ -65,7 +65,7 @@ class TestAddPlaces(TestCase):
     @patch('airquality.environment.os')
     @patch('airquality.usecase.add_geonames_places.listdir')
     @patch('airquality.usecase.add_geonames_places.isfile')
-    @patch('airquality.core.apidata_builder.open')
+    @patch('airquality.iterables.fromfile.open')
     def test_run_add_fixed_sensors_usecase(self, mocked_open, mocked_isfile, mocked_listdir, mocked_os):
         mocked_os.environ = _mocked_environ()
         mocked_listdir.return_value = _test_directory_content()
