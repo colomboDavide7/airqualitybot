@@ -4,7 +4,7 @@
 # ======================================
 from unittest import TestCase, main
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddPlacesRequest
+from airquality.datamodel.requests import AddPlaceRequest
 
 
 def _place_location_test_data():
@@ -20,7 +20,7 @@ class TestAddPlacesRequest(TestCase):
 
 # =========== TEST METHODS
     def test_request_model_for_adding_geonames_country_data(self):
-        request = AddPlacesRequest(
+        request = AddPlaceRequest(
             placename="fakename",
             poscode="fakecode",
             state="fakestate",

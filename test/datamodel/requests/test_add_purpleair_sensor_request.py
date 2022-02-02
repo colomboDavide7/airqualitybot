@@ -4,9 +4,9 @@
 # ======================================
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.datamodel.request import Channel
+from airquality.datamodel.requests import Channel
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorsRequest
+from airquality.datamodel.requests import AddFixedSensorRequest
 
 
 def _sensor_channel_test_data():
@@ -35,7 +35,7 @@ class TestAddPurpleairSensorRequest(TestCase):
 
 # =========== TEST METHODS
     def test_request_for_adding_fixed_sensor(self):
-        request = AddFixedSensorsRequest(
+        request = AddFixedSensorRequest(
             type="faketype",
             name="fakename",
             channels=_sensor_channel_test_data()

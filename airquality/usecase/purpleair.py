@@ -19,7 +19,7 @@ from airquality.usecase.abc import UsecaseABC
 from airquality.database.gateway import DatabaseGateway
 from airquality.extra.url import json_http_response
 from airquality.iterables.fromapi import PurpleairIterableDatamodels
-from airquality.iterables.request_builder import AddPurpleairSensorRequestBuilder
+from airquality.iterables.requests import PurpleairIterableRequests
 from airquality.iterables.request_validator import AddFixedSensorRequestValidator
 from airquality.iterables.response_builder import AddFixedSensorResponseBuilder
 
@@ -53,8 +53,8 @@ class AddPurpleairFixedSensors(UsecaseABC):
         datamodel_builder = PurpleairIterableDatamodels(json_response=server_jresp)
         _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
-        request_builder = AddPurpleairSensorRequestBuilder(
-            datamodel=datamodel_builder,
+        request_builder = PurpleairIterableRequests(
+            datamodels=datamodel_builder,
             timest=_TIMEST
         )
         _LOGGER.debug("found #%d requests" % len(request_builder))

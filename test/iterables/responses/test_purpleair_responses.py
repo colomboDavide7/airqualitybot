@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorsRequest, Channel
+from airquality.datamodel.requests import AddFixedSensorRequest, Channel
 from airquality.iterables.response_builder import AddFixedSensorResponseBuilder
 
 
@@ -28,7 +28,7 @@ def _test_sensor_api_param():
 
 
 def _test_valid_request():
-    return AddFixedSensorsRequest(
+    return AddFixedSensorRequest(
         type="faketype",
         name="fakename",
         channels=_test_sensor_api_param()

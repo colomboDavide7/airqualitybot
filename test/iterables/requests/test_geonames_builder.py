@@ -6,7 +6,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.fromfile import GeonamesDM
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.iterables.request_builder import AddPlacesRequestBuilder
+from airquality.iterables.requests import GeonamesIterableRequests
 
 
 def _test_geonames_datamodel():
@@ -42,7 +42,7 @@ class TestAddPlacesRequestBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._builder = AddPlacesRequestBuilder(
+        self._builder = GeonamesIterableRequests(
             datamodels=_mocked_datamodel_builder()
         )
 

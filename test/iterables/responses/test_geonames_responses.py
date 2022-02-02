@@ -5,7 +5,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddPlacesRequest
+from airquality.datamodel.requests import AddPlaceRequest
 from airquality.iterables.response_builder import AddPlacesResponseBuilder
 
 
@@ -18,7 +18,7 @@ def _test_place_location():
 
 
 def _test_request():
-    return AddPlacesRequest(
+    return AddPlaceRequest(
         placename="Pavia",
         poscode="27100",
         state="Lombardia",

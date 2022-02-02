@@ -6,7 +6,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddMobileMeasuresRequest
+from airquality.datamodel.requests import AddSensorMeasureRequest
 from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
 
 
@@ -38,7 +38,7 @@ def _test_requests_timestamps():
 
 def _test_requests():
     return [
-        AddMobileMeasuresRequest(
+        AddSensorMeasureRequest(
             measures=_test_sensor_measures(),
             timestamp=ts,
             geolocation=_test_sensor_location()

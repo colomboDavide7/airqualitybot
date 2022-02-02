@@ -8,12 +8,12 @@
 from itertools import count
 from typing import Generator, List
 from airquality.iterables.abc import IterableItemsABC
-from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest
+from airquality.datamodel.requests import AddFixedSensorRequest, AddSensorMeasureRequest
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse,\
     AddPlacesResponse, AddOpenWeatherMapDataResponse
 
 
-def apiparam_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
+def apiparam_record(sensor_id: int, request: AddFixedSensorRequest) -> str:
     return ','.join(f"({sensor_id}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')"
                     for ch in request.channels)
 
@@ -43,7 +43,7 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
             )
 
 
-def mobile_measure_record(packet_id: int, request: AddMobileMeasuresRequest) -> str:
+def mobile_measure_record(packet_id: int, request: AddSensorMeasureRequest) -> str:
     ts = request.timestamp
     g = request.geolocation
     return ','.join(f"({packet_id}, {param_id}, {param_val}, '{ts}', {g})" for param_id, param_val in request.measures)
@@ -72,7 +72,7 @@ class AddMobileMeasureResponseBuilder(IterableItemsABC):
             )
 
 
-def station_measure_record(packet_id: int, sensor_id: int, request: AddSensorMeasuresRequest) -> str:
+def station_measure_record(packet_id: int, sensor_id: int, request: AddSensorMeasureRequest) -> str:
     ts = request.timestamp
     return ','.join(
         f"({packet_id}, {sensor_id}, {param_id}, {param_val}, '{ts}')" for

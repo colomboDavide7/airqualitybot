@@ -7,11 +7,11 @@
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.datamodel.request import AddWeatherForecastRequest, AddOpenWeatherMapDataRequest
+from airquality.datamodel.requests import WeatherConditionsRequest, AddWeatherDataRequest
 
 
 def _current_weather_test_request():
-    return AddWeatherForecastRequest(
+    return WeatherConditionsRequest(
         timestamp=datetime.utcfromtimestamp(1641217631+3600),
         sunrise=datetime.utcfromtimestamp(1641193337),
         sunset=datetime.utcfromtimestamp(1641225175),
@@ -25,7 +25,7 @@ def _current_weather_test_request():
 
 
 def _hourly_forecast_test_request():
-    return AddWeatherForecastRequest(
+    return WeatherConditionsRequest(
         timestamp=datetime.utcfromtimestamp(1641214800+3600),
         temperature=9.21,
         pressure=1018,
@@ -39,7 +39,7 @@ def _hourly_forecast_test_request():
 
 
 def _daily_forecast_test_request():
-    return AddWeatherForecastRequest(
+    return WeatherConditionsRequest(
         timestamp=datetime.utcfromtimestamp(1641207600+3600),
         temperature=9.25,
         min_temp=5.81,
@@ -57,7 +57,7 @@ class TestAddOpenweathermapDataRequest(TestCase):
 
 # =========== TEST METHODS
     def test_add_openweathermap_data_request(self):
-        request = AddOpenWeatherMapDataRequest(
+        request = AddWeatherDataRequest(
             current=_current_weather_test_request(),
             hourly=[_hourly_forecast_test_request()],
             daily=[_daily_forecast_test_request()],
@@ -69,7 +69,7 @@ class TestAddOpenweathermapDataRequest(TestCase):
         self.assertEqual(request.alerts, [])
 
 # =========== SUPPORT METHODS
-    def _assert_current_weather(self, request: AddWeatherForecastRequest):
+    def _assert_current_weather(self, request: WeatherConditionsRequest):
         self.assertEqual(request.timestamp, datetime(2022, 1, 3, 14, 47, 11))
         self.assertEqual(request.sunrise, datetime(2022, 1, 3, 7, 2, 17))
         self.assertEqual(request.sunset, datetime(2022, 1, 3, 15, 52, 55))
@@ -85,7 +85,7 @@ class TestAddOpenweathermapDataRequest(TestCase):
         self.assertIsNone(request.max_temp)
         self.assertIsNone(request.pop)
 
-    def _assert_hourly_forecast(self, request: AddWeatherForecastRequest):
+    def _assert_hourly_forecast(self, request: WeatherConditionsRequest):
         self.assertEqual(request.timestamp, datetime(2022, 1, 3, 14))
         self.assertEqual(request.temperature, 9.21)
         self.assertEqual(request.pressure, 1018)
@@ -101,7 +101,7 @@ class TestAddOpenweathermapDataRequest(TestCase):
         self.assertIsNone(request.sunset)
         self.assertIsNone(request.sunrise)
 
-    def _assert_daily_forecast(self, request: AddWeatherForecastRequest):
+    def _assert_daily_forecast(self, request: WeatherConditionsRequest):
         self.assertEqual(request.timestamp, datetime(2022, 1, 3, 12))
         self.assertEqual(request.temperature, 9.25)
         self.assertEqual(request.min_temp, 5.81)

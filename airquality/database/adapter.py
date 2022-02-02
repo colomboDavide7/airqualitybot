@@ -47,9 +47,6 @@ class Psycopg2Adapter(DatabaseAdapter):
         *host*              the database's connection host.
         *port*              the database's connection port.
 
-    Raises:
-        *psycopg2.Error*    the exceptions defined in the psycopg2 module.
-
     """
 
     def __init__(self, dbname: str, user: str, password: str, host: str, port: str):

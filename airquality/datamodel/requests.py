@@ -24,7 +24,7 @@ class Channel(object):
 
 
 @dataclass
-class AddFixedSensorsRequest(object):
+class AddFixedSensorRequest(object):
     """
     A *dataclass* that represents the request model for adding a new sensor.
     """
@@ -35,26 +35,18 @@ class AddFixedSensorsRequest(object):
 
 
 @dataclass
-class AddSensorMeasuresRequest(object):
+class AddSensorMeasureRequest(object):
     """
     A *dataclass* that represents the request model for adding a new measure of a fixed sensor (i.e., a station).
     """
 
     timestamp: datetime                 # The datetime object that represents the acquisition time.
     measures: List[Tuple[int, float]]   # The collection of (param_id, param_value) tuples for each parameter.
+    geolocation: PostgisPoint = None    # The sensor's geolocation at the moment of the acquisition in decimal degrees.
 
 
 @dataclass
-class AddMobileMeasuresRequest(AddSensorMeasuresRequest):
-    """
-    A *dataclass* that represents the request model for adding a new measure of a mobile sensor.
-    """
-
-    geolocation: PostgisPoint           # The sensor's geolocation at the moment of the acquisition in decimal degrees.
-
-
-@dataclass
-class AddPlacesRequest(object):
+class AddPlaceRequest(object):
     """
     A *dataclass* that represents the datastructure of a request for adding a new place of a given country.
     """
@@ -68,9 +60,9 @@ class AddPlacesRequest(object):
 
 
 @dataclass
-class AddWeatherForecastRequest(object):
+class WeatherConditionsRequest(object):
     """
-    A *dataclass* that defines the raw datastructure for a request of adding new weather forecast data.
+    A *dataclass* that defines the raw datastructure for the request of adding new weather conditions data.
     This class is used both for current weather, hourly forecast and daily forecast data.
     """
 
@@ -91,7 +83,7 @@ class AddWeatherForecastRequest(object):
 
 
 @dataclass
-class AddWeatherAlertRequest(object):
+class WeatherAlertRequest(object):
     """
     A *dataclass* that defines the raw datastructure for a request of adding a weather alert.
     """
@@ -104,12 +96,12 @@ class AddWeatherAlertRequest(object):
 
 
 @dataclass
-class AddOpenWeatherMapDataRequest(object):
+class AddWeatherDataRequest(object):
     """
     A *dataclass* that defines the raw data structure for a request of adding new data fetched from OpenWeatherMap API.
     """
 
-    current: AddWeatherForecastRequest          # The request for the current weather.
-    hourly: List[AddWeatherForecastRequest]     # The list of requests for the hourly forecast weather (next 48 hours).
-    daily: List[AddWeatherForecastRequest]      # The list of requests for the daily forecast weather (next 7 days).
-    alerts: List[AddWeatherAlertRequest]        # The list of requests of weather alert for the requested location.
+    current: WeatherConditionsRequest        # The request for the current weather.
+    hourly: List[WeatherConditionsRequest]   # The list of requests for the hourly forecast weather (next 48 hours).
+    daily: List[WeatherConditionsRequest]    # The list of requests for the daily forecast weather (next 7 days).
+    alerts: List[WeatherAlertRequest]        # The list of requests of weather alert for the requested location.

@@ -7,9 +7,9 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.extra.timest import Timest
-from airquality.datamodel.request import Channel
+from airquality.datamodel.requests import Channel
 from airquality.datamodel.fromapi import PurpleairDM
-from airquality.iterables.request_builder import AddPurpleairSensorRequestBuilder
+from airquality.iterables.requests import PurpleairIterableRequests
 
 
 def _test_purpleair_datamodel():
@@ -54,8 +54,8 @@ class TestAddPurpleairSensorRequestBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._builder = AddPurpleairSensorRequestBuilder(
-            datamodel=_mocked_datamodel_builder(),
+        self._builder = PurpleairIterableRequests(
+            datamodels=_mocked_datamodel_builder(),
             timest=Timest()
         )
 

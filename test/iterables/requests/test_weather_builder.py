@@ -11,7 +11,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.extra.timest import Timest
 from airquality.datamodel.fromapi import WeatherDM, WeatherConditionsDM, OpenweathermapDM, WeatherAlertDM
-from airquality.iterables.request_builder import AddOpenWeatherMapDataRequestBuilder
+from airquality.iterables.requests import AddOpenWeatherMapDataRequestBuilder
 
 
 def _test_timezone_name():

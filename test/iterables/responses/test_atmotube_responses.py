@@ -7,7 +7,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddMobileMeasuresRequest
+from airquality.datamodel.requests import AddSensorMeasureRequest
 from airquality.iterables.response_builder import AddMobileMeasureResponseBuilder
 
 
@@ -39,7 +39,7 @@ def _test_measures():
 
 
 def _test_requests():
-    return AddMobileMeasuresRequest(
+    return AddSensorMeasureRequest(
         timestamp=_test_acquisition_timestamp(),
         geolocation=_test_sensor_location(),
         measures=_test_measures()

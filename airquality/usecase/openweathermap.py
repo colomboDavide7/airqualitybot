@@ -24,7 +24,7 @@ from airquality.usecase.abc import UsecaseABC
 from airquality.extra.url import json_http_response
 from airquality.datamodel.fromfile import CityDM
 from airquality.database.gateway import DatabaseGateway
-from airquality.iterables.request_builder import AddOpenWeatherMapDataRequestBuilder
+from airquality.iterables.requests import AddOpenWeatherMapDataRequestBuilder
 from airquality.iterables.response_builder import AddOpenWeatherMapDataResponseBuilder
 from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
 from airquality.iterables.fromfile import CityIterableDatamodels

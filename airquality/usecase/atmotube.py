@@ -29,7 +29,7 @@ from airquality.database.gateway import DatabaseGateway
 from airquality.extra.url import json_http_response
 from airquality.iterables.urls import AtmotubeIterableUrls
 from airquality.iterables.fromapi import AtmotubeIterableDatamodels
-from airquality.iterables.request_builder import AddAtmotubeMeasureRequestBuilder
+from airquality.iterables.requests import AtmotubeIterableRequests
 from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
 from airquality.iterables.response_builder import AddMobileMeasureResponseBuilder
 
@@ -93,10 +93,10 @@ class AddAtmotubeMeasures(UsecaseABC):
                 datamodel_builder = AtmotubeIterableDatamodels(json_response=server_jresp)
                 _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
-                request_builder = AddAtmotubeMeasureRequestBuilder(
-                    datamodel=datamodel_builder,
+                request_builder = AtmotubeIterableRequests(
+                    datamodels=datamodel_builder,
                     timest=_TIMEST,
-                    code2id=self._measure_param
+                    measure_param=self._measure_param
                 )
                 _LOGGER.debug("found #%d requests" % len(request_builder))
 

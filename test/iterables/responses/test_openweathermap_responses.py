@@ -10,7 +10,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.iterables.response_builder import AddOpenWeatherMapDataResponseBuilder
-from airquality.datamodel.request import AddWeatherForecastRequest, AddOpenWeatherMapDataRequest, AddWeatherAlertRequest
+from airquality.datamodel.requests import WeatherConditionsRequest, AddWeatherDataRequest, WeatherAlertRequest
 
 
 def _rome_timezone():
@@ -18,7 +18,7 @@ def _rome_timezone():
 
 
 def _current_weather_request():
-    return AddWeatherForecastRequest(
+    return WeatherConditionsRequest(
         timestamp=datetime.utcfromtimestamp(1641217631 + 3600),
         sunrise=datetime.utcfromtimestamp(1641193337),
         sunset=datetime.utcfromtimestamp(1641225175),
@@ -32,7 +32,7 @@ def _current_weather_request():
 
 
 def _hourly_forecast_request():
-    return AddWeatherForecastRequest(
+    return WeatherConditionsRequest(
         timestamp=datetime.utcfromtimestamp(1641214800 + 3600),
         temperature=9.21,
         pressure=1018,
@@ -46,7 +46,7 @@ def _hourly_forecast_request():
 
 
 def _daily_forecast_request():
-    return AddWeatherForecastRequest(
+    return WeatherConditionsRequest(
         timestamp=datetime.utcfromtimestamp(1641207600 + 3600),
         temperature=9.25,
         min_temp=5.81,
@@ -61,7 +61,7 @@ def _daily_forecast_request():
 
 
 def _weather_alert_request():
-    return AddWeatherAlertRequest(
+    return WeatherAlertRequest(
         sender_name='Fake sender',
         alert_event='Fake event',
         alert_begin=datetime(2022, 1, 24, 19, tzinfo=_rome_timezone()),
@@ -71,7 +71,7 @@ def _weather_alert_request():
 
 
 def _openweathermap_request():
-    return AddOpenWeatherMapDataRequest(
+    return AddWeatherDataRequest(
         current=_current_weather_request(),
         hourly=[_hourly_forecast_request()],
         daily=[_daily_forecast_request()],

@@ -5,7 +5,7 @@
 from datetime import datetime
 from unittest import TestCase, main
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddMobileMeasuresRequest
+from airquality.datamodel.requests import AddSensorMeasureRequest
 
 
 def _acquisition_timestamp_test_data():
@@ -28,7 +28,7 @@ class TestAddAtmotubeMeasureRequest(TestCase):
 
 # =========== TEST METHODS
     def test_request_for_adding_mobile_sensor_measure(self):
-        request = AddMobileMeasuresRequest(
+        request = AddSensorMeasureRequest(
             timestamp=_acquisition_timestamp_test_data(),
             geolocation=_location_test_data(),
             measures=_measures_test_data()

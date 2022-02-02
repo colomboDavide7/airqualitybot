@@ -6,7 +6,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.request import AddFixedSensorsRequest, Channel
+from airquality.datamodel.requests import AddFixedSensorRequest, Channel
 from airquality.iterables.request_validator import AddFixedSensorRequestValidator
 
 
@@ -41,7 +41,7 @@ def _test_sensor_channels():
 
 def _test_requests():
     return [
-        AddFixedSensorsRequest(
+        AddFixedSensorRequest(
             type="faketype",
             name=name,
             channels=_test_sensor_channels()

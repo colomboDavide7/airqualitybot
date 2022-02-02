@@ -38,7 +38,7 @@ from airquality.database.gateway import DatabaseGateway
 from airquality.extra.url import json_http_response
 from airquality.iterables.urls import ThingspeakIterableUrls
 from airquality.iterables.fromapi import ThingspeakIterableDatamodels
-from airquality.iterables.request_builder import AddThingspeakMeasuresRequestBuilder
+from airquality.iterables.requests import ThingspeakIterableRequests
 from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
 from airquality.iterables.response_builder import AddStationMeasuresResponseBuilder
 
@@ -103,11 +103,11 @@ class AddPurpleairMeasures(UsecaseABC):
                 datamodel_builder = ThingspeakIterableDatamodels(json_response=server_jresp)
                 _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
-                request_builder = AddThingspeakMeasuresRequestBuilder(
-                    datamodel=datamodel_builder,
+                request_builder = ThingspeakIterableRequests(
+                    datamodels=datamodel_builder,
                     timest=_TIMEST,
-                    code2id=self._measure_param,
-                    field_map=_FIELD_MAP[param.ch_name]
+                    measure_param=self._measure_param,
+                    api_field_names=_FIELD_MAP[param.ch_name]
                 )
                 _LOGGER.debug("found #%d requests" % len(request_builder))
 

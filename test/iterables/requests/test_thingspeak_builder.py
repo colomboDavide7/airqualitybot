@@ -8,7 +8,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.extra.timest import thingspeak_timest
 from airquality.datamodel.fromapi import ThingspeakDM
-from airquality.iterables.request_builder import AddThingspeakMeasuresRequestBuilder
+from airquality.iterables.requests import ThingspeakIterableRequests
 
 
 # ================================================================================================== #
@@ -57,11 +57,11 @@ class TestAddThingspeakMeasuresRequestBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._builder = AddThingspeakMeasuresRequestBuilder(
-            datamodel=_mocked_datamodel_builder(),
+        self._builder = ThingspeakIterableRequests(
+            datamodels=_mocked_datamodel_builder(),
             timest=thingspeak_timest(),
-            code2id=_test_measure_param_mapping_primary_channel_a(),
-            field_map=_test_field_mapping_primary_channel_a()
+            measure_param=_test_measure_param_mapping_primary_channel_a(),
+            api_field_names=_test_field_mapping_primary_channel_a()
         )
 
 # =========== TEST METHOD
@@ -127,11 +127,11 @@ class TestAddThingspeakMeasuresRequestBuilderPrimaryChannelB(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._builder = AddThingspeakMeasuresRequestBuilder(
-            datamodel=_mocked_primary_channel_b_datamodel_builder(),
+        self._builder = ThingspeakIterableRequests(
+            datamodels=_mocked_primary_channel_b_datamodel_builder(),
             timest=thingspeak_timest(),
-            code2id=_test_measure_param_primary_channel_b(),
-            field_map=_test_field_mapping_primary_channel_b()
+            measure_param=_test_measure_param_primary_channel_b(),
+            api_field_names=_test_field_mapping_primary_channel_b()
         )
 
 # =========== TEST METHOD

@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.datamodel.request import AddFixedSensorsRequest
+from airquality.datamodel.requests import AddFixedSensorRequest
 from airquality.iterables.abc import IterableItemsABC
 from typing import Generator, Set
 from datetime import datetime
@@ -23,7 +23,7 @@ class AddFixedSensorRequestValidator(IterableItemsABC):
         self.request = request
         self.existing_names = existing_names
 
-    def items(self) -> Generator[AddFixedSensorsRequest, None, None]:
+    def items(self) -> Generator[AddFixedSensorRequest, None, None]:
         for request in self.request:
             if request.name not in self.existing_names:
                 yield request

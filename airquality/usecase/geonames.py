@@ -19,7 +19,7 @@ import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
 from airquality.database.gateway import DatabaseGateway
 from airquality.iterables.fromfile import GeonamesIterableDatamodels
-from airquality.iterables.request_builder import AddPlacesRequestBuilder
+from airquality.iterables.requests import GeonamesIterableRequests
 from airquality.iterables.request_validator import AddPlacesRequestValidator
 from airquality.iterables.response_builder import AddPlacesResponseBuilder
 
@@ -59,7 +59,7 @@ class AddGeonamesPlaces(UsecaseABC):
             datamodel_builder = GeonamesIterableDatamodels(filepath=_fullpath(f))
             _LOGGER.debug("found #%d file lines" % len(datamodel_builder))
 
-            request_builder = AddPlacesRequestBuilder(datamodels=datamodel_builder)
+            request_builder = GeonamesIterableRequests(datamodels=datamodel_builder)
             _LOGGER.debug("found #%d requests" % len(request_builder))
 
             validator = AddPlacesRequestValidator(

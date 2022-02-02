@@ -4,7 +4,7 @@
 # ======================================
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.datamodel.request import AddSensorMeasuresRequest
+from airquality.datamodel.requests import AddSensorMeasureRequest
 
 
 def _acquisition_timestamp_test_data():
@@ -19,7 +19,7 @@ class TestAddSensorMeasuresRequest(TestCase):
 
 # =========== TEST METHODS
     def test_request_for_adding_station_measures(self):
-        request = AddSensorMeasuresRequest(
+        request = AddSensorMeasureRequest(
             timestamp=_acquisition_timestamp_test_data(),
             measures=_measures_test_data()
         )
