@@ -33,11 +33,10 @@ class TestAddPlacesRequest(TestCase):
         self.assertEqual(request.state, "fakestate")
         self.assertEqual(request.countrycode, "fakecode")
         self.assertEqual(request.province, "fake_province")
-        self._assert_place_location(request.geolocation)
-
-# =========== SUPPORT METHODS
-    def _assert_place_location(self, location):
-        self.assertEqual(location.geom_from_text(), _expected_geom_from_text_location())
+        self.assertEqual(
+            str(request.geolocation),
+            _expected_geom_from_text_location()
+        )
 
 
 if __name__ == '__main__':

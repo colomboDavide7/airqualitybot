@@ -34,7 +34,7 @@ class TestAddAtmotubeMeasureRequest(TestCase):
             measures=_measures_test_data()
         )
         self.assertEqual(request.timestamp, datetime(2021, 10, 11, 9, 44))
-        self.assertEqual(request.geolocation.geom_from_text(), _expected_geom_from_text())
+        self.assertEqual(str(request.geolocation), _expected_geom_from_text())
         self._assert_measures(request.measures)
 
 # =========== SUPPORT METHODS

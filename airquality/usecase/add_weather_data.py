@@ -28,6 +28,33 @@ from airquality.core.apidata_builder import OpenWeatherMapAPIDataBuilder, Weathe
 _DELETE_FORECAST_QUERY = "DELETE FROM level0_raw.hourly_forecast; DELETE FROM level0_raw.daily_forecast;"
 
 
+# def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
+#     cval = hval = dval = aval = ""
+#     for resp in response_builder:
+#         cval += f"{resp.current_weather_record},"
+#         hval += f"{resp.hourly_forecast_record},"
+#         dval += f"{resp.daily_forecast_record},"
+#         aval += f"{resp.weather_alert_record},"
+#     query = "INSERT INTO level0_raw.current_weather " \
+#             "(geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, " \
+#             "wind_direction, rain, snow, timestamp, sunrise, sunset) " \
+#             f"VALUES {cval.strip(',')};"
+#     query += "INSERT INTO level0_raw.hourly_forecast " \
+#              "(geoarea_id, weather_id, temperature, pressure, humidity, " \
+#              "wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+#              f"VALUES {hval.strip(',')};"
+#     query += "INSERT INTO level0_raw.daily_forecast " \
+#              "(geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
+#              "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+#              f"VALUES {dval.strip(',')};"
+#     query += "" if not aval.strip(',') else \
+#              "INSERT INTO level0_raw.weather_alert " \
+#              "(geoarea_id, sender_name, alert_event, " \
+#              "alert_begin, alert_until, description) " \
+#              f"VALUES {aval.strip(',')};"
+#     return query
+
+
 def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
     cval = hval = dval = aval = ""
     for resp in response_builder:
@@ -47,11 +74,11 @@ def _build_insert_query(response_builder: AddOpenWeatherMapDataResponseBuilder):
              "(geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
              "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
              f"VALUES {dval.strip(',')};"
-    if aval.strip(','):        # TODO: strip the comma !!!
-        query += "INSERT INTO level0_raw.weather_alert " \
-                 "(geoarea_id, sender_name, alert_event, " \
-                 "alert_begin, alert_until, description) " \
-                 f"VALUES {aval.strip(',')};"
+    query += "" if not aval.strip(',') else \
+             "INSERT INTO level0_raw.weather_alert " \
+             "(geoarea_id, sender_name, alert_event, " \
+             "alert_begin, alert_until, description) " \
+             f"VALUES {aval.strip(',')};"
     return query
 
 
@@ -183,14 +210,12 @@ class AddWeatherData(UsecaseABC):
                 )
             _LOGGER.info(constants.END_MESSAGE)
         except Exception as err:
-            if not isinstance(err, SystemExit) and \
-               not isinstance(err, KeyboardInterrupt):
-
-                self._database_gway.execute(
-                    query=_build_insert_cached_forecast_records_query(
-                        hourly=self._cached_hourly_forecast,
-                        daily=self._cached_daily_forecast
+            if not isinstance(err, SystemExit) and not isinstance(err, KeyboardInterrupt):
+                if self._cached_hourly_forecast and self._cached_daily_forecast:
+                    self._database_gway.execute(
+                        query=_build_insert_cached_forecast_records_query(
+                            hourly=self._cached_hourly_forecast,
+                            daily=self._cached_daily_forecast)
                     )
-                )
             raise
 

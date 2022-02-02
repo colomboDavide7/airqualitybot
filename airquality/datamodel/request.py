@@ -5,7 +5,7 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.datamodel.geometry import PostgisGeometry
+from airquality.datamodel.geometry import PostgisPoint
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Tuple
@@ -50,7 +50,7 @@ class AddMobileMeasuresRequest(AddSensorMeasuresRequest):
     A *dataclass* that represents the request model for adding a new measure of a mobile sensor.
     """
 
-    geolocation: PostgisGeometry        # The sensor's geolocation at the moment of the acquisition in decimal degrees.
+    geolocation: PostgisPoint           # The sensor's geolocation at the moment of the acquisition in decimal degrees.
 
 
 @dataclass
@@ -64,7 +64,7 @@ class AddPlacesRequest(object):
     province: str                       # The place's province name.
     poscode: str                        # The place's postal code.
     state: str                          # The place's state name.
-    geolocation: PostgisGeometry        # The place's estimated geolocation
+    geolocation: PostgisPoint           # The place's estimated geolocation
 
 
 @dataclass

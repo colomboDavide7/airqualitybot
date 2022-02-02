@@ -9,8 +9,12 @@ from typing import Dict, Generator
 from airquality.extra.timest import Timest
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
-from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, \
-    AddSensorMeasuresRequest, Channel, AddPlacesRequest, AddWeatherForecastRequest, AddOpenWeatherMapDataRequest, \
+from airquality.datamodel.request import AddFixedSensorsRequest, \
+    AddMobileMeasuresRequest, \
+    AddSensorMeasuresRequest, Channel, \
+    AddPlacesRequest, \
+    AddWeatherForecastRequest, \
+    AddOpenWeatherMapDataRequest, \
     AddWeatherAlertRequest
 
 
@@ -129,7 +133,6 @@ class AddPlacesRequestBuilder(IterableItemsABC):
 
 
 class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
-
     def __init__(self, datamodels: IterableItemsABC, timest: Timest, weather_map: Dict[int, Dict[str, int]]):
         self.datamodels = datamodels
         self.weather_map = weather_map

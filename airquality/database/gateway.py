@@ -21,7 +21,6 @@ class DatabaseGateway(object):
         self._database_adapt = database_adapt
 
     def execute(self, query: str):
-        print(query)
         self._database_adapt.execute(query)
 
 # =========== SELECT ID QUERIES

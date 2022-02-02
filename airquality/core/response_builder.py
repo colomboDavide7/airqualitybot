@@ -7,24 +7,15 @@
 ######################################################
 from itertools import count
 from typing import Generator, List
-from airquality.extra.timest import Timest
 from airquality.core.iteritems import IterableItemsABC
 from airquality.datamodel.request import AddFixedSensorsRequest, AddMobileMeasuresRequest, AddSensorMeasuresRequest
 from airquality.datamodel.response import AddFixedSensorResponse, AddMobileMeasureResponse, AddStationMeasuresResponse,\
     AddPlacesResponse, AddOpenWeatherMapDataResponse
 
-SQL_TIMESTAMP_FTM = "%Y-%m-%d %H:%M:%S"
-
 
 def apiparam_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
     return ','.join(f"({sensor_id}, '{ch.api_key}', '{ch.api_id}', '{ch.channel_name}', '{ch.last_acquisition}')"
                     for ch in request.channels)
-
-
-# def sensor_at_location_record(sensor_id: int, request: AddFixedSensorsRequest) -> str:
-#     valid_from = Timest.current_utc_timetz()
-#     location = request.geolocation.geom_from_text()
-#     return f"({sensor_id}, '{valid_from}', {location})"
 
 
 class AddFixedSensorResponseBuilder(IterableItemsABC):
@@ -54,7 +45,7 @@ class AddFixedSensorResponseBuilder(IterableItemsABC):
 
 def mobile_measure_record(packet_id: int, request: AddMobileMeasuresRequest) -> str:
     ts = request.timestamp
-    g = request.geolocation.geom_from_text()
+    g = request.geolocation
     return ','.join(f"({packet_id}, {param_id}, {param_val}, '{ts}', {g})" for param_id, param_val in request.measures)
 
 
@@ -133,7 +124,7 @@ class AddPlacesResponseBuilder(IterableItemsABC):
             yield AddPlacesResponse(
                 place_record=f"('{req.poscode}', '{req.countrycode}', "
                              f"'{req.placename}', '{req.province}', "
-                             f"'{req.state}', {req.geolocation.geom_from_text()})"
+                             f"'{req.state}', {req.geolocation})"
             )
 
 

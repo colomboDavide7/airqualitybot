@@ -6,7 +6,6 @@
 #
 ######################################################
 from airquality.datamodel.request import AddFixedSensorsRequest
-from airquality.datamodel.apidata import PurpleairLocationData
 from airquality.core.iteritems import IterableItemsABC
 from typing import Generator, Set
 from datetime import datetime
@@ -28,15 +27,6 @@ class AddFixedSensorRequestValidator(IterableItemsABC):
         for request in self.request:
             if request.name not in self.existing_names:
                 yield request
-
-
-# class UpdatePurpleairLocationValidator(IterableItemsABC):
-#
-#     def __init__(self, datamodel_builder: IterableItemsABC):
-#
-#
-#     def items(self) -> Generator[PurpleairLocationData, None, None]:
-#         pass
 
 
 class AddSensorMeasuresRequestValidator(IterableItemsABC):

@@ -42,7 +42,7 @@ class UpdatePurpleairLocation(UsecaseABC):
                 _LOGGER.debug("update sensor_id = '%d'" % geo.sensor_id)
                 _LOGGER.debug("set location to => (%.6f, %.6f)" % (datamodel.longitude, datamodel.latitude))
 
-                geom = PostgisPoint(latitude=datamodel.latitude, longitude=datamodel.longitude).geom_from_text()
+                geom = str(PostgisPoint(latitude=datamodel.latitude, longitude=datamodel.longitude))
                 query = _build_query(sensor_id=geo.sensor_id, time=_TIMEST.current_utc_timetz(), geom=geom)
                 self._database_gway.execute(query=query)
 
