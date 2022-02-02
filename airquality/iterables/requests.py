@@ -10,16 +10,8 @@ from airquality.extra.timest import Timest
 from airquality.iterables.abc import IterableItemsABC
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.datamodel.requests import WeatherConditionsRequest, AddWeatherDataRequest, WeatherAlertRequest, \
-    AddFixedSensorRequest, SensorChannelParam, AddSensorMeasureRequest, AddPlaceRequest
-
-
-_PURPLEAIR_TYPE = 'Purpleair/Thingspeak'
-
-_CHANNEL_1A = {'key': 'primary_key_a', 'ident': 'primary_id_a', 'name': '1A'}
-_CHANNEL_1B = {'key': 'primary_key_b', 'ident': 'primary_id_b', 'name': '1B'}
-_CHANNEL_2A = {'key': 'secondary_key_a', 'ident': 'secondary_id_a', 'name': '2A'}
-_CHANNEL_2B = {'key': 'secondary_key_b', 'ident': 'secondary_id_b', 'name': '2B'}
-_PURPLEAIR_API_PARAM = [_CHANNEL_1A, _CHANNEL_1B, _CHANNEL_2A, _CHANNEL_2B]
+    AddFixedSensorRequest, SensorChannelParam, SensorInfo, AddMobileMeasureRequest, AddStationMeasureRequest, \
+    AddPlaceRequest
 
 
 class PurpleairIterableRequests(IterableItemsABC):
@@ -28,23 +20,33 @@ class PurpleairIterableRequests(IterableItemsABC):
     *PurpleairDM* into an *AddFixedSensorRequest*
     """
 
+    _PURPLEAIR_TYPE = 'Purpleair/Thingspeak'
+
+    _CHANNEL_1A = {'key': 'primary_key_a', 'ident': 'primary_id_a', 'name': '1A'}
+    _CHANNEL_1B = {'key': 'primary_key_b', 'ident': 'primary_id_b', 'name': '1B'}
+    _CHANNEL_2A = {'key': 'secondary_key_a', 'ident': 'secondary_id_a', 'name': '2A'}
+    _CHANNEL_2B = {'key': 'secondary_key_b', 'ident': 'secondary_id_b', 'name': '2B'}
+    _PURPLEAIR_API_PARAM = [_CHANNEL_1A, _CHANNEL_1B, _CHANNEL_2A, _CHANNEL_2B]
+
     def __init__(self, datamodels: IterableItemsABC, timest: Timest):
         self._datamodels = datamodels
         self._timest = timest
 
     def items(self) -> Generator:
         for dm in self._datamodels:
-            sensor_name = f"{dm.name} ({dm.sensor_index})"
+            info = SensorInfo(
+                type=self._PURPLEAIR_TYPE,
+                name=f"{dm.name} ({dm.sensor_index})"
+            )
             created_at = self._timest.utc_time2utc_localtz(time=dm.date_created,
                                                            latitude=dm.latitude,
                                                            longitude=dm.longitude)
-            channels = [SensorChannelParam(api_key=getattr(dm, ch['key']),
-                                           api_id=str(getattr(dm, ch['ident'])),
-                                           channel_name=ch['name'],
-                                           last_acquisition=created_at) for ch in _PURPLEAIR_API_PARAM]
-            yield AddFixedSensorRequest(type=_PURPLEAIR_TYPE,
-                                        name=sensor_name,
-                                        channels=channels)
+            channel_param = [SensorChannelParam(api_key=getattr(dm, ch['key']),
+                                                api_id=str(getattr(dm, ch['ident'])),
+                                                channel_name=ch['name'],
+                                                last_acquisition=created_at) for ch in self._PURPLEAIR_API_PARAM]
+            yield AddFixedSensorRequest(basic_info=info,
+                                        channel_param=channel_param)
 
 
 class AtmotubeIterableRequests(IterableItemsABC):
@@ -70,7 +72,7 @@ class AtmotubeIterableRequests(IterableItemsABC):
                 geolocation = PostgisPoint(latitude=lat, longitude=lng)
                 timestamp = self._timest.utc_time2utc_localtz(time=dm.time, latitude=lat, longitude=lng)
 
-            yield AddSensorMeasureRequest(
+            yield AddMobileMeasureRequest(
                 timestamp=timestamp,
                 geolocation=geolocation,
                 measures=[(ident, getattr(dm, code))
@@ -99,7 +101,7 @@ class ThingspeakIterableRequests(IterableItemsABC):
 
     def items(self):
         for dm in self._datamodels:
-            yield AddSensorMeasureRequest(
+            yield AddStationMeasureRequest(
                 timestamp=self._timest.utc_time2utc_localtz(time=dm.created_at),
                 measures=[(self._measure_param[fcode], getattr(dm, fname))
                           for fname, fcode in self._api_field_names.items()

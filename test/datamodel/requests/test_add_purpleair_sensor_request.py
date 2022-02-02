@@ -4,9 +4,9 @@
 # ======================================
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.datamodel.requests import SensorChannelParam
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.requests import AddFixedSensorRequest
+from airquality.datamodel.requests import SensorChannelParam, SensorInfo
 
 
 def _sensor_channel_test_data():
@@ -36,13 +36,12 @@ class TestAddPurpleairSensorRequest(TestCase):
 # =========== TEST METHODS
     def test_request_for_adding_fixed_sensor(self):
         request = AddFixedSensorRequest(
-            type="faketype",
-            name="fakename",
-            channels=_sensor_channel_test_data()
+            basic_info=SensorInfo(type='faketype', name='fakename'),
+            channel_param=_sensor_channel_test_data()
         )
-        self.assertEqual(request.type, "faketype")
-        self.assertEqual(request.name, "fakename")
-        self._assert_channels(request.channels)
+        self.assertEqual(request.basic_info.type, "faketype")
+        self.assertEqual(request.basic_info.name, "fakename")
+        self._assert_channels(request.channel_param)
 
 # =========== SUPPORT METHODS
     def _assert_channels(self, channels):

@@ -5,7 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-from airquality.datamodel.requests import AddFixedSensorRequest
 from airquality.iterables.abc import IterableItemsABC
 from typing import Generator, Set
 from datetime import datetime
@@ -23,9 +22,9 @@ class AddFixedSensorRequestValidator(IterableItemsABC):
         self.request = request
         self.existing_names = existing_names
 
-    def items(self) -> Generator[AddFixedSensorRequest, None, None]:
+    def items(self) -> Generator:
         for request in self.request:
-            if request.name not in self.existing_names:
+            if request.basic_info.name not in self.existing_names:
                 yield request
 
 
@@ -41,7 +40,7 @@ class AddSensorMeasuresRequestValidator(IterableItemsABC):
         self.request = request
         self.filter_ts = filter_ts
 
-    def items(self) -> Generator[IterableItemsABC, None, None]:
+    def items(self) -> Generator:
         for request in self.request:
             if request.timestamp > self.filter_ts:
                 yield request
@@ -59,7 +58,7 @@ class AddPlacesRequestValidator(IterableItemsABC):
         self.requests = requests
         self.existing_poscodes = existing_poscodes
 
-    def items(self):
+    def items(self) -> Generator:
         for request in self.requests:
             if request.poscode not in self.existing_poscodes:
                 yield request

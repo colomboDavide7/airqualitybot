@@ -6,7 +6,7 @@ from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.datamodel.requests import AddSensorMeasureRequest
+from airquality.datamodel.requests import AddStationMeasureRequest
 from airquality.iterables.responses import StationMeasureIterableResponses
 
 
@@ -15,7 +15,7 @@ def _rome_timezone():
 
 
 def _test_sensor_request():
-    return AddSensorMeasureRequest(
+    return AddStationMeasureRequest(
         timestamp=datetime(2021, 12, 20, 12, 18, 40, tzinfo=_rome_timezone()),
         measures=[(12, 20.50), (14, 37.43), (15, 55), (16, 60)]
     )

@@ -7,8 +7,8 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.extra.timest import Timest
-from airquality.datamodel.requests import SensorChannelParam
 from airquality.datamodel.fromapi import PurpleairDM
+from airquality.datamodel.requests import SensorChannelParam
 from airquality.iterables.requests import PurpleairIterableRequests
 
 
@@ -68,15 +68,15 @@ class TestAddPurpleairSensorRequestBuilder(TestCase):
     def _assert_built_request(self):
         req1 = self._builder[0]
         self.assertEqual(
-            req1.type,
+            req1.basic_info.type,
             "Purpleair/Thingspeak"
         )
         self.assertEqual(
-            req1.name,
+            req1.basic_info.name,
             "fakename (9)"
         )
         self.assertEqual(
-            req1.channels,
+            req1.channel_param,
             _expected_sensor_api_param()
         )
 

@@ -31,10 +31,8 @@ class FixedSensorIterableResponses(IterableItemsABC):
         for req in self._requests:
             sensor_id = next(sensor_id_counter)
             yield AddFixedSensorResponse(
-                sensor_record=f"({sensor_id}, '{req.type}', '{req.name}')",
-                apiparam_record=','.join(f"({sensor_id}, '{ch.api_key}', "
-                                         f"'{ch.api_id}', '{ch.channel_name}', "
-                                         f"'{ch.last_acquisition}')" for ch in req.channels)
+                sensor_record=f"({sensor_id}, {req.basic_info.sqlize()})",
+                apiparam_record=','.join(f"({sensor_id}, {ch.sqlize()})" for ch in req.channel_param)
             )
 
 
@@ -55,12 +53,8 @@ class MobileMeasureIterableResponses(IterableItemsABC):
     def items(self) -> Generator[AddSensorMeasureResponse, None, None]:
         packet_id_counter = count(self.start_packet_id)
         for req in self.requests:
-            ts = req.timestamp
-            geo = req.geolocation
-            packet_id = next(packet_id_counter)
             yield AddSensorMeasureResponse(
-                measure_record=','.join(f"({packet_id}, {param_id}, {param_val}, '{ts}', {geo})"
-                                        for param_id, param_val in req.measures)
+                measure_record=req.sqlize().format(pid=next(packet_id_counter))
             )
 
 
@@ -83,11 +77,8 @@ class StationMeasureIterableResponses(IterableItemsABC):
     def items(self) -> Generator:
         packet_id_counter = count(self._start_packet_id)
         for req in self._requests:
-            ts = req.timestamp
-            packet_id = next(packet_id_counter)
             yield AddSensorMeasureResponse(
-                measure_record=','.join(f"({packet_id}, {self._sensor_id}, {param_id}, {param_val}, '{ts}')"
-                                        for param_id, param_val in req.measures)
+                measure_record=req.sqlize().format(pid=next(packet_id_counter), sid=self._sensor_id)
             )
 
 
@@ -102,11 +93,7 @@ class AddPlaceIterableResponses(IterableItemsABC):
 
     def items(self):
         for req in self.requests:
-            yield AddPlaceResponse(
-                place_record=f"('{req.poscode}', '{req.countrycode}', "
-                             f"'{req.placename}', '{req.province}', "
-                             f"'{req.state}', {req.geolocation})"
-            )
+            yield AddPlaceResponse(place_record=req.sqlize())
 
 
 def _safe_sql_value_of(val) -> str:

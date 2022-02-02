@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam
 from airquality.iterables.responses import FixedSensorIterableResponses
+from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam, SensorInfo
 
 
 def _test_sensor_location():
@@ -29,9 +29,8 @@ def _test_sensor_api_param():
 
 def _test_valid_request():
     return AddFixedSensorRequest(
-        type="faketype",
-        name="fakename",
-        channels=_test_sensor_api_param()
+        basic_info=SensorInfo(type='faketype', name='fakename'),
+        channel_param=_test_sensor_api_param()
     )
 
 
@@ -58,11 +57,6 @@ def _expected_sensor_api_param_record():
            f"(12, 'key2b', '444', '2B', '{ts}')"
 
 
-# def _expected_sensor_location():
-#     geom = "ST_GeomFromText('POINT(5.666 1.234)', 4326)"
-#     return f"(12, '2021-12-29 19:33:00+01:00', {geom})"
-
-
 class TestAddPurpleairSensorsResponseBuilder(TestCase):
 
 # =========== TEST METHODS
@@ -73,10 +67,7 @@ class TestAddPurpleairSensorsResponseBuilder(TestCase):
             requests=_mocked_validator(),
             start_sensor_id=12
         )
-        self.assertEqual(
-            len(response_builder),
-            1
-        )
+        self.assertEqual(len(response_builder), 1)
         self._assert_response(record=response_builder[0])
 
 # =========== SUPPORT METHODS
