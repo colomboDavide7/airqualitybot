@@ -10,8 +10,7 @@ import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.apiparam import APIParam
-from airquality.datamodel.sensor_ident import SensorIdentity
+from airquality.datamodel.fromdb import SensorApiParamDM, SensorInfoDM
 from airquality.usecase.add_purpleair_measures import AddPurpleairMeasures
 
 
@@ -40,7 +39,7 @@ def _test_sensor_api_param():
     """
     :return: return the *APIParam* used for this integration test.
     """
-    return APIParam(
+    return SensorApiParamDM(
         sensor_id=99,
         api_key="fakekey",
         api_id="fakeid",
@@ -50,8 +49,11 @@ def _test_sensor_api_param():
 
 
 def _test_sensor_ident():
-    return SensorIdentity(
-        row=(0, 'test_sensor', -74.0, 33.0)
+    return SensorInfoDM(
+        sensor_id=0,
+        sensor_name='test_sensor',
+        sensor_lng=33.0,
+        sensor_lat=-74.0
     )
 
 

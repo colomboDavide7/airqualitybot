@@ -9,8 +9,7 @@ import json
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.fromdb import GeoareaLocationDM
-from airquality.datamodel.openweathermap_key import OpenweathermapKey
+from airquality.datamodel.fromdb import GeoareaLocationDM, OpenweathermapKeyDM
 from airquality.usecase.add_weather_data import AddWeatherData
 
 
@@ -44,7 +43,7 @@ def _mocked_city_file() -> MagicMock:
 
 
 def _test_opwmap_key():
-    return OpenweathermapKey(
+    return OpenweathermapKeyDM(
         key_value="fakekey",
         done_requests_per_minute=0,
         max_requests_per_minute=60
@@ -53,7 +52,9 @@ def _test_opwmap_key():
 
 def _test_database_geolocation_of_city():
     return GeoareaLocationDM(
-        row=(14400, 0.0, 0.0)
+        geoarea_id=14400,
+        latitude=0.0,
+        longitude=0.0
     )
 
 

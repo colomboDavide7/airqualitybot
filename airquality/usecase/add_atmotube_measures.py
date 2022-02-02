@@ -24,7 +24,7 @@ _FILE_ROTATOR = FileHandlerRotator(
 from datetime import datetime
 import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
-from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.url_reader import json_http_response
 from airquality.url.timeiter_url import AtmotubeTimeIterableURL
@@ -56,13 +56,13 @@ class AddAtmotubeMeasures(UsecaseABC):
     def _packet_id(self) -> int:
         return self._database_gway.query_max_mobile_packet_id_plus_one()
 
-    def _filter_ts_of(self, api_param: APIParam) -> datetime:
+    def _filter_ts_of(self, api_param: SensorApiParamDM) -> datetime:
         return self._database_gway.query_last_acquisition_of(
             sensor_id=api_param.sensor_id,
             ch_name=api_param.ch_name
         )
 
-    def _urls_of(self, api_param: APIParam) -> AtmotubeTimeIterableURL:
+    def _urls_of(self, api_param: SensorApiParamDM) -> AtmotubeTimeIterableURL:
         pre_formatted_url = self._cached_url_template.format(
             api_key=api_param.api_key,
             api_id=api_param.api_id,

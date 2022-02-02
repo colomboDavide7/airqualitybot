@@ -7,13 +7,9 @@
 ######################################################
 from datetime import datetime
 from typing import Set, Dict, List
-from airquality.datamodel.apiparam import APIParam
-from airquality.datamodel.fromdb import GeoareaLocationDM
 from airquality.database.adapter import DatabaseAdapter
-from airquality.datamodel.geolocation import Geolocation
-from airquality.datamodel.sensor_ident import SensorIdentity
-from airquality.datamodel.openweathermap_key import OpenweathermapKey
-from airquality.extra.decorators import throw_on, constructor_of, get_at, dict_from_tuples
+from airquality.datamodel.fromdb import GeoareaLocationDM, OpenweathermapKeyDM, \
+    SensorInfoDM, SensorLocationDM, SensorApiParamDM
 
 
 class DatabaseGateway(object):
@@ -57,85 +53,96 @@ class DatabaseGateway(object):
         return {row[0] for row in rows}
 
 # =========== SELECT MAPPING QUERIES
-    @dict_from_tuples(key_index=1)
-    @throw_on(sentinel_value=[], exc_type=ValueError)
     def query_measure_param_owned_by(self, owner: str) -> Dict[str, int]:
-        return self._database_adapt.fetchall(
-            query=f"SELECT id, param_code FROM level0_raw.measure_param WHERE param_owner ILIKE '%{owner}%';"
-        )
+        query = f"SELECT id, param_code FROM level0_raw.measure_param WHERE param_owner ILIKE '%{owner}%';"
+        rows = self._database_adapt.fetchall(query=query)
+        if len(rows) == 0:
+            raise ValueError(f"Table 'level0_raw.measure_param' doesn't contain sensors owned by = '{owner}'")
+        return {code: ident for ident, code in rows}
 
 # =========== SELECT LIST QUERIES
-    @throw_on(sentinel_value=[], exc_type=ValueError)
-    def query_sensor_apiparam_of_type(self, sensor_type: str) -> List[APIParam]:
-        rows = self._database_adapt.fetchall(
-            query="SELECT a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.last_acquisition "
-                  "FROM level0_raw.sensor_api_param AS a INNER JOIN level0_raw.sensor AS s "
+    def query_sensor_apiparam_of_type(self, sensor_type: str) -> List[SensorApiParamDM]:
+        query = "SELECT a.sensor_id, a.ch_key, a.ch_id, a.ch_name, a.last_acquisition " \
+                  "FROM level0_raw.sensor_api_param AS a INNER JOIN level0_raw.sensor AS s " \
                   f"ON s.id = a.sensor_id WHERE s.sensor_type ILIKE '%{sensor_type}%';"
-        )
-        return [APIParam(sensor_id=sid,
-                         api_key=key,
-                         api_id=ident,
-                         ch_name=name,
-                         last_acquisition=last) for sid, key, ident, name, last in rows]
+        rows = self._database_adapt.fetchall(query=query)
+        if len(rows) == 0:
+            raise ValueError(f"Table 'level0_raw.sensor_api_param' doesn't contain sensors of type = '{sensor_type}'")
+        return [SensorApiParamDM(sensor_id=sid,
+                                 api_key=key,
+                                 api_id=ident,
+                                 ch_name=name,
+                                 last_acquisition=last) for sid, key, ident, name, last in rows]
 
-    @throw_on(sentinel_value=[], exc_type=ValueError)
-    def query_openweathermap_keys(self) -> List[OpenweathermapKey]:
-        rows = self._database_adapt.fetchall(
-            query="SELECT key_value, done_req_min, max_req_min FROM level0_raw.openweathermap_key;"
-        )
-        return [OpenweathermapKey(key_value=key_val,
-                                  done_requests_per_minute=done_r,
-                                  max_requests_per_minute=max_r) for key_val, done_r, max_r in rows]
+    def query_openweathermap_keys(self) -> List[OpenweathermapKeyDM]:
+        query = "SELECT key_value, done_req_min, max_req_min FROM level0_raw.openweathermap_key;"
+        rows = self._database_adapt.fetchall(query=query)
+        if len(rows) == 0:
+            raise ValueError(f"Table 'level0_raw.openweathermap_key' is empty.")
+        return [OpenweathermapKeyDM(key_value=key_val,
+                                    done_requests_per_minute=done_r,
+                                    max_requests_per_minute=max_r) for key_val, done_r, max_r in rows]
 
-    @throw_on(sentinel_value=[], exc_type=ValueError)
     def query_weather_conditions(self):
-        return self._database_adapt.fetchall(
-            query="SELECT id, code, icon FROM level0_raw.weather_condition;"
-        )
+        query = "SELECT id, code, icon FROM level0_raw.weather_condition;"
+        rows = self._database_adapt.fetchall(query=query)
+        if len(rows) == 0:
+            raise ValueError(f"Table 'level0_raw.weather_condition' is empty.")
+        return rows
 
 # =========== SELECT SINGLE ROW QUERIES
-    @get_at(index=0)
-    @throw_on(sentinel_value=None, exc_type=ValueError)
     def query_last_acquisition_of(self, sensor_id: int, ch_name: str) -> datetime:
-        return self._database_adapt.fetchone(
-            query="SELECT last_acquisition "
-                  "FROM level0_raw.sensor_api_param "
+        query = "SELECT last_acquisition FROM level0_raw.sensor_api_param " \
                   f"WHERE sensor_id = {sensor_id} AND ch_name = '{ch_name}';"
-        )
+        row = self._database_adapt.fetchone(query=query)
+        if row is None:
+            raise ValueError(f"Cannot found records corresponding to sensor_id = '{sensor_id}' and "
+                             f"channel_name = '{ch_name}' in 'level0_raw.sensor_api_param' table.")
+        return row[0]
 
-    @constructor_of(obj_type=GeoareaLocationDM)
-    @throw_on(sentinel_value=None, exc_type=ValueError)
     def query_geolocation_of(self, country_code: str, place_name: str):
-        return self._database_adapt.fetchone(
-            query="SELECT id, ST_X(geom), ST_Y(geom) "
-                  "FROM level0_raw.geographical_area "
-                  f"WHERE country_code = '{country_code}' AND place_name = '{place_name}';"
+        query = "SELECT id, ST_X(geom), ST_Y(geom) FROM level0_raw.geographical_area " \
+                f"WHERE country_code = '{country_code}' AND place_name = '{place_name}';"
+        row = self._database_adapt.fetchone(query=query)
+        if row is None:
+            raise ValueError(f"Cannot found a record corresponding to country_code = '{country_code}' and "
+                             f"place_name = '{place_name}' in 'level0_raw.geographical_area' table")
+        return GeoareaLocationDM(
+            geoarea_id=row[0], longitude=row[1], latitude=row[2]
         )
 
-    @constructor_of(obj_type=SensorIdentity)
-    @throw_on(sentinel_value=None, exc_type=ValueError)
     def query_fixed_sensor_unique_info(self, sensor_id: int):
-        return self._database_adapt.fetchone(
-            query="SELECT s.id, s.sensor_name, ST_X(l.geom), ST_Y(l.geom) FROM level0_raw.sensor AS s "
-                  "INNER JOIN level0_raw.sensor_at_location AS l ON s.id = l.sensor_id "
+        query = "SELECT s.id, s.sensor_name, ST_X(l.geom), ST_Y(l.geom) FROM level0_raw.sensor AS s " \
+                  "INNER JOIN level0_raw.sensor_at_location AS l ON s.id = l.sensor_id " \
                   f"WHERE l.sensor_id = {sensor_id} ORDER BY l.valid_from DESC;"
+        row = self._database_adapt.fetchone(query=query)
+        if row is None:
+            raise ValueError(f"Cannot found record corresponding to sensor_id = "
+                             f"'{sensor_id}' in 'level0_raw.sensor_at_location' table")
+        return SensorInfoDM(
+            sensor_id=row[0], sensor_name=row[1], sensor_lng=row[2], sensor_lat=row[3]
         )
 
-    @constructor_of(obj_type=SensorIdentity)
-    @throw_on(sentinel_value=None, exc_type=ValueError)
     def query_mobile_sensor_unique_info(self, sensor_id: int):
-        return self._database_adapt.fetchone(
-            query=f"SELECT id, sensor_name FROM level0_raw.sensor WHERE id = {sensor_id};"
+        query = f"SELECT id, sensor_name FROM level0_raw.sensor WHERE id = {sensor_id};"
+        row = self._database_adapt.fetchone(query=query)
+        if row is None:
+            raise ValueError(f"Cannot found record corresponding to sensor_id = "
+                             f"'{sensor_id}' in 'level0_raw.sensor' table.")
+        return SensorInfoDM(
+            sensor_id=row[0], sensor_name=row[1]
         )
 
-    @constructor_of(obj_type=Geolocation)
-    @throw_on(sentinel_value=None, exc_type=ValueError)
-    def query_purpleair_location_of(self, sensor_index: int) -> Geolocation:
-        return self._database_adapt.fetchone(
-            query="SELECT l.sensor_id, ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l "
-                  "INNER JOIN level0_raw.sensor AS s ON s.id = l.sensor_id "
-                  f"WHERE s.sensor_type ILIKE '%purpleair%' AND sensor_name ILIKE '%{sensor_index}%' "
-                  "AND valid_to IS NULL;"
+    def query_purpleair_location_of(self, sensor_index: int) -> SensorLocationDM:
+        query = "SELECT l.sensor_id, ST_X(geom), ST_Y(geom) FROM level0_raw.sensor_at_location AS l INNER JOIN " \
+                "level0_raw.sensor AS s ON s.id = l.sensor_id WHERE s.sensor_type ILIKE '%purpleair%' AND " \
+                f"sensor_name ILIKE '%{sensor_index}%' AND valid_to IS NULL;"
+        row = self._database_adapt.fetchone(query=query)
+        if row is None:
+            raise ValueError(f"Cannot found a record corresponding to sensor_type = 'purpleair' which name"
+                             f"contains sensor_index = '{sensor_index}' in 'level0_raw.sensor' table.")
+        return SensorLocationDM(
+            sensor_id=row[0], longitude=row[1], latitude=row[2]
         )
 
     def query_hourly_forecast_records(self) -> Set:

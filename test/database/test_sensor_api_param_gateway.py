@@ -5,7 +5,7 @@
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.database.gateway import DatabaseGateway
 
 
@@ -31,9 +31,9 @@ def _test_database_channel_data():
 def _expected_sensor_api_param():
     ts = datetime(2018, 12, 11, 9, 59)
     return [
-        APIParam(sensor_id=1, api_key="k1", api_id="i1", ch_name="n1", last_acquisition=ts),
-        APIParam(sensor_id=1, api_key="k2", api_id="i2", ch_name="n2", last_acquisition=ts),
-        APIParam(sensor_id=2, api_key="z1", api_id="a1", ch_name="m1", last_acquisition=ts)
+        SensorApiParamDM(sensor_id=1, api_key="k1", api_id="i1", ch_name="n1", last_acquisition=ts),
+        SensorApiParamDM(sensor_id=1, api_key="k2", api_id="i2", ch_name="n2", last_acquisition=ts),
+        SensorApiParamDM(sensor_id=2, api_key="z1", api_id="a1", ch_name="m1", last_acquisition=ts)
     ]
 
 

@@ -7,12 +7,16 @@ from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.geolocation import Geolocation
+from airquality.datamodel.fromdb import SensorLocationDM
 from airquality.usecase.update_purpleair_locations import UpdatePurpleairLocation
 
 
 def _test_queried_locations():
-    return Geolocation(row=(12, 9.44, 45.99))
+    return SensorLocationDM(
+        sensor_id=12,
+        longitude=9.44,
+        latitude=45.99
+    )
 
 
 def _mocked_database_gateway():

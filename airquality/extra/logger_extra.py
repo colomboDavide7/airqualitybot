@@ -3,7 +3,7 @@
 # @date:    2022-01-23, dom, 12:44
 # ======================================
 import logging
-from airquality.datamodel.sensor_ident import SensorIdentity
+from airquality.datamodel.fromdb import SensorInfoDM
 
 
 CHAR_TO_REMOVE = [' ', '.', '-']
@@ -105,7 +105,7 @@ class FileHandlerRotator(object):
         self._logger.removeHandler(self._cached_file_handler)
         self._cached_file_handler = None
 
-    def rotate(self, sensor_ident: SensorIdentity):
+    def rotate(self, sensor_ident: SensorInfoDM):
         """
         A function that substitutes the cached file handler with a new one associated to the sensor identity.
 

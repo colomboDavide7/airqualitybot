@@ -7,7 +7,7 @@
 ######################################################
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.fromdb import SensorApiParamDM
 
 
 def _last_acquisition_test_datetime():
@@ -15,17 +15,13 @@ def _last_acquisition_test_datetime():
 
 
 def _sensor_api_param_test_datamodel():
-    return APIParam(
+    return SensorApiParamDM(
             sensor_id=1,
             api_key="fakekey",
             api_id="fakeident",
             ch_name="fakename",
             last_acquisition=_last_acquisition_test_datetime()
         )
-
-
-def _expected_sensor_api_param_representation():
-    return "APIParam(sensor_id=1, api_key=XXX, api_id=XXX, ch_name=fakename, last_acquisition=2018-12-11 18:49:00)"
 
 
 class TestAPIParamDataclass(TestCase):
@@ -37,7 +33,6 @@ class TestAPIParamDataclass(TestCase):
         self.assertEqual(api_param.api_id, "fakeident")
         self.assertEqual(api_param.ch_name, "fakename")
         self.assertEqual(api_param.last_acquisition, _last_acquisition_test_datetime())
-        self.assertEqual(repr(api_param), _expected_sensor_api_param_representation())
 
 
 if __name__ == '__main__':

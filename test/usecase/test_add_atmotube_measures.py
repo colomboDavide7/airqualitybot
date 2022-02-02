@@ -10,8 +10,7 @@ import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.apiparam import APIParam
-from airquality.datamodel.sensor_ident import SensorIdentity
+from airquality.datamodel.fromdb import SensorApiParamDM, SensorInfoDM
 from airquality.usecase.add_atmotube_measures import AddAtmotubeMeasures
 
 
@@ -40,7 +39,7 @@ def _test_sensor_api_param():
     """
     :return: return the *APIParam* used for this integration test.
     """
-    return APIParam(
+    return SensorApiParamDM(
         sensor_id=12,
         api_key="fakekey",
         api_id="fakeid",
@@ -50,8 +49,9 @@ def _test_sensor_api_param():
 
 
 def _test_sensor_identity():
-    return SensorIdentity(
-        row=(0, 'test_sensor')
+    return SensorInfoDM(
+        sensor_id=0,
+        sensor_name='test_sensor'
     )
 
 
@@ -168,7 +168,6 @@ class AddAtmotubeMeasuresIntegrationTest(TestCase):
             query,
             f"{_expected_insert_mobile_measures_query()}{_expected_update_query()}"
         )
-
 
     def _assert_usecase_properties(self):
         self.assertEqual(self._usecase._measure_param, _test_measure_param())

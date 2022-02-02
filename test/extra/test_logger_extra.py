@@ -4,20 +4,24 @@
 # ======================================
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.datamodel.sensor_ident import SensorIdentity
+from airquality.datamodel.fromdb import SensorInfoDM
 from airquality.extra.logger_extra import FileHandlerRotator
 from airquality.extra.logger_extra import _custom_log_filename, number_cleaner, name_cleaner
 
 
 def _test_sensor_identity():
-    return SensorIdentity(
-        row=(0, 'n1', 9, 10)
+    return SensorInfoDM(
+        sensor_id=0,
+        sensor_name='n1',
+        sensor_lng=9,
+        sensor_lat=10
     )
 
 
 def _test_sensor_identity_2():
-    return SensorIdentity(
-        row=(1, 'n2')
+    return SensorInfoDM(
+        sensor_id=1,
+        sensor_name='n2'
     )
 
 

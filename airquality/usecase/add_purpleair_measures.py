@@ -33,7 +33,7 @@ _FIELD_MAP = {'1A': _MAPPING_1A, '1B': _MAPPING_1B, '2A': _MAPPING_2A, '2B': _MA
 from datetime import datetime
 import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
-from airquality.datamodel.apiparam import APIParam
+from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.database.gateway import DatabaseGateway
 from airquality.url.url_reader import json_http_response
 from airquality.url.timeiter_url import ThingspeakTimeIterableURL
@@ -65,13 +65,13 @@ class AddPurpleairMeasures(UsecaseABC):
     def _packet_id(self) -> int:
         return self._database_gway.query_max_station_packet_id_plus_one()
 
-    def _filter_ts_of(self, param: APIParam) -> datetime:
+    def _filter_ts_of(self, param: SensorApiParamDM) -> datetime:
         return self._database_gway.query_last_acquisition_of(
             sensor_id=param.sensor_id,
             ch_name=param.ch_name
         )
 
-    def _urls_of(self, param: APIParam) -> ThingspeakTimeIterableURL:
+    def _urls_of(self, param: SensorApiParamDM) -> ThingspeakTimeIterableURL:
         pre_formatted_url = self._url_template.format(
             api_key=param.api_key,
             api_id=param.api_id,

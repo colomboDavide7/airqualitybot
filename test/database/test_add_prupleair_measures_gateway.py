@@ -5,7 +5,7 @@
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
-from airquality.datamodel.sensor_ident import SensorIdentity
+from airquality.datamodel.fromdb import SensorInfoDM
 from airquality.datamodel.response import AddStationMeasuresResponse
 
 
@@ -29,8 +29,11 @@ def _mocked_response_builder():
 
 
 def _expected_fixed_sensor_unique_info():
-    return SensorIdentity(
-        row=(0, 'fake_name', -9, 44)
+    return SensorInfoDM(
+        sensor_id=0,
+        sensor_name='fake_name',
+        sensor_lng=-9,
+        sensor_lat=44
     )
 
 
