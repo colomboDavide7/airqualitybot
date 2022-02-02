@@ -12,7 +12,7 @@ from typing import List, Tuple
 
 
 @dataclass
-class Channel(object):
+class SensorChannelParam(object):
     """
     A *dataclass* that holds the values of the parameters of a sensor's acquisition channel.
     """
@@ -31,7 +31,7 @@ class AddFixedSensorRequest(object):
 
     name: str                           # The name assigned to the sensor.
     type: str                           # The type assigned to the sensor.
-    channels: List[Channel]             # The API parameters of each channel associated to the sensor.
+    channels: List[SensorChannelParam]             # The API parameters of each channel associated to the sensor.
 
 
 @dataclass

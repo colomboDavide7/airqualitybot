@@ -9,8 +9,8 @@ from typing import Dict, Generator
 from airquality.extra.timest import Timest
 from airquality.iterables.abc import IterableItemsABC
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
-from airquality.datamodel.requests import AddFixedSensorRequest, Channel, AddSensorMeasureRequest, AddPlaceRequest, \
-    WeatherConditionsRequest, AddWeatherDataRequest, WeatherAlertRequest
+from airquality.datamodel.requests import WeatherConditionsRequest, AddWeatherDataRequest, WeatherAlertRequest, \
+    AddFixedSensorRequest, SensorChannelParam, AddSensorMeasureRequest, AddPlaceRequest
 
 
 _PURPLEAIR_TYPE = 'Purpleair/Thingspeak'
@@ -34,17 +34,17 @@ class PurpleairIterableRequests(IterableItemsABC):
 
     def items(self) -> Generator:
         for dm in self._datamodels:
-            created_at = self._timest.utc_time2utc_localtz(
-                time=dm.date_created, latitude=dm.latitude, longitude=dm.longitude
-            )
-            channels = [Channel(api_key=getattr(dm, ch['key']),
-                                api_id=str(getattr(dm, ch['ident'])),
-                                channel_name=ch['name'],
-                                last_acquisition=created_at) for ch in _PURPLEAIR_API_PARAM]
             sensor_name = f"{dm.name} ({dm.sensor_index})"
-            yield AddFixedSensorRequest(
-                type=_PURPLEAIR_TYPE, name=sensor_name, channels=channels
-            )
+            created_at = self._timest.utc_time2utc_localtz(time=dm.date_created,
+                                                           latitude=dm.latitude,
+                                                           longitude=dm.longitude)
+            channels = [SensorChannelParam(api_key=getattr(dm, ch['key']),
+                                           api_id=str(getattr(dm, ch['ident'])),
+                                           channel_name=ch['name'],
+                                           last_acquisition=created_at) for ch in _PURPLEAIR_API_PARAM]
+            yield AddFixedSensorRequest(type=_PURPLEAIR_TYPE,
+                                        name=sensor_name,
+                                        channels=channels)
 
 
 class AtmotubeIterableRequests(IterableItemsABC):

@@ -4,7 +4,7 @@
 # ======================================
 from datetime import datetime
 from unittest import TestCase, main
-from airquality.datamodel.requests import Channel
+from airquality.datamodel.requests import SensorChannelParam
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.requests import AddFixedSensorRequest
 
@@ -12,10 +12,10 @@ from airquality.datamodel.requests import AddFixedSensorRequest
 def _sensor_channel_test_data():
     ts = datetime.fromtimestamp(1234567890)
     return [
-        Channel(api_key="k1", api_id="1", channel_name="fakename1", last_acquisition=ts),
-        Channel(api_key="k2", api_id="2", channel_name="fakename2", last_acquisition=ts),
-        Channel(api_key="k3", api_id="3", channel_name="fakename3", last_acquisition=ts),
-        Channel(api_key="k4", api_id="4", channel_name="fakename4", last_acquisition=ts)
+        SensorChannelParam(api_key="k1", api_id="1", channel_name="fakename1", last_acquisition=ts),
+        SensorChannelParam(api_key="k2", api_id="2", channel_name="fakename2", last_acquisition=ts),
+        SensorChannelParam(api_key="k3", api_id="3", channel_name="fakename3", last_acquisition=ts),
+        SensorChannelParam(api_key="k4", api_id="4", channel_name="fakename4", last_acquisition=ts)
     ]
 
 
@@ -52,7 +52,7 @@ class TestAddPurpleairSensorRequest(TestCase):
         self._assert_channel_data(channel=channels[2], ident='3', key='k3', name='fakename3', ts=ts)
         self._assert_channel_data(channel=channels[3], ident='4', key='k4', name='fakename4', ts=ts)
 
-    def _assert_channel_data(self, channel: Channel, ident: str, key: str, name: str, ts: datetime):
+    def _assert_channel_data(self, channel: SensorChannelParam, ident: str, key: str, name: str, ts: datetime):
         self.assertEqual(channel.api_id, ident)
         self.assertEqual(channel.api_key, key)
         self.assertEqual(channel.channel_name, name)

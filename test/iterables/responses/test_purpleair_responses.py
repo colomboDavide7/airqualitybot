@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.datamodel.requests import AddFixedSensorRequest, Channel
+from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam
 from airquality.iterables.response_builder import AddFixedSensorResponseBuilder
 
 
@@ -20,10 +20,10 @@ def _test_sensor_location():
 def _test_sensor_api_param():
     ts = datetime(2021, 10, 11, 9, 44)
     return [
-        Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=ts),
-        Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=ts),
-        Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=ts),
-        Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=ts)
+        SensorChannelParam(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=ts),
+        SensorChannelParam(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=ts),
+        SensorChannelParam(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=ts),
+        SensorChannelParam(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=ts)
     ]
 
 

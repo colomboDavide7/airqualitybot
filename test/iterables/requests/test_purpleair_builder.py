@@ -7,7 +7,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.extra.timest import Timest
-from airquality.datamodel.requests import Channel
+from airquality.datamodel.requests import SensorChannelParam
 from airquality.datamodel.fromapi import PurpleairDM
 from airquality.iterables.requests import PurpleairIterableRequests
 
@@ -43,10 +43,10 @@ def _expected_sensor_api_param():
     )
     ts = datetime(2009, 2, 13, 23, 31, 30, tzinfo=tz)
     return [
-            Channel(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=ts),
-            Channel(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=ts),
-            Channel(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=ts),
-            Channel(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=ts)
+            SensorChannelParam(api_key="key1a", api_id="111", channel_name="1A", last_acquisition=ts),
+            SensorChannelParam(api_key="key1b", api_id="222", channel_name="1B", last_acquisition=ts),
+            SensorChannelParam(api_key="key2a", api_id="333", channel_name="2A", last_acquisition=ts),
+            SensorChannelParam(api_key="key2b", api_id="444", channel_name="2B", last_acquisition=ts)
         ]
 
 
