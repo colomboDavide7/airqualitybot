@@ -7,10 +7,8 @@
 ######################################################
 import logging
 import airquality.environment as environ
-from airquality.extra.timest import atmotube_timest
 from airquality.extra.logging import FileHandlerRotator
 
-_TIMEST = atmotube_timest()
 _ENVIRON = environ.get_environ()
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
@@ -95,7 +93,6 @@ class AddAtmotubeMeasures(UsecaseABC):
 
                 request_builder = AtmotubeIterableRequests(
                     datamodels=datamodel_builder,
-                    timest=_TIMEST,
                     measure_param=self._measure_param
                 )
                 _LOGGER.debug("found #%d requests" % len(request_builder))

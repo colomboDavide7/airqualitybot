@@ -9,7 +9,6 @@ from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.extra.timest import Timest
 from airquality.datamodel.fromapi import WeatherDM, WeatherConditionsDM, OpenweathermapDM, WeatherAlertDM
 from airquality.iterables.requests import OpenweathermapIterableRequests
 
@@ -111,8 +110,7 @@ class TestAddWeatherDataRequestBuilder(TestCase):
     def setUp(self) -> None:
         self._builder = OpenweathermapIterableRequests(
             datamodels=_mocked_datamodel_builder(),
-            weather_map=_test_weather_conditions_mapping(),
-            timest=Timest()
+            weather_map=_test_weather_conditions_mapping()
         )
 
 # =========== TEST METHOD

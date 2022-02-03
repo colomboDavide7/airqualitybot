@@ -6,7 +6,6 @@ from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.extra.timest import thingspeak_timest
 from airquality.datamodel.fromapi import ThingspeakDM
 from airquality.iterables.requests import ThingspeakIterableRequests
 
@@ -59,7 +58,6 @@ class TestAddThingspeakMeasuresRequestBuilder(TestCase):
     def setUp(self) -> None:
         self._builder = ThingspeakIterableRequests(
             datamodels=_mocked_datamodel_builder(),
-            timest=thingspeak_timest(),
             measure_param=_test_measure_param_mapping_primary_channel_a(),
             api_field_names=_test_field_mapping_primary_channel_a()
         )
@@ -129,7 +127,6 @@ class TestAddThingspeakMeasuresRequestBuilderPrimaryChannelB(TestCase):
     def setUp(self) -> None:
         self._builder = ThingspeakIterableRequests(
             datamodels=_mocked_primary_channel_b_datamodel_builder(),
-            timest=thingspeak_timest(),
             measure_param=_test_measure_param_primary_channel_b(),
             api_field_names=_test_field_mapping_primary_channel_b()
         )

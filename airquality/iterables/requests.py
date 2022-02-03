@@ -6,7 +6,7 @@
 #
 ######################################################
 from typing import Dict, Generator
-from airquality.extra.timest import Timest
+import airquality.extra.timest as timest
 from airquality.iterables.abc import IterableItemsABC
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.datamodel.requests import WeatherConditionsRequest, AddWeatherDataRequest, WeatherAlertRequest, \
@@ -27,15 +27,15 @@ class PurpleairIterableRequests(IterableItemsABC):
     _CHANNEL_2B = {'key': 'secondary_key_b', 'ident': 'secondary_id_b', 'name': '2B'}
     _PURPLEAIR_API_PARAM = [_CHANNEL_1A, _CHANNEL_1B, _CHANNEL_2A, _CHANNEL_2B]
 
-    def __init__(self, datamodels: IterableItemsABC, timest: Timest):
+    def __init__(self, datamodels: IterableItemsABC):
         self._datamodels = datamodels
         self._timest = timest
 
     def items(self) -> Generator:
         for dm in self._datamodels:
-            created_at = self._timest.utc_time2utc_localtz(time=dm.date_created,
-                                                           latitude=dm.latitude,
-                                                           longitude=dm.longitude)
+            created_at = timest.make_timezone_aware_FROM_COORDS(utctime=dm.date_created,
+                                                                latitude=dm.latitude,
+                                                                longitude=dm.longitude)
             channel_param = [SensorChannelParam(api_key=getattr(dm, ch['key']),
                                                 api_id=str(getattr(dm, ch['ident'])),
                                                 channel_name=ch['name'],
@@ -51,8 +51,9 @@ class AtmotubeIterableRequests(IterableItemsABC):
     *AtmotubeDM* into an *AddSensorMeasureRequest*
     """
 
-    def __init__(self, datamodels: IterableItemsABC, timest: Timest, measure_param: Dict[str, int]):
-        self._timest = timest
+    _TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+    def __init__(self, datamodels: IterableItemsABC, measure_param: Dict[str, int]):
         self._datamodels = datamodels
         self._measure_param = measure_param
 
@@ -61,12 +62,14 @@ class AtmotubeIterableRequests(IterableItemsABC):
             coords = dm.coords
 
             geolocation = NullGeometry()
-            timestamp = self._timest.utc_time2utc_tz(dm.time)
+            timestamp = timest.make_timezone_aware_UTC(dm.time, fmt=self._TIME_FORMAT)
             if coords is not None:
                 lat = coords['lat']
                 lng = coords['lon']
                 geolocation = PostgisPoint(latitude=lat, longitude=lng)
-                timestamp = self._timest.utc_time2utc_localtz(time=dm.time, latitude=lat, longitude=lng)
+                timestamp = timest.make_timezone_aware_FROM_COORDS(
+                    utctime=dm.time, latitude=lat, longitude=lng, fmt=self._TIME_FORMAT
+                )
 
             yield AddSensorMeasureRequest(
                 timestamp=timestamp,
@@ -83,14 +86,9 @@ class ThingspeakIterableRequests(IterableItemsABC):
     *ThingspeakDM* into an *AddSensorMeasureRequest*
     """
 
-    def __init__(
-        self,
-        timest: Timest,
-        datamodels: IterableItemsABC,
-        measure_param: Dict[str, int],
-        api_field_names: Dict[str, str]
-    ):
-        self._timest = timest
+    _TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+    def __init__(self, datamodels: IterableItemsABC, measure_param: Dict[str, int], api_field_names: Dict[str, str]):
         self._datamodels = datamodels
         self._measure_param = measure_param
         self._api_field_names = api_field_names
@@ -98,7 +96,7 @@ class ThingspeakIterableRequests(IterableItemsABC):
     def items(self):
         for dm in self._datamodels:
             yield AddSensorMeasureRequest(
-                timestamp=self._timest.utc_time2utc_localtz(time=dm.created_at),
+                timestamp=timest.make_timezone_aware_FROM_LOCAL(utctime=dm.created_at, fmt=self._TIME_FORMAT),
                 measures=[(self._measure_param[fcode], getattr(dm, fname))
                           for fname, fcode in self._api_field_names.items()
                           if getattr(dm, fname) is not None]
@@ -126,19 +124,29 @@ class GeonamesIterableRequests(IterableItemsABC):
             )
 
 
+def _safe_time(time, tzname: str):
+    if time is not None:
+        return timest.make_timezone_aware_FROM_NAME(utctime=time, timezone_name=tzname)
+    return None
+
+
+def _alert_of(source, tzname: str) -> WeatherAlertRequest:
+    return WeatherAlertRequest(
+        sender_name=source.sender_name,
+        alert_event=source.alert_event,
+        alert_begin=_safe_time(time=source.alert_begin, tzname=tzname),
+        alert_until=_safe_time(time=source.alert_until, tzname=tzname),
+        description=source.description
+    )
+
+
 class OpenweathermapIterableRequests(IterableItemsABC):
     """
     A class that implements the *IterableItemsABC* interface and defines the business rules for converting a
     *OpenweathermapDM* into an *AddWeatherDataRequest*
     """
 
-    def __init__(
-        self,
-        timest: Timest,
-        datamodels: IterableItemsABC,
-        weather_map: Dict[int, Dict[str, int]]
-    ):
-        self._timest = timest
+    def __init__(self, datamodels: IterableItemsABC, weather_map: Dict[int, Dict[str, int]]):
         self.datamodels = datamodels
         self.weather_map = weather_map
 
@@ -148,24 +156,15 @@ class OpenweathermapIterableRequests(IterableItemsABC):
                 current=self._request_of(source=dm.current, tzname=dm.tz_name),
                 hourly=[self._request_of(source=item, tzname=dm.tz_name) for item in dm.hourly_forecast],
                 daily=[self._request_of(source=item, tzname=dm.tz_name) for item in dm.daily_forecast],
-                alerts=[self._alert_of(source=item, tzname=dm.tz_name) for item in dm.alerts]
+                alerts=[_alert_of(source=item, tzname=dm.tz_name) for item in dm.alerts]
             )
-
-    def _alert_of(self, source, tzname: str) -> WeatherAlertRequest:
-        return WeatherAlertRequest(
-            sender_name=source.sender_name,
-            alert_event=source.alert_event,
-            alert_begin=self._safe_time(time=source.alert_begin, tzname=tzname),
-            alert_until=self._safe_time(time=source.alert_until, tzname=tzname),
-            description=source.description
-        )
 
     def _request_of(self, source, tzname: str) -> WeatherConditionsRequest:
         weather = source.weather[0]             # take only the first weather instance from the list.
         return WeatherConditionsRequest(
-            timestamp=self._timest.utc_time2utc_localtz(time=source.dt, tzname=tzname),
-            sunrise=self._safe_time(time=source.sunrise, tzname=tzname),
-            sunset=self._safe_time(time=source.sunset, tzname=tzname),
+            timestamp=_safe_time(time=source.dt, tzname=tzname),
+            sunrise=_safe_time(time=source.sunrise, tzname=tzname),
+            sunset=_safe_time(time=source.sunset, tzname=tzname),
             temperature=source.temp,
             min_temp=source.temp_min,
             max_temp=source.temp_max,
@@ -178,8 +177,3 @@ class OpenweathermapIterableRequests(IterableItemsABC):
             snow=source.snow,
             weather_id=self.weather_map[weather.id][weather.icon]
         )
-
-    def _safe_time(self, time, tzname: str):
-        if time is not None:
-            return self._timest.utc_time2utc_localtz(time=time, tzname=tzname)
-        return None

@@ -2,20 +2,8 @@
 # @author:  Davide Colombo
 # @date:    2022-01-23, dom, 12:44
 # ======================================
-_CHAR_TO_REMOVE = [' ', '.', '-']
-
-
-def name_cleaner(name: str) -> str:
-    return ''.join([c for c in name.lower() if c not in _CHAR_TO_REMOVE])
-
-
-def literalize_number(number: float) -> str:
-    number = "%.5f" % number
-    return number.replace('.', 'dot').replace('-', 'minus')
-
-
-# ======================================
 import logging
+import airquality.extra.string as string
 from airquality.datamodel.fromdb import SensorInfoDM
 
 
@@ -27,10 +15,10 @@ def _custom_log_filename(sensor_id: int, sensor_name: str, sensor_lat: float = N
     A function that takes a set of sensor parameters and return a custom log filename.
     """
 
-    base_name = f"sensor_{sensor_id}_{name_cleaner(sensor_name)}"
+    base_name = f"sensor_{sensor_id}_{string.string_cleaner(s=sensor_name, char2remove=[' ', '.', '-'])}"
     if sensor_lat is None and sensor_lng is None:
         return base_name
-    return f"{base_name}_{literalize_number(sensor_lat)}_{literalize_number(sensor_lng)}"
+    return f"{base_name}_{string.literalize_number(sensor_lat)}_{string.literalize_number(sensor_lng)}"
 
 
 class FileHandlerRotator(object):

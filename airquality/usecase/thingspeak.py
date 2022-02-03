@@ -7,10 +7,8 @@
 ######################################################
 import logging
 import airquality.environment as environ
-from airquality.extra.timest import thingspeak_timest
 from airquality.extra.logging import FileHandlerRotator
 
-_TIMEST = thingspeak_timest()
 _ENVIRON = environ.get_environ()
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.DEBUG)
@@ -105,7 +103,6 @@ class AddPurpleairMeasures(UsecaseABC):
 
                 request_builder = ThingspeakIterableRequests(
                     datamodels=datamodel_builder,
-                    timest=_TIMEST,
                     measure_param=self._measure_param,
                     api_field_names=_FIELD_MAP[param.ch_name]
                 )

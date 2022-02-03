@@ -6,7 +6,6 @@ from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
-from airquality.extra.timest import atmotube_timest
 from airquality.datamodel.fromapi import AtmotubeDM
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.iterables.requests import AtmotubeIterableRequests
@@ -86,7 +85,6 @@ class TestAddAtmotubeMeasuresRequestBuilder(TestCase):
     def setUp(self) -> None:
         self._builder = AtmotubeIterableRequests(
             datamodels=_mocked_datamodel_builder(),
-            timest=atmotube_timest(),
             measure_param=_test_measure_param_map()
         )
 

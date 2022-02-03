@@ -6,16 +6,13 @@
 #
 ######################################################
 import logging
-import os
-
 import airquality.environment as environ
-from airquality.extra.timest import openweathermap_timest
 
 _LOGGER = logging.getLogger(__name__)
 _ENVIRON = environ.get_environ()
-_TIMEST = openweathermap_timest()
 
 ######################################################
+import os
 import airquality as aq
 from typing import Dict, Set
 import airquality.usecase as constants
@@ -159,8 +156,7 @@ class AddWeatherData(UsecaseABC):
 
         request_builder = OpenweathermapIterableRequests(
             datamodels=datamodel_builder,
-            weather_map=self._cached_weather_map,
-            timest=_TIMEST
+            weather_map=self._cached_weather_map
         )
         _LOGGER.debug("found #%d requests" % len(request_builder))
 

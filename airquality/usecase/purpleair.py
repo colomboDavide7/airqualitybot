@@ -7,11 +7,9 @@
 ######################################################
 import logging
 import airquality.environment as environ
-from airquality.extra.timest import purpleair_timest
 
 _LOGGER = logging.getLogger(__name__)
 _ENVIRON = environ.get_environ()
-_TIMEST = purpleair_timest()
 
 ######################################################
 import airquality.usecase as constant
@@ -53,10 +51,7 @@ class AddPurpleairFixedSensors(UsecaseABC):
         datamodel_builder = PurpleairIterableDatamodels(json_response=server_jresp)
         _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
-        request_builder = PurpleairIterableRequests(
-            datamodels=datamodel_builder,
-            timest=_TIMEST
-        )
+        request_builder = PurpleairIterableRequests(datamodels=datamodel_builder)
         _LOGGER.debug("found #%d requests" % len(request_builder))
 
         validator = AddFixedSensorRequestValidator(

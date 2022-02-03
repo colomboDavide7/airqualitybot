@@ -4,16 +4,15 @@
 # ======================================
 import logging
 import airquality.environment as environ
-from airquality.extra.timest import Timest
 
 _LOGGER = logging.getLogger(__name__)
 _ENVIRON = environ.get_environ()
-_TIMEST = Timest()
 
 # ======================================
 import math
 from datetime import datetime
 import airquality.usecase as constants
+import airquality.extra.timest as timest
 from airquality.usecase.abc import UsecaseABC
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.database.gateway import DatabaseGateway
@@ -43,7 +42,7 @@ class UpdatePurpleairLocation(UsecaseABC):
                 _LOGGER.debug("set location to => (%.6f, %.6f)" % (datamodel.longitude, datamodel.latitude))
 
                 geom = str(PostgisPoint(latitude=datamodel.latitude, longitude=datamodel.longitude))
-                query = _build_query(sensor_id=geo.sensor_id, time=_TIMEST.current_utc_timetz(), geom=geom)
+                query = _build_query(sensor_id=geo.sensor_id, time=timest.now_utctz(), geom=geom)
                 self._database_gway.execute(query=query)
 
         except ValueError:
