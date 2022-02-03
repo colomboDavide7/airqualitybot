@@ -6,6 +6,7 @@ from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
+from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.datamodel.requests import AddSensorMeasureRequest
 from airquality.iterables.responses import StationMeasureIterableResponses
 
@@ -36,6 +37,16 @@ def _expected_measure_record():
            f"(140, 99, 16, 60, '{ts}')"
 
 
+def _test_sensor_api_param_datamodel():
+    return SensorApiParamDM(
+        sensor_id=99,
+        ch_name='fakename',
+        api_id='fakeid',
+        api_key='fakekey',
+        last_acquisition=datetime(2022, 1, 10, 9, 44)
+    )
+
+
 class TestAddThingspeakMeasureResponseBuilder(TestCase):
 
 # =========== SETUP METHOD
@@ -43,7 +54,7 @@ class TestAddThingspeakMeasureResponseBuilder(TestCase):
         self._response_builder = StationMeasureIterableResponses(
             requests=_mocked_validator(),
             start_packet_id=140,
-            sensor_id=99
+            sensor_param=_test_sensor_api_param_datamodel()
         )
 
 # =========== TEST METHOD

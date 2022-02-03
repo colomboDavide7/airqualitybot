@@ -46,6 +46,5 @@ class Purpleair(UsecaseABC):
             return
 
         responses = FixedSensorIterableResponses(requests=valid_requests, start_sensor_id=self._start_sensor_id)
-        query = responses.query()
-        self._database_gway.execute(query)
+        self._database_gway.execute(responses.query())
         _LOGGER.debug("inserted %d/%d sensors" % (len(valid_requests), len(datamodels)))

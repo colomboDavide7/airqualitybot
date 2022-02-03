@@ -9,6 +9,7 @@ from itertools import count
 from typing import Generator
 from airquality.extra.sqlize import sqlize_obj
 from airquality.iterables.abc import IterableItemsABC
+from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.datamodel.responses import AddFixedSensorResponse, AddSensorMeasureResponse, \
     AddPlaceResponse, AddWeatherDataResponse
 
@@ -72,9 +73,9 @@ class StationMeasureIterableResponses(IterableItemsABC):
     an *AddSensorMeasureRequest* object into *AddSensorMeasureResponse* object for fixed sensors.
     """
 
-    def __init__(self, sensor_id: int, start_packet_id: int, requests: IterableItemsABC):
+    def __init__(self, sensor_param: SensorApiParamDM, start_packet_id: int, requests: IterableItemsABC):
         self._requests = requests
-        self._sensor_id = sensor_id
+        self._sensor_param = sensor_param
         self._start_packet_id = start_packet_id
 
     def items(self) -> Generator:
@@ -82,9 +83,18 @@ class StationMeasureIterableResponses(IterableItemsABC):
         for req in self._requests:
             packet_id  = next(packet_id_counter)
             yield AddSensorMeasureResponse(
-                measure_record=','.join(f"({packet_id}, {self._sensor_id}, {param_id}, {param_val}, '{req.timestamp}')"
-                                        for param_id, param_val in req.measures)
+                measure_record=','.join(f"({packet_id}, {self._sensor_param.sensor_id}, {param_id}, {param_val}, "
+                                        f"'{req.timestamp}')" for param_id, param_val in req.measures)
             )
+
+    def query(self) -> str:
+        query = "INSERT INTO level0_raw.station_measurement " \
+           "(packet_id, sensor_id, param_id, param_value, timestamp) " \
+           f"VALUES {','.join(item.measure_record for item in self.items())};"
+        query += "UPDATE level0_raw.sensor_api_param " \
+           f"SET last_acquisition = '{self._requests[-1].timestamp}' " \
+           f"WHERE sensor_id = {self._sensor_param.sensor_id} AND ch_name = '{self._sensor_param.ch_name}';"
+        return query
 
 
 class AddPlaceIterableResponses(IterableItemsABC):
