@@ -9,18 +9,10 @@ from airquality.datamodel.geometry import PostgisPoint
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Tuple
-from abc import ABC, abstractmethod
-
-
-class sqlizableABC(ABC):
-
-    @abstractmethod
-    def sqlize(self) -> str:
-        pass
 
 
 @dataclass
-class SensorChannelParam(sqlizableABC):
+class SensorChannelParam(object):
     """
     A *dataclass* that holds the values of the parameters of a sensor's acquisition channel.
     """
@@ -30,18 +22,6 @@ class SensorChannelParam(sqlizableABC):
     channel_name: str                   # The channel name given by the system to identify a sensor's channel.
     last_acquisition: datetime          # The time stamp of the last successful acquisition store in the database.
 
-    def sqlize(self) -> str:
-        return f"'{self.api_key}', '{self.api_id}', '{self.channel_name}', '{self.last_acquisition}'"
-
-
-@dataclass
-class SensorInfo(sqlizableABC):
-    name: str
-    type: str
-
-    def sqlize(self) -> str:
-        return f"'{self.type}', '{self.name}'"
-
 
 @dataclass
 class AddFixedSensorRequest(object):
@@ -49,12 +29,13 @@ class AddFixedSensorRequest(object):
     A *dataclass* that represents the request model for adding a new sensor.
     """
 
-    basic_info: SensorInfo                      # The sensor's basic info that comprehend its name and type.
-    channel_param: List[SensorChannelParam]          # The API parameters of each channel associated to the sensor.
+    name: str                                       # The sensor's name.
+    type: str                                       # The sensor's type.
+    channel_param: List[SensorChannelParam]         # The API parameters of each channel associated to the sensor.
 
 
 @dataclass
-class AddMobileMeasureRequest(sqlizableABC):
+class AddSensorMeasureRequest(object):
     """
     A *dataclass* that represents the request model for adding a new measure of a fixed sensor (i.e., a station).
     """
@@ -63,28 +44,9 @@ class AddMobileMeasureRequest(sqlizableABC):
     measures: List[Tuple[int, float]]   # The collection of (param_id, param_value) tuples for each parameter.
     geolocation: PostgisPoint = None    # The sensor's geolocation at the moment of the acquisition in decimal degrees.
 
-    def sqlize(self) -> str:
-        return ','.join('({pid}, ' + f"{param_id}, {param_val}, '{self.timestamp}', {self.geolocation})"
-                        for param_id, param_val in self.measures)
-
 
 @dataclass
-class AddStationMeasureRequest(sqlizableABC):
-    """
-    A *dataclass* that represents the request model for adding a new measure of a fixed sensor (i.e., a station).
-    """
-
-    timestamp: datetime                 # The datetime object that represents the acquisition time.
-    measures: List[Tuple[int, float]]   # The collection of (param_id, param_value) tuples for each parameter.
-    geolocation: PostgisPoint = None    # The sensor's geolocation at the moment of the acquisition in decimal degrees.
-
-    def sqlize(self) -> str:
-        return ','.join("({pid}, {sid}, " + f"{param_id}, {param_val}, '{self.timestamp}')"
-                        for param_id, param_val in self.measures)
-
-
-@dataclass
-class AddPlaceRequest(sqlizableABC):
+class AddPlaceRequest(object):
     """
     A *dataclass* that represents the datastructure of a request for adding a new place of a given country.
     """
@@ -95,10 +57,6 @@ class AddPlaceRequest(sqlizableABC):
     poscode: str                        # The place's postal code.
     state: str                          # The place's state name.
     geolocation: PostgisPoint           # The place's estimated geolocation
-
-    def sqlize(self) -> str:
-        return f"('{self.poscode}', '{self.countrycode}', '{self.placename}', " \
-               f"'{self.province}', '{self.state}', {self.geolocation})"
 
 
 @dataclass

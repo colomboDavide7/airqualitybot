@@ -24,7 +24,7 @@ from airquality.usecase.abc import UsecaseABC
 from airquality.extra.url import json_http_response
 from airquality.datamodel.fromfile import CityDM
 from airquality.database.gateway import DatabaseGateway
-from airquality.iterables.requests import AddOpenWeatherMapDataRequestBuilder
+from airquality.iterables.requests import OpenweathermapIterableRequests
 from airquality.iterables.responses import WeatherDataIterableResponses
 from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
 from airquality.iterables.fromfile import CityIterableDatamodels
@@ -157,7 +157,7 @@ class AddWeatherData(UsecaseABC):
         datamodel_builder = OpenweathermapIterableDatamodels(json_response=service_jresp)
         _LOGGER.debug("found #%d API data" % len(datamodel_builder))
 
-        request_builder = AddOpenWeatherMapDataRequestBuilder(
+        request_builder = OpenweathermapIterableRequests(
             datamodels=datamodel_builder,
             weather_map=self._cached_weather_map,
             timest=_TIMEST

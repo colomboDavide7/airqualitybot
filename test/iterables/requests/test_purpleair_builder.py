@@ -68,11 +68,11 @@ class TestAddPurpleairSensorRequestBuilder(TestCase):
     def _assert_built_request(self):
         req1 = self._builder[0]
         self.assertEqual(
-            req1.basic_info.type,
+            req1.type,
             "Purpleair/Thingspeak"
         )
         self.assertEqual(
-            req1.basic_info.name,
+            req1.name,
             "fakename (9)"
         )
         self.assertEqual(

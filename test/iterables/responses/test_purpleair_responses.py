@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.iterables.responses import FixedSensorIterableResponses
-from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam, SensorInfo
+from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam
 
 
 def _test_sensor_location():
@@ -29,7 +29,8 @@ def _test_sensor_api_param():
 
 def _test_valid_request():
     return AddFixedSensorRequest(
-        basic_info=SensorInfo(type='faketype', name='fakename'),
+        name='fakename',
+        type='faketype',
         channel_param=_test_sensor_api_param()
     )
 
@@ -46,15 +47,15 @@ def _mocked_current_utc_timestamp():
 
 
 def _expected_sensor_record():
-    return "(12, 'faketype', 'fakename')"
+    return "(12,'faketype','fakename')"
 
 
 def _expected_sensor_api_param_record():
     ts = "2021-10-11 09:44:00"
-    return f"(12, 'key1a', '111', '1A', '{ts}')," \
-           f"(12, 'key1b', '222', '1B', '{ts}')," \
-           f"(12, 'key2a', '333', '2A', '{ts}')," \
-           f"(12, 'key2b', '444', '2B', '{ts}')"
+    return f"(12,'key1a','111','1A','{ts}')," \
+           f"(12,'key1b','222','1B','{ts}')," \
+           f"(12,'key2a','333','2A','{ts}')," \
+           f"(12,'key2b','444','2B','{ts}')"
 
 
 class TestAddPurpleairSensorsResponseBuilder(TestCase):

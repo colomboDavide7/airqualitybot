@@ -19,6 +19,9 @@ class FixedSensorIterableResponses(IterableItemsABC):
     an *AddFixedSensorRequest* object into *AddFixedSensorResponse* object.
     """
 
+    SENSOR_ATTRIBUTES = ['type', 'name']
+    APIPARAM_ATTRIBUTES = ['api_key', 'api_id', 'channel_name', 'last_acquisition']
+
     def __init__(self, start_sensor_id: int, requests: IterableItemsABC):
         self._requests = requests
         self._start_sensor_id = start_sensor_id
@@ -26,10 +29,11 @@ class FixedSensorIterableResponses(IterableItemsABC):
     def items(self) -> Generator[AddFixedSensorResponse, None, None]:
         sensor_id_counter = count(self._start_sensor_id)
         for req in self._requests:
-            sensor_id = next(sensor_id_counter)
+            hdr = str(next(sensor_id_counter))
             yield AddFixedSensorResponse(
-                sensor_record=f"({sensor_id}, {req.basic_info.sqlize()})",
-                apiparam_record=','.join(f"({sensor_id}, {ch.sqlize()})" for ch in req.channel_param)
+                sensor_record=sqlize_obj(self=req, attributes=self.SENSOR_ATTRIBUTES, header=hdr),
+                apiparam_record=','.join(sqlize_obj(self=ch, attributes=self.APIPARAM_ATTRIBUTES, header=hdr)
+                                         for ch in req.channel_param)
             )
 
 
@@ -46,8 +50,10 @@ class MobileMeasureIterableResponses(IterableItemsABC):
     def items(self) -> Generator[AddSensorMeasureResponse, None, None]:
         packet_id_counter = count(self.start_packet_id)
         for req in self.requests:
+            packet_id = next(packet_id_counter)
             yield AddSensorMeasureResponse(
-                measure_record=req.sqlize().format(pid=next(packet_id_counter))
+                measure_record=','.join(f"({packet_id}, {param_id}, {param_val}, '{req.timestamp}', {req.geolocation})"
+                                        for param_id, param_val in req.measures)
             )
 
 
@@ -65,8 +71,10 @@ class StationMeasureIterableResponses(IterableItemsABC):
     def items(self) -> Generator:
         packet_id_counter = count(self._start_packet_id)
         for req in self._requests:
+            packet_id  = next(packet_id_counter)
             yield AddSensorMeasureResponse(
-                measure_record=req.sqlize().format(pid=next(packet_id_counter), sid=self._sensor_id)
+                measure_record=','.join(f"({packet_id}, {self._sensor_id}, {param_id}, {param_val}, '{req.timestamp}')"
+                                        for param_id, param_val in req.measures)
             )
 
 
@@ -81,10 +89,17 @@ class AddPlaceIterableResponses(IterableItemsABC):
 
     def items(self):
         for req in self.requests:
-            yield AddPlaceResponse(place_record=req.sqlize())
+            yield AddPlaceResponse(
+                place_record=f"('{req.poscode}', '{req.countrycode}', '{req.placename}', "
+                             f"'{req.province}', '{req.state}', {req.geolocation})"
+            )
 
 
 class WeatherDataIterableResponses(IterableItemsABC):
+    """
+    A class that implements the *IterableItemsABC* interface and defines the business rules for converting
+    an *AddWeatherDataRequest* object into *AddWeatherDataResponse* object for fixed sensors.
+    """
 
     DAILY_ATTRIBUTES = ['weather_id', 'temperature', 'min_temp', 'max_temp', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'pop', 'snow', 'timestamp']
     HOURLY_ATTRIBUTES = ['weather_id', 'temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain', 'pop', 'snow', 'timestamp']

@@ -39,14 +39,14 @@ def _setup_mocked_json_response() -> MagicMock:
 
 def _expected_apiparam_record() -> str:
     ts = '2018-09-29 23:10:23+02:00'
-    return f"(1, 'key1a3', '119', '1A', '{ts}')," \
-           f"(1, 'key1b3', '120', '1B', '{ts}')," \
-           f"(1, 'key2a3', '121', '2A', '{ts}')," \
-           f"(1, 'key2b3', '122', '2B', '{ts}')"
+    return f"(1,'key1a3','119','1A','{ts}')," \
+           f"(1,'key1b3','120','1B','{ts}')," \
+           f"(1,'key2a3','121','2A','{ts}')," \
+           f"(1,'key2b3','122','2B','{ts}')"
 
 
 def _expected_sensor_record() -> str:
-    return "(1, 'Purpleair/Thingspeak', 'n3 (3)')"
+    return "(1,'Purpleair/Thingspeak','n3 (3)')"
 
 
 # def _expected_sensor_at_location_record() -> str:

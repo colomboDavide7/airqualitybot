@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.iterables.request_validator import AddFixedSensorRequestValidator
-from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam, SensorInfo
+from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam
 
 
 def _test_sensor_location():
@@ -36,7 +36,8 @@ def _test_sensor_channels():
 
 
 def _test_requests():
-    return [AddFixedSensorRequest(basic_info=SensorInfo(type='faketype', name=name),
+    return [AddFixedSensorRequest(name=name,
+                                  type='faketype',
                                   channel_param=_test_sensor_channels()) for name in _test_requests_sensor_names()]
 
 
@@ -70,8 +71,8 @@ class TestAddPurpleairSensorsRequestsValidator(TestCase):
 # =========== SUPPORT METHODS
     def _assert_valid_requests(self):
         req = self._validator[0]
-        self.assertEqual(req.basic_info.name, "fakename1")
-        self.assertEqual(req.basic_info.type, "faketype")
+        self.assertEqual(req.name, "fakename1")
+        self.assertEqual(req.type, "faketype")
 
 
 if __name__ == '__main__':

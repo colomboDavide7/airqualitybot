@@ -24,7 +24,7 @@ class AddFixedSensorRequestValidator(IterableItemsABC):
 
     def items(self) -> Generator:
         for request in self.request:
-            if request.basic_info.name not in self.existing_names:
+            if request.name not in self.existing_names:
                 yield request
 
 

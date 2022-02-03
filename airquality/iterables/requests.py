@@ -10,8 +10,7 @@ from airquality.extra.timest import Timest
 from airquality.iterables.abc import IterableItemsABC
 from airquality.datamodel.geometry import PostgisPoint, NullGeometry
 from airquality.datamodel.requests import WeatherConditionsRequest, AddWeatherDataRequest, WeatherAlertRequest, \
-    AddFixedSensorRequest, SensorChannelParam, SensorInfo, AddMobileMeasureRequest, AddStationMeasureRequest, \
-    AddPlaceRequest
+    AddFixedSensorRequest, SensorChannelParam, AddSensorMeasureRequest, AddPlaceRequest
 
 
 class PurpleairIterableRequests(IterableItemsABC):
@@ -34,10 +33,6 @@ class PurpleairIterableRequests(IterableItemsABC):
 
     def items(self) -> Generator:
         for dm in self._datamodels:
-            info = SensorInfo(
-                type=self._PURPLEAIR_TYPE,
-                name=f"{dm.name} ({dm.sensor_index})"
-            )
             created_at = self._timest.utc_time2utc_localtz(time=dm.date_created,
                                                            latitude=dm.latitude,
                                                            longitude=dm.longitude)
@@ -45,7 +40,8 @@ class PurpleairIterableRequests(IterableItemsABC):
                                                 api_id=str(getattr(dm, ch['ident'])),
                                                 channel_name=ch['name'],
                                                 last_acquisition=created_at) for ch in self._PURPLEAIR_API_PARAM]
-            yield AddFixedSensorRequest(basic_info=info,
+            yield AddFixedSensorRequest(name=f"{dm.name} ({dm.sensor_index})",
+                                        type=self._PURPLEAIR_TYPE,
                                         channel_param=channel_param)
 
 
@@ -72,7 +68,7 @@ class AtmotubeIterableRequests(IterableItemsABC):
                 geolocation = PostgisPoint(latitude=lat, longitude=lng)
                 timestamp = self._timest.utc_time2utc_localtz(time=dm.time, latitude=lat, longitude=lng)
 
-            yield AddMobileMeasureRequest(
+            yield AddSensorMeasureRequest(
                 timestamp=timestamp,
                 geolocation=geolocation,
                 measures=[(ident, getattr(dm, code))
@@ -101,7 +97,7 @@ class ThingspeakIterableRequests(IterableItemsABC):
 
     def items(self):
         for dm in self._datamodels:
-            yield AddStationMeasureRequest(
+            yield AddSensorMeasureRequest(
                 timestamp=self._timest.utc_time2utc_localtz(time=dm.created_at),
                 measures=[(self._measure_param[fcode], getattr(dm, fname))
                           for fname, fcode in self._api_field_names.items()
@@ -130,7 +126,7 @@ class GeonamesIterableRequests(IterableItemsABC):
             )
 
 
-class AddOpenWeatherMapDataRequestBuilder(IterableItemsABC):
+class OpenweathermapIterableRequests(IterableItemsABC):
     """
     A class that implements the *IterableItemsABC* interface and defines the business rules for converting a
     *OpenweathermapDM* into an *AddWeatherDataRequest*
