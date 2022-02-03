@@ -6,7 +6,6 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.fromdb import SensorInfoDM
 from airquality.extra.logging import FileHandlerRotator
-from airquality.extra.logging import _custom_log_filename
 
 
 def _test_sensor_identity():
@@ -42,15 +41,6 @@ def _expected_filename() -> str:
 
 
 class TestFileHandlerRotator(TestCase):
-
-    def setUp(self) -> None:
-        self._rotator = FileHandlerRotator(
-            logger_dir="fake_dir",
-            logger_name="fake_name",
-            logger_level="fake_level",
-            logger_fmt="fake_fmt"
-        )
-
     @patch('airquality.extra.logging.logging')
     def test_rotate_file_handler(self, mocked_logging):
         mocked_logging.FileHandler = MagicMock()
@@ -58,7 +48,14 @@ class TestFileHandlerRotator(TestCase):
         mocked_logging.getLogger.return_value = _mocked_logger()
         mocked_logging.FileHandler.return_value = _mocked_file_handler()
 
-        self._rotator.rotate(
+        rotator = FileHandlerRotator(
+            logger_dir="fake_dir",
+            logger_name="fake_name",
+            logger_level="fake_level",
+            logger_fmt="fake_fmt"
+        )
+
+        rotator.rotate(
             sensor_ident=_test_sensor_identity()
         )
         mocked_logging.FileHandler.assert_called_with(
@@ -71,14 +68,8 @@ class TestFileHandlerRotator(TestCase):
             level="fake_level"
         )
 
-        self._rotator.rotate(
+        rotator.rotate(
             sensor_ident=_test_sensor_identity_2()
-        )
-
-    def test_custom_log_filename_without_latitude_and_longitude(self):
-        self.assertEqual(
-            _custom_log_filename(sensor_id=0, sensor_name='n1'),
-            'sensor_0_n1'
         )
 
 
