@@ -18,23 +18,14 @@ _FILE_ROTATOR = FileHandlerRotator(
     logger_dir=_ENVIRON.logging_dir_of(personality='thingspeak')
 )
 
-_MAPPING_1A = {'field1': 'pm1.0_atm_a', 'field2': 'pm2.5_atm_a', 'field3': 'pm10.0_atm_a', 'field6': 'temperature_a',
-               'field7': 'humidity_a'}
-_MAPPING_1B = {'field1': 'pm1.0_atm_b', 'field2': 'pm2.5_atm_b', 'field3': 'pm10.0_atm_b', 'field6': 'pressure_b'}
-_MAPPING_2A = {'field1': '0.3_um_count_a', 'field2': '0.5_um_count_a', 'field3': '1.0_um_count_a',
-               'field4': '2.5_um_count_a', 'field5': '5.0_um_count_a', 'field6': '10.0_um_count_a'}
-_MAPPING_2B = {'field1': '0.3_um_count_b', 'field2': '0.5_um_count_b', 'field3': '1.0_um_count_b',
-               'field4': '2.5_um_count_b', 'field5': '5.0_um_count_b', 'field6': '10.0_um_count_b'}
-_FIELD_MAP = {'1A': _MAPPING_1A, '1B': _MAPPING_1B, '2A': _MAPPING_2A, '2B': _MAPPING_2B}
-
 ######################################################
 from datetime import datetime
 import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
-from airquality.datamodel.fromdb import SensorApiParamDM
-from airquality.database.gateway import DatabaseGateway
-from airquality.extra.url import json_http_response
 from airquality.extra.decorator import log_context
+from airquality.extra.url import json_http_response
+from airquality.database.gateway import DatabaseGateway
+from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.iterables.urls import ThingspeakIterableUrls
 from airquality.iterables.fromapi import ThingspeakIterableDatamodels
 from airquality.iterables.requests import ThingspeakIterableRequests
@@ -42,17 +33,22 @@ from airquality.iterables.validator import SensorMeasureIterableValidRequests
 from airquality.iterables.responses import StationMeasureIterableResponses
 
 
-# def _build_update_query(time: datetime, sensor_id: int, channel_name: str) -> str:
-#     return "UPDATE level0_raw.sensor_api_param " \
-#            f"SET last_acquisition = '{time}' " \
-#            f"WHERE sensor_id = {sensor_id} AND ch_name = '{channel_name}';"
-# def _build_insert_query(response_builder: StationMeasureIterableResponses) -> str:
-#     return "INSERT INTO level0_raw.station_measurement " \
-#            "(packet_id, sensor_id, param_id, param_value, timestamp) " \
-#            f"VALUES {','.join(resp.measure_record for resp in response_builder)};"
+class Thingspeak(UsecaseABC):
+    """
+    A class that implements the *UsecaseABC* and defines the business rules for downloading, transforming and
+    storing sensor measures from the Thingspeak API.
+    """
 
+    _MAPPING_1A = {'field1': 'pm1.0_atm_a', 'field2': 'pm2.5_atm_a', 'field3': 'pm10.0_atm_a',
+                   'field6': 'temperature_a',
+                   'field7': 'humidity_a'}
+    _MAPPING_1B = {'field1': 'pm1.0_atm_b', 'field2': 'pm2.5_atm_b', 'field3': 'pm10.0_atm_b', 'field6': 'pressure_b'}
+    _MAPPING_2A = {'field1': '0.3_um_count_a', 'field2': '0.5_um_count_a', 'field3': '1.0_um_count_a',
+                   'field4': '2.5_um_count_a', 'field5': '5.0_um_count_a', 'field6': '10.0_um_count_a'}
+    _MAPPING_2B = {'field1': '0.3_um_count_b', 'field2': '0.5_um_count_b', 'field3': '1.0_um_count_b',
+                   'field4': '2.5_um_count_b', 'field5': '5.0_um_count_b', 'field6': '10.0_um_count_b'}
+    _FIELD_MAP = {'1A': _MAPPING_1A, '1B': _MAPPING_1B, '2A': _MAPPING_2A, '2B': _MAPPING_2B}
 
-class AddPurpleairMeasures(UsecaseABC):
     def __init__(self, database_gway: DatabaseGateway):
         self._database_gway = database_gway
         self._url_template = _ENVIRON.url_template(personality='thingspeak')
@@ -97,13 +93,13 @@ class AddPurpleairMeasures(UsecaseABC):
             server_jresp = json_http_response(url=url)
             datamodels = ThingspeakIterableDatamodels(json_response=server_jresp)
             requests = ThingspeakIterableRequests(
-                datamodels=datamodels, measure_param=self._measure_param, api_field_names=_FIELD_MAP[param.ch_name]
+                datamodels=datamodels, measure_param=self._measure_param, api_field_names=self._FIELD_MAP[param.ch_name]
             )
             valid_requests = SensorMeasureIterableValidRequests(
                 requests=requests, filter_ts=self._filter_ts_of(param)
             )
             if not valid_requests:
-                _LOGGER.debug('all the measures are already stored into the database.')
+                _LOGGER.debug('no valid measures found.')
                 continue
 
             responses = StationMeasureIterableResponses(

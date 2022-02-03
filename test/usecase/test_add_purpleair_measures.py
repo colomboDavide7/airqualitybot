@@ -11,7 +11,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.fromdb import SensorApiParamDM, SensorInfoDM
-from airquality.usecase.thingspeak import AddPurpleairMeasures
+from airquality.usecase.thingspeak import Thingspeak
 
 
 def _test_measure_param():
@@ -120,7 +120,7 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
-        self._usecase = AddPurpleairMeasures(database_gway=self._mocked_database_gway)
+        self._usecase = Thingspeak(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHODS
     @patch('airquality.environment.os')

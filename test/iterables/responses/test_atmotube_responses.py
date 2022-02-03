@@ -7,6 +7,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
+from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.datamodel.requests import AddSensorMeasureRequest
 from airquality.iterables.responses import MobileMeasureIterableResponses
 
@@ -65,13 +66,24 @@ def _expected_measure_record():
            f"(12399, 39, 1004.68, '{ts}', {geom})"
 
 
+def _test_sensor_api_param_datamodel():
+    return SensorApiParamDM(
+        sensor_id=100,
+        ch_name='fakename',
+        api_id='fakeid',
+        api_key='fakekey',
+        last_acquisition=datetime(2022, 1, 10, 14, 33)
+    )
+
+
 class TestAddAtmotubeMeasuresResponseBuilder(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._response_builder = MobileMeasureIterableResponses(
             requests=_mocked_validator(),
-            start_packet_id=12399
+            start_packet_id=12399,
+            sensor_param=_test_sensor_api_param_datamodel()
         )
 
 # =========== TEST METHOD

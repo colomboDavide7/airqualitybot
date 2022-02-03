@@ -22,9 +22,10 @@ _FILE_ROTATOR = FileHandlerRotator(
 from datetime import datetime
 import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
-from airquality.datamodel.fromdb import SensorApiParamDM
-from airquality.database.gateway import DatabaseGateway
+from airquality.extra.decorator import log_context
 from airquality.extra.url import json_http_response
+from airquality.database.gateway import DatabaseGateway
+from airquality.datamodel.fromdb import SensorApiParamDM
 from airquality.iterables.urls import AtmotubeIterableUrls
 from airquality.iterables.fromapi import AtmotubeIterableDatamodels
 from airquality.iterables.requests import AtmotubeIterableRequests
@@ -32,24 +33,17 @@ from airquality.iterables.validator import SensorMeasureIterableValidRequests
 from airquality.iterables.responses import MobileMeasureIterableResponses
 
 
-def _build_insert_query(response_builder: MobileMeasureIterableResponses) -> str:
-    return "INSERT INTO level0_raw.mobile_measurement " \
-           "(packet_id, param_id, param_value, timestamp, geom) " \
-           f"VALUES {','.join(resp.measure_record for resp in response_builder)};"
+class Atmotube(UsecaseABC):
+    """
+    A class that implements the *UsecaseABC* and defines the business rules for downloading, transforming and
+    storing sensor measures from the Atmotube API.
+    """
 
-
-def _build_update_query(time: datetime, sensor_id: int, channel_name: str) -> str:
-    return "UPDATE level0_raw.sensor_api_param " \
-           f"SET last_acquisition = '{time}' " \
-           f"WHERE sensor_id = {sensor_id} AND ch_name = '{channel_name}';"
-
-
-class AddAtmotubeMeasures(UsecaseABC):
     def __init__(self, database_gway: DatabaseGateway):
         self._database_gway = database_gway
+        self._url_template = _ENVIRON.url_template(personality='atmotube')
         self._measure_param = self._database_gway.query_measure_param_owned_by(owner="atmotube")
         self._api_param = self._database_gway.query_sensor_apiparam_of_type(sensor_type="atmotube")
-        self._cached_url_template = _ENVIRON.url_template(personality='atmotube')
 
     def _packet_id(self) -> int:
         return self._database_gway.query_max_mobile_packet_id_plus_one()
@@ -61,7 +55,7 @@ class AddAtmotubeMeasures(UsecaseABC):
         )
 
     def _urls_of(self, api_param: SensorApiParamDM) -> AtmotubeIterableUrls:
-        pre_formatted_url = self._cached_url_template.format(
+        pre_formatted_url = self._url_template.format(
             api_key=api_param.api_key,
             api_id=api_param.api_id,
             api_fmt="json"
@@ -80,42 +74,22 @@ class AddAtmotubeMeasures(UsecaseABC):
     def execute(self):
         for param in self._api_param:
             self._rotate_file(sensor_id=param.sensor_id)
-            _LOGGER.info(constants.START_MESSAGE)
-            _LOGGER.debug("parameters in use for fetching sensor data => %s" % repr(param))
-            for url in self._urls_of(param):
-                _LOGGER.debug("downloading sensor measures at => %s" % url)
+            self._safe_execute(param=param)
 
-                server_jresp = json_http_response(url=url)
-                _LOGGER.debug("successfully get server response!!!")
+    @log_context(logger_name=__name__, header=constants.START_MESSAGE, teardown=constants.END_MESSAGE)
+    def _safe_execute(self, param: SensorApiParamDM):
+        _LOGGER.debug("%s" % repr(param))
+        for url in self._urls_of(param):
+            server_jresp = json_http_response(url=url)
+            datamodels = AtmotubeIterableDatamodels(json_response=server_jresp)
+            requests = AtmotubeIterableRequests(datamodels=datamodels, measure_param=self._measure_param)
+            valid_requests = SensorMeasureIterableValidRequests(requests=requests, filter_ts=self._filter_ts_of(param))
+            if not valid_requests:
+                _LOGGER.debug('no valid measures found.')
+                continue
 
-                datamodel_builder = AtmotubeIterableDatamodels(json_response=server_jresp)
-                _LOGGER.debug("found #%d API data" % len(datamodel_builder))
-
-                request_builder = AtmotubeIterableRequests(
-                    datamodels=datamodel_builder,
-                    measure_param=self._measure_param
-                )
-                _LOGGER.debug("found #%d requests" % len(request_builder))
-
-                validator = SensorMeasureIterableValidRequests(
-                    requests=request_builder,
-                    filter_ts=self._filter_ts_of(param)
-                )
-                _LOGGER.debug('found #%d valid requests' % len(validator))
-
-                response_builder = MobileMeasureIterableResponses(
-                    requests=validator,
-                    start_packet_id=self._packet_id()
-                )
-                _LOGGER.debug("found #%d responses" % len(response_builder))
-
-                if len(response_builder) > 0:
-                    _LOGGER.debug("responses time range: [%s - %s]" % (validator[0].timestamp, validator[-1].timestamp))
-                    query = _build_insert_query(response_builder)
-                    query += _build_update_query(
-                        time=validator[-1].timestamp,
-                        sensor_id=param.sensor_id,
-                        channel_name=param.ch_name
-                    )
-                    self._database_gway.execute(query=query)
-            _LOGGER.info(constants.END_MESSAGE)
+            responses = MobileMeasureIterableResponses(
+                requests=valid_requests, start_packet_id=self._packet_id(), sensor_param=param
+            )
+            self._database_gway.execute(query=responses.query())
+            _LOGGER.debug("inserted %d/%d measures" % (len(valid_requests), len(datamodels)))

@@ -53,8 +53,9 @@ class MobileMeasureIterableResponses(IterableItemsABC):
     an *AddSensorMeasureRequest* object into *AddSensorMeasureResponse* object for mobile sensors.
     """
 
-    def __init__(self, start_packet_id: int, requests: IterableItemsABC):
+    def __init__(self, start_packet_id: int, requests: IterableItemsABC, sensor_param: SensorApiParamDM):
         self.requests = requests
+        self._sensor_param = sensor_param
         self.start_packet_id = start_packet_id
 
     def items(self) -> Generator[AddSensorMeasureResponse, None, None]:
@@ -65,6 +66,15 @@ class MobileMeasureIterableResponses(IterableItemsABC):
                 measure_record=','.join(f"({packet_id}, {param_id}, {param_val}, '{req.timestamp}', {req.geolocation})"
                                         for param_id, param_val in req.measures)
             )
+
+    def query(self) -> str:
+        query = "INSERT INTO level0_raw.mobile_measurement " \
+           "(packet_id, param_id, param_value, timestamp, geom) " \
+           f"VALUES {','.join(item.measure_record for item in self.items())};"
+        query += "UPDATE level0_raw.sensor_api_param " \
+           f"SET last_acquisition = '{self.requests[-1].timestamp}' " \
+           f"WHERE sensor_id = {self._sensor_param.sensor_id} AND ch_name = '{self._sensor_param.ch_name}';"
+        return query
 
 
 class StationMeasureIterableResponses(IterableItemsABC):

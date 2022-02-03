@@ -15,9 +15,9 @@ _SYS_ARGS = sys.argv[1:]
 
 ######################################################
 from airquality.usecase.geonames import AddGeonamesPlaces
-from airquality.usecase.thingspeak import AddPurpleairMeasures
+from airquality.usecase.thingspeak import Thingspeak
 from airquality.usecase.purpleair import Purpleair
-from airquality.usecase.atmotube import AddAtmotubeMeasures
+from airquality.usecase.atmotube import Atmotube
 from airquality.usecase.purp_update import UpdatePurpleairLocation
 from airquality.usecase.openweathermap import AddWeatherData
 from airquality.database.gateway import DatabaseGateway
@@ -66,9 +66,9 @@ class Application(object):
             if self._personality == 'purpleair':
                 Purpleair(database_gway=database_gway).execute()
             elif self._personality == 'atmotube':
-                AddAtmotubeMeasures(database_gway=database_gway).execute()
+                Atmotube(database_gway=database_gway).execute()
             elif self._personality == 'thingspeak':
-                AddPurpleairMeasures(database_gway=database_gway).execute()
+                Thingspeak(database_gway=database_gway).execute()
             elif self._personality == 'geonames':
                 AddGeonamesPlaces(database_gway=database_gway).execute()
             elif self._personality == 'openweathermap':
