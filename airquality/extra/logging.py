@@ -10,8 +10,8 @@ def _custom_log_filename(sensor_id: int, sensor_name: str, sensor_lat: float = N
 
     base_name = f"sensor_{sensor_id}_{string.string_cleaner(s=sensor_name, char2remove=[' ', '.', '-'])}"
     if sensor_lat is None and sensor_lng is None:
-        return base_name
-    return f"{base_name}_{string.literalize_number(sensor_lat)}_{string.literalize_number(sensor_lng)}"
+        return base_name + '.log'
+    return f"{base_name}_{string.literalize_number(sensor_lat)}_{string.literalize_number(sensor_lng)}.log"
 
 
 # ======================================
@@ -21,10 +21,6 @@ import airquality.extra.string as string
 from airquality.datamodel.fromdb import SensorInfoDM
 
 _CUSTOM_LOGGER_FORMAT = '[TIME]: %(asctime)s - [LEVEL]: %(levelname)s - [DESCRIPTION]: %(message)s'
-
-
-def _fullpath(path: str, filename: str, extension='.log') -> str:
-    return os.path.join(path, filename+extension)
 
 
 class FileHandlerRotator(object):
@@ -58,7 +54,7 @@ class FileHandlerRotator(object):
     def _attach_handler(self, filename: str):
         if self._cached_file_handler is not None:
             self._detach_handler()
-        fullpath = _fullpath(path=self._logger_dir, filename=filename, extension='.log')
+        fullpath = os.path.join(self._logger_dir, filename)
         self._cached_file_handler = logging.FileHandler(filename=fullpath)
         self._cached_file_handler.setFormatter(fmt=self._cached_formatter)
         self._cached_file_handler.setLevel(level=self._logger_level)

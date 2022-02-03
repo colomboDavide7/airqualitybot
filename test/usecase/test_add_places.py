@@ -7,7 +7,7 @@
 ######################################################
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.usecase.geonames import AddGeonamesPlaces, _fullpath
+from airquality.usecase.geonames import Geonames
 
 
 def _test_directory_content():
@@ -71,7 +71,7 @@ class TestAddPlaces(TestCase):
         mocked_listdir.return_value = _test_directory_content()
         mocked_isfile.return_value = [True, True, True]
         mocked_open.return_value = _mocked_responses()
-        usecase = AddGeonamesPlaces(database_gway=self._mocked_database_gway)
+        usecase = Geonames(database_gway=self._mocked_database_gway)
         usecase.execute()
         self._assert_query()
         self._assert_usecase_properties(usecase)
@@ -86,20 +86,10 @@ class TestAddPlaces(TestCase):
 
     def _assert_usecase_properties(self, usecase):
         self._assert_directory_filenames(usecase)
-        self._assert_existing_postal_codes(usecase)
-        self.assertEqual(
-            _fullpath("fakefile.txt"),
-            'fake_dir/geonames/fakefile.txt'
-        )
 
     def _assert_directory_filenames(self, usecase):
         self.assertIn('fakefile1.txt', usecase._filenames)
         self.assertNotIn('.ignored_file', usecase._filenames)
-
-    def _assert_existing_postal_codes(self, usecase):
-        self.assertIn('p1', usecase._poscodes_of("fakecountry"))
-        self.assertIn('p2', usecase._poscodes_of("fakecountry"))
-        self.assertIn('p3', usecase._poscodes_of("fakecountry"))
 
 
 if __name__ == '__main__':

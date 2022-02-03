@@ -123,6 +123,11 @@ class AddPlaceIterableResponses(IterableItemsABC):
                              f"'{req.province}', '{req.state}', {req.geolocation})"
             )
 
+    def query(self) -> str:
+        return "INSERT INTO level0_raw.geographical_area " \
+           "(postal_code, country_code, place_name, province, state, geom) " \
+           f"VALUES {','.join(item.place_record for item in self.items())};"
+
 
 class WeatherDataIterableResponses(IterableItemsABC):
     """

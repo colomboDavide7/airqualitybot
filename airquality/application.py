@@ -14,7 +14,7 @@ _ENVIRON = environ.get_environ()
 _SYS_ARGS = sys.argv[1:]
 
 ######################################################
-from airquality.usecase.geonames import AddGeonamesPlaces
+from airquality.usecase.geonames import Geonames
 from airquality.usecase.thingspeak import Thingspeak
 from airquality.usecase.purpleair import Purpleair
 from airquality.usecase.atmotube import Atmotube
@@ -70,7 +70,7 @@ class Application(object):
             elif self._personality == 'thingspeak':
                 Thingspeak(database_gway=database_gway).execute()
             elif self._personality == 'geonames':
-                AddGeonamesPlaces(database_gway=database_gway).execute()
+                Geonames(database_gway=database_gway).execute()
             elif self._personality == 'openweathermap':
                 AddWeatherData(database_gway=database_gway).execute()
             elif self._personality == 'purp_update':
