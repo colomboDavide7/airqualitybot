@@ -16,7 +16,7 @@ _SYS_ARGS = sys.argv[1:]
 ######################################################
 from airquality.usecase.geonames import AddGeonamesPlaces
 from airquality.usecase.thingspeak import AddPurpleairMeasures
-from airquality.usecase.purpleair import AddPurpleairFixedSensors
+from airquality.usecase.purpleair import Purpleair
 from airquality.usecase.atmotube import AddAtmotubeMeasures
 from airquality.usecase.purp_update import UpdatePurpleairLocation
 from airquality.usecase.openweathermap import AddWeatherData
@@ -64,14 +64,14 @@ class Application(object):
         ) as database_adapt:
             database_gway = DatabaseGateway(database_adapt=database_adapt)
             if self._personality == 'purpleair':
-                AddPurpleairFixedSensors(database_gway=database_gway).run()
+                Purpleair(database_gway=database_gway).execute()
             elif self._personality == 'atmotube':
-                AddAtmotubeMeasures(database_gway=database_gway).run()
+                AddAtmotubeMeasures(database_gway=database_gway).execute()
             elif self._personality == 'thingspeak':
-                AddPurpleairMeasures(database_gway=database_gway).run()
+                AddPurpleairMeasures(database_gway=database_gway).execute()
             elif self._personality == 'geonames':
-                AddGeonamesPlaces(database_gway=database_gway).run()
+                AddGeonamesPlaces(database_gway=database_gway).execute()
             elif self._personality == 'openweathermap':
-                AddWeatherData(database_gway=database_gway).run()
+                AddWeatherData(database_gway=database_gway).execute()
             elif self._personality == 'purp_update':
-                UpdatePurpleairLocation(database_gway=database_gway).run()
+                UpdatePurpleairLocation(database_gway=database_gway).execute()

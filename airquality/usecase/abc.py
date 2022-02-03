@@ -8,5 +8,5 @@ from abc import ABC, abstractmethod
 class UsecaseABC(ABC):
 
     @abstractmethod
-    def run(self):
+    def execute(self):
         pass

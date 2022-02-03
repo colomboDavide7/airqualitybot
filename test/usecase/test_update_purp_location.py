@@ -58,7 +58,7 @@ class TestUpdatePurpleairLocationsUsecase(TestCase):
         mocked_get.return_value = _setup_mocked_json_response()
         mocked_database_gway = _mocked_database_gateway()
         usecase = UpdatePurpleairLocation(database_gway=mocked_database_gway)
-        usecase.run()
+        usecase.execute()
 
         query = mocked_database_gway.execute.call_args[1]['query']
         self.assertEqual(

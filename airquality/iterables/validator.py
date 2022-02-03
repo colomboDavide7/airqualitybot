@@ -10,7 +10,7 @@ from typing import Generator, Set
 from datetime import datetime
 
 
-class AddFixedSensorRequestValidator(IterableItemsABC):
+class FixedSensorIterableValidRequests(IterableItemsABC):
     """
     A class that implements the *IterableItemsABC* interface and filter out requests based their name.
     """
@@ -25,7 +25,7 @@ class AddFixedSensorRequestValidator(IterableItemsABC):
                 yield request
 
 
-class AddSensorMeasureRequestValidator(IterableItemsABC):
+class SensorMeasureIterableValidRequests(IterableItemsABC):
     """
     A class that implements the *IterableItemsABC* interface and filter out requests based on time criteria.
     """
@@ -40,7 +40,7 @@ class AddSensorMeasureRequestValidator(IterableItemsABC):
                 yield request
 
 
-class AddPlaceRequestValidator(IterableItemsABC):
+class PlaceIterableValidRequests(IterableItemsABC):
     """
     A class that implements the *IterableItemsABC* interface and filter out requests based their postcode.
     """

@@ -72,7 +72,7 @@ class TestAddPlaces(TestCase):
         mocked_isfile.return_value = [True, True, True]
         mocked_open.return_value = _mocked_responses()
         usecase = AddGeonamesPlaces(database_gway=self._mocked_database_gway)
-        usecase.run()
+        usecase.execute()
         self._assert_query()
         self._assert_usecase_properties(usecase)
 

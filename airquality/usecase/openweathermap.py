@@ -173,7 +173,7 @@ class AddWeatherData(UsecaseABC):
             )
 
 # =========== RUN METHOD
-    def run(self):
+    def execute(self):
         _LOGGER.info(constants.START_MESSAGE)
 
         # TODO: switch API keys based on the number of requests done.

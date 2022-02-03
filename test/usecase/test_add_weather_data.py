@@ -131,7 +131,7 @@ class AddWeatherDataIntegrationTest(TestCase):
         mocked_os.environ = {'openweathermap_url': 'fake_url'}
         mocked_get.return_value = _mocked_responses()
         mocked_open.return_value = _mocked_city_file()
-        self._usecase.run()
+        self._usecase.execute()
         self._assert_query()
         self._assert_usecase_properties()
 

@@ -37,7 +37,7 @@ from airquality.extra.url import json_http_response
 from airquality.iterables.urls import ThingspeakIterableUrls
 from airquality.iterables.fromapi import ThingspeakIterableDatamodels
 from airquality.iterables.requests import ThingspeakIterableRequests
-from airquality.iterables.validator import AddSensorMeasureRequestValidator
+from airquality.iterables.validator import SensorMeasureIterableValidRequests
 from airquality.iterables.responses import StationMeasureIterableResponses
 
 
@@ -86,7 +86,7 @@ class AddPurpleairMeasures(UsecaseABC):
         _FILE_ROTATOR.rotate(sensor_ident=sensor_ident)
 
 # =========== RUN METHOD
-    def run(self):
+    def execute(self):
         for param in self._api_param:
             self._rotate_file(sensor_id=param.sensor_id)
             _LOGGER.info(constants.START_MESSAGE)
@@ -108,7 +108,7 @@ class AddPurpleairMeasures(UsecaseABC):
                 )
                 _LOGGER.debug("found #%d requests" % len(request_builder))
 
-                validator = AddSensorMeasureRequestValidator(
+                validator = SensorMeasureIterableValidRequests(
                     requests=request_builder,
                     filter_ts=self._filter_ts_of(param)
                 )

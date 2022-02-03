@@ -36,6 +36,15 @@ class FixedSensorIterableResponses(IterableItemsABC):
                                          for ch in req.channel_param)
             )
 
+    def query(self) -> str:
+        sensor = param = ""
+        for item in self.items():
+            sensor += item.sensor_record+','
+            param += item.apiparam_record+','
+        return f"INSERT INTO level0_raw.sensor VALUES {sensor.strip(',')};" \
+               "INSERT INTO level0_raw.sensor_api_param (sensor_id, ch_key, ch_id, ch_name, last_acquisition) " \
+               f"VALUES {param.strip(',')};"
+
 
 class MobileMeasureIterableResponses(IterableItemsABC):
     """

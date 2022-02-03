@@ -51,22 +51,22 @@
             "handlers": ["console", "issues"],
             "propagate": false
         },
-        "airquality.usecase.add_geonames_places": {
+        "airquality.usecase.geonames": {
             "level": "DEBUG",
             "handlers": ["geonames_report"],
             "propagate": true
         },
-        "airquality.usecase.add_purpleair_sensors": {
+        "airquality.usecase.purpleair": {
             "level": "DEBUG",
             "handlers": ["purpleair_report"],
             "propagate": true
         },
-        "airquality.usecase.add_weather_data": {
+        "airquality.usecase.openweathermap": {
             "level": "DEBUG",
             "handlers": ["opwmap_report"],
             "propagate": true
         },
-        "airquality.usecase.update_purpleair_locations": {
+        "airquality.usecase.purp_update": {
             "level": "DEBUG",
             "handlers": ["purp_update_report"],
             "propagate": true

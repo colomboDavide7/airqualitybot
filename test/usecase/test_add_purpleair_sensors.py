@@ -10,7 +10,7 @@ import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
-from airquality.usecase.purpleair import AddPurpleairFixedSensors
+from airquality.usecase.purpleair import Purpleair
 
 
 def _test_timezone():
@@ -83,7 +83,7 @@ class AddPurpleairFixedSensorsIntegrationTest(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _setup_mocked_database_gway()
-        self._usecase = AddPurpleairFixedSensors(database_gway=self._mocked_database_gway)
+        self._usecase = Purpleair(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHODS
     @patch('airquality.environment.os')
@@ -94,7 +94,7 @@ class AddPurpleairFixedSensorsIntegrationTest(TestCase):
         mocked_get.return_value = _setup_mocked_json_response()
         mocked_datetime.now = _mocked_datetime_now()
         mocked_datetime.utcfromtimestamp = _mocked_datetime_utcfromtimestamp()
-        self._usecase.run()
+        self._usecase.execute()
         self._assert_responses()
         self._assert_usecase_properties()
 

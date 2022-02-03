@@ -128,7 +128,7 @@ class AddThingspeakMeasuresIntegrationTest(TestCase):
     def test_add_thingspeak_measures_usecase(self, mocked_get, mocked_os):
         mocked_os.environ = _mocked_environ()
         mocked_get.return_value = _mocked_json_response()
-        self._usecase.run()
+        self._usecase.execute()
         self._assert_responses()
         self._assert_usecase_properties()
 

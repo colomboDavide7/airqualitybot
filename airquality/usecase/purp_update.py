@@ -50,7 +50,7 @@ class UpdatePurpleairLocation(UsecaseABC):
                             "(sensor_index = %d) in level0_raw.sensor_at_location table" %
                             (datamodel.name, datamodel.sensor_index))
 
-    def run(self):
+    def execute(self):
         _LOGGER.info(constants.START_MESSAGE)
 
         server_jresp = json_http_response(url=self._url_template)
