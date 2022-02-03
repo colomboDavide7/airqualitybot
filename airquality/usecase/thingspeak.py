@@ -39,7 +39,7 @@ from airquality.extra.url import json_http_response
 from airquality.iterables.urls import ThingspeakIterableUrls
 from airquality.iterables.fromapi import ThingspeakIterableDatamodels
 from airquality.iterables.requests import ThingspeakIterableRequests
-from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
+from airquality.iterables.validator import AddSensorMeasureRequestValidator
 from airquality.iterables.responses import StationMeasureIterableResponses
 
 
@@ -111,8 +111,8 @@ class AddPurpleairMeasures(UsecaseABC):
                 )
                 _LOGGER.debug("found #%d requests" % len(request_builder))
 
-                validator = AddSensorMeasuresRequestValidator(
-                    request=request_builder,
+                validator = AddSensorMeasureRequestValidator(
+                    requests=request_builder,
                     filter_ts=self._filter_ts_of(param)
                 )
                 _LOGGER.debug('found #%d valid responses' % len(validator))

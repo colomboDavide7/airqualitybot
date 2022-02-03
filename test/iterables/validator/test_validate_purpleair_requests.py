@@ -6,7 +6,7 @@ from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
-from airquality.iterables.request_validator import AddFixedSensorRequestValidator
+from airquality.iterables.validator import AddFixedSensorRequestValidator
 from airquality.datamodel.requests import AddFixedSensorRequest, SensorChannelParam
 
 
@@ -60,7 +60,7 @@ class TestAddPurpleairSensorsRequestsValidator(TestCase):
     def setUp(self) -> None:
         self._validator = AddFixedSensorRequestValidator(
             request=_mocked_request_builder(),
-            existing_names=_test_database_sensor_names()
+            name2remove=_test_database_sensor_names()
         )
 
 # =========== TEST METHODS

@@ -9,7 +9,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.requests import AddPlaceRequest
-from airquality.iterables.request_validator import AddPlacesRequestValidator
+from airquality.iterables.validator import AddPlaceRequestValidator
 
 
 def _test_place_geolocation():
@@ -48,9 +48,9 @@ class TestAddPlacesRequestsValidator(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._validator = AddPlacesRequestValidator(
+        self._validator = AddPlaceRequestValidator(
             requests=_mocked_request_builder(),
-            existing_poscodes=_test_database_postal_codes()
+            postcodes2remove=_test_database_postal_codes()
         )
 
 # =========== TEST METHODS

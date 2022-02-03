@@ -31,7 +31,7 @@ def weather_alert_of(source: Dict) -> WeatherAlertDM:
     )
 
 
-def current_weather_of(source: Dict) -> WeatherConditionsDM:
+def current_weather_datamodel(source: Dict) -> WeatherConditionsDM:
     return WeatherConditionsDM(
         dt=source['dt'],
         sunrise=source['sunrise'],
@@ -47,7 +47,7 @@ def current_weather_of(source: Dict) -> WeatherConditionsDM:
     )
 
 
-def hourly_forecast_of(source: Dict) -> WeatherConditionsDM:
+def hourly_forecast_datamodel(source: Dict) -> WeatherConditionsDM:
     return WeatherConditionsDM(
         dt=source['dt'],
         temp=source.get('temp'),
@@ -62,7 +62,7 @@ def hourly_forecast_of(source: Dict) -> WeatherConditionsDM:
     )
 
 
-def daily_forecast_of(source: Dict) -> WeatherConditionsDM:
+def daily_forecast_datamodel(source: Dict) -> WeatherConditionsDM:
     return WeatherConditionsDM(
         dt=source['dt'],
         temp=_nested_search_dict(source=source, keywords=['temp', 'day']),

@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.datamodel.geometry import PostgisPoint
 from airquality.datamodel.requests import AddSensorMeasureRequest
-from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
+from airquality.iterables.validator import AddSensorMeasureRequestValidator
 
 
 def _test_sensor_location():
@@ -61,8 +61,8 @@ class TestAddSensorMeasuresRequestValidator(TestCase):
 
 # =========== SETUP METHOD
     def setUp(self) -> None:
-        self._validator = AddSensorMeasuresRequestValidator(
-            request=_mocked_request_builder(),
+        self._validator = AddSensorMeasureRequestValidator(
+            requests=_mocked_request_builder(),
             filter_ts=_test_filter_timestamp()
         )
 

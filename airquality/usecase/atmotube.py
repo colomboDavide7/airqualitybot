@@ -30,7 +30,7 @@ from airquality.extra.url import json_http_response
 from airquality.iterables.urls import AtmotubeIterableUrls
 from airquality.iterables.fromapi import AtmotubeIterableDatamodels
 from airquality.iterables.requests import AtmotubeIterableRequests
-from airquality.iterables.request_validator import AddSensorMeasuresRequestValidator
+from airquality.iterables.validator import AddSensorMeasureRequestValidator
 from airquality.iterables.responses import MobileMeasureIterableResponses
 
 
@@ -100,8 +100,8 @@ class AddAtmotubeMeasures(UsecaseABC):
                 )
                 _LOGGER.debug("found #%d requests" % len(request_builder))
 
-                validator = AddSensorMeasuresRequestValidator(
-                    request=request_builder,
+                validator = AddSensorMeasureRequestValidator(
+                    requests=request_builder,
                     filter_ts=self._filter_ts_of(param)
                 )
                 _LOGGER.debug('found #%d valid requests' % len(validator))

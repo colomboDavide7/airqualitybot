@@ -83,8 +83,8 @@ class OpenweathermapIterableDatamodels(IterableItemsABC):
     def items(self) -> Generator[OpenweathermapDM, None, None]:
         yield OpenweathermapDM(
             tz_name=self.tzname,
-            current=wextra.current_weather_of(source=self.current),
-            hourly_forecast=[wextra.hourly_forecast_of(source=item) for item in self.hourly],
-            daily_forecast=[wextra.daily_forecast_of(source=item) for item in self.daily],
+            current=wextra.current_weather_datamodel(source=self.current),
+            hourly_forecast=[wextra.hourly_forecast_datamodel(source=item) for item in self.hourly],
+            daily_forecast=[wextra.daily_forecast_datamodel(source=item) for item in self.daily],
             alerts=[wextra.weather_alert_of(source=item) for item in self._alerts]
         )

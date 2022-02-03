@@ -20,7 +20,7 @@ from airquality.database.gateway import DatabaseGateway
 from airquality.extra.url import json_http_response
 from airquality.iterables.fromapi import PurpleairIterableDatamodels
 from airquality.iterables.requests import PurpleairIterableRequests
-from airquality.iterables.request_validator import AddFixedSensorRequestValidator
+from airquality.iterables.validator import AddFixedSensorRequestValidator
 from airquality.iterables.responses import FixedSensorIterableResponses
 
 
@@ -61,7 +61,7 @@ class AddPurpleairFixedSensors(UsecaseABC):
 
         validator = AddFixedSensorRequestValidator(
             request=request_builder,
-            existing_names=self._database_sensor_names
+            name2remove=self._database_sensor_names
         )
         _LOGGER.debug("found #%d valid requests" % len(validator))
 

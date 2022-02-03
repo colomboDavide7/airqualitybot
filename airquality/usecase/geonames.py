@@ -20,7 +20,7 @@ from airquality.usecase.abc import UsecaseABC
 from airquality.database.gateway import DatabaseGateway
 from airquality.iterables.fromfile import GeonamesIterableDatamodels
 from airquality.iterables.requests import GeonamesIterableRequests
-from airquality.iterables.request_validator import AddPlacesRequestValidator
+from airquality.iterables.validator import AddPlaceRequestValidator
 from airquality.iterables.responses import AddPlaceIterableResponses
 
 
@@ -62,9 +62,9 @@ class AddGeonamesPlaces(UsecaseABC):
             request_builder = GeonamesIterableRequests(datamodels=datamodel_builder)
             _LOGGER.debug("found #%d requests" % len(request_builder))
 
-            validator = AddPlacesRequestValidator(
+            validator = AddPlaceRequestValidator(
                 requests=request_builder,
-                existing_poscodes=database_pcodes
+                postcodes2remove=database_pcodes
             )
             _LOGGER.debug("found #%d valid requests" % len(validator))
 

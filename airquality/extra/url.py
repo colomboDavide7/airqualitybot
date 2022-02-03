@@ -45,7 +45,7 @@ def _http_response(url: str, timeout: float, headers: Dict) -> requests.Response
 def _verify_response_status(http_response: requests.Response) -> requests.Response:
     if 400 <= http_response.status_code < 600:
         content = http_response.content
-        cause = _format_url_read_error(
+        cause = _format_http_error_msg(
             err_url=http_response.url,
             status_code=http_response.status_code,
             code_explain=_HTTP_ERROR_MESSAGES.get(http_response.status_code, _DEFAULT_ERROR_MESSAGE),
@@ -55,7 +55,7 @@ def _verify_response_status(http_response: requests.Response) -> requests.Respon
     return http_response
 
 
-def _format_url_read_error(
+def _format_http_error_msg(
     err_url: str,                       # The URL that causes the error.
     status_code: int,                   # The HTTP response status code.
     code_explain: str,                  # The HTTP status code text explanation.
