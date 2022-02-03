@@ -6,7 +6,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.fromdb import SensorInfoDM
 from airquality.extra.logging import FileHandlerRotator
-from airquality.extra.logging import _custom_log_filename, number_cleaner, name_cleaner
+from airquality.extra.logging import _custom_log_filename, literalize_number, name_cleaner
 
 
 def _test_sensor_identity():
@@ -38,7 +38,7 @@ def _mocked_logger():
 
 
 def _expected_filename() -> str:
-    return "fake_dir/sensor_0_n1_10_9.log"
+    return "fake_dir/sensor_0_n1_10dot00000_9dot00000.log"
 
 
 class TestFileHandlerRotator(TestCase):
@@ -104,8 +104,14 @@ class TestFileHandlerRotator(TestCase):
 
     def test_number_cleaner(self):
         self.assertEqual(
-            number_cleaner(9.123456),
-            '9dot123456'
+            literalize_number(9.123456),
+            '9dot12346'
+        )
+
+    def test_negative_number_cleaner(self):
+        self.assertEqual(
+            literalize_number(number=-74.198),
+            "minus74dot19800"
         )
 
 
