@@ -19,7 +19,7 @@ _TIMEST = openweathermap_timest()
 import airquality as aq
 from typing import Dict, Set
 import airquality.usecase as constants
-from airquality.extra.sqlize import sqlize
+from airquality.extra.sqlize import sqlize_iterable
 from airquality.usecase.abc import UsecaseABC
 from airquality.extra.url import json_http_response
 from airquality.datamodel.fromfile import CityDM
@@ -71,11 +71,11 @@ def _build_insert_cached_forecast_records_query(hourly: Set, daily: Set) -> str:
     return "INSERT INTO level0_raw.hourly_forecast " \
            "(id, geoarea_id, weather_id, temperature, pressure, humidity, " \
            "wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-           f"VALUES {','.join(sqlize(item) for item in hourly)};" \
+           f"VALUES {','.join(sqlize_iterable(item) for item in hourly)};" \
            "INSERT INTO level0_raw.daily_forecast" \
            "(id, geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
            "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-           f"VALUES {','.join(sqlize(item) for item in daily)};"
+           f"VALUES {','.join(sqlize_iterable(item) for item in daily)};"
 
 
 class AddWeatherData(UsecaseABC):
@@ -203,4 +203,3 @@ class AddWeatherData(UsecaseABC):
                             daily=self._cached_daily_forecast)
                     )
             raise
-
