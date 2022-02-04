@@ -13,7 +13,6 @@ _ENVIRON = environ.get_environ()
 
 ######################################################
 import os
-from typing import Set
 import airquality.usecase as constants
 from airquality.usecase.abc import UsecaseABC
 from airquality.datamodel.fromfile import CityDM
@@ -28,20 +27,14 @@ from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
 from airquality.iterables.fromfile import CityIterableDatamodels
 
 
-def _build_insert_cached_forecast_records_query(hourly: Set, daily: Set) -> str:
-    return "INSERT INTO level0_raw.hourly_forecast " \
-           "(id, geoarea_id, weather_id, temperature, pressure, humidity, " \
-           "wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-           f"VALUES {','.join(sqlize_iterable(item) for item in hourly)};" \
-           "INSERT INTO level0_raw.daily_forecast" \
-           "(id, geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
-           "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-           f"VALUES {','.join(sqlize_iterable(item) for item in daily)};"
-
-
 class AddWeatherData(UsecaseABC):
 
     DELETE_FORECAST_QUERY = "DELETE FROM level0_raw.hourly_forecast; DELETE FROM level0_raw.daily_forecast;"
+    HOURLY_FORECAST_QUERY = "INSERT INTO level0_raw.hourly_forecast (id, geoarea_id, weather_id, temperature, pressure,"\
+                            " humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) VALUES {val};"
+    DAILY_FORECAST_QUERY = "INSERT INTO level0_raw.daily_forecast (id, geoarea_id, weather_id, temperature, min_temp, "\
+                           "max_temp, pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
+                           "VALUES {val};"
 
     def __init__(self, database_gway: DatabaseGateway):
         self._database_gway = database_gway
@@ -80,6 +73,10 @@ class AddWeatherData(UsecaseABC):
             responses = WeatherDataIterableResponses(requests=valid_requests, geoarea_id=geoarea_info.id)
             self._database_gway.execute(query=responses.query())
             _LOGGER.debug("inserted weather data for city = '%s'" % str(city))
+
+            self._cached_hourly_forecast = [item for item in self._cached_hourly_forecast if item[1] != geoarea_info.id]
+            self._cached_daily_forecast = [item for item in self._cached_daily_forecast if item[1] != geoarea_info.id]
+
         except ValueError as err:
             _LOGGER.warning("%s" % str(err))
 
@@ -92,9 +89,11 @@ class AddWeatherData(UsecaseABC):
         except Exception as err:
             if not isinstance(err, SystemExit) and not isinstance(err, KeyboardInterrupt):
                 if self._cached_hourly_forecast and self._cached_daily_forecast:
-                    self._database_gway.execute(
-                        query=_build_insert_cached_forecast_records_query(
-                            hourly=self._cached_hourly_forecast,
-                            daily=self._cached_daily_forecast)
+                    query = self.HOURLY_FORECAST_QUERY.format(
+                        val=','.join(sqlize_iterable(item) for item in self._cached_hourly_forecast)
                     )
+                    query += self.DAILY_FORECAST_QUERY.format(
+                        val=','.join(sqlize_iterable(item) for item in self._cached_daily_forecast)
+                    )
+                    self._database_gway.execute(query=query)
             raise

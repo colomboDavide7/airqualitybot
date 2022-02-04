@@ -131,15 +131,11 @@ class DatabaseGateway(object):
                              f"contains sensor_index = '{sensor_index}' in 'level0_raw.sensor' table.")
         return SensorLocationDM(sensor_id=row[0], longitude=row[1], latitude=row[2])
 
-    def query_hourly_forecast_records(self) -> Set:
-        return set(
-            self._database_adapt.fetchall(query="SELECT * FROM level0_raw.hourly_forecast;")
-        )
+    def query_hourly_forecast_records(self) -> List:
+        return self._database_adapt.fetchall(query="SELECT * FROM level0_raw.hourly_forecast;")
 
-    def query_daily_forecast_records(self) -> Set:
-        return set(
-            self._database_adapt.fetchall(query="SELECT * FROM level0_raw.daily_forecast;")
-        )
+    def query_daily_forecast_records(self) -> List:
+        return self._database_adapt.fetchall(query="SELECT * FROM level0_raw.daily_forecast;")
 
     def exists_weather_alert_of(self, alert, geoarea_id: int) -> bool:
         row = self._database_adapt.fetchone(
