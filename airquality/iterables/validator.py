@@ -6,7 +6,7 @@
 #
 ######################################################
 from airquality.iterables.abc import IterableItemsABC
-from typing import Generator, Set
+from typing import Generator, Set, Callable, Dict
 from datetime import datetime
 
 
@@ -42,7 +42,7 @@ class SensorMeasureIterableValidRequests(IterableItemsABC):
 
 class PlaceIterableValidRequests(IterableItemsABC):
     """
-    A class that implements the *IterableItemsABC* interface and filter out requests based their postcode.
+    A class that implements the *IterableItemsABC* interface and filter out requests based on their postcode.
     """
 
     def __init__(self, requests: IterableItemsABC, postcodes2remove: Set[str]):
@@ -53,3 +53,25 @@ class PlaceIterableValidRequests(IterableItemsABC):
         for request in self.requests:
             if request.poscode not in self.postcodes2remove:
                 yield request
+
+
+class WeatherDataIterableValidRequests(IterableItemsABC):
+    """
+    A class that implements the *IterableItemsABC* interface and filter out already present alerts.
+    """
+
+    def __init__(
+        self,
+        requests: IterableItemsABC,         # The iterable classes that generates the requests
+        fexists: Callable,                  # The function that checks if a 'WeatherAlertRequest' already exists.
+        extra: Dict                         # The kwargs to pass to fexists function.
+    ):
+        self._requests = requests
+        self._fexists = fexists
+        self._extra = extra
+
+    def items(self):
+        for req in self._requests:
+            alerts_to_remove = [alert for alert in req.alerts if self._fexists(alert, **self._extra)]
+            req.alerts = [alert for alert in req.alerts if alert not in alerts_to_remove]
+            yield req

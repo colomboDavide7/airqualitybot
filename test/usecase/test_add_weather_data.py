@@ -67,6 +67,7 @@ def _mocked_database_gway() -> MagicMock:
     mocked_gateway.query_openweathermap_keys.return_value = [_test_opwmap_key()]
     mocked_gateway.query_weather_conditions.return_value = _test_weather_conditions()
     mocked_gateway.query_place_location.return_value = _test_database_geolocation_of_city()
+    mocked_gateway.exists_weather_alert_of.return_value = False
     mocked_gateway.execute = MagicMock()
     return mocked_gateway
 

@@ -127,14 +127,14 @@ class TestAddWeatherDataRequestBuilder(TestCase):
     def _assert_weather_alerts(self):
         alerts = self._builder[0].alerts
         self.assertEqual(len(alerts), 1)
-        self.assertEqual(alerts[0].sender_name, 'fake sender')
-        self.assertEqual(alerts[0].alert_event, 'fake event')
+        self.assertEqual(alerts[0].sender, 'fake sender')
+        self.assertEqual(alerts[0].event, 'fake event')
         self.assertEqual(
-            alerts[0].alert_begin,
+            alerts[0].begin,
             datetime(2022, 1, 24, 13, tzinfo=_expected_timezone_info())
         )
         self.assertEqual(
-            alerts[0].alert_until,
+            alerts[0].until,
             datetime(2022, 1, 25, 3, 59, tzinfo=_expected_timezone_info())
         )
         self.assertEqual(alerts[0].description, 'fake description')

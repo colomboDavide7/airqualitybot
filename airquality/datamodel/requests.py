@@ -88,10 +88,10 @@ class WeatherAlertRequest(object):
     A *dataclass* that defines the raw datastructure for a request of adding a weather alert.
     """
 
-    sender_name: str                    # The alert's sender name.
-    alert_event: str                    # The specific event for this alert.
-    alert_begin: datetime               # The datetime object that represent the alert begin (local timezone).
-    alert_until: datetime               # The datetime object that represent the alert end time (local timezone).
+    sender: str                         # The alert's sender name.
+    event: str                          # The specific event for this alert.
+    begin: datetime                     # The datetime object that represent the alert begin (local timezone).
+    until: datetime                     # The datetime object that represent the alert end time (local timezone).
     description: str                    # The alert description.
 
 

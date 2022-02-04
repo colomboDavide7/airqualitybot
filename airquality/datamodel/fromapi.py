@@ -131,7 +131,7 @@ class WeatherConditionsDM(object):
     humidity: float                                 # The humidity conditions for this forecast (%).
     wind_speed: float                               # The wind's speed in for this forecast (m/s).
     wind_deg: float                                 # The wind's direction for this forecast (degrees, °).
-    weather: List[WeatherDM]                          # The list of weather conditions for this forecast.
+    weather: List[WeatherDM]                        # The list of weather conditions for this forecast.
     rain: float = None                              # The rain volume for last hour (mm).
     pop: float = None                               # The probability of precipitation (%).
     snow: float = None                              # The snow volume for last hour (mm).

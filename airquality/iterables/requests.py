@@ -124,18 +124,18 @@ class GeonamesIterableRequests(IterableItemsABC):
             )
 
 
-def _safe_time(time, tzname: str):
-    if time is not None:
-        return timest.make_timezone_aware_FROM_NAME(utctime=time, timezone_name=tzname)
+def _safe_make_timezone_aware_datetime_from_unix_timestamp(unixts: int, tzname: str):
+    if unixts is not None:
+        return timest.make_timezone_aware_FROM_NAME(utctime=unixts, timezone_name=tzname)
     return None
 
 
 def _alert_of(source, tzname: str) -> WeatherAlertRequest:
     return WeatherAlertRequest(
-        sender_name=source.sender_name,
-        alert_event=source.alert_event,
-        alert_begin=_safe_time(time=source.alert_begin, tzname=tzname),
-        alert_until=_safe_time(time=source.alert_until, tzname=tzname),
+        sender=source.sender_name,
+        event=source.alert_event,
+        begin=_safe_make_timezone_aware_datetime_from_unix_timestamp(unixts=source.alert_begin, tzname=tzname),
+        until=_safe_make_timezone_aware_datetime_from_unix_timestamp(unixts=source.alert_until, tzname=tzname),
         description=source.description
     )
 
@@ -162,9 +162,9 @@ class OpenweathermapIterableRequests(IterableItemsABC):
     def _request_of(self, source, tzname: str) -> WeatherConditionsRequest:
         weather = source.weather[0]             # take only the first weather instance from the list.
         return WeatherConditionsRequest(
-            timestamp=_safe_time(time=source.dt, tzname=tzname),
-            sunrise=_safe_time(time=source.sunrise, tzname=tzname),
-            sunset=_safe_time(time=source.sunset, tzname=tzname),
+            timestamp=_safe_make_timezone_aware_datetime_from_unix_timestamp(unixts=source.dt, tzname=tzname),
+            sunrise=_safe_make_timezone_aware_datetime_from_unix_timestamp(unixts=source.sunrise, tzname=tzname),
+            sunset=_safe_make_timezone_aware_datetime_from_unix_timestamp(unixts=source.sunset, tzname=tzname),
             temperature=source.temp,
             min_temp=source.temp_min,
             max_temp=source.temp_max,

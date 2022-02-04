@@ -160,7 +160,7 @@ class WeatherDataIterableResponses(IterableItemsABC):
                          'pop', 'snow', 'timestamp']
     CURRENT_ATTRIBUTES = ['weather_id', 'temperature', 'pressure', 'humidity', 'wind_speed', 'wind_direction', 'rain',
                           'snow', 'timestamp', 'sunrise', 'sunset']
-    ALERT_ATTRIBUTES = ['sender_name', 'alert_event', 'alert_begin', 'alert_until', 'description']
+    ALERT_ATTRIBUTES = ['sender', 'event', 'begin', 'until', 'description']
 
     CURRENT_WEATHER_QUERY = "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, " \
                             "humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) " \

@@ -22,36 +22,10 @@ from airquality.extra.sqlize import sqlize_iterable
 from airquality.extra.url import json_http_response
 from airquality.database.gateway import DatabaseGateway
 from airquality.iterables.requests import OpenweathermapIterableRequests
+from airquality.iterables.validator import WeatherDataIterableValidRequests
 from airquality.iterables.responses import WeatherDataIterableResponses
 from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
 from airquality.iterables.fromfile import CityIterableDatamodels
-
-
-# def _build_insert_query(response_builder: WeatherDataIterableResponses):
-#     cval = hval = dval = aval = ""
-#     for resp in response_builder:
-#         cval += f"{resp.current_weather_record},"
-#         hval += f"{resp.hourly_forecast_record},"
-#         dval += f"{resp.daily_forecast_record},"
-#         aval += f"{resp.weather_alert_record},"
-#     query = "INSERT INTO level0_raw.current_weather " \
-#             "(geoarea_id, weather_id, temperature, pressure, humidity, wind_speed, " \
-#             "wind_direction, rain, snow, timestamp, sunrise, sunset) " \
-#             f"VALUES {cval.strip(',')};"
-#     query += "INSERT INTO level0_raw.hourly_forecast " \
-#              "(geoarea_id, weather_id, temperature, pressure, humidity, " \
-#              "wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-#              f"VALUES {hval.strip(',')};"
-#     query += "INSERT INTO level0_raw.daily_forecast " \
-#              "(geoarea_id, weather_id, temperature, min_temp, max_temp, pressure, " \
-#              "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-#              f"VALUES {dval.strip(',')};"
-#     query += "" if not aval.strip(',') else \
-#              "INSERT INTO level0_raw.weather_alert " \
-#              "(geoarea_id, sender_name, alert_event, " \
-#              "alert_begin, alert_until, description) " \
-#              f"VALUES {aval.strip(',')};"
-#     return query
 
 
 def _build_insert_cached_forecast_records_query(hourly: Set, daily: Set) -> str:
@@ -98,7 +72,12 @@ class AddWeatherData(UsecaseABC):
             service_jresp = json_http_response(url=url)
             datamodels = OpenweathermapIterableDatamodels(json_response=service_jresp)
             requests = OpenweathermapIterableRequests(datamodels=datamodels, weather_map=self._weather_map)
-            responses = WeatherDataIterableResponses(requests=requests, geoarea_id=geoarea_info.id)
+            valid_requests = WeatherDataIterableValidRequests(
+                requests=requests,
+                fexists=self._database_gway.exists_weather_alert_of,
+                extra={'geoarea_id': geoarea_info.id}
+            )
+            responses = WeatherDataIterableResponses(requests=valid_requests, geoarea_id=geoarea_info.id)
             self._database_gway.execute(query=responses.query())
             _LOGGER.debug("inserted weather data for city = '%s'" % str(city))
         except ValueError as err:

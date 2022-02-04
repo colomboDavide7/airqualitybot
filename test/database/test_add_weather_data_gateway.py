@@ -2,9 +2,11 @@
 # @author:  Davide Colombo
 # @date:    2022-01-21, ven, 11:24
 # ======================================
+from datetime import datetime
 from unittest import TestCase, main
 from unittest.mock import MagicMock
 from airquality.database.gateway import DatabaseGateway
+from airquality.datamodel.requests import WeatherAlertRequest
 from airquality.datamodel.responses import AddWeatherDataResponse
 
 
@@ -62,6 +64,15 @@ def _mocked_response_builder() -> MagicMock:
     return mocked_rb
 
 
+def _test_existing_weather_alert_record():
+    return 11111, \
+           'sender', \
+           'event', \
+           datetime(2022, 1, 10, 9, 45), \
+           datetime(2022, 1, 10, 17, 15), \
+           ''
+
+
 class TestDatabaseGatewayAddWeatherDataSection(TestCase):
 
 # =========== TEST METHODS
@@ -80,6 +91,36 @@ class TestDatabaseGatewayAddWeatherDataSection(TestCase):
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         with self.assertRaises(ValueError):
             gateway.query_weather_conditions()
+
+    def test_true_when_already_exists_weather_alert_record(self):
+        mocked_database_adapt = MagicMock()
+        mocked_database_adapt.fetchone.return_value = _test_existing_weather_alert_record()
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
+        self.assertTrue(
+            gateway.exists_weather_alert_of(geoarea_id=0,
+                                            alert=WeatherAlertRequest(
+                                                sender='sender',
+                                                event='event',
+                                                begin=datetime(2022, 1, 10, 9, 45),
+                                                until=datetime(2022, 1, 10, 17, 15),
+                                                description=""
+                                            ))
+        )
+
+    def test_false_when_weather_alert_record_does_not_exist(self):
+        mocked_database_adapt = MagicMock()
+        mocked_database_adapt.fetchone.return_value = None
+        gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
+        self.assertFalse(
+            gateway.exists_weather_alert_of(geoarea_id=0,
+                                            alert=WeatherAlertRequest(
+                                                sender='sender',
+                                                event='event',
+                                                begin=datetime(2022, 1, 10, 9, 45),
+                                                until=datetime(2022, 1, 10, 17, 15),
+                                                description=""
+                                            ))
+        )
 
 
 if __name__ == '__main__':

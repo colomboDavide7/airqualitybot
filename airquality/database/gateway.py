@@ -140,3 +140,10 @@ class DatabaseGateway(object):
         return set(
             self._database_adapt.fetchall(query="SELECT * FROM level0_raw.daily_forecast;")
         )
+
+    def exists_weather_alert_of(self, alert, geoarea_id: int) -> bool:
+        row = self._database_adapt.fetchone(
+            query=f"SELECT id FROM level0_raw.weather_alert WHERE geoarea_id = {geoarea_id} "
+                  f"AND alert_event = '{alert.event}' AND alert_begin = '{alert.begin}';"
+        )
+        return False if row is None else True

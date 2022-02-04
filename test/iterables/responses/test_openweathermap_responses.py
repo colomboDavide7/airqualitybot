@@ -62,10 +62,10 @@ def _daily_forecast_request():
 
 def _weather_alert_request():
     return WeatherAlertRequest(
-        sender_name='Fake sender',
-        alert_event='Fake event',
-        alert_begin=datetime(2022, 1, 24, 19, tzinfo=_rome_timezone()),
-        alert_until=datetime(2022, 1, 25, 9, 59, tzinfo=_rome_timezone()),
+        sender='Fake sender',
+        event='Fake event',
+        begin=datetime(2022, 1, 24, 19, tzinfo=_rome_timezone()),
+        until=datetime(2022, 1, 25, 9, 59, tzinfo=_rome_timezone()),
         description='Fake description'
     )
 
