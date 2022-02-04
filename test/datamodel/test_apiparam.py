@@ -16,11 +16,11 @@ def _last_acquisition_test_datetime():
 
 def _sensor_api_param_test_datamodel():
     return SensorApiParamDM(
-            sensor_id=1,
-            api_key="fakekey",
-            api_id="fakeident",
-            ch_name="fakename",
-            last_acquisition=_last_acquisition_test_datetime()
+            sid=1,
+            key="fakekey",
+            id="fakeident",
+            ch="fakename",
+            last=_last_acquisition_test_datetime()
         )
 
 
@@ -28,11 +28,11 @@ class TestAPIParamDataclass(TestCase):
 
     def test_apiparam_dataclass(self):
         api_param = _sensor_api_param_test_datamodel()
-        self.assertEqual(api_param.sensor_id, 1)
-        self.assertEqual(api_param.api_key, "fakekey")
-        self.assertEqual(api_param.api_id, "fakeident")
-        self.assertEqual(api_param.ch_name, "fakename")
-        self.assertEqual(api_param.last_acquisition, _last_acquisition_test_datetime())
+        self.assertEqual(api_param.sid, 1)
+        self.assertEqual(api_param.key, "fakekey")
+        self.assertEqual(api_param.id, "fakeident")
+        self.assertEqual(api_param.ch, "fakename")
+        self.assertEqual(api_param.last, _last_acquisition_test_datetime())
 
 
 if __name__ == '__main__':

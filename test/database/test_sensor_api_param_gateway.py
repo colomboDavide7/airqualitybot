@@ -31,9 +31,9 @@ def _test_database_channel_data():
 def _expected_sensor_api_param():
     ts = datetime(2018, 12, 11, 9, 59)
     return [
-        SensorApiParamDM(sensor_id=1, api_key="k1", api_id="i1", ch_name="n1", last_acquisition=ts),
-        SensorApiParamDM(sensor_id=1, api_key="k2", api_id="i2", ch_name="n2", last_acquisition=ts),
-        SensorApiParamDM(sensor_id=2, api_key="z1", api_id="a1", ch_name="m1", last_acquisition=ts)
+        SensorApiParamDM(sid=1, key="k1", id="i1", ch="n1", last=ts),
+        SensorApiParamDM(sid=1, key="k2", id="i2", ch="n2", last=ts),
+        SensorApiParamDM(sid=2, key="z1", id="a1", ch="m1", last=ts)
     ]
 
 

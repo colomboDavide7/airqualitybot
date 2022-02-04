@@ -68,11 +68,11 @@ def _expected_measure_record():
 
 def _test_sensor_api_param_datamodel():
     return SensorApiParamDM(
-        sensor_id=100,
-        ch_name='fakename',
-        api_id='fakeid',
-        api_key='fakekey',
-        last_acquisition=datetime(2022, 1, 10, 14, 33)
+        sid=100,
+        ch='fakename',
+        id='fakeid',
+        key='fakekey',
+        last=datetime(2022, 1, 10, 14, 33)
     )
 
 

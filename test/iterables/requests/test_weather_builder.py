@@ -90,7 +90,7 @@ def _test_openweathermap_datamodel():
 
 
 def _test_weather_conditions_mapping():
-    return {804: {'04d': 55, '04n': 56}, 500: {"13d": 37}}
+    return {'804_04d': 55, '804_04n': 56, '500_13d': 37}
 
 
 def _mocked_datamodel_builder():

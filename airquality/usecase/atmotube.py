@@ -50,19 +50,19 @@ class Atmotube(UsecaseABC):
 
     def _filter_ts_of(self, api_param: SensorApiParamDM) -> datetime:
         return self._database_gway.query_last_acquisition_of(
-            sensor_id=api_param.sensor_id,
-            ch_name=api_param.ch_name
+            sensor_id=api_param.sid,
+            ch_name=api_param.ch
         )
 
     def _urls_of(self, api_param: SensorApiParamDM) -> AtmotubeIterableUrls:
         pre_formatted_url = self._url_template.format(
-            api_key=api_param.api_key,
-            api_id=api_param.api_id,
+            api_key=api_param.key,
+            api_id=api_param.id,
             api_fmt="json"
         )
         return AtmotubeIterableUrls(
             url=pre_formatted_url,
-            begin=api_param.last_acquisition,
+            begin=api_param.last,
             step_size_in_days=1
         )
 
@@ -73,7 +73,7 @@ class Atmotube(UsecaseABC):
 # =========== RUN METHOD
     def execute(self):
         for param in self._api_param:
-            self._rotate_file(sensor_id=param.sensor_id)
+            self._rotate_file(sensor_id=param.sid)
             self._safe_execute(param=param)
 
     @log_context(logger_name=__name__, header=constants.START_MESSAGE, teardown=constants.END_MESSAGE)

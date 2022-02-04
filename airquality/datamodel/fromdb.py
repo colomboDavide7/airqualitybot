@@ -12,15 +12,14 @@ class SensorApiParamDM(object):
     An *dataclass* that represents the sensor's API parameters data queried from the database.
     """
 
-    sensor_id: int                      # The sensor's database unique identifier.
-    api_key: str                        # The API key used to claim the ownership of the sensor when accessing data.
-    api_id: str                         # The API id used together with the API key.
-    ch_name: str                        # The name assigned to the channel associated to the API credentials.
-    last_acquisition: datetime          # The timestamp of the last acquisition on the current channel.
+    sid: int                            # The sensor's database unique identifier.
+    key: str                            # The API key used to claim the ownership of the sensor when accessing data.
+    id: str                             # The API id used together with the API key.
+    ch: str                             # The name assigned to the channel associated to the API credentials.
+    last: datetime                      # The timestamp of the last acquisition on the current channel.
 
     def __repr__(self):
-        return f"{type(self).__name__}(sensor_id={self.sensor_id}, api_key=XXX, api_id={self.api_id}, " \
-               f"ch_name={self.ch_name}, last_acquisition={self.last_acquisition!s})"
+        return f"{type(self).__name__}(sid={self.sid}, key=XXX, id={self.id}, ch={self.ch}, last={self.last!s})"
 
 
 @dataclass
@@ -40,9 +39,9 @@ class OpenweathermapKeyDM(object):
     A *dataclass* that defines the raw datastructure for the openweathermap API key queried from the database.
     """
 
-    key_value: str                      # The openweathermap's API key.
-    done_requests_per_minute: int       # The number of requests in the last minute done using this key.
-    max_requests_per_minute: int        # The maximum number of requests that can be done in a minute.
+    key: str                            # The openweathermap's API key.
+    n_done: int                         # The number of requests in the last minute done using this key.
+    n_max: int                          # The maximum number of requests that can be done in a minute.
 
 
 @dataclass
@@ -63,6 +62,6 @@ class GeoareaLocationDM(object):
     A *dataclass* that defines the raw datastructure for the database information of a city.
     """
 
-    geoarea_id: int                     # the place's unique ID into the 'level0_raw.geographical_area' table.
+    id: int                     # the place's unique ID into the 'level0_raw.geographical_area' table.
     latitude: float                     # the place's latitude in decimal degrees.
     longitude: float                    # the place's longitude in decimal degrees.

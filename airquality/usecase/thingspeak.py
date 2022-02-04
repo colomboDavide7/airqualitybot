@@ -60,19 +60,19 @@ class Thingspeak(UsecaseABC):
 
     def _filter_ts_of(self, param: SensorApiParamDM) -> datetime:
         return self._database_gway.query_last_acquisition_of(
-            sensor_id=param.sensor_id,
-            ch_name=param.ch_name
+            sensor_id=param.sid,
+            ch_name=param.ch
         )
 
     def _urls_of(self, param: SensorApiParamDM) -> ThingspeakIterableUrls:
         pre_formatted_url = self._url_template.format(
-            api_key=param.api_key,
-            api_id=param.api_id,
+            api_key=param.key,
+            api_id=param.id,
             api_fmt="json"
         )
         return ThingspeakIterableUrls(
             url=pre_formatted_url,
-            begin=param.last_acquisition,
+            begin=param.last,
             step_size_in_days=7
         )
 
@@ -83,7 +83,7 @@ class Thingspeak(UsecaseABC):
 # =========== EXECUTE METHOD
     def execute(self):
         for param in self._api_param:
-            self._rotate_file(sensor_id=param.sensor_id)
+            self._rotate_file(sensor_id=param.sid)
             self._safe_execute(param=param)
 
     @log_context(logger_name=__name__, header=constants.START_MESSAGE, teardown=constants.END_MESSAGE)
@@ -93,7 +93,7 @@ class Thingspeak(UsecaseABC):
             server_jresp = json_http_response(url=url)
             datamodels = ThingspeakIterableDatamodels(json_response=server_jresp)
             requests = ThingspeakIterableRequests(
-                datamodels=datamodels, measure_param=self._measure_param, api_field_names=self._FIELD_MAP[param.ch_name]
+                datamodels=datamodels, measure_param=self._measure_param, api_field_names=self._FIELD_MAP[param.ch]
             )
             valid_requests = SensorMeasureIterableValidRequests(
                 requests=requests, filter_ts=self._filter_ts_of(param)

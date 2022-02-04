@@ -40,11 +40,11 @@ def _test_sensor_api_param():
     :return: return the *APIParam* used for this integration test.
     """
     return SensorApiParamDM(
-        sensor_id=99,
-        api_key="fakekey",
-        api_id="fakeid",
-        ch_name="1A",
-        last_acquisition=datetime(2021, 12, 20, 11, 38, tzinfo=_test_tzinfo())
+        sid=99,
+        key="fakekey",
+        id="fakeid",
+        ch="1A",
+        last=datetime(2021, 12, 20, 11, 38, tzinfo=_test_tzinfo())
     )
 
 

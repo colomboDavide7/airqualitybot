@@ -146,7 +146,7 @@ class OpenweathermapIterableRequests(IterableItemsABC):
     *OpenweathermapDM* into an *AddWeatherDataRequest*
     """
 
-    def __init__(self, datamodels: IterableItemsABC, weather_map: Dict[int, Dict[str, int]]):
+    def __init__(self, datamodels: IterableItemsABC, weather_map: Dict[str, int]):
         self.datamodels = datamodels
         self.weather_map = weather_map
 
@@ -175,5 +175,5 @@ class OpenweathermapIterableRequests(IterableItemsABC):
             rain=source.rain,
             pop=source.pop,
             snow=source.snow,
-            weather_id=self.weather_map[weather.id][weather.icon]
+            weather_id=self.weather_map[f"{weather.id}_{weather.icon}"]
         )

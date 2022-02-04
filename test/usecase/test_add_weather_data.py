@@ -14,7 +14,11 @@ from airquality.usecase.openweathermap import AddWeatherData
 
 
 def _test_weather_conditions():
-    return [(55, 804, "04d"), (37, 500, "13d"), (56, 804, "04n")]
+    return {
+        '804_04d': 55,
+        '500_13d': 37,
+        '804_04n': 56
+    }
 
 
 def _test_json_response():
@@ -44,15 +48,15 @@ def _mocked_city_file() -> MagicMock:
 
 def _test_opwmap_key():
     return OpenweathermapKeyDM(
-        key_value="fakekey",
-        done_requests_per_minute=0,
-        max_requests_per_minute=60
+        key="fakekey",
+        n_done=0,
+        n_max=60
     )
 
 
 def _test_database_geolocation_of_city():
     return GeoareaLocationDM(
-        geoarea_id=14400,
+        id=14400,
         latitude=0.0,
         longitude=0.0
     )
@@ -65,18 +69,6 @@ def _mocked_database_gway() -> MagicMock:
     mocked_gateway.query_place_location.return_value = _test_database_geolocation_of_city()
     mocked_gateway.execute = MagicMock()
     return mocked_gateway
-
-
-def _expected_weather_map():
-    return {
-        804: {
-                '04d': 55,
-                '04n': 56
-            },
-        500: {
-                "13d": 37
-            }
-        }
 
 
 def _expected_current_record():
@@ -145,8 +137,8 @@ class AddWeatherDataIntegrationTest(TestCase):
 
     def _assert_usecase_properties(self):
         self.assertEqual(
-            self._usecase._cached_weather_map,
-            _expected_weather_map()
+            self._usecase._weather_map,
+            _test_weather_conditions()
         )
 
 

@@ -65,7 +65,7 @@ class TestDatabaseGatewayAddPlacesSection(TestCase):
             )
 
     def _assert_city_data(self, city_data):
-        self.assertEqual(city_data.geoarea_id, 14400)
+        self.assertEqual(city_data.id, 14400)
         self.assertEqual(city_data.longitude, 9)
         self.assertEqual(city_data.latitude, 45)
 

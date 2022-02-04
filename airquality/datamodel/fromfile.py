@@ -23,8 +23,12 @@ class GeonamesDM(object):
 @dataclass
 class CityDM(object):
     """
-    A *dataclass* that defines the raw datastructure for the data of a city to collect weather data.
+    A *dataclass* that defines the raw datastructure for city's data read from file and used for saying to the
+    program which city include when downloading weather data.
     """
 
-    country_code: str                               # The 2-alpha ISO city's country code.
-    place_name: str                                 # The city's name.
+    country_code: str                                   # The 2-alpha ISO city's country code.
+    place_name: str                                     # The city's name.
+
+    def __str__(self):
+        return f"{self.place_name}, {self.country_code}"

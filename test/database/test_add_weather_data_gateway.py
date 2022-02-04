@@ -18,10 +18,14 @@ def _expected_delete_daily_forecast_query():
 
 def _test_database_weather_conditions():
     return [
-        (55, 804, "04d"),
-        (37, 500, "13d"),
-        (56, 804, "04n")
+        (55, 804, '04d'),
+        (37, 500, '13d'),
+        (56, 804, '04n')
     ]
+
+
+def _expected_weather_map():
+    return {'804_04d': 55, '500_13d': 37, '804_04n': 56}
 
 
 def _test_current_weather_record():
@@ -58,21 +62,6 @@ def _mocked_response_builder() -> MagicMock:
     return mocked_rb
 
 
-# def _expected_insert_weather_data_query():
-#     return "INSERT INTO level0_raw.current_weather (geoarea_id, weather_id, temperature, pressure, " \
-#             "humidity, wind_speed, wind_direction, rain, snow, timestamp, sunrise, sunset) " \
-#            f"VALUES {_test_current_weather_record()};" \
-#             "INSERT INTO level0_raw.hourly_forecast (geoarea_id, weather_id, temperature, pressure, " \
-#             "humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-#            f"VALUES {_test_hourly_forecast_record()};" \
-#             "INSERT INTO level0_raw.daily_forecast " \
-#            "(geoarea_id, weather_id, temperature, min_temp, max_temp, " \
-#             "pressure, humidity, wind_speed, wind_direction, rain, pop, snow, timestamp) " \
-#            f"VALUES {_test_daily_forecast_record()};" \
-#            f"INSERT INTO level0_raw.weather_alert (geoarea_id, sender_name, alert_event, alert_begin, " \
-#            f"alert_until, description) VALUES {_test_weather_alert_record()};"
-
-
 class TestDatabaseGatewayAddWeatherDataSection(TestCase):
 
 # =========== TEST METHODS
@@ -82,7 +71,7 @@ class TestDatabaseGatewayAddWeatherDataSection(TestCase):
         gateway = DatabaseGateway(database_adapt=mocked_database_adapt)
         self.assertEqual(
             gateway.query_weather_conditions(),
-            _test_database_weather_conditions()
+            _expected_weather_map()
         )
 
     def test_raise_value_error_when_weather_conditions_are_empty(self):

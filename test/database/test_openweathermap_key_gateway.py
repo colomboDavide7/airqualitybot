@@ -36,10 +36,10 @@ class TestDatabaseGatewayServiceAPIParamSection(TestCase):
             gateway.query_openweathermap_keys()
 
     def _assert_openweathermap_keys(self, key):
-        self.assertEqual(key[0].key_value, "key1")
-        self.assertEqual(key[0].done_requests_per_minute, 0)
-        self.assertEqual(key[1].key_value, "key2")
-        self.assertEqual(key[1].done_requests_per_minute, 12)
+        self.assertEqual(key[0].key, "key1")
+        self.assertEqual(key[0].n_done, 0)
+        self.assertEqual(key[1].key, "key2")
+        self.assertEqual(key[1].n_done, 12)
 
 
 if __name__ == '__main__':
