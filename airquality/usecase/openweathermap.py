@@ -86,14 +86,13 @@ class AddWeatherData(UsecaseABC):
         try:
             for city in self._cities:
                 self._safe_insert_weather_data_of(city=city)
-        except Exception as err:
-            if not isinstance(err, SystemExit) and not isinstance(err, KeyboardInterrupt):
-                if self._cached_hourly_forecast and self._cached_daily_forecast:
-                    query = self.HOURLY_FORECAST_QUERY.format(
-                        val=','.join(sqlize_iterable(item) for item in self._cached_hourly_forecast)
-                    )
-                    query += self.DAILY_FORECAST_QUERY.format(
-                        val=','.join(sqlize_iterable(item) for item in self._cached_daily_forecast)
-                    )
-                    self._database_gway.execute(query=query)
+        except BaseException:
+            if self._cached_hourly_forecast and self._cached_daily_forecast:
+                query = self.HOURLY_FORECAST_QUERY.format(
+                    val=','.join(sqlize_iterable(item) for item in self._cached_hourly_forecast)
+                )
+                query += self.DAILY_FORECAST_QUERY.format(
+                    val=','.join(sqlize_iterable(item) for item in self._cached_daily_forecast)
+                )
+                self._database_gway.execute(query=query)
             raise
