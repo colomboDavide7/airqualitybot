@@ -10,7 +10,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.fromdb import GeoareaLocationDM, OpenweathermapKeyDM
-from airquality.usecase.openweathermap import AddWeatherData
+from airquality.usecase.openweathermap import Openweathermap
 
 
 def _test_weather_conditions():
@@ -114,7 +114,7 @@ class AddWeatherDataIntegrationTest(TestCase):
 # =========== SETUP METHOD
     def setUp(self) -> None:
         self._mocked_database_gway = _mocked_database_gway()
-        self._usecase = AddWeatherData(database_gway=self._mocked_database_gway)
+        self._usecase = Openweathermap(database_gway=self._mocked_database_gway)
 
 # =========== TEST METHOD
     @patch('airquality.environment.os')

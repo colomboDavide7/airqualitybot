@@ -18,8 +18,8 @@ from airquality.usecase.geonames import Geonames
 from airquality.usecase.thingspeak import Thingspeak
 from airquality.usecase.purpleair import Purpleair
 from airquality.usecase.atmotube import Atmotube
-from airquality.usecase.purp_update import UpdatePurpleairLocation
-from airquality.usecase.openweathermap import AddWeatherData
+from airquality.usecase.purp_update import PurpUpdate
+from airquality.usecase.openweathermap import Openweathermap
 from airquality.database.gateway import DatabaseGateway
 from airquality.database.adapter import Psycopg2Adapter
 
@@ -72,6 +72,6 @@ class Application(object):
             elif self._personality == 'geonames':
                 Geonames(database_gway=database_gway).execute()
             elif self._personality == 'openweathermap':
-                AddWeatherData(database_gway=database_gway).execute()
+                Openweathermap(database_gway=database_gway).execute()
             elif self._personality == 'purp_update':
-                UpdatePurpleairLocation(database_gway=database_gway).execute()
+                PurpUpdate(database_gway=database_gway).execute()

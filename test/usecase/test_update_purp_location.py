@@ -8,7 +8,7 @@ import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 from airquality.datamodel.fromdb import SensorLocationDM
-from airquality.usecase.purp_update import UpdatePurpleairLocation
+from airquality.usecase.purp_update import PurpUpdate
 
 
 def _test_queried_locations():
@@ -57,7 +57,7 @@ class TestUpdatePurpleairLocationsUsecase(TestCase):
         mocked_datetime.now.return_value = _mocked_now()
         mocked_get.return_value = _setup_mocked_json_response()
         mocked_database_gway = _mocked_database_gateway()
-        usecase = UpdatePurpleairLocation(database_gway=mocked_database_gway)
+        usecase = PurpUpdate(database_gway=mocked_database_gway)
         usecase.execute()
 
         query = mocked_database_gway.execute.call_args[1]['query']

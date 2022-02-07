@@ -127,7 +127,7 @@ class DatabaseGateway(object):
                 f"sensor_name ILIKE '%{sensor_index}%' AND valid_to IS NULL;"
         row = self._database_adapt.fetchone(query=query)
         if row is None:
-            raise ValueError(f"Cannot found a record corresponding to sensor_type = 'purpleair' which name"
+            raise ValueError(f"Cannot found a record corresponding to sensor_type = 'purpleair' which name "
                              f"contains sensor_index = '{sensor_index}' in 'level0_raw.sensor' table.")
         return SensorLocationDM(sensor_id=row[0], longitude=row[1], latitude=row[2])
 

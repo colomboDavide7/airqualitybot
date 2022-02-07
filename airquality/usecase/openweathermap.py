@@ -27,7 +27,7 @@ from airquality.iterables.fromapi import OpenweathermapIterableDatamodels
 from airquality.iterables.fromfile import CityIterableDatamodels
 
 
-class AddWeatherData(UsecaseABC):
+class Openweathermap(UsecaseABC):
 
     DELETE_FORECAST_QUERY = "DELETE FROM level0_raw.hourly_forecast; DELETE FROM level0_raw.daily_forecast;"
     HOURLY_FORECAST_QUERY = "INSERT INTO level0_raw.hourly_forecast (id, geoarea_id, weather_id, temperature, pressure,"\
