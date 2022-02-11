@@ -5,7 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import json
 import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
@@ -73,10 +72,10 @@ def _mocked_json_api_resp() -> MagicMock:
     """
     :return: a *MagicMock* instance that implements the 'json' method of Response object in requests module.
     """
-    _test_json_response = tutils.get_json_response_from_file(filename='atmotube_response.json')
+
     mocked_resp = MagicMock()
-    mocked_resp.content = json.dumps(_test_json_response).encode('utf-8')
     mocked_resp.status_code = 200
+    mocked_resp.json.return_value = tutils.get_json_response_from_file(filename='atmotube_response.json')
     return mocked_resp
 
 

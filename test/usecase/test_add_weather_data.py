@@ -5,7 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import json
 import test._test_utils as tutils
 from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
@@ -21,16 +20,10 @@ def _test_weather_conditions():
     }
 
 
-def _test_json_response():
-    return tutils.get_json_response_from_file(
-        filename='openweather_data.json'
-    )
-
-
 def _mocked_responses() -> MagicMock:
     mocked_r = MagicMock()
-    mocked_r.content = json.dumps(_test_json_response()).encode('utf-8')
     mocked_r.status_code = 200
+    mocked_r.json.return_value = tutils.get_json_response_from_file(filename='openweather_data.json')
     return mocked_r
 
 

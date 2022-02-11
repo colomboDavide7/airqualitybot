@@ -20,6 +20,7 @@ def _mocked_json_response() -> MagicMock:
     mocked_response = MagicMock()
     mocked_response.content = _test_json_response()
     mocked_response.status_code = _test_status_code()
+    mocked_response.json.return_value = {"p1": "a1", "p2": "a2"}
     return mocked_response
 
 
@@ -27,6 +28,13 @@ def _mocked_http_bad_response() -> MagicMock:
     mocked_r = MagicMock()
     mocked_r.content = _test_json_response()
     mocked_r.status_code = 400
+    mocked_r.raise_for_status.side_effect = [requests.HTTPError]
+    return mocked_r
+
+
+def _mocked_not_content_response() -> MagicMock:
+    mocked_r = MagicMock()
+    mocked_r.status_code = 204
     return mocked_r
 
 
@@ -47,6 +55,12 @@ class TestURLReader(TestCase):
         mocked_get.return_value = _mocked_http_bad_response()
         with self.assertRaises(requests.HTTPError):
             json_http_response(url='fake url')
+
+    @patch('airquality.extra.url.requests.get')
+    def test_value_error_when_response_has_not_content(self, mocked_get):
+        mocked_get.return_value = _mocked_not_content_response()
+        with self.assertRaises(ValueError):
+            json_http_response(url='fake_url')
 
 
 if __name__ == '__main__':

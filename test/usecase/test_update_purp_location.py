@@ -2,7 +2,6 @@
 # @author:  Davide Colombo
 # @date:    2022-02-1, mar, 10:15
 # ======================================
-import json
 from datetime import datetime
 import test._test_utils as tutils
 from unittest import TestCase, main
@@ -27,10 +26,9 @@ def _mocked_database_gateway():
 
 
 def _setup_mocked_json_response() -> MagicMock:
-    test_json_response = tutils.get_json_response_from_file(filename='purpleair_response.json')
     mocked_resp = MagicMock()
-    mocked_resp.content = json.dumps(test_json_response).encode('utf-8')
     mocked_resp.status_code = 200
+    mocked_resp.json.return_value = tutils.get_json_response_from_file(filename='purpleair_response.json')
     return mocked_resp
 
 

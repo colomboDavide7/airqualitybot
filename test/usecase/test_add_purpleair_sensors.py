@@ -5,7 +5,6 @@
 # Description: INSERT HERE THE DESCRIPTION
 #
 ######################################################
-import json
 import test._test_utils as tutils
 from datetime import datetime
 from unittest import TestCase, main
@@ -30,10 +29,9 @@ def _mocked_datetime_now() -> MagicMock:
 
 
 def _setup_mocked_json_response() -> MagicMock:
-    test_json_response = tutils.get_json_response_from_file(filename='purpleair_response.json')
     mocked_resp = MagicMock()
-    mocked_resp.content = json.dumps(test_json_response).encode('utf-8')
     mocked_resp.status_code = 200
+    mocked_resp.json.return_value = tutils.get_json_response_from_file(filename='purpleair_response.json')
     return mocked_resp
 
 
