@@ -172,7 +172,7 @@ This directory will be filled with two files:
 
 ## Author
 
-Davide Colombo - email: davide.colombo@icloud.com
+Davide Colombo - email: davide.colombo02@universitadipavia.it
 
 This project was entirely develop by Me during my master thesis activity at
 University of Pavia.
